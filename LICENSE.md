@@ -6,7 +6,7 @@
 
 1.1 These Terms of Service (together with any applicable Order Form the “**Agreement**”) governs all rights granted by Licensor to use and commercially exploit the IMGLYUI (the “**Software**”).
 
-1.2 The Agreement is entered into by and between img.ly GmbH, Kortumstraße 19-21, 44787 Bochum, Germany (the “**Licensor**”) and the entity identified in the Order Form (the “**Licensee**”, together with Licensor the “**Parties**”) as of the effective date the Order Form is last signed on.
+1.2 The Agreement is entered into by and between IMG.LY GmbH, Kortumstraße 19-21, 44787 Bochum, Germany (the “**Licensor**”) and the entity identified in the Order Form (the “**Licensee**”, together with Licensor the “**Parties**”) as of the effective date the Order Form is last signed on.
 
 1.3 This Agreement shall govern the use of the Software for commercial purposes. To the extent the Software is intended to be used for non-commercial purposes only, an alternative licensing scheme may be available upon Licensor’s discretion.
 

@@ -5,10 +5,7 @@ let package = Package(
   name: "IMGLYUI",
   platforms: [.iOS(.v16)],
   products: [
-    .library(name: "IMGLYCore", targets: ["IMGLYCore"]),
-
     // Comment out these products for development to fix SwiftUI previews inside this package
-    .library(name: "IMGLYCoreUI", targets: ["IMGLYCoreUI"]),
     .library(name: "IMGLYEditor", targets: ["IMGLYEditor"]),
     .library(name: "IMGLYApparelEditor", targets: ["IMGLYApparelEditor"]),
     .library(name: "IMGLYPostcardEditor", targets: ["IMGLYPostcardEditor"]),
@@ -24,7 +21,7 @@ let package = Package(
              ])
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.21.0-rc.0"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.21.0-rc.1"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", exact: "0.1.4"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", exact: "7.6.2")
   ],

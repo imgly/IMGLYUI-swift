@@ -10,7 +10,7 @@ import SwiftUI
     ActionButton(.export)
       .disabled(interactor.isLoading || interactor.isExporting)
       .modifier(ExportSheet())
-      .imgly.activitySheet($interactor.activityItem)
+      .modifier(ShareSheet())
   }
 }
 

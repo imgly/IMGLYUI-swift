@@ -38,7 +38,7 @@ import SwiftUI
   @Published var error = AlertState()
   @Published var sheet = SheetState() { didSet { sheetChanged(oldValue) } }
   @Published var export = ExportSheetState()
-  @Published var activityItem: ActivityItem?
+  @Published var shareItem: ShareItem?
 
   typealias BlockID = IMGLYEngine.DesignBlockID
   typealias BlockType = IMGLYEngine.DesignBlockType

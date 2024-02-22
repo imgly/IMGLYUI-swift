@@ -7,7 +7,7 @@ extension Interactor: EditorEventHandler {
     case let .shareFile(url):
       // Fix `.tintAdjustmentMode` to stay `.normal` when export sheet was presented.
       delayIfNecessary(hideExportSheet() || hideSheet()) { [weak self] in
-        self?.activityItem = .init(items: url)
+        self?.shareItem = .url([url])
       }
     case let .exportProgress(value):
       showExportSheet(.exporting(value) { [weak self] in

@@ -15,18 +15,29 @@ customize the engine for your specific use case.
 
 The CreativeEditor SDK is a commercial product. To use it and get access you need to unlock the SDK with a license file. You can purchase a license at https://img.ly/pricing.
 
+## Integration
+
+### SwiftUI
+
+```Swift
+import IMGLYApparelEditor // or IMGLYPostcardEditor
+import SwiftUI
+
+struct IntegrateWithSwiftUI: View {
+  var body: some View {
+    NavigationView {
+      ApparelEditor(.init(license: secrets.licenseKey, userID: "USER_ID"))
+    }
+  }
+}
+```
+
 ## Documentation
 
 The full documentation of IMGLYUI can be found at
 [here](https://img.ly/docs/cesdk/ios/).
 There you will learn what configuration options are available and find a list
 and description of all API methods.
-
-## License
-
-The IMGLYUI is a commercial product. To use it you
-need to unlock the SDK with a license file. You can purchase a license at
-https://img.ly/pricing.
 
 ## Changelog
 
