@@ -32,6 +32,10 @@ public extension IMGLY where Wrapped: View {
   func editor(_ settings: EngineSettings, behavior: InteractorBehavior) -> some View {
     wrapped.modifier(ConfigureableEditor(settings: settings, behavior: behavior))
   }
+
+  func pageNavigation(_ enabled: Bool) -> some View {
+    wrapped.environment(\.imglyIsPageNavigationEnabled, enabled)
+  }
 }
 
 extension IMGLY where Wrapped: View {

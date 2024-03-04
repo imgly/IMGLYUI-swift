@@ -1,6 +1,6 @@
 import SwiftUI
 
-@_spi(Internal) public class ZoomModel {
+@_spi(Internal) public struct ZoomModel {
   @_spi(Internal) public var defaultZoomLevel: Float?
   @_spi(Internal) public var defaultInsets: EdgeInsets = .init()
 

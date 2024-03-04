@@ -8,6 +8,8 @@ struct BottomBar: View {
   let bottomSafeAreaInset: CGFloat
 
   @EnvironmentObject private var interactor: Interactor
+  @Environment(\.verticalSizeClass) private var verticalSizeClass
+  @Environment(\.imglyIsPageNavigationEnabled) private var isPageNavigationEnabled: Bool
 
   private var isRoot: Bool { type == nil }
 
@@ -108,11 +110,13 @@ struct BottomBar: View {
   }
 
   var body: some View {
+    let heightWithPageControl = (isRoot && verticalSizeClass == .compact && isPageNavigationEnabled) ? height + 16 :
+      height
     VStack(spacing: 0) {
       Color.clear // Fix abrupt view (dis)appearance in safe area during transitions.
         .frame(height: bottomSafeAreaInset)
       bottomBar
-        .frame(height: height)
+        .frame(height: heightWithPageControl)
     }
     .disabled(interactor.isLoading)
     .imgly.selection(id)

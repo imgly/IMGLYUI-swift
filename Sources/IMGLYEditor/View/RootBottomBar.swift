@@ -3,6 +3,12 @@ import SwiftUI
 
 struct RootBottomBar: View {
   @EnvironmentObject private var interactor: Interactor
+  @Environment(\.imglyIsPageNavigationEnabled) private var isPageNavigationEnabled: Bool
+
+  private var isPageNavigationHidden: Bool {
+    !isPageNavigationEnabled || interactor.selection?.blocks.isEmpty != nil || !interactor
+      .isDefaultZoomLevel || interactor.pageCount < 2
+  }
 
   private let fabSize: CGFloat = 56
   private let padding: CGFloat = 16
@@ -72,6 +78,10 @@ struct RootBottomBar: View {
         Spacer()
       }
       .padding(padding)
+    }
+    .overlay(alignment: .top) {
+      PageNavigation()
+        .opacity(isPageNavigationHidden ? 0 : 1)
     }
   }
 

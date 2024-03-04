@@ -1,11 +1,13 @@
 @_spi(Internal) import IMGLYCore
 @_spi(Internal) import IMGLYCoreUI
 @_spi(Internal) import IMGLYEditor
-import IMGLYEngine
 import SwiftUI
-import UniformTypeIdentifiers
 
 final class ApparelInteractorBehavior: InteractorBehavior {
+  var historyResetOnPageChange: HistoryResetBehavior { .always }
+  var deselectOnPageChange: Bool { true }
+  var previewMode: PreviewMode { .fixed }
+
   private func pageSetup(_ context: InteractorContext) throws {
     try context.engine.block.overrideAndRestore(
       context.engine.getPage(0),
@@ -23,6 +25,7 @@ final class ApparelInteractorBehavior: InteractorBehavior {
   }
 
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws {
+    try disableCameraClamping(context)
     try await context.engine.zoomToBackdrop(insets)
     try context.engine.block.deselectAll()
     try pageSetup(context)

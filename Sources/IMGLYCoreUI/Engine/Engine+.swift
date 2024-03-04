@@ -3,6 +3,12 @@ import IMGLYEngine
 import SwiftUI
 import UniformTypeIdentifiers
 
+@_spi(Internal) public enum HistoryResetBehavior {
+  case always
+  case ifNeeded
+  case never
+}
+
 private struct Random: RandomNumberGenerator {
   init(seed: Int) {
     srand48(seed)
@@ -156,12 +162,31 @@ private struct Random: RandomNumberGenerator {
     try showPage(index: nil, layout: layout, spacing: spacing)
   }
 
-  func showPage(_ index: Int) throws {
-    try showPage(index: index, layout: .depth)
+  func showPage(_ index: Int, historyResetBehavior: HistoryResetBehavior = .never, deselectAll: Bool = true) throws {
+    try showPage(index: index, layout: .depth, historyResetBehavior: historyResetBehavior, deselectAll: deselectAll)
   }
 
-  private func showPage(index: Int?, layout axis: LayoutAxis, spacing: Float? = nil) throws {
-    try engine.block.deselectAll()
+  private func showPage(
+    index: Int?,
+    layout axis: LayoutAxis,
+    spacing: Float? = nil,
+    historyResetBehavior: HistoryResetBehavior = .never,
+    deselectAll: Bool = true
+  ) throws {
+    if deselectAll {
+      try engine.block.deselectAll()
+    }
+
+    switch historyResetBehavior {
+    case .always:
+      try engine.editor.resetHistory()
+    case .ifNeeded:
+      if !(try engine.editor.canUndo() || engine.editor.canRedo()) {
+        try engine.editor.resetHistory()
+      }
+    case .never:
+      break
+    }
 
     let allPages = index == nil
     try engine.block.set(getStack(), property: .key(.stackAxis), value: axis)

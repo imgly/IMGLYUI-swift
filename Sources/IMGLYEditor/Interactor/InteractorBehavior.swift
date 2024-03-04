@@ -2,7 +2,6 @@
 @_spi(Internal) import IMGLYCoreUI
 import IMGLYEngine
 import SwiftUI
-import UniformTypeIdentifiers
 
 @MainActor
 @_spi(Internal) public struct InteractorContext {
@@ -32,8 +31,17 @@ import UniformTypeIdentifiers
   }
 }
 
+@_spi(Internal) public enum PreviewMode {
+  case fixed
+  case scrollable
+}
+
 @MainActor
 @_spi(Internal) public protocol InteractorBehavior: Sendable {
+  var historyResetOnPageChange: HistoryResetBehavior { get }
+  var deselectOnPageChange: Bool { get }
+  var previewMode: PreviewMode { get }
+
   func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws
   func exportScene(_ context: InteractorContext) async throws
   func enableEditMode(_ context: InteractorContext) throws
@@ -45,6 +53,10 @@ import UniformTypeIdentifiers
 }
 
 @_spi(Internal) public extension InteractorBehavior {
+  var historyResetOnPageChange: HistoryResetBehavior { .ifNeeded }
+  var deselectOnPageChange: Bool { false }
+  var previewMode: PreviewMode { .scrollable }
+
   func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws {
     try context.engine.editor.setSettingBool("touch/singlePointPanning", value: true)
     try context.engine.editor.setSettingBool("touch/dragStartCanSelect", value: false)
@@ -108,7 +120,7 @@ import UniformTypeIdentifiers
     try context.engine.editor.resetHistory()
   }
 
-  private func showAllPages(_ context: InteractorContext) throws {
+  func showAllPages(_ context: InteractorContext) throws {
     try context.engine.showAllPages(layout: context.interactor.verticalSizeClass == .compact ? .horizontal : .vertical)
   }
 
@@ -121,9 +133,49 @@ import UniformTypeIdentifiers
   }
 
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws {
+    try await enableScrollableCameraClamping(context, insets)
     try showAllPages(context)
-    try await context.engine.zoomToScene(insets)
     try context.engine.block.deselectAll()
+    let pageID = try context.engine.getPage(context.interactor.page)
+    try await context.engine.zoomToBlock(pageID, with: insets)
+  }
+
+  private func enableScrollableCameraClamping(_ context: InteractorContext, _ insets: EdgeInsets?) async throws {
+    let updatedInsets = insets ?? .init()
+    let paddingLeft = Float(updatedInsets.leading)
+    let paddingRight = Float(updatedInsets.trailing)
+    let paddingTop = Float(updatedInsets.top)
+    let paddingBottom = Float(updatedInsets.bottom)
+    let margin: Float = 16
+
+    guard let pages = try? context.engine.getSortedPages(), let firstPage = pages.first else {
+      return
+    }
+    try context.engine.scene.unstable_enableCameraZoomClamping([firstPage], minZoomLimit: 1,
+                                                               maxZoomLimit: 1,
+                                                               paddingLeft: paddingLeft,
+                                                               paddingTop: paddingTop,
+                                                               paddingRight: paddingRight,
+                                                               paddingBottom: paddingBottom)
+    try context.engine.scene.unstable_enableCameraPositionClamping(pages,
+                                                                   paddingLeft: paddingLeft - margin,
+                                                                   paddingTop: paddingTop - margin,
+                                                                   paddingRight: paddingRight - margin,
+                                                                   paddingBottom: paddingBottom - margin,
+                                                                   scaledPaddingLeft: margin,
+                                                                   scaledPaddingTop: margin,
+                                                                   scaledPaddingRight: margin,
+                                                                   scaledPaddingBottom: margin)
+  }
+
+  func disableCameraClamping(_ context: InteractorContext) throws {
+    let scene = try context.engine.getScene()
+    if try context.engine.scene.unstable_isCameraZoomClampingEnabled(scene) {
+      try context.engine.scene.unstable_disableCameraZoomClamping()
+    }
+    if try context.engine.scene.unstable_isCameraPositionClampingEnabled(scene) {
+      try context.engine.scene.unstable_disableCameraPositionClamping()
+    }
   }
 
   func isGestureActive(_: InteractorContext, _: Bool) throws {}

@@ -47,7 +47,7 @@ import SwiftUI
         Color(uiColor: .systemGroupedBackground)
           .ignoresSafeArea()
       }
-      .allowsHitTesting(interactor.isEditing)
+      .allowsHitTesting(interactor.isCanvasHitTestingEnabled)
       .navigationBarTitleDisplayMode(.inline)
       .navigationBarBackButtonHidden(isBackButtonHidden)
       .preference(key: BackButtonHiddenKey.self, value: isBackButtonHidden)

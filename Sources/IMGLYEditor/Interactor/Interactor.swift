@@ -64,8 +64,17 @@ import SwiftUI
   @Published private(set) var canUndo = false
   @Published private(set) var canRedo = false
   @Published private var isKeyboardPresented: Bool = false
+  @Published private(set) var isDefaultZoomLevel: Bool = false
 
-  var zoomModel = ZoomModel()
+  var zoomModel = ZoomModel() { didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) } }
+
+  var pageCount: Int {
+    (try? engine?.getSortedPages().count) ?? 0
+  }
+
+  var isCanvasHitTestingEnabled: Bool {
+    behavior.previewMode == .scrollable || isEditing
+  }
 
   var sceneMode: SceneMode? {
     // Make sure scene is loaded before calling `scene.getMode()` as it'll force unwrap the scene.
@@ -156,12 +165,16 @@ import SwiftUI
     sceneTask?.cancel()
     zoom.task?.cancel()
     exportTask?.cancel()
+    zoomLevelTask?.cancel()
+    historyTask?.cancel()
   }
 
   private func onAppear() {
     updateState()
     stateTask = observeState()
     eventTask = observeEvent()
+    zoomLevelTask = observeZoomLevel()
+    historyTask = observeHistory()
     keyboardPublisher.assign(to: &$isKeyboardPresented)
   }
 
@@ -175,6 +188,8 @@ import SwiftUI
     sceneTask?.cancel()
     zoom.task?.cancel()
     exportTask?.cancel()
+    zoomLevelTask?.cancel()
+    historyTask?.cancel()
     _engine = nil
   }
 
@@ -192,6 +207,8 @@ import SwiftUI
   private var sceneTask: Task<Void, Never>?
   private var zoom: (task: Task<Void, Never>?, toTextCursor: Bool) = (nil, false)
   private var exportTask: Task<Void, Never>?
+  private var zoomLevelTask: Task<Void, Never>?
+  private var historyTask: Task<Void, Never>?
 }
 
 // MARK: - Block queries
@@ -878,6 +895,7 @@ extension Interactor {
 
         fontLibrary.fonts = fonts
         isLoading = false
+        self.zoomLevelChanged(forceUpdate: true)
       } catch {
         handleErrorAndDismiss(error)
       }
@@ -950,16 +968,8 @@ extension Interactor {
             try engine?.zoomToSelectedText(insets, canvasHeight: canvasHeight)
           }
         } else {
-          if let engine {
-            let scene = try engine.getScene()
-            if try engine.scene.unstable_isCameraZoomClampingEnabled(scene) {
-              try engine.scene.unstable_disableCameraZoomClamping()
-            }
-            if try engine.scene.unstable_isCameraPositionClampingEnabled(scene) {
-              try engine.scene.unstable_disableCameraPositionClamping()
-            }
-            try await behavior.enablePreviewMode(.init(engine, self), insets)
-          }
+          guard let engine else { return }
+          try await behavior.enablePreviewMode(.init(engine, self), insets)
         }
       } catch {
         handleError(error)
@@ -1084,6 +1094,11 @@ private extension Interactor {
   }
 
   func enablePreviewMode() throws {
+    // Workaround as long as roles are present:
+    // Currently, the global scopes only apply to the "Creator" role so we
+    // temporarly switch to the "Creator" role to prevent selection of blocks.
+    try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .deny)
+    try engine?.editor.setSettingEnum("role", value: "Creator")
     // Call engine?.enablePreviewMode() in updateZoom to avoid page fill flickering.
     withAnimation(.default) {
       isEditing = false
@@ -1093,6 +1108,11 @@ private extension Interactor {
   }
 
   func enableEditMode() throws {
+    // Workaround as long as roles are present:
+    // Currently, the global scopes only apply to the "Creator" role so we
+    // temporarly switch to the "Creator" role to prevent selection of blocks.
+    try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .defer)
+    try engine?.editor.setSettingEnum("role", value: "Adopter")
     try getContext(behavior.enableEditMode)
     withAnimation(.default) {
       isEditing = true
@@ -1237,6 +1257,28 @@ private extension Interactor {
     }
   }
 
+  func observeZoomLevel() -> Task<Void, Never> {
+    Task {
+      guard let engine else {
+        return
+      }
+      for await _ in engine.scene.onZoomLevelChanged {
+        zoomLevelChanged()
+      }
+    }
+  }
+
+  func observeHistory() -> Task<Void, Never> {
+    Task {
+      guard let engine else {
+        return
+      }
+      for await _ in engine.editor.onHistoryUpdated {
+        historyChanged()
+      }
+    }
+  }
+
   func setEditMode(_ newValue: EditMode) {
     guard newValue != editMode else {
       return
@@ -1262,8 +1304,11 @@ private extension Interactor {
       return
     }
     do {
-      try engine.showPage(page)
-      try engine.editor.resetHistory()
+      try engine.showPage(
+        page,
+        historyResetBehavior: behavior.historyResetOnPageChange,
+        deselectAll: behavior.deselectOnPageChange
+      )
       try behavior.pageChanged(.init(engine, self))
       sheet.isPresented = false
     } catch {
@@ -1353,6 +1398,24 @@ private extension Interactor {
       } else {
         showCropSheet()
       }
+    }
+  }
+
+  func zoomLevelChanged(_ zoom: Float? = nil, forceUpdate: Bool = false) {
+    guard !isLoading || forceUpdate else { return }
+    if let engine, let zoomLevel = try? engine.scene.getZoom() {
+      let sceneZoom = (zoom ?? zoomModel.defaultZoomLevel)
+      isDefaultZoomLevel = sceneZoom == nil || sceneZoom == zoomLevel
+    }
+  }
+
+  func historyChanged() {
+    guard let engine else { return }
+    let pages = try? engine.getSortedPages()
+    let currentPage = try? engine.scene.getCurrentPage()
+    let pageIndex = pages?.firstIndex(where: { $0 == currentPage })
+    if let pageIndex, pageIndex != page {
+      page = pageIndex
     }
   }
 }
