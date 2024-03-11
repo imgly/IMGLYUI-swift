@@ -16,11 +16,12 @@ struct ShareSheet: ViewModifier {
   func shareSheet(
     _ item: Binding<ShareItem?>
   ) -> some View {
-    wrapped.popover(item: item) { item in
+    wrapped.sheet(item: item) { item in
       ShareView(item: item)
         .ignoresSafeArea()
         .imgly.presentationConfiguration(.adaptiveTiny)
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.hidden)
     }
   }
 }

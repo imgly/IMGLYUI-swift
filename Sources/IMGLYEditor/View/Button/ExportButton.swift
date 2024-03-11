@@ -9,8 +9,6 @@ import SwiftUI
   @_spi(Internal) public var body: some View {
     ActionButton(.export)
       .disabled(interactor.isLoading || interactor.isExporting)
-      .modifier(ExportSheet())
-      .modifier(ShareSheet())
   }
 }
 

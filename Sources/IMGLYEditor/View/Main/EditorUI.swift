@@ -94,6 +94,8 @@ import SwiftUI
           .imgly.errorAlert(isSheet: true)
       }
       .imgly.errorAlert(isSheet: false)
+      .modifier(ExportSheet())
+      .modifier(ShareSheet())
       .onAppear {
         let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
         interactor.loadScene(with: zoom.insets)
