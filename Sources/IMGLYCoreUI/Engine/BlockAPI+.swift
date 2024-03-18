@@ -441,7 +441,7 @@ extension MappedType {
 
     try set(outline, property: .key(.fillEnabled), value: false)
     try set(outline, property: .key(.strokeEnabled), value: true)
-    try set(outline, property: .key(.strokeColor), value: CGColor.white)
+    try set(outline, property: .key(.strokeColor), value: CGColor.imgly.white)
     try set(outline, property: .key(.strokeStyle), value: StrokeStyle.dotted)
     try set(outline, property: .key(.strokeWidth), value: 1.0)
     try set(outline, property: .key(.blendMode), value: BlendMode.difference)

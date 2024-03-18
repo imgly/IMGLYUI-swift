@@ -39,7 +39,7 @@ import SwiftUI
       .navigationTitle(localizedTitle)
       .toolbar {
         ToolbarItem {
-          HStack {
+          HStack(spacing: 16) {
             SearchButton()
             dismissButtonView
           }

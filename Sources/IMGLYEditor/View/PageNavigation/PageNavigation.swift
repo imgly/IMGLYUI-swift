@@ -60,7 +60,6 @@ struct PageNavigation: View {
       }
       .disabled(isLastPage)
     }
-    .padding(.top, -16)
     .labelStyle(.iconOnly)
   }
 }

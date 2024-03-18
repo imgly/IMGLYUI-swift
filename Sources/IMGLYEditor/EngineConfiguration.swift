@@ -54,7 +54,13 @@ public enum OnExport {
     -> Void
 
   public static let `default`: Callback = { engine, eventHandler in
-    let (data, contentType) = try await export(engine)
+    let data: Data, contentType: UTType
+    switch try engine.scene.getMode() {
+    case .design: (data, contentType) = try await export(engine)
+    case .video: (data, contentType) = try await exportVideo(engine, eventHandler)
+    @unknown default:
+      throw Error(errorDescription: "Unknown scene mode.")
+    }
     let url = FileManager.default.temporaryDirectory.appendingPathComponent("Export", conformingTo: contentType)
     try data.write(to: url, options: [.atomic])
     eventHandler.send(.shareFile(url))
@@ -74,6 +80,28 @@ public enum OnExport {
     }
     return (data, mimeType.uniformType)
   }
+
+  @MainActor
+  public static func exportVideo(_ engine: Engine, _ eventHandler: EditorEventHandler) async throws -> (Data, UTType) {
+    guard let page = try engine.scene.getCurrentPage() else {
+      throw Error(errorDescription: "No page found.")
+    }
+    eventHandler.send(.exportProgress(.relative(0)))
+    let mimeType: MIMEType = .mp4
+    let stream = try await engine.block.exportVideo(page, mimeType: mimeType) { _ in }
+    for try await export in stream {
+      try Task.checkCancellation()
+      switch export {
+      case let .progress(_, encodedFrames, totalFrames):
+        let percentage = Float(encodedFrames) / Float(totalFrames)
+        eventHandler.send(.exportProgress(.relative(percentage)))
+      case let .finished(video: videoData):
+        return (videoData, mimeType.uniformType)
+      }
+    }
+    try Task.checkCancellation()
+    throw Error(errorDescription: "Could not export.")
+  }
 }
 
 public enum OnUpload {
@@ -90,8 +118,8 @@ public enum OnUpload {
 
 // MARK: - Internal interface
 
-struct EngineCallbacks: Sendable {
-  let onCreate: OnCreate.Callback
+@_spi(Internal) public struct EngineCallbacks: Sendable {
+  @_spi(Internal) public let onCreate: OnCreate.Callback
   let onExport: OnExport.Callback
   let onUpload: OnUpload.Callback
 
@@ -106,7 +134,7 @@ struct EngineCallbacks: Sendable {
   }
 }
 
-struct EngineConfiguration: Sendable {
-  let settings: EngineSettings
-  let callbacks: EngineCallbacks
+@_spi(Internal) public struct EngineConfiguration: Sendable {
+  @_spi(Internal) public let settings: EngineSettings
+  @_spi(Internal) public let callbacks: EngineCallbacks
 }

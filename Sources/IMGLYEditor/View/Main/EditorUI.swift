@@ -1,17 +1,20 @@
 @_spi(Internal) import IMGLYCoreUI
 import SwiftUI
+@_spi(Advanced) import SwiftUIIntrospect
 
 @_spi(Internal) public struct EditorUI: View {
   @EnvironmentObject private var interactor: Interactor
 
   @Environment(\.layoutDirection) private var layoutDirection
 
-  @_spi(Internal) public init() {}
+  @_spi(Internal) public init(zoomPadding: CGFloat = 16) {
+    self.zoomPadding = zoomPadding
+  }
 
   @State private var canvasGeometry: Geometry?
   @State private var sheetGeometry: Geometry?
   private var sheetGeometryIfPresented: Geometry? { interactor.sheet.isPresented ? sheetGeometry : nil }
-  private let zoomPadding: CGFloat = 16
+  private let zoomPadding: CGFloat
 
   private func zoomParameters(canvasGeometry: Geometry?,
                               sheetGeometry: Geometry?) -> (insets: EdgeInsets?, canvasHeight: CGFloat) {
@@ -51,10 +54,14 @@ import SwiftUI
       .navigationBarTitleDisplayMode(.inline)
       .navigationBarBackButtonHidden(isBackButtonHidden)
       .preference(key: BackButtonHiddenKey.self, value: isBackButtonHidden)
-      .introspectNavigationController { navigationController in
-        // Disable swipe-back gesture and restore `onDisappear`
-        interactivePopGestureRecognizer = navigationController.interactivePopGestureRecognizer
-        interactivePopGestureRecognizer?.isEnabled = false
+      .introspect(.navigationStack, on: .iOS(.v16...), scope: .ancestor) { navigationController in
+        // Delay mutation until the next runloop.
+        // https://github.com/siteline/SwiftUI-Introspect/issues/212#issuecomment-1590130815
+        DispatchQueue.main.async {
+          // Disable swipe-back gesture and restore `onDisappear`
+          interactivePopGestureRecognizer = navigationController.interactivePopGestureRecognizer
+          interactivePopGestureRecognizer?.isEnabled = false
+        }
       }
       .toolbarBackground(.visible, for: .navigationBar)
       .onPreferenceChange(CanvasGeometryKey.self) { newValue in

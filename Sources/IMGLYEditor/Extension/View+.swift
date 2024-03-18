@@ -1,5 +1,5 @@
-import Introspect
 import SwiftUI
+@_spi(Advanced) import SwiftUIIntrospect
 @_spi(Internal) import IMGLYCore
 
 // MARK: - Public interface
@@ -49,8 +49,14 @@ extension IMGLY where Wrapped: View {
     wrapped.environment(\.imglySelection, id)
   }
 
-  func canvasAction(anchor: UnitPoint = .top, @ViewBuilder action: @escaping () -> some View) -> some View {
-    wrapped.modifier(CanvasAction(anchor: anchor, action: action))
+  func canvasAction(anchor: UnitPoint = .top, topSafeAreaInset: CGFloat, bottomSafeAreaInset: CGFloat,
+                    @ViewBuilder action: @escaping () -> some View) -> some View {
+    wrapped.modifier(CanvasAction(
+      anchor: anchor,
+      topSafeAreaInset: topSafeAreaInset,
+      bottomSafeAreaInset: bottomSafeAreaInset,
+      action: action
+    ))
   }
 
   func errorAlert(isSheet: Bool) -> some View {
@@ -81,7 +87,7 @@ extension IMGLY where Wrapped: View {
 
   @MainActor @ViewBuilder
   private func legacyPresentationConfiguration(_ largestUndimmedDetent: PresentationDetent?) -> some View {
-    wrapped.introspectViewController { viewController in
+    wrapped.introspect(.viewController, on: .iOS(.v16...), scope: .ancestor) { viewController in
       guard let controller = viewController.sheetPresentationController else {
         return
       }

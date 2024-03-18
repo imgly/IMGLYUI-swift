@@ -34,7 +34,7 @@ struct FillColorImage: View {
   var body: some View {
     ZStack {
       Image(systemName: "circle")
-        .foregroundColor(.secondary)
+        .foregroundColor(Color(uiColor: .separator))
         .scaleEffect(1.05)
       Image(systemName: "circle.fill")
         .foregroundStyle(.transparentColorPattern)

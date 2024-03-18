@@ -12,7 +12,12 @@ struct FillColorIcon: View {
 
       FillColorImage(
         isEnabled: isEnabled.wrappedValue,
-        colors: interactor.bind(id, property: .key(.fillSolidColor), default: [.black], getter: backgroundColorGetter)
+        colors: interactor.bind(
+          id,
+          property: .key(.fillSolidColor),
+          default: [.imgly.black],
+          getter: backgroundColorGetter
+        )
       )
     }
   }
@@ -28,7 +33,7 @@ struct FillColorIcon: View {
       let colors = colorStops.compactMap(\.color.cgColor)
       return colors
     }
-    return [.black]
+    return [.imgly.black]
   }
 }
 
@@ -39,7 +44,7 @@ struct StrokeColorIcon: View {
   var body: some View {
     if interactor.hasStroke(id) {
       let isEnabled: Binding<Bool> = interactor.bind(id, property: .key(.strokeEnabled), default: false)
-      let color: Binding<CGColor> = interactor.bind(id, property: .key(.strokeColor), default: .black)
+      let color: Binding<CGColor> = interactor.bind(id, property: .key(.strokeColor), default: .imgly.black)
 
       StrokeColorImage(isEnabled: isEnabled.wrappedValue, color: color)
     }

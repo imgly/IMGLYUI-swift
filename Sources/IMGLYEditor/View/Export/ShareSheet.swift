@@ -7,16 +7,17 @@ struct ShareSheet: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-      .imgly.shareSheet($interactor.shareItem)
+      .imgly.shareSheet(item: $interactor.shareItem)
   }
 }
 
 @_spi(Internal) public extension IMGLY where Wrapped: View {
   @MainActor
   func shareSheet(
-    _ item: Binding<ShareItem?>
+    item: Binding<ShareItem?>,
+    onDismiss: (() -> Void)? = nil
   ) -> some View {
-    wrapped.sheet(item: item) { item in
+    wrapped.sheet(item: item, onDismiss: onDismiss) { item in
       ShareView(item: item)
         .ignoresSafeArea()
         .imgly.presentationConfiguration(.adaptiveTiny)

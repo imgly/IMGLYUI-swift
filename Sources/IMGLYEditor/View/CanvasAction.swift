@@ -4,6 +4,9 @@ struct CanvasAction<Action>: ViewModifier where Action: View {
   @EnvironmentObject private var interactor: Interactor
 
   let anchor: UnitPoint
+  let topSafeAreaInset: CGFloat
+  let bottomSafeAreaInset: CGFloat
+
   @ViewBuilder let action: Action
 
   @GestureState private var isDragging = false
@@ -19,6 +22,7 @@ struct CanvasAction<Action>: ViewModifier where Action: View {
   }
 
   @Environment(\.layoutDirection) private var layoutDirection
+  @State private var actionViewSize: CGSize = .zero
 
   /// Compute safe rect because `interactor.selection.boundingBox` does not contain the gizmos.
   private func safeRect(for rect: CGRect) -> CGRect {
@@ -54,11 +58,30 @@ struct CanvasAction<Action>: ViewModifier where Action: View {
     return safeRect
   }
 
-  private func anchor(for rect: CGRect, _ size: CGSize) -> CGPoint {
-    let anchorX = layoutDirection == .leftToRight ? anchor.x : 1 - anchor.x
-    let x = rect.minX + (anchorX * rect.width)
-    let y = rect.minY + (anchor.y * rect.height)
-    return CGPoint(x: layoutDirection == .leftToRight ? x : size.width - x, y: y)
+  private func anchor(for rect: CGRect, in screenSize: CGSize) -> CGPoint {
+    let navbarHeight: CGFloat = topSafeAreaInset + 22.5
+    let edgePadding: CGFloat = 10.0
+    let actionViewSize = actionViewSize
+
+    // Calculate initial anchor points
+    let adjustedAnchorX = layoutDirection == .leftToRight ? anchor.x : 1 - anchor.x
+    var x = rect.minX + (adjustedAnchorX * rect.width)
+    var y = rect.minY + (anchor.y * rect.height)
+
+    // Adjust y to avoid overlap with the navbar and the bottom edge
+    let minY = navbarHeight + edgePadding + actionViewSize.height
+    if y < minY {
+      // Ensure the action view does not go beyond the screen's bottom edge
+      if rect.maxY + actionViewSize.height + edgePadding + bottomSafeAreaInset > screenSize.height {
+        y = minY
+      } else {
+        y = rect.maxY + actionViewSize.height / 2 + edgePadding
+      }
+    }
+
+    // Adjust x to stay within the screen's left and right edges
+    x = max(min(x, screenSize.width - edgePadding - actionViewSize.width / 2), edgePadding + actionViewSize.width / 2)
+    return CGPoint(x: x, y: y)
   }
 
   private let viewDebugging = false
@@ -93,7 +116,13 @@ struct CanvasAction<Action>: ViewModifier where Action: View {
           let rect = selection.boundingBox
           let safeRect = safeRect(for: rect)
           action
-            .position(anchor(for: safeRect, geometry.size))
+            .background(GeometryReader { geo -> Color in
+              DispatchQueue.main.async {
+                actionViewSize = geo.size
+              }
+              return Color.clear
+            })
+            .position(anchor(for: safeRect, in: geometry.size))
             .allowsHitTesting(showAction)
             .disabled(!showAction)
             .opacity(showAction ? 1 : 0)

@@ -28,6 +28,14 @@ private struct Random: RandomNumberGenerator {
 
   // MARK: - Scene
 
+  var sceneMode: SceneMode? {
+    // Make sure scene is loaded before calling `scene.getMode()` as it'll force unwrap the scene.
+    guard (try? engine.scene.get()) != nil else {
+      return nil
+    }
+    return try? engine.scene.getMode()
+  }
+
   static let outlineBlockName = "always-on-top-page-outline"
 
   func showOutline(_ isVisible: Bool) throws {
@@ -189,9 +197,12 @@ private struct Random: RandomNumberGenerator {
     }
 
     let allPages = index == nil
-    try engine.block.set(getStack(), property: .key(.stackAxis), value: axis)
-    if let spacing {
-      try engine.block.set(getStack(), property: .key(.stackSpacing), value: spacing)
+
+    if sceneMode != .video {
+      try engine.block.set(getStack(), property: .key(.stackAxis), value: axis)
+      if let spacing {
+        try engine.block.set(getStack(), property: .key(.stackSpacing), value: spacing)
+      }
     }
 
     let pages = try getSortedPages()
@@ -278,11 +289,8 @@ private struct Random: RandomNumberGenerator {
     let editMode = engine.editor.getEditMode()
     var blocks = [page]
 
-    if let selection {
-      let selectionType = try engine.block.getType(selection)
-      if selectionType == DesignBlockType.text.rawValue {
-        blocks.append(selection)
-      }
+    if let selection, editMode == .text {
+      blocks.append(selection)
     }
 
     // If the zoom level is at 100%, we need to zoom clamp the page.
@@ -407,24 +415,26 @@ private struct Random: RandomNumberGenerator {
     try engine.block.findAllSelected().forEach {
       let duplicate = try engine.block.duplicate($0)
 
-      // Remember values
-      let positionModeX = try engine.block.getPositionXMode($0)
-      let positionModeY = try engine.block.getPositionYMode($0)
+      if try !engine.block.isTransformLocked($0) {
+        // Remember values
+        let positionModeX = try engine.block.getPositionXMode($0)
+        let positionModeY = try engine.block.getPositionYMode($0)
 
-      try engine.block.overrideAndRestore($0, scope: .key(.layerMove)) {
-        try engine.block.setPositionXMode($0, mode: .absolute)
-        let x = try engine.block.getPositionX($0)
-        try engine.block.setPositionYMode($0, mode: .absolute)
-        let y = try engine.block.getPositionY($0)
+        try engine.block.overrideAndRestore($0, scope: .key(.layerMove)) {
+          try engine.block.setPositionXMode($0, mode: .absolute)
+          let x = try engine.block.getPositionX($0)
+          try engine.block.setPositionYMode($0, mode: .absolute)
+          let y = try engine.block.getPositionY($0)
 
-        try engine.block.setPositionXMode(duplicate, mode: .absolute)
-        try engine.block.setPositionX(duplicate, value: x + 5)
-        try engine.block.setPositionYMode(duplicate, mode: .absolute)
-        try engine.block.setPositionY(duplicate, value: y - 5)
+          try engine.block.setPositionXMode(duplicate, mode: .absolute)
+          try engine.block.setPositionX(duplicate, value: x + 5)
+          try engine.block.setPositionYMode(duplicate, mode: .absolute)
+          try engine.block.setPositionY(duplicate, value: y - 5)
 
-        // Restore values
-        try engine.block.setPositionXMode($0, mode: positionModeX)
-        try engine.block.setPositionYMode($0, mode: positionModeY)
+          // Restore values
+          try engine.block.setPositionXMode($0, mode: positionModeX)
+          try engine.block.setPositionYMode($0, mode: positionModeY)
+        }
       }
 
       if try engine.block.getKind(duplicate) == .key(.sticker) {
@@ -451,10 +461,12 @@ private struct Random: RandomNumberGenerator {
       // Delay real deletion, e.g., to wait for sheet disappear animations
       // to complete but fake deletion in the meantime.
       try ids.forEach {
-        try engine.block.overrideAndRestore($0, scope: .key(.layerOpacity)) {
-          try engine.block.setOpacity($0, value: 0)
+        if try engine.block.hasOpacity($0) {
+          try engine.block.overrideAndRestore($0, scope: .key(.layerOpacity)) {
+            try engine.block.setOpacity($0, value: 0)
+          }
+          try engine.block.setSelected($0, selected: false)
         }
-        try engine.block.setSelected($0, selected: false)
       }
       Task {
         try await Task.sleep(nanoseconds: nanoseconds)
@@ -573,7 +585,15 @@ private struct Random: RandomNumberGenerator {
   }
 
   func getSortedPages() throws -> [DesignBlockID] {
-    try engine.block.getChildren(getStack())
+    guard (try? engine.scene.get()) != nil else { return [] }
+    switch sceneMode {
+    case .video:
+      return try engine.scene.getPages()
+    case .design:
+      return try engine.block.getChildren(getStack())
+    default:
+      fatalError("Unknown scene mode.")
+    }
   }
 
   func getScene() throws -> DesignBlockID {

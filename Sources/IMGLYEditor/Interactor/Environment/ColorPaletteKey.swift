@@ -3,13 +3,13 @@ import SwiftUI
 
 struct ColorPaletteKey: EnvironmentKey {
   static let defaultValue: [NamedColor] = [
-    .init("Blue", .blue),
-    .init("Green", .green),
-    .init("Yellow", .yellow),
-    .init("Red", .red),
-    .init("Black", .black),
-    .init("White", .white),
-    .init("Gray", .gray)
+    .init("Blue", .imgly.blue),
+    .init("Green", .imgly.green),
+    .init("Yellow", .imgly.yellow),
+    .init("Red", .imgly.red),
+    .init("Black", .imgly.black),
+    .init("White", .imgly.white),
+    .init("Gray", .imgly.gray)
   ]
 }
 

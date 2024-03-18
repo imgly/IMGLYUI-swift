@@ -7,7 +7,7 @@ struct ColorSheet: View {
   @Environment(\.imglySelection) private var id
 
   var fillColor: Binding<CGColor> {
-    interactor.bind(id, property: .key(.fillSolidColor), default: .black,
+    interactor.bind(id, property: .key(.fillSolidColor), default: .imgly.black,
                     setter: Interactor.Setter.set(overrideScopes: [.key(.fillChange), .key(.strokeChange)]),
                     completion: nil)
   }

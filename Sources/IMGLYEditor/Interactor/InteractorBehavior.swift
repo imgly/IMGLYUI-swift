@@ -19,14 +19,32 @@ import SwiftUI
   case font(_ id: DesignBlockID, fontFamilies: [String]? = nil)
   case fontSize(_ id: DesignBlockID)
   case color(_ id: DesignBlockID, colorPalette: [NamedColor]? = nil)
+  case reorder
+
+  case openCamera
+  case openCameraRoll
+  case openBackgroundClipLibrary
+  case openOverlayLibrary
+  case addText
+  case addSticker
+  case addAudio
 
   var sheetMode: SheetMode {
     switch self {
     case .fab: return .add
     case .selectionColors: return .selectionColors
+    case .reorder: return .reorder
     case let .font(id, families): return .font(id, families)
     case let .fontSize(id): return .fontSize(id)
     case let .color(id, palette): return .color(id, palette)
+
+    case .openCamera: return .openCamera
+    case .openCameraRoll: return .openPhotoRoll
+    case .openBackgroundClipLibrary: return .openBackgroundClipLibrary
+    case .openOverlayLibrary: return .openOverlayLibrary
+    case .addText: return .addText
+    case .addSticker: return .addSticker
+    case .addAudio: return .addAudio
     }
   }
 }

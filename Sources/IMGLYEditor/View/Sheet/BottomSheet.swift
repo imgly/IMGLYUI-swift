@@ -1,5 +1,5 @@
-import Introspect
 import SwiftUI
+@_spi(Advanced) import SwiftUIIntrospect
 @_spi(Internal) import IMGLYCoreUI
 
 struct BottomSheet<Content: View>: View {
@@ -24,11 +24,6 @@ struct BottomSheet<Content: View>: View {
     NavigationView {
       content
         .navigationBarTitleDisplayMode(.inline)
-        .introspectNavigationController { navigationController in
-          let navigationBar = navigationController.navigationBar
-          // Fix cases when `.navigationBarTitleDisplayMode(.inline)` does not work.
-          navigationBar.prefersLargeTitles = false
-        }
         .navigationTitle(title)
         .toolbar {
           ToolbarItem(placement: .navigationBarTrailing) {
@@ -38,6 +33,11 @@ struct BottomSheet<Content: View>: View {
         }
     }
     .navigationViewStyle(.stack)
+    .introspect(.navigationStack, on: .iOS(.v16...)) { navigationController in
+      let navigationBar = navigationController.navigationBar
+      // Fix cases when `.navigationBarTitleDisplayMode(.inline)` does not work.
+      navigationBar.prefersLargeTitles = false
+    }
   }
 }
 

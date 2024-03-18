@@ -53,13 +53,13 @@ struct ColorPropertyButton: View {
 }
 
 struct ColorPropertyButton_Previews: PreviewProvider {
-  @State static var color: CGColor = .blue
+  @State static var color: CGColor = .imgly.blue
 
   static var previews: some View {
     HStack {
-      ColorPropertyButton(name: "Blue", color: .blue, isEnabled: true, selection: $color)
-      ColorPropertyButton(name: "Blue", color: .blue, isEnabled: false, selection: $color)
-      ColorPropertyButton(name: "Yellow", color: .yellow, isEnabled: true, selection: $color)
+      ColorPropertyButton(name: "Blue", color: .imgly.blue, isEnabled: true, selection: $color)
+      ColorPropertyButton(name: "Blue", color: .imgly.blue, isEnabled: false, selection: $color)
+      ColorPropertyButton(name: "Yellow", color: .imgly.yellow, isEnabled: true, selection: $color)
     }
     .labelStyle(.iconOnly)
   }

@@ -14,6 +14,7 @@ struct ImageSheet: View {
       case .filter: FilterOptions()
       case .blur: BlurOptions()
       case .effect: FXEffectOptions()
+      case .reorder: ReorderOptions()
       default: EmptyView()
       }
     }

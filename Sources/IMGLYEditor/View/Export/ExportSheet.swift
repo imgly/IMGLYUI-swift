@@ -19,7 +19,6 @@ struct ExportSheet: ViewModifier {
       } content: {
         if let state = interactor.export.state {
           ExportView(state: state)
-            .imgly.presentationConfiguration(.adaptiveTiny)
             .presentationDetents([.medium])
         }
       }

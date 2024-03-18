@@ -3,6 +3,7 @@ import Foundation
 @_spi(Internal) public typealias Property = RawRepresentableKey<PropertyKey>
 
 @_spi(Internal) public enum PropertyKey: String {
+  case fillColorValue = "fill/color/value"
   case fillEnabled = "fill/enabled"
   case fillSolidColor = "fill/solid/color"
   case fillGradientColors = "fill/gradient/colors"
@@ -28,6 +29,8 @@ import Foundation
   case heightMode = "height/mode"
 
   case lastFrameHeight = "lastFrame/height"
+
+  case playbackPlaying = "playback/playing"
 
   case textFontFileURI = "text/fontFileUri"
   case textFontSize = "text/fontSize"

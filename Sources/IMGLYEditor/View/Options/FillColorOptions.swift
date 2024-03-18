@@ -20,7 +20,7 @@ struct FillColorOptions: View {
         let colorBinding = interactor.bind(
           id,
           property: .key(.fillSolidColor),
-          default: .black,
+          default: .imgly.black,
           getter: temporaryColorGetter,
           completion: Interactor.Completion.set(property: .key(.fillEnabled), value: true)
         )
@@ -40,7 +40,7 @@ struct FillColorOptions: View {
     do {
       return try engine.block.get(id, property: property)
     } catch {
-      return .black
+      return .imgly.black
     }
   }
 }
@@ -52,7 +52,7 @@ struct GradientOptions: View {
   var body: some View {
     if interactor.hasGradientFill(id) {
       ColorOptions(title: "Gradient Start Color",
-                   color: gradientBinding(.start, defaultValue: .black),
+                   color: gradientBinding(.start, defaultValue: .imgly.black),
                    addUndoStep: interactor.addUndoStep)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Gradient Start Color")
@@ -64,7 +64,7 @@ struct GradientOptions: View {
       }
       .accessibilityLabel("Gradient Angle")
       ColorOptions(title: "Gradient End Color",
-                   color: gradientBinding(.end, defaultValue: .black),
+                   color: gradientBinding(.end, defaultValue: .imgly.black),
                    addUndoStep: interactor.addUndoStep)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Gradient End Color")

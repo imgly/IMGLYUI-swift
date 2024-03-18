@@ -6,8 +6,10 @@ let package = Package(
   platforms: [.iOS(.v16)],
   products: [
     // Comment out these products for development to fix SwiftUI previews inside this package
+    .library(name: "IMGLYCamera", targets: ["IMGLYCamera"]),
     .library(name: "IMGLYEditor", targets: ["IMGLYEditor"]),
     .library(name: "IMGLYDesignEditor", targets: ["IMGLYDesignEditor"]),
+    .library(name: "IMGLYVideoEditor", targets: ["IMGLYVideoEditor"]),
     .library(name: "IMGLYApparelEditor", targets: ["IMGLYApparelEditor"]),
     .library(name: "IMGLYPostcardEditor", targets: ["IMGLYPostcardEditor"]),
 
@@ -16,15 +18,17 @@ let package = Package(
              targets: [
                "IMGLYCore",
                "IMGLYCoreUI",
+               "IMGLYCamera",
                "IMGLYEditor",
                "IMGLYDesignEditor",
+               "IMGLYVideoEditor",
                "IMGLYApparelEditor",
                "IMGLYPostcardEditor"
              ])
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.22.0"),
-    .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", exact: "0.1.4"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.23.0-rc.0"),
+    .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", exact: "1.1.2"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", exact: "7.6.2")
   ],
   targets: [
@@ -36,16 +40,25 @@ let package = Package(
       name: "IMGLYCoreUI",
       dependencies: [
         .target(name: "IMGLYCore"),
-        .product(name: "Introspect", package: "SwiftUI-Introspect"),
+        .product(name: "SwiftUIIntrospect", package: "SwiftUI-Introspect"),
         .product(name: "Kingfisher", package: "Kingfisher")
       ]
     ),
     .target(
-      name: "IMGLYEditor",
+      name: "IMGLYCamera",
       dependencies: [.target(name: "IMGLYCoreUI")]
     ),
     .target(
+      name: "IMGLYEditor",
+      dependencies: [.target(name: "IMGLYCamera")]
+    ),
+    .target(
       name: "IMGLYDesignEditor",
+      dependencies: [.target(name: "IMGLYEditor")],
+      resources: [.process("Resources")]
+    ),
+    .target(
+      name: "IMGLYVideoEditor",
       dependencies: [.target(name: "IMGLYEditor")],
       resources: [.process("Resources")]
     ),

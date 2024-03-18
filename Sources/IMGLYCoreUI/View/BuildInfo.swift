@@ -1,6 +1,6 @@
 @_spi(Internal) import IMGLYCore
-import Introspect
 import SwiftUI
+@_spi(Advanced) import SwiftUIIntrospect
 
 @MainActor
 struct BuildInfo: View {
@@ -190,7 +190,7 @@ private struct SwitchBranchSheet: View {
             .submitLabel(.search)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled(true)
-            .introspectTextField {
+            .introspect(.textField, on: .iOS(.v16...)) {
               $0.clearButtonMode = .whileEditing
             }
             .onReceive(branch.$value) { newValue in

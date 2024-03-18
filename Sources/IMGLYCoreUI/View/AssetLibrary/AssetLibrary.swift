@@ -19,12 +19,24 @@ public protocol AssetLibrary: View {
   associatedtype VideosTab: View
   associatedtype AudioTab: View
   associatedtype ImagesTab: View
+  associatedtype TextTab: View
+  associatedtype ShapesTab: View
   associatedtype StickersTab: View
 
   var videosTab: VideosTab { get }
   var audioTab: AudioTab { get }
   var imagesTab: ImagesTab { get }
+  var textTab: TextTab { get }
+  var shapesTab: ShapesTab { get }
   var stickersTab: StickersTab { get }
+
+  associatedtype ClipsTab: View
+  associatedtype OverlaysTab: View
+  associatedtype StickersAndShapesTab: View
+
+  var clipsTab: ClipsTab { get }
+  var overlaysTab: OverlaysTab { get }
+  var stickersAndShapesTab: StickersAndShapesTab { get }
 }
 
 public extension AssetLibrarySource<UploadGrid, AssetPreview, UploadButton> {

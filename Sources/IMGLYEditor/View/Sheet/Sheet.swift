@@ -8,6 +8,7 @@ struct Sheet: View {
   @Environment(\.verticalSizeClass) private var verticalSizeClass
   @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
 
+  // swiftlint:disable:next cyclomatic_complexity
   @ViewBuilder func sheet(_ type: SheetType) -> some View {
     switch type {
     case .image: ImageSheet()
@@ -20,6 +21,10 @@ struct Sheet: View {
     case .fontSize: FontSizeSheet()
     case .color: ColorSheet()
     case .page: PageSheet()
+    case .video: VideoSheet()
+    case .audio: AudioSheet()
+    case .reorder: ReorderSheet()
+    case .backgroundTrackLibrary, .overlayLibrary, .stickerShapesLibrary: EmptyView()
     }
   }
 
@@ -42,10 +47,21 @@ struct Sheet: View {
   var body: some View {
     Group {
       switch sheet.mode {
-      case .add: assetLibrary
+      case .add:
+        switch sheet.type {
+        case .backgroundTrackLibrary: assetLibrary.clipsTab
+        case .overlayLibrary: assetLibrary.overlaysTab
+        case .stickerShapesLibrary: assetLibrary.stickersAndShapesTab
+        case .audio: assetLibrary.audioTab
+        case .text: assetLibrary.textTab
+        default: assetLibrary
+        }
+
       case .replace:
         Group {
           switch sheet.type {
+          case .video: assetLibrary.videosTab
+          case .audio: assetLibrary.audioTab
           case .image: assetLibrary.imagesTab
           case .sticker: assetLibrary.stickersTab
           default: EmptyView()

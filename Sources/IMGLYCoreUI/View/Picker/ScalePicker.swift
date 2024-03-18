@@ -1,6 +1,6 @@
 @_spi(Internal) import IMGLYCore
-import Introspect
 import SwiftUI
+@_spi(Advanced) import SwiftUIIntrospect
 
 /// A scale picker a.k.a. sliding ruler that picks values at its center position. A cursor view is not part of it for
 /// best versatility. A cursor can be added with a centered overlay. See `MeasurementScalePicker` or
@@ -61,6 +61,7 @@ import SwiftUI
     Capsule().frame(width: tickWidth, height: 2)
   }
 
+  // We don’t use Introspect’s @Weak property wrapper here because it releases too quickly
   @State var scrollView: UIScrollView?
   @State var scrollViewWidth: CGFloat?
   @State var contentGeometry: Geometry?
@@ -208,20 +209,27 @@ import SwiftUI
         .padding([.leading], contentPaddingLeading)
         .padding([.trailing], contentPaddingTrailing)
         .frame(height: height)
-        .introspectScrollView {
-          $0.decelerationRate = .fast
-          // Workaround to precisely set `contentOffset`.
-          scrollView = $0
-          // Workaround since `.simultaneousGesture(DragGesture().updating{}.onEnded{})` are not triggered on ended.
-          $0.panGestureRecognizer.addTarget(gestureHelper,
-                                            action: #selector(GestureHelper.handleGesture(_:)))
-        }
         .background {
           GeometryReader { geo in
             Color.clear
               .preference(key: ContentGeometryKey.self, value: Geometry(geo, rulerCoordinateSpace))
           }
         }
+    }
+    .introspect(.scrollView, on: .iOS(.v16...)) { newScrollView in
+      // Check if we already have a reference to this UIScrollView
+      guard newScrollView !== scrollView else { return }
+      newScrollView.decelerationRate = .fast
+      // Workaround since `.simultaneousGesture(DragGesture().updating{}.onEnded{})` are not triggered on ended.
+      newScrollView.panGestureRecognizer.addTarget(gestureHelper,
+                                                   action: #selector(GestureHelper.handleGesture(_:)))
+
+      // Delay mutation until the next runloop.
+      // https://github.com/siteline/SwiftUI-Introspect/issues/212#issuecomment-1590130815
+      DispatchQueue.main.async {
+        // Workaround to precisely set `contentOffset`.
+        scrollView = newScrollView
+      }
     }
     .coordinateSpace(name: rulerCoordinateSpaceName)
     .onPreferenceChange(ContentGeometryKey.self) { contentGeometry = $0 }

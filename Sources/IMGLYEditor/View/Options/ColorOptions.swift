@@ -83,7 +83,7 @@ struct ColorOptions: View {
 }
 
 struct ColorOptions_Previews: PreviewProvider {
-  @State static var color: CGColor = .blue
+  @State static var color: CGColor = .imgly.blue
 
   static var previews: some View {
     VStack {

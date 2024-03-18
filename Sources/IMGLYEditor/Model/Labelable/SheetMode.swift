@@ -4,10 +4,13 @@ import SwiftUI
 enum SheetMode: Labelable, IdentifiableByHash {
   case add, replace, edit, format, options, crop, fillAndStroke, layer, enterGroup, selectGroup, filter, adjustments,
        effect, blur
+  case openCamera, openPhotoRoll, openBackgroundClipLibrary, openOverlayLibrary, addText, addSticker, addAudio
   case selectionColors
   case font(_ id: Interactor.BlockID?, _ fontFamilies: [String]?)
   case fontSize(_ id: Interactor.BlockID?)
   case color(_ id: Interactor.BlockID?, _ colorPalette: [NamedColor]?)
+  case reorder, split, volume, delete, duplicate
+  case attachToBackground, detachFromBackground
 
   var pinnedBlockID: Interactor.BlockID? {
     switch self {
@@ -52,6 +55,20 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .adjustments: return "Adjustments"
     case .effect: return "Effect"
     case .blur: return "Blur"
+    case .reorder: return "Reorder"
+    case .split: return "Split"
+    case .volume: return "Volume"
+    case .delete: return "Delete"
+    case .duplicate: return "Duplicate"
+    case .attachToBackground: return "As Clip"
+    case .detachFromBackground: return "As Overlay"
+    case .openCamera: return "Camera"
+    case .openPhotoRoll: return "Photo Roll"
+    case .openBackgroundClipLibrary: return "Clip"
+    case .openOverlayLibrary: return "Overlay"
+    case .addText: return "Text"
+    case .addSticker: return "Sticker"
+    case .addAudio: return "Audio"
     }
   }
 
@@ -60,7 +77,7 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .add: return "plus"
     case .replace: return "arrow.left.arrow.right.square"
     case .edit: return "keyboard"
-    case .format: return "textformat"
+    case .format: return "textformat.alt"
     case .options: return "slider.horizontal.below.rectangle"
     case .crop: return "crop.rotate"
     case .fillAndStroke: return nil
@@ -72,13 +89,31 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .effect: return "fx"
     case .blur: return "aqi.medium"
     case .selectionColors, .font, .fontSize, .color: return nil
+    case .reorder: return "rectangle.portrait.arrowtriangle.2.outward"
+    case .split: return "square.and.line.vertical.and.square"
+    case .volume: return "speaker.wave.3.fill"
+    case .delete: return "trash"
+    case .duplicate: return "plus.square.on.square"
+    case .attachToBackground: return "custom.as.clip"
+    case .detachFromBackground: return "custom.as.overlay"
+
+    case .openCamera: return "custom.camera.fill.badge.plus"
+    case .openPhotoRoll: return "custom.photo.fill.on.rectangle.fill.badge.plus"
+    case .openBackgroundClipLibrary: return "custom.add.clip"
+    case .openOverlayLibrary: return "custom.film.stack.badge.plus"
+    case .addText: return "custom.textformat.alt.badge.plus"
+    case .addSticker: return "custom.face.smiling.badge.plus"
+    case .addAudio: return "custom.audio.badge.plus"
     }
   }
 
   var isSystemImage: Bool {
     switch self {
-    case .enterGroup, .selectGroup: return false
-    default: return true
+    case .enterGroup, .selectGroup, .attachToBackground, .detachFromBackground, .openCamera, .openPhotoRoll,
+         .openBackgroundClipLibrary, .openOverlayLibrary, .addText, .addSticker, .addAudio:
+      return false
+    default:
+      return true
     }
   }
 

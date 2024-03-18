@@ -50,11 +50,11 @@ struct LayerOptions: View {
         .textCase(.none)
       }
       Section {
-        if interactor.isAllowed(id, .duplicate) {
+        if interactor.isAllowed(id, Action.duplicate) {
           ActionButton(.duplicate)
             .foregroundColor(.primary)
         }
-        if interactor.isAllowed(id, .delete) {
+        if interactor.isAllowed(id, Action.delete) {
           ActionButton(.delete)
             .foregroundColor(.red)
         }

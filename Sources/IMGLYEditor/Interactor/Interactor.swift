@@ -1,3 +1,4 @@
+import CoreMedia
 @_spi(Internal) import IMGLYCore
 @_spi(Internal) import IMGLYCoreUI
 import IMGLYEngine
@@ -7,7 +8,7 @@ import SwiftUI
 @_spi(Internal) public final class Interactor: ObservableObject, KeyboardObserver {
   // MARK: - Properties
 
-  let config: EngineConfiguration
+  @_spi(Internal) public let config: EngineConfiguration
 
   @ViewBuilder var spinner: some View {
     ProgressView()
@@ -63,10 +64,17 @@ import SwiftUI
   @Published private(set) var textCursorPosition: CGPoint?
   @Published private(set) var canUndo = false
   @Published private(set) var canRedo = false
-  @Published private var isKeyboardPresented: Bool = false
-  @Published private(set) var isDefaultZoomLevel: Bool = false
+  @Published private var isKeyboardPresented = false
+  @Published private(set) var isDefaultZoomLevel = false
+  @Published var isCameraSheetShown = false
+  @Published var isImagePickerShown = false
+  @Published var isLoopingPlaybackEnabled = true
+
+  var isAddingCameraRecording = false
+  var isAddingFromImagePicker = false
 
   var zoomModel = ZoomModel() { didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) } }
+  var defaultPinchAction: String = ""
 
   var pageCount: Int {
     (try? engine?.getSortedPages().count) ?? 0
@@ -85,7 +93,9 @@ import SwiftUI
   }
 
   var isCanvasActionEnabled: Bool {
-    !isLoading && !sheet.isPresented && editMode == .transform && !isGrouped(selection?.blocks.first)
+    let isGrouped = isGrouped(selection?.blocks.first)
+    let isVisible = isVisibleAtCurrentPlaybackTime(selection?.blocks.first)
+    return !isLoading && !sheet.isPresented && editMode == .transform && !isGrouped && isVisible
   }
 
   var sheetTypeForSelection: SheetType? {
@@ -144,6 +154,13 @@ import SwiftUI
     }
   }
 
+  /// All timeline-specific properties are bundled here.
+  internal var timelineProperties = TimelineProperties()
+
+  @_spi(Internal) public var backgroundTracksItemCount: Int {
+    timelineProperties.dataSource.backgroundTrack.clips.count
+  }
+
   // MARK: - Life cycle
 
   init(config: EngineConfiguration, behavior: InteractorBehavior) {
@@ -191,6 +208,7 @@ import SwiftUI
     zoomLevelTask?.cancel()
     historyTask?.cancel()
     _engine = nil
+    timelineProperties.timeline = nil
   }
 
   // MARK: - Private properties
@@ -249,6 +267,9 @@ extension Interactor {
   func hasSolidFill(_ id: DesignBlockID?) -> Bool { hasColorFillType(id, type: .solid) }
   func hasGradientFill(_ id: DesignBlockID?) -> Bool { hasColorFillType(id, type: .gradient) }
   func hasColorFill(_ id: DesignBlockID?) -> Bool { hasSolidFill(id) || hasGradientFill(id) }
+  func isVisibleAtCurrentPlaybackTime(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.isVisibleAtCurrentPlaybackTime) ?? false
+  }
 }
 
 // MARK: - Property bindings
@@ -591,8 +612,8 @@ extension Interactor {
       let opacity = isAllowed(id, scope: .layerOpacity)
       let blend = isAllowed(id, scope: .layerBlendMode)
       let layer = isAllowed(id, .toTop)
-      let duplicate = isAllowed(id, .duplicate)
-      let delete = isAllowed(id, .delete)
+      let duplicate = isAllowed(id, Action.duplicate)
+      let delete = isAllowed(id, Action.delete)
       return opacity || blend || layer || duplicate || delete
     case .enterGroup:
       return true
@@ -608,9 +629,40 @@ extension Interactor {
       return isAllowed(id, scope: .appearanceEffect)
     case .blur:
       return isAllowed(id, scope: .appearanceBlur)
+    case .reorder:
+      if timelineProperties.dataSource.backgroundTrack.clips.count < 2 {
+        return false
+      } else if let id,
+                let clip = timelineProperties.dataSource.findClip(id: id) {
+        return clip.isInBackgroundTrack
+      }
+      return false
+    case .split:
+      return isAllowed(id, scope: .lifecycleDuplicate)
+    case .volume:
+      return true
+    case .attachToBackground:
+      if let id,
+         let clip = timelineProperties.dataSource.findClip(id: id) {
+        return !clip.isInBackgroundTrack
+      }
+      return false
+    case .detachFromBackground:
+      if let id,
+         let clip = timelineProperties.dataSource.findClip(id: id) {
+        return clip.isInBackgroundTrack
+      }
+      return false
+    case .delete:
+      return isAllowed(id, Action.delete)
+    case .duplicate:
+      return isAllowed(id, Action.duplicate)
+    case .openCamera, .openPhotoRoll, .openBackgroundClipLibrary, .openOverlayLibrary, .addText, .addSticker, .addAudio:
+      return true
     }
   }
 
+  // swiftlint:disable:next cyclomatic_complexity
   func isAllowed(_ id: BlockID?, _ action: Action) -> Bool {
     switch action {
     case .undo: return canUndo
@@ -619,7 +671,11 @@ extension Interactor {
     case .editMode: return true
     case .export: return true
     case .toTop, .up, .down, .toBottom:
-      return isAllowed(id, scope: .editorAdd) && !isGrouped(id)
+      var isInBackgroundTrack = false
+      if let id {
+        isInBackgroundTrack = timelineProperties.dataSource.findClip(id: id)?.isInBackgroundTrack ?? false
+      }
+      return isAllowed(id, scope: .editorAdd) && !isGrouped(id) && !isInBackgroundTrack
     case .duplicate:
       return isAllowed(id, scope: .lifecycleDuplicate) && !isGrouped(id)
     case .delete:
@@ -668,54 +724,162 @@ extension Interactor: AssetLibraryInteractor {
   @_spi(Internal) public func uploadAsset(to sourceID: String, asset: AssetUpload) async throws -> AssetResult {
     do {
       let asset = try await Self.uploadAsset(interactor: self, to: sourceID, asset: asset)
-      assetTapped(sourceID: sourceID, asset: asset)
+      if !isAddingCameraRecording {
+        assetTapped(sourceID: sourceID, asset: asset)
+      }
       return asset
     } catch {
-      handleErrorAndDismiss(error)
+      handleError(error)
       throw error
     }
   }
 
+  // swiftlint:disable:next cyclomatic_complexity
   @_spi(Internal) public func assetTapped(sourceID: String, asset: AssetResult) {
     guard let engine else {
       return
     }
     isAddingAsset = true
+    sheet.isPresented = false
+
     Task(priority: .userInitiated) {
       do {
         if sheet.mode == .replace, let id = selection?.blocks.first {
-          switch sheet.type {
-          case .sticker:
-            guard let url = asset.url else {
-              return
-            }
+          let oldDuration = try engine.block.getDuration(id)
+
+          try await engine.asset.applyToBlock(sourceID: sourceID, assetResult: asset, block: id)
+          if sheet.type == .sticker {
             try engine.block.overrideAndRestore(id, scope: .key(.layerCrop)) {
-              _ = try engine.set([$0], .fill, property: .key(.fillImageImageFileURI), value: url)
               try engine.block.setContentFillMode($0, mode: .contain)
             }
-          default:
-            try await engine.asset.applyToBlock(sourceID: sourceID, assetResult: asset, block: id)
           }
           if try engine.editor.getSettingEnum("role") == "Adopter" {
             try engine.block.setPlaceholderEnabled(id, enabled: false)
           }
           try engine.editor.addUndoStep()
-          if sheet.detent == .adaptiveLarge || isKeyboardPresented {
-            sheet.isPresented = false
+
+          // In the future, this may be set by the default implementation.
+          if let artist = asset.artist,
+             let title = asset.title {
+            try engine.block.setMetadata(id, key: "name", value: "\(artist) · \(title)")
+          } else if let label = asset.label {
+            try engine.block.setMetadata(id, key: "name", value: label)
+          }
+
+          if asset.fillType == FillType.video.rawValue {
+            let fill = try engine.block.getFill(id)
+            try await engine.block.forceLoadAVResource(fill)
+            let newFootageDuration = try engine.block.getAVResourceTotalDuration(fill)
+            try engine.block.setDuration(id, duration: min(newFootageDuration, oldDuration))
+          } else if asset.blockType == BlockType.audio.rawValue {
+            try await engine.block.forceLoadAVResource(id)
+            let newFootageDuration = try engine.block.getAVResourceTotalDuration(id)
+            try engine.block.setDuration(id, duration: min(newFootageDuration, oldDuration))
           }
         } else {
+          let addToBackgroundTrack = sheet.type == .backgroundTrackLibrary || isAddingFromImagePicker
+
+          // This works, but it would be nicer to reset this at the call site.
+          isAddingFromImagePicker = false
+
           if let id = try await engine.asset.apply(sourceID: sourceID, assetResult: asset) {
-            try engine.block.appendChild(to: engine.getPage(page), child: id)
-            try updateCamera(id)
+            let pageID = try engine.getPage(page)
+
+            switch sceneMode {
+            case .design:
+              try engine.block.appendChild(to: pageID, child: id)
+              try updateCamera(id)
+            case .video:
+              // This is a video scene, so we need to take care of offsets and durations
+              let minClipDuration: TimeInterval = 1
+              let fallbackClipDuration: TimeInterval = 5
+
+              var resolvedDuration = asset.duration ?? fallbackClipDuration
+
+              if addToBackgroundTrack {
+                createBackgroundTrackIfNeeded()
+                guard let backgroundTrack = timelineProperties.backgroundTrack else {
+                  handleError(
+                    Error(errorDescription: "No Background Track.")
+                  )
+                  return
+                }
+                // Append to background track and configure
+                try engine.block.appendChild(to: backgroundTrack, child: id)
+                try engine.block.fillParent(backgroundTrack)
+
+                try engine.block.setPlaybackTime(pageID, time: absoluteStartTime(id: id))
+              } else {
+                // Append to page
+                try engine.block.appendChild(to: pageID, child: id)
+
+                // Determine where at which point in time to insert the clip
+                let playbackTime = try engine.block.getPlaybackTime(pageID)
+                let totalDuration = try engine.block.getDuration(pageID)
+
+                // Prevent inserting at the very end of the timeline
+                var clampedOffset = max(0, min(playbackTime, totalDuration - minClipDuration))
+
+                if asset.blockType == BlockType.audio.rawValue {
+                  // Always insert audio at the beginning
+                  clampedOffset = 0
+                }
+
+                // Set the time offset
+                try engine.block.setTimeOffset(id, offset: clampedOffset)
+
+                // If there is nothing in the scene yet, we allow the full asset duration,
+                // otherwise shorten to fit remaining time:
+                let maxClipDuration = totalDuration - clampedOffset
+                let assetDuration = asset.duration ?? max(fallbackClipDuration, maxClipDuration)
+                resolvedDuration = totalDuration == 0 ? assetDuration : min(assetDuration, maxClipDuration)
+              }
+
+              try engine.block.setDuration(id, duration: resolvedDuration)
+
+              // In the future, this may be set by the default implementation.
+              if let artist = asset.artist,
+                 let title = asset.title {
+                try engine.block.setMetadata(id, key: "name", value: "\(artist) · \(title)")
+              } else if let label = asset.label {
+                try engine.block.setMetadata(id, key: "name", value: label)
+              }
+
+              if asset.fillType == FillType.video.rawValue,
+                 let fill = try? engine.block.getFill(id) {
+                // Wait for the video data to load
+                try await engine.block.forceLoadAVResource(fill)
+
+                let footageDuration = try engine.block.getAVResourceTotalDuration(fill)
+                if addToBackgroundTrack {
+                  try engine.block.setDuration(id, duration: footageDuration)
+                } else {
+                  try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
+                }
+                try engine.block.setLooping(fill, looping: false)
+              } else if asset.blockType == BlockType.audio.rawValue {
+                // Prevent audio blocks from being considered in the z-index reordering
+                try engine.block.setAlwaysOnTop(id, enabled: true)
+
+                // Wait for the audio data to load
+                try await engine.block.forceLoadAVResource(id)
+
+                let footageDuration = try engine.block.getAVResourceTotalDuration(id)
+                try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
+                try engine.block.setLooping(id, looping: false)
+              }
+            @unknown default:
+              assertionFailure("Unknown scene mode.")
+            }
+
             if ProcessInfo.isUITesting {
               try engine.block.setPositionX(id, value: 15)
               try engine.block.setPositionY(id, value: 5)
             }
           }
-          sheet.isPresented = false
         }
       } catch {
-        handleErrorAndDismiss(error)
+        handleError(error)
       }
       isAddingAsset = false
     }
@@ -780,12 +944,60 @@ extension Interactor {
 
   // swiftlint:disable:next cyclomatic_complexity
   func bottomBarButtonTapped(for mode: SheetMode) {
+    pause()
+
+    // For certain sheets we want to guarantee that the selected clip is visible at the current playback time.
+    if sceneMode == .video, ![
+      .add,
+      .enterGroup,
+      .split,
+      .reorder,
+      .delete,
+      .attachToBackground,
+      .detachFromBackground
+    ].contains(mode) {
+      clampPlayheadPositionToSelectedClip()
+    }
+
     do {
       switch mode {
       case .add:
         try engine?.block.deselectAll()
         sheet.commit { model in
           model = .init(mode, .image)
+          model.detent = .adaptiveLarge
+        }
+      case .openCamera:
+        try engine?.block.deselectAll()
+        isCameraSheetShown = true
+      case .openPhotoRoll:
+        try engine?.block.deselectAll()
+        isImagePickerShown = true
+      case .openBackgroundClipLibrary:
+        try engine?.block.deselectAll()
+        sheet.commit { model in
+          model = .init(.add, .backgroundTrackLibrary)
+          model.detent = .adaptiveLarge
+        }
+      case .openOverlayLibrary:
+        try engine?.block.deselectAll()
+        sheet.commit { model in
+          model = .init(.add, .overlayLibrary)
+          model.detent = .adaptiveLarge
+        }
+      case .addText:
+        sheet.commit { model in
+          model = .init(.add, .text)
+          model.detent = .large
+        }
+      case .addSticker:
+        sheet.commit { model in
+          model = .init(.add, .stickerShapesLibrary)
+          model.detent = .adaptiveLarge
+        }
+      case .addAudio:
+        sheet.commit { model in
+          model = .init(.add, .audio)
           model.detent = .adaptiveLarge
         }
       case .edit:
@@ -829,6 +1041,13 @@ extension Interactor {
           model.detent = .adaptiveTiny
           model.detents = [.adaptiveTiny]
         }
+      case .reorder:
+        let type = SheetType.reorder
+        sheet.commit { model in
+          model = .init(mode, type)
+          model.detent = .adaptiveMedium
+          model.detents = [.adaptiveMedium]
+        }
       case .layer, .adjustments:
         guard let type = sheetTypeForSelection else {
           return
@@ -838,6 +1057,20 @@ extension Interactor {
           model.detent = .adaptiveMedium
           model.detents = [.adaptiveMedium]
         }
+      case .volume:
+        sheet.commit { model in
+          model = .init(mode, .video)
+          model.detent = .adaptiveTiny
+          model.detents = [.adaptiveTiny]
+        }
+      case .split:
+        splitSelectedClipAtPlayheadPosition()
+      case .delete:
+        try engine?.deleteSelectedElement(delay: NSEC_PER_MSEC * 200)
+      case .duplicate:
+        try engine?.duplicateSelectedElement()
+      case .attachToBackground, .detachFromBackground:
+        toggleSelectedClipIsInBackgroundTrack()
       default:
         guard let type = sheetTypeForSelection else {
           return
@@ -895,6 +1128,7 @@ extension Interactor {
 
         fontLibrary.fonts = fonts
         isLoading = false
+        try configureTimeline()
         self.zoomLevelChanged(forceUpdate: true)
       } catch {
         handleErrorAndDismiss(error)
@@ -1005,7 +1239,7 @@ extension Interactor {
 
 // MARK: - Private implementation
 
-private extension Interactor {
+internal extension Interactor {
   var engine: Engine? {
     guard let engine = _engine else {
       return nil
@@ -1148,12 +1382,14 @@ private extension Interactor {
     }
   }
 
+  // swiftlint:disable:next cyclomatic_complexity
   func sheetType(for designBlockType: String, with fillType: String? = nil,
                  and kind: BlockKind? = nil) -> SheetType? {
     switch designBlockType {
     case BlockType.text.rawValue: return .text
     case BlockType.group.rawValue: return .group
     case BlockType.page.rawValue: return .page
+    case BlockType.audio.rawValue: return .audio
     case BlockType.graphic.rawValue:
       guard let fillType else { return nil }
       switch fillType {
@@ -1162,6 +1398,13 @@ private extension Interactor {
           return .sticker
         }
         return .image
+      case FillType.video.rawValue:
+        return .video
+      case FillType.color.rawValue,
+           FillType.linearGradient.rawValue,
+           FillType.conicalGradient.rawValue,
+           FillType.radialGradient.rawValue:
+        return .shape
       default:
         if kind == .key(.shape) {
           return .shape
@@ -1212,14 +1455,21 @@ private extension Interactor {
     guard let engine else {
       return
     }
-    editMode = engine.editor.getEditMode()
-    textCursorPosition = CGPoint(x: CGFloat(engine.editor.getTextCursorPositionInScreenSpaceX()),
-                                 y: CGFloat(engine.editor.getTextCursorPositionInScreenSpaceY()))
-    canUndo = (try? engine.editor.canUndo()) ?? false
-    canRedo = (try? engine.editor.canRedo()) ?? false
+
+    let editMode = engine.editor.getEditMode()
+    if self.editMode != editMode {
+      self.editMode = editMode
+    }
+
+    let textCursorPosition = CGPoint(x: CGFloat(engine.editor.getTextCursorPositionInScreenSpaceX()),
+                                     y: CGFloat(engine.editor.getTextCursorPositionInScreenSpaceY()))
+
+    if self.textCursorPosition != textCursorPosition {
+      self.textCursorPosition = textCursorPosition
+    }
 
     let selected = engine.block.findAllSelected()
-    selection = {
+    let selection: Selection? = {
       if selected.isEmpty {
         return nil
       } else {
@@ -1227,6 +1477,22 @@ private extension Interactor {
         return .init(blocks: selected, boundingBox: box ?? .zero)
       }
     }()
+
+    if self.selection != selection {
+      self.selection = selection
+    }
+
+    if sceneMode == .video,
+       let currentPage = timelineProperties.currentPage {
+      do {
+        let isLoopingPlaybackEnabled = try engine.block.isLooping(currentPage)
+        if self.isLoopingPlaybackEnabled != isLoopingPlaybackEnabled {
+          self.isLoopingPlaybackEnabled = isLoopingPlaybackEnabled
+        }
+      } catch {
+        handleError(error)
+      }
+    }
 
     do {
       try behavior.updateState(.init(engine, self))
@@ -1251,8 +1517,10 @@ private extension Interactor {
       guard let engine else {
         return
       }
-      for await _ in engine.event.subscribe(to: []) {
+      for await events in engine.event.subscribe(to: []) {
         updateState()
+        updateTimeline(events)
+        updatePlaybackState()
       }
     }
   }
@@ -1275,6 +1543,9 @@ private extension Interactor {
       }
       for await _ in engine.editor.onHistoryUpdated {
         historyChanged()
+        DispatchQueue.main.async { [weak self] in
+          self?.refreshThumbnails()
+        }
       }
     }
   }
@@ -1362,6 +1633,8 @@ private extension Interactor {
         showReplaceSheet()
       }
     }
+
+    updateTimelineSelectionFromCanvas()
   }
 
   func editModeChanged(_ oldValue: EditMode) {
@@ -1370,9 +1643,12 @@ private extension Interactor {
     }
 
     if editMode == .crop {
+      // Remember the pinchAction setting …
+      defaultPinchAction = (try? engine?.editor.getSettingEnum("touch/pinchAction")) ?? "Zoom"
       try? engine?.editor.setSettingEnum("touch/pinchAction", value: "Scale")
     } else if oldValue == .crop {
-      try? engine?.editor.setSettingEnum("touch/pinchAction", value: "Zoom")
+      // … to restore it correctly when leaving crop mode.
+      try? engine?.editor.setSettingEnum("touch/pinchAction", value: defaultPinchAction)
     }
 
     if sheet.isPresented {
@@ -1417,6 +1693,10 @@ private extension Interactor {
     if let pageIndex, pageIndex != page {
       page = pageIndex
     }
+    let canUndo = (try? engine.editor.canUndo()) ?? false
+    self.canUndo = canUndo
+    let canRedo = (try? engine.editor.canRedo()) ?? false
+    self.canRedo = canRedo
   }
 }
 

@@ -6,25 +6,14 @@ struct BottomToolbar<Content: View>: View {
   @ViewBuilder let content: Content
 
   var body: some View {
-    NavigationView {
-      content
-        .background {
-          GeometryReader { geo in
-            Color.clear
-              .preference(key: BottomBarContentGeometryKey.self, value: Geometry(geo, Canvas.safeCoordinateSpace))
-          }
+    content
+      .background {
+        GeometryReader { geo in
+          Color.clear
+            .preference(key: BottomBarContentGeometryKey.self, value: Geometry(geo, Canvas.safeCoordinateSpace))
         }
-        .ignoresSafeArea(.keyboard)
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(title)
-        .toolbar {
-          ToolbarItem(placement: .navigationBarTrailing) {
-            BottomBarCloseButton()
-              .buttonStyle(.borderless)
-          }
-        }
-    }
-    .navigationViewStyle(.stack)
+      }
+      .ignoresSafeArea(.keyboard)
   }
 }
 

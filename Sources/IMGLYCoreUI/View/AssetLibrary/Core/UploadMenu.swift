@@ -70,7 +70,7 @@ import SwiftUI
     .imgly.assetFileUploader(isPresented: $showFileImporter, allowedContentTypes: media.map {
       switch $0 {
       case .image: return .image
-      case .movie: return .video
+      case .movie: return .movie
       }
     })
   }

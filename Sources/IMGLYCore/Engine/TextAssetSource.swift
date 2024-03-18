@@ -63,18 +63,19 @@ extension TextAssetSource: AssetSource {
     )
   }
 
+  @MainActor
   public func apply(asset: AssetResult) async throws -> NSNumber? {
     guard let engine, let id = try await engine.asset.defaultApplyAsset(assetResult: asset) else {
       return nil
     }
 
-    try await engine.block.setString(id, property: "text/text", value: "Text")
+    try engine.block.setString(id, property: "text/text", value: "Text")
     if let fontSize = asset.fontSize {
       let fontSize = (50.0 / 24.0) * Float(fontSize) // Scale font size to match scene.
-      try await engine.block.setFloat(id, property: "text/fontSize", value: fontSize)
+      try engine.block.setFloat(id, property: "text/fontSize", value: fontSize)
     }
-    try await engine.block.setEnum(id, property: "text/horizontalAlignment", value: "Center")
-    try await engine.block.setHeightMode(id, mode: .auto)
+    try engine.block.setEnum(id, property: "text/horizontalAlignment", value: "Center")
+    try engine.block.setHeightMode(id, mode: .auto)
 
     return .init(value: id)
   }

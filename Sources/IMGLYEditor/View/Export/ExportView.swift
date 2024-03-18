@@ -39,14 +39,6 @@ struct ExportView: View {
     }
   }
 
-  private func format(percentage: Float) -> String {
-    let formatter = NumberFormatter()
-    formatter.numberStyle = .percent
-    formatter.minimumFractionDigits = 1
-    formatter.maximumFractionDigits = 1
-    return formatter.string(from: .init(value: percentage.clamped(to: 0 ... 1))) ?? ""
-  }
-
   var body: some View {
     VStack(spacing: 4) {
       switch state {
@@ -59,12 +51,9 @@ struct ExportView: View {
             case .spinner:
               ProgressView()
             case let .relative(percentage):
-              VStack {
-                ProgressView(value: percentage)
-                  .animation(percentage != 0 ? .default : nil, value: percentage)
-                Text(format(percentage: percentage))
-                  .font(.footnote.weight(.semibold).monospacedDigit())
-              }
+              CircularProgressIndicator(current: Double(percentage), total: 1)
+                .padding()
+                .padding(.top, 20)
             }
           }
         }

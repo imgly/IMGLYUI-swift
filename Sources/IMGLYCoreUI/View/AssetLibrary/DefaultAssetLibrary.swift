@@ -108,19 +108,28 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
+  @AssetLibraryBuilder var videosAndImages: AssetLibraryContent {
+    AssetLibraryGroup.video("Videos") { videos }
+    AssetLibraryGroup.image("Images") { images }
+    AssetLibraryGroup.upload("Photo Roll") {
+      AssetLibrarySource.imageUpload(.title("Images"), source: .init(demoSource: .imageUpload))
+      AssetLibrarySource.videoUpload(.title("Videos"), source: .init(demoSource: .videoUpload))
+    }
+  }
+
   @AssetLibraryBuilder public static var videos: AssetLibraryContent {
-    AssetLibrarySource.videoUpload(.title("Camera Roll"), source: .init(demoSource: .videoUpload))
     AssetLibrarySource.video(.title("Videos"), source: .init(demoSource: .video))
+    AssetLibrarySource.videoUpload(.title("Photo Roll"), source: .init(demoSource: .videoUpload))
   }
 
   @AssetLibraryBuilder public static var audio: AssetLibraryContent {
-    AssetLibrarySource.audioUpload(.title("Uploads"), source: .init(demoSource: .audioUpload))
     AssetLibrarySource.audio(.title("Audio"), source: .init(demoSource: .audio))
+    AssetLibrarySource.audioUpload(.title("Uploads"), source: .init(demoSource: .audioUpload))
   }
 
   @AssetLibraryBuilder public static var images: AssetLibraryContent {
-    AssetLibrarySource.imageUpload(.title("Camera Roll"), source: .init(demoSource: .imageUpload))
     AssetLibrarySource.image(.title("Images"), source: .init(demoSource: .image))
+    AssetLibrarySource.imageUpload(.title("Photo Roll"), source: .init(demoSource: .imageUpload))
   }
 
   let text = AssetLibrarySource.text(.title("Text"), source: .init(id: TextAssetSource.id))
@@ -158,7 +167,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   func elementsContent(_ tab: Tab) -> AssetLibraryContent {
     switch tab {
     case .elements: return AssetLibraryGroup.empty
-    case .uploads: return AssetLibraryGroup.upload("Camera Roll") { uploads }
+    case .uploads: return AssetLibraryGroup.upload("Photo Roll") { uploads }
     case .videos: return AssetLibraryGroup.video("Videos") { videos }
     case .audio: return AssetLibraryGroup.audio("Audio") { audio }
     case .images: return AssetLibraryGroup.image("Images") { images }
@@ -247,7 +256,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   @ViewBuilder var uploadsTab: some View {
-    AssetLibraryTab("Camera Roll") { uploads } label: { Self.uploadsLabel($0) }
+    AssetLibraryTab("Photo Roll") { uploads } label: { Self.uploadsLabel($0) }
   }
 
   @ViewBuilder public var videosTab: some View {
@@ -262,16 +271,31 @@ public struct DefaultAssetLibrary: AssetLibrary {
     AssetLibraryTab("Images") { images } label: { Self.imagesLabel($0) }
   }
 
-  @ViewBuilder var textTab: some View {
+  @ViewBuilder public var textTab: some View {
     AssetLibraryTabView("Text") { text.content } label: { Self.textLabel($0) }
   }
 
-  @ViewBuilder var shapesTab: some View {
+  @ViewBuilder public var shapesTab: some View {
     AssetLibraryTab("Shapes") { shapes } label: { Self.shapesLabel($0) }
   }
 
   @ViewBuilder public var stickersTab: some View {
     AssetLibraryTab("Stickers") { stickers } label: { Self.stickersLabel($0) }
+  }
+
+  @ViewBuilder public var clipsTab: some View {
+    AssetLibraryTab("Clips") { videosAndImages } label: { _ in EmptyView() }
+  }
+
+  @ViewBuilder public var overlaysTab: some View {
+    AssetLibraryTab("Overlays") { videosAndImages } label: { _ in EmptyView() }
+  }
+
+  @ViewBuilder public var stickersAndShapesTab: some View {
+    AssetLibraryTab("Stickers") {
+      stickers
+      shapes
+    } label: { _ in EmptyView() }
   }
 
   @ViewBuilder func tabViews(_ tabs: some RandomAccessCollection<Tab>) -> some View {

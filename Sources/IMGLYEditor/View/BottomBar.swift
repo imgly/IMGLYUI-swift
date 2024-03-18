@@ -8,8 +8,10 @@ struct BottomBar: View {
   let bottomSafeAreaInset: CGFloat
 
   @EnvironmentObject private var interactor: Interactor
+  @Environment(\.colorScheme) private var colorScheme
   @Environment(\.verticalSizeClass) private var verticalSizeClass
-  @Environment(\.imglyIsPageNavigationEnabled) private var isPageNavigationEnabled: Bool
+
+  @State private var leadingPadding: CGFloat = 60
 
   private var isRoot: Bool { type == nil }
 
@@ -19,39 +21,67 @@ struct BottomBar: View {
     } label: {
       mode.label(id, interactor)
     }
+    .foregroundColor(mode == .delete ? .red : nil)
   }
 
+  // swiftlint:disable:next cyclomatic_complexity
   func modes(for type: SheetType?) -> [SheetMode] {
     guard let type else {
       return []
     }
-    var modes = [SheetMode]()
 
-    if Set([.image, .sticker]).contains(type) {
-      modes += [.replace]
+    let isVideo = interactor.sceneMode == .video
+
+    var modes = [SheetMode]()
+    if Set([.image, .video]).contains(type) {
+      modes += [.adjustments, .filter, .effect, .blur]
     }
     if type == .text {
       modes += [.edit, .format]
     }
-    if type == .image {
-      modes += [.crop]
+    if Set([.text, .shape, .page]).contains(type) {
+      modes += [.fillAndStroke]
     }
     if type == .shape, Set([.line, .star, .polygon]).contains(interactor.shapeType(id)) {
       modes += [.options]
     }
-    if Set([.text, .image, .shape, .page]).contains(type) {
+    if isVideo, Set([.audio, .video]).contains(type) {
+      modes += [.volume]
+    }
+    if Set([.image, .video]).contains(type) {
+      modes += [.crop]
+    }
+    if !(type == .page && isVideo) {
+      modes += [.duplicate]
+    }
+    if !Set([.page, .audio]).contains(type) {
+      modes += [.layer]
+    }
+    if isVideo, Set([.text, .image, .shape, .sticker, .video, .audio]).contains(type) {
+      modes += [.split]
+    }
+    if Set([.image, .video]).contains(type) {
       modes += [.fillAndStroke]
     }
-    if type == .image {
-      modes += [.adjustments, .filter, .effect, .blur]
+    if isVideo, !Set([.page, .audio]).contains(type) {
+      modes += [.attachToBackground, .detachFromBackground]
     }
-    if type != .page {
-      modes += [.layer]
+    if isVideo, Set([.audio, .video]).contains(type) {
+      modes += [.replace]
+    }
+    if Set([.image, .sticker]).contains(type) {
+      modes += [.replace]
+    }
+    if isVideo, !Set([.page, .audio]).contains(type) {
+      modes += [.reorder]
     }
     if type == .group {
       modes += [.enterGroup]
     }
     modes += [.selectGroup]
+    if !(type == .page && isVideo) {
+      modes += [.delete]
+    }
 
     return modes.filter { mode in
       interactor.isAllowed(id, mode)
@@ -62,18 +92,53 @@ struct BottomBar: View {
 
   @ViewBuilder var barItems: some View {
     ScrollView(.horizontal, showsIndicators: false) {
-      HStack(spacing: 8) {
+      HStack(spacing: 0) {
         ForEach(modes(for: type)) {
           button($0)
         }
         .fixedSize()
+        Spacer()
       }
       .buttonStyle(.bottomBar)
       .labelStyle(.bottomBar)
-      .padding([.leading, .trailing], 8)
+      .padding(.leading, leadingPadding)
       .padding([.top, .bottom], 8)
       .frame(minWidth: bottomBarWidth)
       .animation(nil, value: bottomBarWidth)
+    }
+    .mask {
+      // Mask the scroll view so that the fade-out gradients work on a blurred background material.
+      Rectangle()
+        .overlay {
+          HStack {
+            LinearGradient(
+              gradient: Gradient(
+                colors: [.black, .clear]
+              ),
+              startPoint: UnitPoint(x: 0.8, y: 0.5),
+              endPoint: .trailing
+            )
+            .frame(width: 60)
+            Spacer()
+            LinearGradient(
+              gradient: Gradient(
+                colors: [.clear, .black]
+              ),
+              startPoint: UnitPoint(x: 0.3, y: 0.5),
+              endPoint: .trailing
+            )
+            .frame(width: 30)
+          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+          .drawingGroup()
+          .blendMode(.destinationOut)
+        }
+    }
+    .overlay(alignment: .leading) {
+      BottomBarCloseButton()
+        .padding()
+        .buttonStyle(.bottomBar)
     }
     .background {
       GeometryReader { geo in
@@ -91,7 +156,10 @@ struct BottomBar: View {
     ZStack {
       BottomToolbar(title: Text(type?.localizedStringKey ?? "")) {
         ZStack {
-          Color(uiColor: .secondarySystemBackground)
+          Rectangle()
+            .fill(colorScheme == .dark
+              ? Color(uiColor: .secondarySystemBackground)
+              : Color(uiColor: .systemBackground))
             .ignoresSafeArea()
           barItems
         }
@@ -100,7 +168,8 @@ struct BottomBar: View {
         // Apply shadow in background modifier to fix non-touchable bottom bar items
         // on iPhone 8 Plus, iPad Pro 9.7", and potentially other devices.
         Rectangle()
-          .shadow(color: .black.opacity(0.1), radius: 6, y: 2)
+          .inset(by: 1)
+          .shadow(color: .black.opacity(0.15), radius: 7, y: 2)
       }
       .opacity(isRoot ? 0 : 1)
       if isRoot {
@@ -110,15 +179,13 @@ struct BottomBar: View {
   }
 
   var body: some View {
-    let heightWithPageControl = (isRoot && verticalSizeClass == .compact && isPageNavigationEnabled) ? height + 16 :
-      height
     VStack(spacing: 0) {
       Color.clear // Fix abrupt view (dis)appearance in safe area during transitions.
-        .frame(height: bottomSafeAreaInset)
+        .frame(height: max(0, bottomSafeAreaInset))
       bottomBar
-        .frame(height: heightWithPageControl)
+        .frame(height: height)
     }
-    .disabled(interactor.isLoading)
+    .disabled(interactor.isLoading || interactor.sheet.isPresented)
     .imgly.selection(id)
   }
 }

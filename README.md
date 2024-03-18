@@ -1,4 +1,4 @@
-![Hero image showing the configuration abilities of IMGLYUI](https://img.ly/static/cesdk_release_header.png)
+![Hero image showing the configuration abilities of IMGLYUI](https://img.ly/static/cesdk_release_header_ios.png)
 
 # IMGLY UI
 
@@ -20,13 +20,13 @@ The CreativeEditor SDK is a commercial product. To use it and get access you nee
 ### SwiftUI
 
 ```Swift
-import IMGLYApparelEditor // or IMGLYPostcardEditor
+import IMGLYDesignEditor // IMGLYVideoEditor, IMGLYApparelEditor, or IMGLYPostcardEditor
 import SwiftUI
 
 struct IntegrateWithSwiftUI: View {
   var body: some View {
     NavigationView {
-      ApparelEditor(.init(license: secrets.licenseKey, userID: "USER_ID"))
+      DesignEditor(.init(license: secrets.licenseKey, userID: "<your unique user id>"))
     }
   }
 }

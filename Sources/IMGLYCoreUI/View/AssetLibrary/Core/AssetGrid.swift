@@ -161,7 +161,7 @@ extension EnvironmentValues {
             content()
           }
           .padding(edges, padding)
-          .onAppear {
+          .task {
             onAppear(proxy)
           }
         }
@@ -173,7 +173,7 @@ extension EnvironmentValues {
             content()
           }
           .padding(edges, padding)
-          .onAppear {
+          .task {
             onAppear(proxy)
           }
         }

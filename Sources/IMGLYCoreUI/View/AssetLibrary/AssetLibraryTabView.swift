@@ -63,7 +63,7 @@ private struct TabContent<Content: View>: View {
       .navigationTitle(localizedTitle)
       .toolbar {
         ToolbarItem {
-          HStack {
+          HStack(spacing: 16) {
             SearchButton()
             dismissButtonView
           }

@@ -3,12 +3,9 @@ import SwiftUI
 
 struct RootBottomBar: View {
   @EnvironmentObject private var interactor: Interactor
-  @Environment(\.imglyIsPageNavigationEnabled) private var isPageNavigationEnabled: Bool
+  @Environment(\.colorScheme) private var colorScheme
 
-  private var isPageNavigationHidden: Bool {
-    !isPageNavigationEnabled || interactor.selection?.blocks.isEmpty != nil || !interactor
-      .isDefaultZoomLevel || interactor.pageCount < 2
-  }
+  @State var rootBottomBarWidth: CGFloat?
 
   private let fabSize: CGFloat = 56
   private let padding: CGFloat = 16
@@ -19,16 +16,17 @@ struct RootBottomBar: View {
     } label: {
       SheetMode.add.label
         .font(.title2)
+        .fontWeight(.bold)
         .labelStyle(.iconOnly)
         .frame(width: fabSize, height: fabSize)
     }
     .buttonStyle(.fab)
+    .padding(.horizontal, padding)
   }
 
   @ViewBuilder var divider: some View {
     Divider()
       .frame(height: 40)
-      .overlay(.tertiary)
   }
 
   @ViewBuilder func button(_ item: RootBottomBarItem) -> some View {
@@ -57,43 +55,96 @@ struct RootBottomBar: View {
   }
 
   @ViewBuilder var content: some View {
-    VStack {
-      Spacer()
-      HStack(spacing: 16) {
-        if showFAB {
-          fab
-        } else {
-          Spacer()
-        }
-        if showFAB, !items.isEmpty {
-          divider
-        }
-        HStack(spacing: 8) {
+    HStack(spacing: 0) {
+      if showFAB {
+        fab
+      }
+      if showFAB, !items.isEmpty {
+        divider
+      }
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: -2) {
           ForEach(items) {
             button($0)
           }
           .fixedSize()
         }
         .buttonStyle(.bottomBar)
-        Spacer()
+        .padding(.horizontal, showFAB ? padding : padding / 2)
+        .padding(.vertical, padding)
+        .frame(minWidth: showFAB ? 0 : rootBottomBarWidth)
       }
-      .padding(padding)
-    }
-    .overlay(alignment: .top) {
-      PageNavigation()
-        .opacity(isPageNavigationHidden ? 0 : 1)
+      .modifier(DisableScrollBounceIfSupported())
+      .mask {
+        // Mask the scroll view so that the fade-out gradients work on a blurred background material.
+        Rectangle()
+          .overlay {
+            HStack {
+              LinearGradient(
+                gradient: Gradient(
+                  colors: [.black, .clear]
+                ),
+                startPoint: UnitPoint(x: 0, y: 0.5),
+                endPoint: .trailing
+              )
+              .frame(width: showFAB ? padding : padding / 2)
+              Spacer()
+              LinearGradient(
+                gradient: Gradient(
+                  colors: [.clear, .black]
+                ),
+                startPoint: UnitPoint(x: 0.3, y: 0.5),
+                endPoint: .trailing
+              )
+              .frame(width: showFAB ? padding : padding / 2)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            .drawingGroup()
+            .blendMode(.destinationOut)
+          }
+      }
+      .background {
+        GeometryReader { geo in
+          Color.clear
+            .preference(key: RootBottomBarWidthKey.self, value: geo.size.width)
+        }
+      }
+      .onPreferenceChange(RootBottomBarWidthKey.self) { newValue in
+        rootBottomBarWidth = newValue
+      }
     }
   }
 
   var body: some View {
     content
-      .background(alignment: .bottom) {
+      .background(alignment: .top) {
         if !items.isEmpty {
-          VisualEffect(effect: UIBlurEffect(style: .regular))
+          Rectangle()
+            .fill(colorScheme == .dark
+              ? Color(uiColor: .systemBackground)
+              : Color(uiColor: .secondarySystemBackground))
             .ignoresSafeArea()
-            .frame(height: fabSize + 2 * padding)
         }
       }
+  }
+}
+
+private struct RootBottomBarWidthKey: PreferenceKey {
+  static let defaultValue: CGFloat? = nil
+  static func reduce(value: inout CGFloat?, nextValue: () -> CGFloat?) {
+    value = value ?? nextValue()
+  }
+}
+
+private struct DisableScrollBounceIfSupported: ViewModifier {
+  func body(content: Content) -> some View {
+    if #available(iOS 16.4, *) {
+      content
+        .scrollBounceBehavior(.automatic)
+    } else {
+      content
+    }
   }
 }
 

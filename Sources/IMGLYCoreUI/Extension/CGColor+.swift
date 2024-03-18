@@ -25,15 +25,7 @@ public extension IMGLY where Wrapped == CGColor {
     }
     return .init(srgbRed: CGFloat(r) / 255, green: CGFloat(g) / 255, blue: CGFloat(b) / 255, alpha: CGFloat(a) / 255)
   }
-}
 
-// MARK: - Internal interface
-
-extension CGColor: HSBAConvertible {
-  var hsba: HSBA? { HSBA(self) }
-}
-
-@_spi(Internal) public extension CGColor {
   // Colors that stay the same when switching from light to dark color scheme.
   static let red = Color.red.asCGColor
   static let orange = Color.orange.asCGColor
@@ -50,7 +42,15 @@ extension CGColor: HSBAConvertible {
   static let white = Color.white.asCGColor
   static let gray = Color.gray.asCGColor
   static let black = Color.black.asCGColor
+}
 
+// MARK: - Internal interface
+
+extension CGColor: HSBAConvertible {
+  var hsba: HSBA? { HSBA(self) }
+}
+
+@_spi(Internal) public extension CGColor {
   func rgba() throws -> RGBA {
     guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
           let color = converted(to: colorSpace, intent: .defaultIntent, options: nil),

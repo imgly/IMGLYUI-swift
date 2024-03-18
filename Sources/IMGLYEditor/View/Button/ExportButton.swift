@@ -1,5 +1,6 @@
+import CoreMedia
+@_spi(Internal) import IMGLYCore
 import SwiftUI
-@_spi(Internal) import IMGLYCoreUI
 
 @_spi(Internal) public struct ExportButton: View {
   @EnvironmentObject private var interactor: Interactor
@@ -8,7 +9,9 @@ import SwiftUI
 
   @_spi(Internal) public var body: some View {
     ActionButton(.export)
-      .disabled(interactor.isLoading || interactor.isExporting)
+      .disabled(interactor.isLoading
+        || interactor.isExporting
+        || (interactor.sceneMode == .video && interactor.timelineProperties.timeline?.totalDuration == .zero))
   }
 }
 

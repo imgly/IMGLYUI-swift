@@ -86,6 +86,10 @@ public extension IMGLY where Wrapped: View {
       .preferredColorScheme(.dark)
       .environment(\.layoutDirection, .rightToLeft)
   }
+
+  func shimmer() -> some View {
+    wrapped.modifier(Shimmer())
+  }
 }
 
 extension IMGLY where Wrapped: View {
@@ -98,10 +102,6 @@ extension IMGLY where Wrapped: View {
                          onCompletion: @escaping AssetFileUploader.Completion = { _ in }) -> some View {
     wrapped.modifier(AssetFileUploader(isPresented: isPresented, allowedContentTypes: allowedContentTypes,
                                        onCompletion: onCompletion))
-  }
-
-  func shimmer() -> some View {
-    wrapped.modifier(Shimmer())
   }
 
   func inverseMask(alignment: Alignment = .center, @ViewBuilder _ mask: () -> some View) -> some View {
