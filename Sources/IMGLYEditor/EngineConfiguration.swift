@@ -63,7 +63,12 @@ public enum OnExport {
     }
     let url = FileManager.default.temporaryDirectory.appendingPathComponent("Export", conformingTo: contentType)
     try data.write(to: url, options: [.atomic])
-    eventHandler.send(.shareFile(url))
+    switch try engine.scene.getMode() {
+    case .design: eventHandler.send(.shareFile(url))
+    case .video: eventHandler.send(.exportCompleted { eventHandler.send(.shareFile(url)) })
+    @unknown default:
+      throw Error(errorDescription: "Unknown scene mode.")
+    }
   }
 
   @MainActor

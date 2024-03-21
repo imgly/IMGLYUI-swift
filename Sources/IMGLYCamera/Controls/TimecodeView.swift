@@ -48,6 +48,6 @@ struct TimecodeView: View {
 struct TimecodeView_Previews: PreviewProvider {
   static var previews: some View {
     TimecodeView()
-      .environmentObject(CameraModel(license: "") { _ in })
+      .environmentObject(CameraModel(.init(license: "")) { _ in })
   }
 }

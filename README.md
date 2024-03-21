@@ -20,7 +20,7 @@ The CreativeEditor SDK is a commercial product. To use it and get access you nee
 ### SwiftUI
 
 ```Swift
-import IMGLYDesignEditor // IMGLYVideoEditor, IMGLYApparelEditor, or IMGLYPostcardEditor
+import IMGLYDesignEditor // IMGLYVideoEditor, IMGLYApparelEditor, IMGLYPostcardEditor, or IMGLYCamera
 import SwiftUI
 
 struct IntegrateWithSwiftUI: View {
@@ -34,10 +34,8 @@ struct IntegrateWithSwiftUI: View {
 
 ## Documentation
 
-The full documentation of IMGLYUI can be found at
-[here](https://img.ly/docs/cesdk/ios/).
-There you will learn what configuration options are available and find a list
-and description of all API methods.
+The IMGLYUI package consists of the [mobile editor](https://img.ly/docs/cesdk/mobile-editor/quickstart?platform=ios) and the [mobile camera](https://img.ly/docs/cesdk/mobile-camera/quickstart?platform=ios). The full documentation can be found on our website.
+There you will learn how to integrate and configure them for your use case.
 
 ## Changelog
 

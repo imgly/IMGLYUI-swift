@@ -75,19 +75,22 @@ import SwiftUI
   var deselectOnPageChange: Bool { false }
   var previewMode: PreviewMode { .scrollable }
 
-  func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws {
-    try context.engine.editor.setSettingBool("touch/singlePointPanning", value: true)
-    try context.engine.editor.setSettingBool("touch/dragStartCanSelect", value: false)
-    try context.engine.editor.setSettingEnum("touch/pinchAction", value: "Zoom")
-    try context.engine.editor.setSettingEnum("touch/rotateAction", value: "None")
+  func loadSettings(_ context: InteractorContext) throws {
+    // Set role first as it affects other settings
+    try context.engine.editor.setSettingEnum("role", value: "Adopter")
+
     try context.engine.editor.setSettingBool("doubleClickToCropEnabled", value: true)
     try context.engine.editor.setSettingEnum("doubleClickSelectionMode", value: "Direct")
+
+    try context.engine.editor.setSettingEnum("camera/clamping/overshootMode", value: "Center")
+    let color: IMGLYEngine.Color = try context.engine.editor.getSettingColor("highlightColor")
+    try context.engine.editor.setSettingColor("placeholderHighlightColor", color: color)
+
     try context.engine.editor.setSettingString(
       "basePath",
       value: context.interactor.config.settings.baseURL.absoluteString
     )
-    try context.engine.editor.setSettingEnum("role", value: "Adopter")
-    try context.engine.editor.setSettingEnum("camera/clamping/overshootMode", value: "Center")
+
     try [ScopeKey]([
       .appearanceAdjustments,
       .appearanceFilter,
@@ -123,7 +126,17 @@ import SwiftUI
     ]).forEach { scope in
       try context.engine.editor.setGlobalScope(key: scope.rawValue, value: .defer)
     }
+  }
 
+  func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws {
+    try loadSettings(context)
+
+    try context.engine.editor.setSettingBool("touch/singlePointPanning", value: true)
+    try context.engine.editor.setSettingBool("touch/dragStartCanSelect", value: false)
+    try context.engine.editor.setSettingEnum("touch/pinchAction", value: "Zoom")
+    try context.engine.editor.setSettingEnum("touch/rotateAction", value: "None")
+
+    // Make sure to set all settings before calling `onCreate` callback so that the consumer can change them if needed!
     try await context.interactor.config.callbacks.onCreate(context.engine)
 
     let scene = try context.engine.getScene()

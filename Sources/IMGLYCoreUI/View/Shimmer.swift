@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Screen-aligned shimmer. Multiple instances could potentially be synced with `.matchedGeometryEffect`, a
-/// `AnimatableModifier` or by injecting the animation time somehow.
+/// `AnimatableModifier`, `TimelineView`, or by injecting the animation time somehow.
 struct Shimmer: ViewModifier {
   // Be careful with large angles and widths as it might increase the gradient view size significantly!
   private let gradientAngle = Angle(degrees: 15)

@@ -66,20 +66,15 @@ extension IMGLY where Wrapped: View {
   @MainActor @ViewBuilder
   func presentationConfiguration(_ largestUndimmedDetent: PresentationDetent?) -> some View {
     if #available(iOS 16.4, *) {
-      #if swift(>=5.8)
-        wrapped.presentationBackgroundInteraction({
-          if let largestUndimmedDetent {
-            return .enabled(upThrough: largestUndimmedDetent)
-          } else {
-            return .disabled
-          }
-        }())
-          .presentationContentInteraction(.scrolls)
-          .presentationCompactAdaptation(.sheet)
-      #else
-        #error("Use Xcode 14.3+ otherwise the sheet dimming is broken on iOS 16.4+!")
-        legacyPresentationConfiguration(largestUndimmedDetent)
-      #endif
+      wrapped.presentationBackgroundInteraction({
+        if let largestUndimmedDetent {
+          return .enabled(upThrough: largestUndimmedDetent)
+        } else {
+          return .disabled
+        }
+      }())
+        .presentationContentInteraction(.scrolls)
+        .presentationCompactAdaptation(.sheet)
     } else {
       legacyPresentationConfiguration(largestUndimmedDetent)
     }

@@ -28,7 +28,7 @@ final class CameraModel: ObservableObject {
   private var hasCamera = false
 
   private let captureService = CaptureService()
-  private let license: String
+  private let settings: EngineSettings
 
   // MARK: - State
 
@@ -51,12 +51,12 @@ final class CameraModel: ObservableObject {
   // MARK: - Lifecycle
 
   init(
-    license: String,
+    _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
     onDismiss: @escaping (Result<[Recording], CameraError>) -> Void
   ) {
     self.onDismiss = onDismiss
-    self.license = license
+    self.settings = settings
     configuration = config
     recordingsManager = RecordingsManager(configuration: configuration)
     configureNotificationHandlers()
@@ -225,7 +225,7 @@ final class CameraModel: ObservableObject {
       if self.interactor == nil {
         do {
           isInitializingStream = true
-          self.interactor = try await CameraCanvasInteractor(license: license, videoSize: configuration.videoSize)
+          self.interactor = try await CameraCanvasInteractor(settings: settings, videoSize: configuration.videoSize)
           try self.interactor?.setDualCameraMode(dualCameraMode)
           DispatchQueue.main.async { [weak self] in
             self?.state = .ready

@@ -93,6 +93,6 @@ struct CountdownTimerView_Previews: PreviewProvider {
 
   static var previews: some View {
     CountdownTimerView(countdownTimer: countdownTimer)
-      .environmentObject(CameraModel(license: "") { _ in })
+      .environmentObject(CameraModel(.init(license: "")) { _ in })
   }
 }

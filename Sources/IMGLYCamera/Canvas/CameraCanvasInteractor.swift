@@ -24,8 +24,9 @@ class CameraCanvasInteractor: ObservableObject {
 
   var dualCameraMode: DualCameraMode = .disabled
 
-  init(license: String, videoSize: CGSize) async throws {
-    let engine = try await Engine(license: license, userID: "showcase-user")
+  init(settings: EngineSettings, videoSize: CGSize) async throws {
+    let engine = try await Engine(license: settings.license, userID: settings.userID)
+    try engine.editor.setSettingString("basePath", value: settings.baseURL.absoluteString)
     self.engine = engine
 
     canvasWidth = Float(videoSize.width)
@@ -52,7 +53,7 @@ class CameraCanvasInteractor: ObservableObject {
     let backgroundShape = try engine.block.createShape(.rect)
     try engine.block.setShape(backgroundRect, shape: backgroundShape)
     let backgroundFill = try engine.block.createFill(.color)
-    try engine.block.set(backgroundFill, property: .key(.fillColorValue), value: RGBA(r: 0, g: 0, b: 0, a: 1))
+    try engine.block.set(backgroundFill, property: .key(.fillColorValue), value: Color.rgba(r: 0, g: 0, b: 0, a: 1))
 
     try engine.block.setFill(backgroundRect, fill: backgroundFill)
     try engine.block.setWidth(backgroundRect, value: canvasWidth)

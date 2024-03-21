@@ -11,7 +11,7 @@ struct SearchBadge: View {
   private var leadingPadding: CGFloat {
     switch controlSize {
     case .mini, .small: return 11
-    case .regular, .large: return 14
+    case .regular, .large, .extraLarge: return 14
     @unknown default: return 14
     }
   }
@@ -19,7 +19,7 @@ struct SearchBadge: View {
   private var trailingPadding: CGFloat {
     switch controlSize {
     case .mini, .small: return 6
-    case .regular, .large: return 8
+    case .regular, .large, .extraLarge: return 8
     @unknown default: return 8
     }
   }
@@ -27,7 +27,7 @@ struct SearchBadge: View {
   private var verticalPadding: CGFloat {
     switch controlSize {
     case .mini, .small: return 5
-    case .regular, .large: return 7
+    case .regular, .large, .extraLarge: return 7
     @unknown default: return 7
     }
   }

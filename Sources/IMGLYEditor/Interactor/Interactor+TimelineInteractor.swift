@@ -36,6 +36,7 @@ extension Interactor: TimelineInteractor {
       let backgroundTrack = try engine.block.create(DesignBlockType.track)
       try engine.block.appendChild(to: pageID, child: backgroundTrack)
       try engine.block.setAlwaysOnBottom(backgroundTrack, enabled: true)
+      try engine.block.fillParent(backgroundTrack)
       try engine.block.setScopeEnabled(backgroundTrack, scope: .key(.editorSelect), enabled: false)
       timelineProperties.backgroundTrack = backgroundTrack
     } catch {
@@ -1076,7 +1077,7 @@ extension Interactor: TimelineInteractor {
         if try engine.block.isScopeEnabled(id, scope: .key(.layerCrop)),
            try engine.block.getKind(id) != BlockKindKey.sticker.rawValue {
           try engine.block.resetCrop(id)
-          try engine.block.fillParent(backgroundTrack)
+          try engine.block.fillParent(id)
         }
       }
 

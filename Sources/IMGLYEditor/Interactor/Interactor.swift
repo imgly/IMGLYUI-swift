@@ -766,12 +766,15 @@ extension Interactor: AssetLibraryInteractor {
             try engine.block.setMetadata(id, key: "name", value: label)
           }
 
-          if asset.fillType == FillType.video.rawValue {
-            let fill = try engine.block.getFill(id)
-            try await engine.block.forceLoadAVResource(fill)
-            let newFootageDuration = try engine.block.getAVResourceTotalDuration(fill)
-            try engine.block.setDuration(id, duration: min(newFootageDuration, oldDuration))
-          } else if asset.blockType == BlockType.audio.rawValue {
+          if try engine.block.hasFill(id) {
+            let fillID = try engine.block.getFill(id)
+            let fillType = try engine.block.getType(fillID)
+            if fillType == FillType.video.rawValue {
+              try await engine.block.forceLoadAVResource(fillID)
+              let newFootageDuration = try engine.block.getAVResourceTotalDuration(fillID)
+              try engine.block.setDuration(id, duration: min(newFootageDuration, oldDuration))
+            }
+          } else if try engine.block.getType(id) == BlockType.audio.rawValue {
             try await engine.block.forceLoadAVResource(id)
             let newFootageDuration = try engine.block.getAVResourceTotalDuration(id)
             try engine.block.setDuration(id, duration: min(newFootageDuration, oldDuration))
@@ -806,7 +809,7 @@ extension Interactor: AssetLibraryInteractor {
                 }
                 // Append to background track and configure
                 try engine.block.appendChild(to: backgroundTrack, child: id)
-                try engine.block.fillParent(backgroundTrack)
+                try engine.block.fillParent(id)
 
                 try engine.block.setPlaybackTime(pageID, time: absoluteStartTime(id: id))
               } else {
@@ -820,7 +823,8 @@ extension Interactor: AssetLibraryInteractor {
                 // Prevent inserting at the very end of the timeline
                 var clampedOffset = max(0, min(playbackTime, totalDuration - minClipDuration))
 
-                if asset.blockType == BlockType.audio.rawValue {
+                if let blockType = try? engine.block.getType(id),
+                   blockType == BlockType.audio.rawValue {
                   // Always insert audio at the beginning
                   clampedOffset = 0
                 }
@@ -845,19 +849,22 @@ extension Interactor: AssetLibraryInteractor {
                 try engine.block.setMetadata(id, key: "name", value: label)
               }
 
-              if asset.fillType == FillType.video.rawValue,
-                 let fill = try? engine.block.getFill(id) {
-                // Wait for the video data to load
-                try await engine.block.forceLoadAVResource(fill)
+              if try engine.block.hasFill(id) {
+                let fillID = try engine.block.getFill(id)
+                let fillType = try engine.block.getType(fillID)
+                if fillType == FillType.video.rawValue {
+                  // Wait for the video data to load
+                  try await engine.block.forceLoadAVResource(fillID)
 
-                let footageDuration = try engine.block.getAVResourceTotalDuration(fill)
-                if addToBackgroundTrack {
-                  try engine.block.setDuration(id, duration: footageDuration)
-                } else {
-                  try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
+                  let footageDuration = try engine.block.getAVResourceTotalDuration(fillID)
+                  if addToBackgroundTrack {
+                    try engine.block.setDuration(id, duration: footageDuration)
+                  } else {
+                    try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
+                  }
+                  try engine.block.setLooping(fillID, looping: false)
                 }
-                try engine.block.setLooping(fill, looping: false)
-              } else if asset.blockType == BlockType.audio.rawValue {
+              } else if try engine.block.getType(id) == BlockType.audio.rawValue {
                 // Prevent audio blocks from being considered in the z-index reordering
                 try engine.block.setAlwaysOnTop(id, enabled: true)
 
@@ -868,6 +875,8 @@ extension Interactor: AssetLibraryInteractor {
                 try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
                 try engine.block.setLooping(id, looping: false)
               }
+            case .none:
+              assertionFailure("Unknown scene mode.")
             @unknown default:
               assertionFailure("Unknown scene mode.")
             }
@@ -1354,6 +1363,7 @@ internal extension Interactor {
   }
 
   func exportScene() {
+    pause()
     let lastTask = exportTask
     lastTask?.cancel()
     isExporting = true

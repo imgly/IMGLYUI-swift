@@ -41,7 +41,7 @@ struct ReorderingThumbnailView: View {
   @Binding var clips: [Clip]
   @Binding var draggedClip: Clip?
 
-  @State var thumbnailWidth: CGFloat = 0
+  let thumbnailWidth: CGFloat
   let thumbnailHeight: CGFloat
   let thumbnailSpacing: CGFloat
 
@@ -67,6 +67,7 @@ struct ReorderingThumbnailView: View {
     self.clip = clip
     _clips = clips
     _draggedClip = draggedClip
+    thumbnailWidth = round(thumbnailHeight / 16 * 9)
     self.thumbnailHeight = thumbnailHeight
     self.thumbnailSpacing = thumbnailSpacing
     self.thumbnailsProvider = thumbnailsProvider
@@ -100,6 +101,7 @@ struct ReorderingThumbnailView: View {
               if let image = thumbnailsProvider.images.first {
                 Image(uiImage: UIImage(cgImage: image ?? UIImage().cgImage!))
                   .resizable()
+                  .aspectRatio(contentMode: .fill)
               }
             }
             .mask(RoundedRectangle(cornerRadius: cornerRadius))
@@ -206,10 +208,6 @@ struct ReorderingThumbnailView: View {
                 yOffset = rubberband(value.translation.height)
                 isDragging = dragState.isDragging
               }
-            }
-            .onAppear {
-              let aspectRatio: Double = (try? interactor.getAspectRatio(clip: clip)) ?? 1
-              thumbnailWidth = thumbnailHeight * aspectRatio
             }
         }
       }

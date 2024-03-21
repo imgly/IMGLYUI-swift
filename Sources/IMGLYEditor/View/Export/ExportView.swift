@@ -10,6 +10,7 @@ struct ExportView: View {
   }
 
   let state: State
+  @SwiftUI.State private var isShowingCancelExportDialog = false
 
   private struct Header<Content: View>: View {
     @ViewBuilder let content: () -> Content
@@ -60,9 +61,22 @@ struct ExportView: View {
         Message(title: "Exporting",
                 text: "Just a few seconds...") {
           Button(role: .cancel) {
-            cancelAction()
+            isShowingCancelExportDialog = true
           } label: {
             Text("Cancel")
+          }
+        }
+        .interactiveDismissDisabled()
+        .confirmationDialog(
+          "Are you sure you want to stop exporting?\nThis will delete your current progress and return to the editor.",
+          isPresented: $isShowingCancelExportDialog,
+          titleVisibility: .visible
+        ) {
+          Button("Stop Exporting", role: .destructive) {
+            cancelAction()
+          }
+          Button("Cancel", role: .cancel) {
+            isShowingCancelExportDialog = false
           }
         }
       case let .completed(title, completedAction):

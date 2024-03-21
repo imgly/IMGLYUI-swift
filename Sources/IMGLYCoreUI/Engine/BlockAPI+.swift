@@ -18,7 +18,7 @@ extension MappedType {
 @_spi(Internal) extension Double: MappedType {}
 @_spi(Internal) extension String: MappedType {}
 @_spi(Internal) extension URL: MappedType {}
-@_spi(Internal) extension RGBA: MappedType {}
+@_spi(Internal) extension IMGLYEngine.Color: MappedType {}
 @_spi(Internal) extension CGColor: MappedType {}
 @_spi(Internal) extension SwiftUI.Color: MappedType {}
 @_spi(Internal) extension GradientColorStop: MappedType {}
@@ -103,12 +103,21 @@ extension MappedType {
       return try unwrap(ColorFillType(rawValue: getString(id, property: property)) as? T)
 
     // .color mappings
-    case (RGBA.objectIdentifier, .color):
-      return try unwrap(getColor(id, property: property) as RGBA as? T)
+    case (IMGLYEngine.Color.objectIdentifier, .color):
+      let color: IMGLYEngine.Color = try getColor(id, property: property)
+      return try unwrap(color as? T)
     case (CGColor.objectIdentifier, .color):
-      return try unwrap(getColor(id, property: property).color() as? T)
+      let color: IMGLYEngine.Color = try getColor(id, property: property)
+      guard let cgColor = color.cgColor else {
+        throw Error(errorDescription: "Could not convert IMGLYEngine.Color to CGColor.")
+      }
+      return try unwrap(cgColor as? T)
     case (SwiftUI.Color.objectIdentifier, .color):
-      return try unwrap(SwiftUI.Color(cgColor: getColor(id, property: property).color()) as? T)
+      let color: IMGLYEngine.Color = try getColor(id, property: property)
+      guard let cgColor = color.cgColor else {
+        throw Error(errorDescription: "Could not convert IMGLYEngine.Color to CGColor.")
+      }
+      return try unwrap(SwiftUI.Color(cgColor: cgColor) as? T)
 
     // .struct mappings
     case ([GradientColorStop].objectIdentifier, .struct):
@@ -181,16 +190,21 @@ extension MappedType {
       }
 
     // .color mappings
-    case (RGBA.objectIdentifier, .color):
-      let color = try unwrap(value as? RGBA)
-      try setColor(id, property: property, r: color.r, g: color.g, b: color.b, a: color.a)
+    case (IMGLYEngine.Color.objectIdentifier, .color):
+      try setColor(id, property: property, color: unwrap(value as? IMGLYEngine.Color))
     case (CGColor.objectIdentifier, .color):
       // swiftlint:disable:next force_cast
-      let color = try (value as! CGColor).rgba()
-      try setColor(id, property: property, r: color.r, g: color.g, b: color.b, a: color.a)
-    case (Color.objectIdentifier, .color):
-      let color = try unwrap(value as? SwiftUI.Color).asCGColor.rgba()
-      try setColor(id, property: property, r: color.r, g: color.g, b: color.b, a: color.a)
+      let cgColor = value as! CGColor
+      guard let color = IMGLYEngine.Color(cgColor: cgColor) else {
+        throw Error(errorDescription: "Could not convert CGColor to IMGLYEngine.Color.")
+      }
+      try setColor(id, property: property, color: color)
+    case (SwiftUI.Color.objectIdentifier, .color):
+      let cgColor = try unwrap(value as? SwiftUI.Color).asCGColor
+      guard let color = IMGLYEngine.Color(cgColor: cgColor) else {
+        throw Error(errorDescription: "Could not convert CGColor to IMGLYEngine.Color.")
+      }
+      try setColor(id, property: property, color: color)
 
     // .struct mappings
     case ([GradientColorStop].objectIdentifier, .struct):

@@ -27,11 +27,7 @@ public struct Camera: View {
     config: CameraConfiguration = .init(),
     onDismiss: @escaping (Result<[Recording], CameraError>) -> Void
   ) {
-    let camera = CameraModel(
-      license: settings.license,
-      config: config,
-      onDismiss: onDismiss
-    )
+    let camera = CameraModel(settings, config: config, onDismiss: onDismiss)
 
     _camera = StateObject(wrappedValue: camera)
   }

@@ -1,4 +1,4 @@
-// swift-tools-version: 5.8
+// swift-tools-version: 5.9
 import PackageDescription
 
 let package = Package(
@@ -7,7 +7,6 @@ let package = Package(
   products: [
     // Comment out these products for development to fix SwiftUI previews inside this package
     .library(name: "IMGLYCamera", targets: ["IMGLYCamera"]),
-    .library(name: "IMGLYEditor", targets: ["IMGLYEditor"]),
     .library(name: "IMGLYDesignEditor", targets: ["IMGLYDesignEditor"]),
     .library(name: "IMGLYVideoEditor", targets: ["IMGLYVideoEditor"]),
     .library(name: "IMGLYApparelEditor", targets: ["IMGLYApparelEditor"]),
@@ -27,9 +26,9 @@ let package = Package(
              ])
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.23.0-rc.0"),
-    .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", exact: "1.1.2"),
-    .package(url: "https://github.com/onevcat/Kingfisher.git", exact: "7.6.2")
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.23.0-rc.1"),
+    .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "1.1.2"),
+    .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.6.2")
   ],
   targets: [
     .target(
