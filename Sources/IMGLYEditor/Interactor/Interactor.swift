@@ -69,6 +69,7 @@ import SwiftUI
   @Published var isCameraSheetShown = false
   @Published var isImagePickerShown = false
   @Published var isLoopingPlaybackEnabled = true
+  @Published var isSelectionVisible = true
 
   var isAddingCameraRecording = false
   var isAddingFromImagePicker = false
@@ -94,8 +95,7 @@ import SwiftUI
 
   var isCanvasActionEnabled: Bool {
     let isGrouped = isGrouped(selection?.blocks.first)
-    let isVisible = isVisibleAtCurrentPlaybackTime(selection?.blocks.first)
-    return !isLoading && !sheet.isPresented && editMode == .transform && !isGrouped && isVisible
+    return !isLoading && !sheet.isPresented && editMode == .transform && !isGrouped && isSelectionVisible
   }
 
   var sheetTypeForSelection: SheetType? {
@@ -1494,6 +1494,10 @@ internal extension Interactor {
 
     if sceneMode == .video,
        let currentPage = timelineProperties.currentPage {
+      let isSelectionVisible = isVisibleAtCurrentPlaybackTime(selection?.blocks.first)
+      if self.isSelectionVisible != isSelectionVisible {
+        self.isSelectionVisible = isSelectionVisible
+      }
       do {
         let isLoopingPlaybackEnabled = try engine.block.isLooping(currentPage)
         if self.isLoopingPlaybackEnabled != isLoopingPlaybackEnabled {
