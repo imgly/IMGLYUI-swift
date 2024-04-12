@@ -2,7 +2,7 @@ import IMGLYCore
 import SwiftUI
 
 @_spi(Internal) public struct AssetLibrarySourcesKey: EnvironmentKey {
-  @_spi(Internal) public static var defaultValue: [AssetLoader.SourceData] = []
+  @_spi(Internal) public static let defaultValue: [AssetLoader.SourceData] = []
 }
 
 @_spi(Internal) public extension EnvironmentValues {

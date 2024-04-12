@@ -1,56 +1,58 @@
 import SwiftUI
 
 struct AssetGridAxisKey: EnvironmentKey {
-  static var defaultValue = Axis.vertical
+  static let defaultValue = Axis.vertical
 }
 
 struct AssetGridItemsKey: EnvironmentKey {
-  static var defaultValue = [GridItem(.flexible())]
+  static let defaultValue = [GridItem(.flexible())]
 }
 
 struct AssetGridSpacingKey: EnvironmentKey {
-  static var defaultValue: CGFloat?
+  static let defaultValue: CGFloat? = nil
 }
 
 struct AssetGridEdgesKey: EnvironmentKey {
-  static var defaultValue: Edge.Set = .all
+  static let defaultValue: Edge.Set = .all
 }
 
 struct AssetGridPaddingKey: EnvironmentKey {
-  static var defaultValue: CGFloat?
+  static let defaultValue: CGFloat? = nil
 }
 
 struct AssetGridMessageTextOnlyKey: EnvironmentKey {
-  static var defaultValue = false
+  static let defaultValue = false
 }
 
 struct AssetGridMaxItemCountKey: EnvironmentKey {
-  static var defaultValue = Int.max
+  static let defaultValue = Int.max
 }
 
-@_spi(Internal) public typealias AssetGridPlaceholderCount = (_ state: AssetLoader.Models.State, _ maxItemCount: Int)
-  -> Int
+@_spi(Internal) public typealias AssetGridPlaceholderCount = @Sendable @MainActor (
+  _ state: AssetLoader.Models.State,
+  _ maxItemCount: Int
+) -> Int
 
 struct AssetGridPlaceholderCountKey: EnvironmentKey {
-  static var defaultValue: AssetGridPlaceholderCount = { state, maxItemCount in
+  static let defaultValue: AssetGridPlaceholderCount = { state, maxItemCount in
     state == .loading ? min(20, maxItemCount) : 0
   }
 }
 
 struct AssetGridSourcePaddingKey: EnvironmentKey {
-  static var defaultValue: CGFloat = 0
+  static let defaultValue: CGFloat = 0
 }
 
-@_spi(Internal) public typealias AssetGridItemIndex = (_ asset: AssetLoader.Asset) -> AnyHashable?
+@_spi(Internal) public typealias AssetGridItemIndex = @Sendable @MainActor (_ asset: AssetLoader.Asset) -> AnyHashable?
 
 struct AssetGridItemIndexKey: EnvironmentKey {
-  static var defaultValue: AssetGridItemIndex = { _ in nil }
+  static let defaultValue: AssetGridItemIndex = { _ in nil }
 }
 
-@_spi(Internal) public typealias AssetGridOnAppear = (ScrollViewProxy) -> Void
+@_spi(Internal) public typealias AssetGridOnAppear = @Sendable @MainActor (ScrollViewProxy) -> Void
 
 struct AssetGridOnAppearKey: EnvironmentKey {
-  static var defaultValue: AssetGridOnAppear = { _ in }
+  static let defaultValue: AssetGridOnAppear = { _ in }
 }
 
 extension EnvironmentValues {

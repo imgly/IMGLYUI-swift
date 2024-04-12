@@ -520,7 +520,7 @@ extension Interactor: TimelineInteractor {
       }
 
       // Remove all clips and tracks from the data source.
-      timelineProperties.dataSource.reset()
+      timelineProperties.resetClips()
 
       // Then we walk through everything the engine gave us and recreate every clip in the timeline.
       for block in blocks {

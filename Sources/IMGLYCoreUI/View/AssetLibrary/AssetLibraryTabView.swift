@@ -19,6 +19,7 @@ public struct AssetLibraryTabView<Content: View, Label: View>: View {
   @Environment(\.imglyIsAssetLibraryMoreTab) private var isMoreTab
   @Environment(\.imglyAssetLibraryTitleDisplayMode) private var titleDisplayMode
 
+  @MainActor
   @ViewBuilder var tabContent: some View {
     TabContent(title: title, content: content)
   }

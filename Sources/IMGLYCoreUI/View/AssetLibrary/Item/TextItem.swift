@@ -40,7 +40,7 @@ struct TextItem: View {
                   fontName = registeredFontName
                   return
                 }
-                let (data, _) = try await URLSession.get(url)
+                let (data, _) = try await URLSession.shared.get(url)
                 let fonts = FontImporter.importFonts([fontID: data])
                 if let name = fonts.first?.value {
                   fontName = name

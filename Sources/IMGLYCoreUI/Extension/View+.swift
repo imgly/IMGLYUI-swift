@@ -98,6 +98,7 @@ extension IMGLY where Wrapped: View {
     wrapped.modifier(SearchableAssetLibraryTab())
   }
 
+  @MainActor
   func assetFileUploader(isPresented: Binding<Bool>, allowedContentTypes: [UTType],
                          onCompletion: @escaping AssetFileUploader.Completion = { _ in }) -> some View {
     wrapped.modifier(AssetFileUploader(isPresented: isPresented, allowedContentTypes: allowedContentTypes,

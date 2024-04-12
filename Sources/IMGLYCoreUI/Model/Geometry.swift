@@ -1,6 +1,6 @@
 import SwiftUI
 
-@_spi(Internal) public struct Geometry: Equatable {
+@_spi(Internal) public struct Geometry: Equatable, @unchecked Sendable {
   @_spi(Internal) public init(_ proxy: GeometryProxy, _ coordinateSpace: CoordinateSpace) {
     frame = proxy.frame(in: coordinateSpace)
     safeAreaInsets = proxy.safeAreaInsets

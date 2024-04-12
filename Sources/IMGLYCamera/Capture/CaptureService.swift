@@ -196,10 +196,10 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
   // MARK: -
 
-  func resumeStreaming() -> AsyncThrowingStream<CaptureStreamUpdate, Error> {
+  func resumeStreaming(with flashMode: CameraModel.FlashMode) -> AsyncThrowingStream<CaptureStreamUpdate, Error> {
     startRunning()
+    setFlash(mode: flashMode)
     isStreaming = true
-
     return .init { continuation in
       streamingContinuation = continuation
 
@@ -343,10 +343,9 @@ final class CaptureService: NSObject, @unchecked Sendable {
   }
 
   func setFlash(mode: CameraModel.FlashMode) {
-    guard let device = camera1Input?.device else { return }
+    guard let device = camera1Input?.device, device.hasTorch else { return }
 
     queue.async {
-      guard device.hasTorch else { return }
       do {
         try device.lockForConfiguration()
         switch mode {

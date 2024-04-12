@@ -144,7 +144,7 @@ private extension AssetLibraryInteractor {
   static func getSizeAndThumb(url: URL, thumbURL: URL?, fillType: FillType) async throws -> (CGSize, URL) {
     switch fillType {
     case .image:
-      let (data, _) = try await URLSession.get(url)
+      let (data, _) = try await URLSession.shared.get(url)
       guard let image = UIImage(data: data) else {
         throw Error(errorDescription: "Unsupported image data.")
       }

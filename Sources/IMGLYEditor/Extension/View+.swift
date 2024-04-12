@@ -49,6 +49,7 @@ extension IMGLY where Wrapped: View {
     wrapped.environment(\.imglySelection, id)
   }
 
+  @MainActor
   func canvasAction(anchor: UnitPoint = .top, topSafeAreaInset: CGFloat, bottomSafeAreaInset: CGFloat,
                     @ViewBuilder action: @escaping () -> some View) -> some View {
     wrapped.modifier(CanvasAction(

@@ -285,7 +285,7 @@ private struct Update: Equatable {
     guard let versionURL = await versionURL(branch: branch, ciBuildsHost: ciBuildsHost) else {
       throw NetworkError.invalidURL
     }
-    let response = try await URLSession.get(versionURL)
+    let response = try await URLSession.shared.get(versionURL)
     try Task.checkCancellation()
     guard let status = (response.1 as? HTTPURLResponse)?.statusCode else {
       throw NetworkError.invalidResponse

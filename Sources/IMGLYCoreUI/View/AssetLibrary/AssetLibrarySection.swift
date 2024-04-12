@@ -89,6 +89,7 @@ extension EnvironmentValues {
   }
 }
 
+@MainActor
 struct SeeAll: View {
   let destination: AnyView
 
@@ -124,6 +125,7 @@ extension EnvironmentValues {
   }
 }
 
+@MainActor
 struct DismissButton: View {
   let content: AnyView
 

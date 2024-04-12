@@ -33,7 +33,7 @@ private enum PreviewServerRequestState<Value> {
         ProgressView()
           .task {
             do {
-              let (data, _) = try await URLSession.get(request)
+              let (data, _) = try await URLSession.shared.get(request)
               let secrets = try JSONDecoder().decode(Secrets.self, from: data)
               state.wrappedValue = .loaded(secrets)
             } catch {

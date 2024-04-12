@@ -37,4 +37,11 @@ internal class TimelineProperties: ObservableObject {
 
   /// The clip that is currently selected in the timeline.
   @Published var selectedClip: Clip?
+
+  // MARK: - Methods
+
+  func resetClips() {
+    dataSource.reset()
+    selectedClip = nil
+  }
 }

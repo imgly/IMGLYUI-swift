@@ -671,11 +671,14 @@ extension Interactor {
     case .editMode: return true
     case .export: return true
     case .toTop, .up, .down, .toBottom:
-      var isInBackgroundTrack = false
-      if let id {
-        isInBackgroundTrack = timelineProperties.dataSource.findClip(id: id)?.isInBackgroundTrack ?? false
+      let canReorderTrack: Bool
+      if let id, let clip = timelineProperties.dataSource.findClip(id: id),
+         clip.isInBackgroundTrack || clip.clipType == .audio {
+        canReorderTrack = false
+      } else {
+        canReorderTrack = true
       }
-      return isAllowed(id, scope: .editorAdd) && !isGrouped(id) && !isInBackgroundTrack
+      return isAllowed(id, scope: .editorAdd) && !isGrouped(id) && canReorderTrack
     case .duplicate:
       return isAllowed(id, scope: .lifecycleDuplicate) && !isGrouped(id)
     case .delete:
@@ -753,7 +756,7 @@ extension Interactor: AssetLibraryInteractor {
               try engine.block.setContentFillMode($0, mode: .contain)
             }
           }
-          if try engine.editor.getSettingEnum("role") == "Adopter" {
+          if try engine.editor.getRole() == "Adopter" {
             try engine.block.setPlaceholderEnabled(id, enabled: false)
           }
           try engine.editor.addUndoStep()
@@ -1341,7 +1344,7 @@ internal extension Interactor {
     // Currently, the global scopes only apply to the "Creator" role so we
     // temporarly switch to the "Creator" role to prevent selection of blocks.
     try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .deny)
-    try engine?.editor.setSettingEnum("role", value: "Creator")
+    try engine?.editor.setRole("Creator")
     // Call engine?.enablePreviewMode() in updateZoom to avoid page fill flickering.
     withAnimation(.default) {
       isEditing = false
@@ -1355,7 +1358,7 @@ internal extension Interactor {
     // Currently, the global scopes only apply to the "Creator" role so we
     // temporarly switch to the "Creator" role to prevent selection of blocks.
     try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .defer)
-    try engine?.editor.setSettingEnum("role", value: "Adopter")
+    try engine?.editor.setRole("Adopter")
     try getContext(behavior.enableEditMode)
     withAnimation(.default) {
       isEditing = true
@@ -1442,7 +1445,7 @@ internal extension Interactor {
       return nil
     }
     do {
-      guard try engine.editor.getSettingEnum("role") == "Adopter",
+      guard try engine.editor.getRole() == "Adopter",
             try engine.block.hasPlaceholderControls(block) else {
         return nil
       }

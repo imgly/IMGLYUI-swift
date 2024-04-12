@@ -26,9 +26,9 @@ let package = Package(
              ])
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.24.0"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.25.0-rc.0"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "1.1.2"),
-    .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.6.2")
+    .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.10.0")
   ],
   targets: [
     .target(
@@ -75,9 +75,11 @@ let package = Package(
 )
 
 for target in package.targets {
-  var settings = target.swiftSettings ?? []
-  // Uncomment for development
-//  settings.append(.enableExperimentalFeature("StrictConcurrency")) // Xcode 15
-//  settings.append(.unsafeFlags(["-strict-concurrency=complete"])) // Xcode 14, don't use `unsafeFlags` in production!
+  let settings = target.swiftSettings ?? []
+  // Use this for development
+  // var settings = target.swiftSettings ?? []
+  // settings.append(.enableExperimentalFeature("StrictConcurrency")) // Xcode 15
+  // settings.append(.unsafeFlags(["-strict-concurrency=complete"])) // Xcode 14, don't use `unsafeFlags` in
+  // production!
   target.swiftSettings = settings
 }

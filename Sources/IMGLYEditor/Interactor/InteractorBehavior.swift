@@ -77,10 +77,8 @@ import SwiftUI
 
   func loadSettings(_ context: InteractorContext) throws {
     // Set role first as it affects other settings
-    try context.engine.editor.setSettingEnum("role", value: "Adopter")
-
+    try context.engine.editor.setRole("Adopter")
     try context.engine.editor.setSettingBool("doubleClickToCropEnabled", value: true)
-    try context.engine.editor.setSettingEnum("doubleClickSelectionMode", value: "Direct")
 
     try context.engine.editor.setSettingEnum("camera/clamping/overshootMode", value: "Center")
     let color: IMGLYEngine.Color = try context.engine.editor.getSettingColor("highlightColor")

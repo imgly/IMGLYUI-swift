@@ -1,6 +1,5 @@
 import SwiftUI
 
-@MainActor
 struct AssetLibraryKey: EnvironmentKey {
   static let defaultValue: AnyAssetLibrary? = nil
 }
@@ -12,7 +11,8 @@ struct AssetLibraryKey: EnvironmentKey {
   }
 }
 
-@_spi(Internal) public struct AnyAssetLibrary: AssetLibrary, Sendable {
+@MainActor
+@_spi(Internal) public struct AnyAssetLibrary: AssetLibrary {
   @_spi(Internal) public var videosTab: some View { AnyView(erasing: assetLibrary().videosTab) }
   @_spi(Internal) public var audioTab: some View { AnyView(erasing: assetLibrary().audioTab) }
   @_spi(Internal) public var imagesTab: some View { AnyView(erasing: assetLibrary().imagesTab) }

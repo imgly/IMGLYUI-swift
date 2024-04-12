@@ -4,7 +4,7 @@ import SwiftUI
 public typealias AssetLibrarySceneMode = SceneMode
 
 public struct AssetLibrarySceneModeKey: EnvironmentKey {
-  @_spi(Internal) public static var defaultValue: AssetLibrarySceneMode?
+  @_spi(Internal) public static let defaultValue: AssetLibrarySceneMode? = nil
 }
 
 public extension EnvironmentValues {
@@ -147,6 +147,7 @@ public extension AssetLibraryGroup<EmptyView> {
   }
 }
 
+@MainActor
 public extension AssetPreview {
   static let imageOrVideo = Self(height: 96)
   static let shapeOrSticker = Self(height: 80)

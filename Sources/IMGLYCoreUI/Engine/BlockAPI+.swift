@@ -281,7 +281,7 @@ extension MappedType {
     guard let parent = try getParent(id) else {
       return false
     }
-    let children = try getChildren(parent)
+    let children = try getReorderableChildren(parent, child: id)
     return children.last != id
   }
 
@@ -289,47 +289,28 @@ extension MappedType {
     guard let parent = try getParent(id) else {
       return false
     }
-    let children = try getChildren(parent)
+    let children = try getReorderableChildren(parent, child: id)
     return children.first != id
   }
 
-  func bringToFront(_ id: DesignBlockID) throws {
-    guard let parent = try getParent(id) else {
-      return
-    }
-    let children = try getChildren(parent)
-    if let index = children.firstIndex(of: id), index < children.endIndex - 1 {
-      try appendChild(to: parent, child: id)
-    }
-  }
+  /// Get all reorderable children for a given parent and contained child.
+  /// This method filters out children that are not reorderable with the given child.
+  func getReorderableChildren(_ parent: DesignBlockID, child: DesignBlockID) throws -> [IMGLYEngine.DesignBlockID] {
+    let childIsAlwaysOnTop = try isAlwaysOnTop(child)
+    let childIsAlwaysOnBottom = try isAlwaysOnBottom(child)
+    let childType = try getType(child)
 
-  func bringForward(_ id: DesignBlockID) throws {
-    guard let parent = try getParent(id) else {
-      return
-    }
-    let children = try getChildren(parent)
-    if let index = children.firstIndex(of: id), index < children.endIndex - 1 {
-      try insertChild(into: parent, child: id, at: index + 1)
-    }
-  }
-
-  func sendBackward(_ id: DesignBlockID) throws {
-    guard let parent = try getParent(id) else {
-      return
-    }
-    let children = try getChildren(parent)
-    if let index = children.firstIndex(of: id), index > 0 {
-      try insertChild(into: parent, child: id, at: index - 1)
-    }
-  }
-
-  func sendToBack(_ id: DesignBlockID) throws {
-    guard let parent = try getParent(id) else {
-      return
-    }
-    let children = try getChildren(parent)
-    if let index = children.firstIndex(of: id), index > 0 {
-      try insertChild(into: parent, child: id, at: 0)
+    return try getChildren(parent).filter {
+      let matchingIsAlwaysOnTop = try childIsAlwaysOnTop == isAlwaysOnTop($0)
+      let matchingIsAlwaysOnBottom = try childIsAlwaysOnBottom == isAlwaysOnBottom($0)
+      let matchingType: Bool
+      switch childType {
+      case DesignBlockType.audio.rawValue:
+        matchingType = try DesignBlockType.audio.rawValue == getType($0)
+      default:
+        matchingType = try DesignBlockType.audio.rawValue != getType($0)
+      }
+      return matchingIsAlwaysOnTop && matchingIsAlwaysOnBottom && matchingType
     }
   }
 }

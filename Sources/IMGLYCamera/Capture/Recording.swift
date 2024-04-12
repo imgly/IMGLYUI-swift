@@ -1,8 +1,8 @@
 import CoreMedia
 import Foundation
 
-public struct Recording: Equatable {
-  public struct Video: Equatable {
+public struct Recording: Equatable, Sendable {
+  public struct Video: Equatable, Sendable {
     public let url: URL
     public let rect: CGRect
   }

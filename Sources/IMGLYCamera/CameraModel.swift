@@ -143,6 +143,9 @@ final class CameraModel: ObservableObject {
       } catch {
         handleEngineError(error)
       }
+
+      // Re-enable the flash in case it was previously activated.
+      captureService.setFlash(mode: flashMode)
     }
   }
 
@@ -239,7 +242,9 @@ final class CameraModel: ObservableObject {
       guard let interactor else { return }
 
       cameraStreamTask = Task {
-        for try await event in captureService.resumeStreaming() {
+        // The captureSession resets its properties, including flash state, at the start of each capture. To maintain
+        // consistency, we explicitly set the flash to its desired state ('flashMode') after initiating streaming.
+        for try await event in captureService.resumeStreaming(with: flashMode) {
           switch event {
           case let .output1Frame(buffer):
             try interactor.updatePixelStreamFill1(buffer: buffer)

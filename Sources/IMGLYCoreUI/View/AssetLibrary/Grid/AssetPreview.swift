@@ -10,6 +10,7 @@ public struct AssetPreview: View {
     self.height = height
   }
 
+  @MainActor
   @ViewBuilder func item(_ assetItem: AssetItem) -> some View {
     if case let .asset(asset) = assetItem {
       // If not set assume the default engine value.

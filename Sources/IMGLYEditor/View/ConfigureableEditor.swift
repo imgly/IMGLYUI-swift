@@ -1,15 +1,15 @@
 import SwiftUI
 
 struct OnCreateKey: EnvironmentKey {
-  static var defaultValue: OnCreate.Callback?
+  static let defaultValue: OnCreate.Callback? = nil
 }
 
 struct OnExportKey: EnvironmentKey {
-  static var defaultValue: OnExport.Callback?
+  static let defaultValue: OnExport.Callback? = nil
 }
 
 struct OnUploadKey: EnvironmentKey {
-  static var defaultValue: OnUpload.Callback?
+  static let defaultValue: OnUpload.Callback? = nil
 }
 
 @_spi(Internal) public extension EnvironmentValues {
