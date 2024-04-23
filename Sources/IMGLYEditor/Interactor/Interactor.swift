@@ -1344,7 +1344,7 @@ internal extension Interactor {
     // Currently, the global scopes only apply to the "Creator" role so we
     // temporarly switch to the "Creator" role to prevent selection of blocks.
     try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .deny)
-    try engine?.editor.setRole("Creator")
+    try engine?.editor.setRoleButPreserveGlobalScopes("Creator")
     // Call engine?.enablePreviewMode() in updateZoom to avoid page fill flickering.
     withAnimation(.default) {
       isEditing = false
@@ -1358,7 +1358,7 @@ internal extension Interactor {
     // Currently, the global scopes only apply to the "Creator" role so we
     // temporarly switch to the "Creator" role to prevent selection of blocks.
     try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .defer)
-    try engine?.editor.setRole("Adopter")
+    try engine?.editor.setRoleButPreserveGlobalScopes("Adopter")
     try getContext(behavior.enableEditMode)
     withAnimation(.default) {
       isEditing = true
