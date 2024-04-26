@@ -87,7 +87,7 @@ import SwiftUI
 
   var sceneMode: SceneMode? {
     // Make sure scene is loaded before calling `scene.getMode()` as it'll force unwrap the scene.
-    guard !isLoading, let engine, (try? engine.scene.get()) != nil else {
+    guard let engine, (try? engine.scene.get()) != nil else {
       return nil
     }
     return try? engine.scene.getMode()
@@ -277,37 +277,42 @@ extension Interactor {
 extension Interactor {
   /// Create a `TextState` binding for a block `id`.
   /// If `resetFontProperties` is enabled bold and italic states would not be preserved on set.
-  func bindTextState(_ id: BlockID?, resetFontProperties: Bool) -> Binding<TextState> {
-    let fontURL: Binding<URL?> = bind(id, property: .key(.textFontFileURI))
-    return .init {
-      if let fontURL = fontURL.wrappedValue {
-        let selected = self.fontLibrary.fontFor(url: fontURL)
-        var text = TextState()
-        text.fontID = selected?.font.id
-        text.fontFamilyID = selected?.family.id
-        text.setFontProperties(selected?.family.fontProperties(for: selected?.font.id))
-        return text
-      } else {
-        return TextState()
+  func bindTextState(_ id: BlockID?, resetFontProperties: Bool, overrideScopes: Set<Scope> = []) -> Binding<TextState> {
+    bind(id, default: TextState()) { engine, block in
+      var text = TextState()
+      text.assetID = self.fontLibrary.assetFor(typefaceName: try engine.block.getTypeface(block).name)?.id
+      text.setFontProperties(try engine.block.getFontProperties(block))
+      return text
+    } setter: { engine, blocks, text, completion in
+      guard let assetID = text.assetID,
+            let typeface = self.fontLibrary.typefaceFor(id: assetID) else {
+        return false
       }
-    } set: { text in
-      func font(fontFamily: FontFamily) -> Font? {
+
+      func font(typeface: Typeface) -> IMGLYEngine.Font? {
         if resetFontProperties {
-          return fontFamily.someFont
+          return typeface.previewFont
         } else {
-          return fontFamily.font(for: .init(bold: text.isBold, italic: text.isItalic)) ?? fontFamily.someFont
+          return typeface.font(for: .init(bold: text.isBold, italic: text.isItalic)) ?? typeface.previewFont
         }
       }
 
-      if let fontFamilyID = text.fontFamilyID, let fontFamily = self.fontLibrary.fontFamilyFor(id: fontFamilyID),
-         let font = font(fontFamily: fontFamily),
-         let selected = self.fontLibrary.fontFor(id: font.id) {
-        fontURL.wrappedValue = selected.font.url
+      if let font = font(typeface: typeface) {
+        let changed = try blocks.filter {
+          try engine.block.get($0, property: .key(.textFontFileURI)) != font.uri
+        }
+        try changed.forEach {
+          try engine.block.overrideAndRestore($0, scopes: overrideScopes) {
+            try engine.block.setFont($0, fontFileURL: font.uri, typeface: typeface)
+          }
+        }
+        let didChange = !changed.isEmpty
+        return try (completion?(engine, blocks, didChange) ?? false) || didChange
+      } else {
+        return false
       }
     }
   }
-
-  // swiftlint:disable cyclomatic_complexity
 
   /// Create `SelectionColor` bindings categorized by block names for a given set of `selectionColors`.
   func bind(_ selectionColors: SelectionColors,
@@ -362,23 +367,17 @@ extension Interactor {
           guard let properties = selectionColors[name, color] else {
             return
           }
-          do {
-            try properties.forEach { property, ids in
-              var gradientIDs: [DesignBlockID] = []
-              ids.forEach { id in
-                if self.hasGradientFill(id) {
-                  gradientIDs.append(id)
-                }
+          properties.forEach { property, ids in
+            var gradientIDs: [DesignBlockID] = []
+            ids.forEach { id in
+              if self.hasGradientFill(id) {
+                gradientIDs.append(id)
               }
-              _ = try self.engine?.block.overrideAndRestore(gradientIDs, .fill, scope: .key(.lifecycleDestroy)) { _ in
-                self.set(gradientIDs, .fill, property: .key(.type), value: ColorFillType.solid, completion: nil)
-              }
-              _ = self.set(ids, property: property, value: value,
-                           setter: Setter.set(overrideScopes: [.key(.fillChange), .key(.strokeChange)]),
-                           completion: completion)
             }
-          } catch {
-            self.handleErrorWithTask(error)
+            _ = self.set(gradientIDs, .fill, property: .key(.type), value: ColorFillType.solid, completion: nil)
+            _ = self.set(ids, property: property, value: value,
+                         setter: Setter.set(overrideScopes: [.key(.fillChange), .key(.strokeChange)]),
+                         completion: completion)
           }
         })
       }
@@ -386,8 +385,6 @@ extension Interactor {
       return (name: name, colors: colors)
     }
   }
-
-  // swiftlint:enable cyclomatic_complexity
 
   /// Create a `property` `Binding` for a block `id`. The `defaultValue` will be used as fallback if the property
   /// cannot be resolved.
@@ -411,10 +408,10 @@ extension Interactor {
 
   /// Create a propertyless `Binding` for a block `id`. The `defaultValue` will be used as fallback if the property
   /// cannot be resolved.
-  func bind<T: MappedType>(_ id: BlockID?, default defaultValue: T,
-                           getter: @escaping RawGetter<T>,
-                           setter: @escaping RawSetter<T>,
-                           completion: PropertyCompletion? = Completion.addUndoStep) -> Binding<T> {
+  func bind<T>(_ id: BlockID?, default defaultValue: T,
+               getter: @escaping RawGetter<T>,
+               setter: @escaping RawSetter<T>,
+               completion: PropertyCompletion? = Completion.addUndoStep) -> Binding<T> {
     .init {
       guard let id, let value: T = self.get(id, getter: getter) else {
         return defaultValue
@@ -450,10 +447,10 @@ extension Interactor {
 
   /// Create a propertyless `Binding` for a block `id`. The value `nil` will be used as fallback if the property
   /// cannot be resolved.
-  func bind<T: MappedType>(_ id: BlockID?,
-                           getter: @escaping RawGetter<T>,
-                           setter: @escaping RawSetter<T>,
-                           completion: PropertyCompletion? = Completion.addUndoStep) -> Binding<T?> {
+  func bind<T>(_ id: BlockID?,
+               getter: @escaping RawGetter<T>,
+               setter: @escaping RawSetter<T>,
+               completion: PropertyCompletion? = Completion.addUndoStep) -> Binding<T?> {
     .init {
       guard let id else {
         return nil
@@ -482,7 +479,7 @@ extension Interactor {
     _ property: Property
   ) throws -> T
 
-  typealias RawGetter<T: MappedType> = @MainActor (
+  typealias RawGetter<T> = @MainActor (
     _ engine: Engine,
     _ block: DesignBlockID
   ) throws -> T
@@ -504,7 +501,7 @@ extension Interactor {
     _ completion: PropertyCompletion?
   ) throws -> Bool
 
-  typealias RawSetter<T: MappedType> = @MainActor (
+  typealias RawSetter<T> = @MainActor (
     _ engine: Engine,
     _ blocks: [DesignBlockID],
     _ value: T,
@@ -926,13 +923,6 @@ extension Interactor: AssetLibraryInteractor {
       try engine.block.scale(id, to: cameraWidth / pageWidth, anchorX: 0.5, anchorY: 0.5)
     }
   }
-
-  @_spi(Internal) public func getBasePath() throws -> String {
-    guard let engine else {
-      throw Error(errorDescription: "Engine unavailable.")
-    }
-    return try engine.editor.getSettingString("basePath")
-  }
 }
 
 // MARK: - Actions
@@ -1134,14 +1124,14 @@ extension Interactor {
         _engine = engine
         onAppear()
 
-        async let loadScene: () = behavior.loadScene(.init(engine, self), with: insets)
-        async let loadFonts = loadFonts(baseURL: config.settings.baseURL)
-        let (_, fonts) = try await (loadScene, loadFonts)
+        try await behavior.loadScene(.init(engine, self), with: insets)
+        try await fontLibrary.loadFromAssetSource(engine: engine, sourceID: Engine.DefaultAssetSource.typeface.rawValue)
 
-        fontLibrary.fonts = fonts
-        isLoading = false
         try configureTimeline()
         self.zoomLevelChanged(forceUpdate: true)
+
+        // Reset history only once after onCreate!
+        try engine.editor.resetHistory()
       } catch {
         handleErrorAndDismiss(error)
       }
@@ -1217,6 +1207,12 @@ extension Interactor {
           guard let engine else { return }
           try await behavior.enablePreviewMode(.init(engine, self), insets)
         }
+        if isLoading {
+          // Wait a moment to be sure that the engine rendered the first intended frame after initial zooming before
+          // presenting the canvas even on low-end devices (iPhone X).
+          try await Task.sleep(for: .milliseconds(100))
+          isLoading = false
+        }
       } catch {
         handleError(error)
       }
@@ -1290,8 +1286,8 @@ internal extension Interactor {
     }
   }
 
-  func get<T: MappedType>(_ id: DesignBlockID,
-                          getter: RawGetter<T>) -> T? {
+  func get<T>(_ id: DesignBlockID,
+              getter: RawGetter<T>) -> T? {
     guard let engine, engine.block.isValid(id) else {
       return nil
     }
@@ -1321,10 +1317,10 @@ internal extension Interactor {
     }
   }
 
-  func set<T: MappedType>(_ ids: [DesignBlockID],
-                          value: T,
-                          setter: RawSetter<T>,
-                          completion: PropertyCompletion?) -> Bool {
+  func set<T>(_ ids: [DesignBlockID],
+              value: T,
+              setter: RawSetter<T>,
+              completion: PropertyCompletion?) -> Bool {
     guard let engine else {
       return false
     }

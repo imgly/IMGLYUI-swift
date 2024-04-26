@@ -17,9 +17,7 @@ struct BlurOptions: View {
     var hasChanges = false
     try blocks.forEach { block in
       if let blur = try? engine.block.getBlur(block), engine.block.isValid(blur) {
-        try engine.block.overrideAndRestore(blur, scope: .key(.lifecycleDestroy)) { id in
-          try engine.block.destroy(id)
-        }
+        try engine.block.destroy(blur)
         hasChanges = true
       }
       if let newIdentifier = value.identifier, let blur = Interactor.BlurType(rawValue: newIdentifier) {

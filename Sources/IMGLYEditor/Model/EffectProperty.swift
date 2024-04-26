@@ -3,21 +3,24 @@ import Foundation
 import SwiftUI
 
 struct EffectProperty: Identifiable {
+  enum Value {
+    case float(range: ClosedRange<Float>, defaultValue: Float?)
+    case color(supportsOpacity: Bool, defaultValue: CGColor?)
+  }
+
   let label: LocalizedStringKey
-  let range: ClosedRange<Float>
+  let value: Value
   let property: Property
   let id: Interactor.BlockID?
-  let defaultValue: Float?
 
   static func properties(for filter: Filter, and selection: Interactor.BlockID?) -> [EffectProperty] {
     let isLUT = filter == .lut
     let property = isLUT ? "lut_filter" : "duotone_filter"
     let intensity = EffectProperty(
       label: "Intensity",
-      range: isLUT ? 0 ... 1 : -1 ... 1,
+      value: .float(range: isLUT ? 0 ... 1 : -1 ... 1, defaultValue: 1),
       property: .raw("effect/\(property)/intensity"),
-      id: selection,
-      defaultValue: 1
+      id: selection
     )
     return [intensity]
   }
@@ -27,132 +30,114 @@ struct EffectProperty: Identifiable {
     case .radial:
       return [EffectProperty(
         label: "Intensity",
-        range: 0 ... 100,
+        value: .float(range: 0 ... 100, defaultValue: 30),
         property: .key(.blurRadialBlurRadius),
-        id: selection,
-        defaultValue: 30
+        id: selection
       ),
       EffectProperty(
         label: "Size of Gradient",
-        range: 0 ... 1000,
+        value: .float(range: 0 ... 1000, defaultValue: 50),
         property: .key(.blurRadialGradientRadius),
-        id: selection,
-        defaultValue: 50
+        id: selection
       ),
       EffectProperty(
         label: "Size of non-blurred Area",
-        range: 0 ... 1000,
+        value: .float(range: 0 ... 1000, defaultValue: 75),
         property: .key(.blurRadialRadius),
-        id: selection,
-        defaultValue: 75
+        id: selection
       ),
       EffectProperty(
         label: "Point - X",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurRadialX),
-        id: selection,
-        defaultValue: 0.5
+        id: selection
       ),
       EffectProperty(
         label: "Point - Y",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurRadialY),
-        id: selection,
-        defaultValue: 0.5
+        id: selection
       )]
     case .mirrored:
       return [EffectProperty(
         label: "Intensity",
-        range: 0 ... 100,
+        value: .float(range: 0 ... 100, defaultValue: 30),
         property: .key(.blurMirroredBlurRadius),
-        id: selection,
-        defaultValue: 30
+        id: selection
       ),
       EffectProperty(
         label: "Size of Gradient",
-        range: 0 ... 1000,
+        value: .float(range: 0 ... 1000, defaultValue: 50),
         property: .key(.blurMirroredGradientSize),
-        id: selection,
-        defaultValue: 50
+        id: selection
       ),
       EffectProperty(
         label: "Size of non-blurred Area",
-        range: 0 ... 1000,
+        value: .float(range: 0 ... 1000, defaultValue: 75),
         property: .key(.blurMirroredSize),
-        id: selection,
-        defaultValue: 75
+        id: selection
       ),
       EffectProperty(
         label: "Point 1 - X",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 0),
         property: .key(.blurMirroredX1),
-        id: selection,
-        defaultValue: 0
+        id: selection
       ),
       EffectProperty(
         label: "Point 1 - Y",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurMirroredY1),
-        id: selection,
-        defaultValue: 0.5
+        id: selection
       ),
       EffectProperty(
         label: "Point 2 - X",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 1),
         property: .key(.blurMirroredX2),
-        id: selection,
-        defaultValue: 1
+        id: selection
       ),
       EffectProperty(
         label: "Point 2 - Y",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurMirroredY2),
-        id: selection,
-        defaultValue: 0.5
+        id: selection
       )]
     case .uniform:
       return [EffectProperty(
         label: "Intensity",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 0.2),
         property: .key(.blurUniformIntensity),
-        id: selection,
-        defaultValue: 0.2
+        id: selection
       )]
     case .linear:
       return [EffectProperty(
         label: "Intensity",
-        range: 0 ... 100,
+        value: .float(range: 0 ... 100, defaultValue: 30),
         property: .key(.blurLinearBlurRadius),
-        id: selection,
-        defaultValue: 30
+        id: selection
       ),
       EffectProperty(
         label: "Point 1 - X",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurLinearX1),
-        id: selection,
-        defaultValue: 0.5
+        id: selection
       ),
       EffectProperty(
         label: "Point 1 - Y",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurLinearY1),
-        id: selection,
-        defaultValue: 0.5
+        id: selection
       ),
       EffectProperty(
         label: "Point 2 - X",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 1),
         property: .key(.blurLinearX2),
-        id: selection,
-        defaultValue: 1
+        id: selection
       ),
       EffectProperty(
         label: "Point 2 - Y",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 1),
         property: .key(.blurLinearY2),
-        id: selection,
-        defaultValue: 1
+        id: selection
       )]
     default:
       return []
@@ -166,242 +151,312 @@ struct EffectProperty: Identifiable {
       return [
         EffectProperty(
           label: "Horizontal Count",
-          range: 5 ... 50,
+          value: .float(range: 5 ... 50, defaultValue: 20),
           property: .key(.effectPixelizeHorizontalPixelSize),
-          id: selection,
-          defaultValue: 20
+          id: selection
         ),
         EffectProperty(
           label: "Vertical Count",
-          range: 5 ... 50,
+          value: .float(range: 5 ... 50, defaultValue: 20),
           property: .key(.effectPixelizeVerticalPixelSize),
-          id: selection,
-          defaultValue: 20
+          id: selection
         )
       ]
     case .radialPixel:
       return [
         EffectProperty(
           label: "Radius per Row",
-          range: 0.05 ... 1,
+          value: .float(range: 0.05 ... 1, defaultValue: 0.1),
           property: .key(.effectRadialPixelRadius),
-          id: selection,
-          defaultValue: 0.1
+          id: selection
         ),
         EffectProperty(
           label: "Size per Row",
-          range: 0.01 ... 1,
+          value: .float(range: 0.01 ... 1, defaultValue: 0.01),
           property: .key(.effectRadialPixelSegments),
-          id: selection,
-          defaultValue: 0.01
+          id: selection
         )
       ]
     case .crossCut:
       return [
-        EffectProperty(label: "Horizontal Cuts", range: 1 ... 10, property: .key(.effectCrossCutSlices), id: selection,
-                       defaultValue: 5),
+        EffectProperty(
+          label: "Horizontal Cuts",
+          value: .float(range: 1 ... 10, defaultValue: 5),
+          property: .key(.effectCrossCutSlices),
+          id: selection
+        ),
         EffectProperty(
           label: "Horizontal Offset",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.07),
           property: .key(.effectCrossCutOffset),
-          id: selection,
-          defaultValue: 0.07
+          id: selection
         ),
         EffectProperty(
           label: "Vertical Offset",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectCrossCutSpeedV),
-          id: selection,
-          defaultValue: 0.5
+          id: selection
         ),
         EffectProperty(
           label: "Variation",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 1),
           property: .key(.effectCrossCutTime),
-          id: selection,
-          defaultValue: 1
+          id: selection
         )
       ]
     case .liquid:
       return [
-        EffectProperty(label: "Intensity", range: 0 ... 1, property: .key(.effectLiquidAmount), id: selection,
-                       defaultValue: 0.06),
+        EffectProperty(
+          label: "Intensity",
+          value: .float(range: 0 ... 1, defaultValue: 0.06),
+          property: .key(.effectLiquidAmount),
+          id: selection
+        ),
         EffectProperty(
           label: "Scale",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.62),
           property: .key(.effectLiquidScale),
-          id: selection,
-          defaultValue: 0.62
+          id: selection
         ),
         EffectProperty(
           label: "Variation",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectLiquidTime),
-          id: selection,
-          defaultValue: 0.5
+          id: selection
         )
       ]
     case .outliner:
       return [
-        EffectProperty(label: "Intensity", range: 0 ... 1, property: .key(.effectOutlinerAmount), id: selection,
-                       defaultValue: 0.5),
+        EffectProperty(
+          label: "Intensity",
+          value: .float(range: 0 ... 1, defaultValue: 0.5),
+          property: .key(.effectOutlinerAmount),
+          id: selection
+        ),
         EffectProperty(
           label: "Blending",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectOutlinerPassthrough),
-          id: selection,
-          defaultValue: 0.5
+          id: selection
         )
       ]
     case .dotPattern:
       return [
-        EffectProperty(label: "Number of Dots", range: 1 ... 80, property: .key(.effectDotPatternDots), id: selection,
-                       defaultValue: 30),
+        EffectProperty(
+          label: "Number of Dots",
+          value: .float(range: 1 ... 80, defaultValue: 30),
+          property: .key(.effectDotPatternDots),
+          id: selection
+        ),
         EffectProperty(
           label: "Size of Dots",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectDotPatternSize),
-          id: selection,
-          defaultValue: 0.5
+          id: selection
         ),
         EffectProperty(
           label: "Global Blur",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.3),
           property: .key(.effectDotPatternBlur),
-          id: selection,
-          defaultValue: 0.3
+          id: selection
         )
       ]
     case .posterize:
       return [EffectProperty(
         label: "Number of Levels",
-        range: 1 ... 15,
+        value: .float(range: 1 ... 15, defaultValue: 3),
         property: .key(.effectPosterizeLevels),
-        id: selection,
-        defaultValue: 3
+        id: selection
       )]
     case .tvGlitch:
       return [
         EffectProperty(
           label: "Rough Distortion",
-          range: 0 ... 10,
+          value: .float(range: 0 ... 10, defaultValue: 3),
           property: .key(.effectTvGlitchDistortion),
-          id: selection,
-          defaultValue: 3
+          id: selection
         ),
         EffectProperty(
           label: "Fine Distortion",
-          range: 0 ... 5,
+          value: .float(range: 0 ... 5, defaultValue: 1),
           property: .key(.effectTvGlitchDistortion2),
-          id: selection,
-          defaultValue: 1
+          id: selection
         ),
         EffectProperty(
           label: "Variance",
-          range: 0 ... 5,
+          value: .float(range: 0 ... 5, defaultValue: 2),
           property: .key(.effectTvGlitchSpeed),
-          id: selection,
-          defaultValue: 2
+          id: selection
         ),
         EffectProperty(
           label: "Vertical Offset",
-          range: 0 ... 3,
+          value: .float(range: 0 ... 3, defaultValue: 1),
           property: .key(.effectTvGlitchRollSpeed),
-          id: selection,
-          defaultValue: 1
+          id: selection
         )
       ]
     case .halfTone:
       return [
-        EffectProperty(label: "Angle of Pattern", range: 0 ... 1, property: .key(.effectHalfToneAngle), id: selection,
-                       defaultValue: 0),
+        EffectProperty(
+          label: "Angle of Pattern",
+          value: .float(range: 0 ... 1, defaultValue: 0),
+          property: .key(.effectHalfToneAngle),
+          id: selection
+        ),
         EffectProperty(
           label: "Scale of Pattern",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectHalfToneScale),
-          id: selection,
-          defaultValue: 0.5
+          id: selection
         )
       ]
     case .linocut:
       return [EffectProperty(
         label: "Scale of Pattern",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.effectLinocutScale),
-        id: selection,
-        defaultValue: 0.5
+        id: selection
       )]
     case .shifter:
       return [
-        EffectProperty(label: "Distance", range: 0 ... 1, property: .key(.effectShifterAmount), id: selection,
-                       defaultValue: 0.05),
+        EffectProperty(
+          label: "Distance",
+          value: .float(range: 0 ... 1, defaultValue: 0.05),
+          property: .key(.effectShifterAmount),
+          id: selection
+        ),
         EffectProperty(
           label: "Shift Direction",
-          range: 0 ... 6.3,
+          value: .float(range: 0 ... 6.3, defaultValue: 0.3),
           property: .key(.effectShifterAngle),
-          id: selection,
-          defaultValue: 0.3
+          id: selection
         )
       ]
     case .mirror:
-      return [EffectProperty(label: "Mirrored Side", range: 0 ... 3, property: .key(.effectMirrorSide), id: selection,
-                             defaultValue: 1)]
+      return [EffectProperty(
+        label: "Mirrored Side",
+        value: .float(range: 0 ... 3, defaultValue: 1),
+        property: .key(.effectMirrorSide),
+        id: selection
+      )]
     case .glow:
       return [
         EffectProperty(
           label: "Bloom",
-          range: 0 ... 10,
+          value: .float(range: 0 ... 10, defaultValue: 4),
           property: .key(.effectGlowSize),
-          id: selection,
-          defaultValue: 4
+          id: selection
         ),
         EffectProperty(
           label: "Intensity",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectGlowAmount),
-          id: selection,
-          defaultValue: 0.5
+          id: selection
         ),
         EffectProperty(
           label: "Darkening",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.3),
           property: .key(.effectGlowDarkness),
-          id: selection,
-          defaultValue: 0.3
+          id: selection
         )
       ]
     case .vignette:
       return [
-        EffectProperty(label: "Size", range: 0 ... 5, property: .key(.effectVignetteOffset), id: selection,
-                       defaultValue: 1),
+        EffectProperty(
+          label: "Size",
+          value: .float(range: 0 ... 5, defaultValue: 1),
+          property: .key(.effectVignetteOffset),
+          id: selection
+        ),
         EffectProperty(
           label: "Color",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 1),
           property: .key(.effectVignetteDarkness),
-          id: selection,
-          defaultValue: 1
+          id: selection
         )
       ]
     case .tiltShift:
       return [
-        EffectProperty(label: "Intensity", range: 0 ... 0.02, property: .key(.effectTiltShiftAmount), id: selection,
-                       defaultValue: 0.016),
+        EffectProperty(
+          label: "Intensity",
+          value: .float(range: 0 ... 0.02, defaultValue: 0.016),
+          property: .key(.effectTiltShiftAmount),
+          id: selection
+        ),
         EffectProperty(
           label: "Position",
-          range: 0 ... 1,
+          value: .float(range: 0 ... 1, defaultValue: 0.4),
           property: .key(.effectTiltShiftPosition),
-          id: selection,
-          defaultValue: 0.4
+          id: selection
         )
       ]
     case .extrudeBlur:
       return [EffectProperty(
         label: "Intensity",
-        range: 0 ... 1,
+        value: .float(range: 0 ... 1, defaultValue: 0.2),
         property: .key(.effectExtrudeBlurAmount),
-        id: selection,
-        defaultValue: 0.2
+        id: selection
       )]
+    case .recolor:
+      return [
+        EffectProperty(
+          label: "Source Color",
+          value: .color(supportsOpacity: false, defaultValue: .imgly.black),
+          property: .key(.effectRecolorFromColor),
+          id: selection
+        ),
+        EffectProperty(
+          label: "Target Color",
+          value: .color(supportsOpacity: false, defaultValue: .imgly.black),
+          property: .key(.effectRecolorToColor),
+          id: selection
+        ),
+        EffectProperty(
+          label: "Color Match",
+          value: .float(range: 0 ... 1, defaultValue: 0.4),
+          property: .key(.effectRecolorColorMatch),
+          id: selection
+        ),
+        EffectProperty(
+          label: "Brightness Match",
+          value: .float(range: 0 ... 1, defaultValue: 1),
+          property: .key(.effectRecolorBrightnessMatch),
+          id: selection
+        ),
+        EffectProperty(
+          label: "Smoothness",
+          value: .float(range: 0 ... 1, defaultValue: 0.08),
+          property: .key(.effectRecolorSmoothness),
+          id: selection
+        )
+      ]
+    case .greenScreen:
+      return [
+        EffectProperty(
+          label: "Source Color",
+          value: .color(supportsOpacity: false, defaultValue: .imgly.black),
+          property: .key(.effectGreenScreenFromColor),
+          id: selection
+        ),
+        EffectProperty(
+          label: "Color Match",
+          value: .float(range: 0 ... 1, defaultValue: 0.4),
+          property: .key(.effectGreenScreenColorMatch),
+          id: selection
+        ),
+        EffectProperty(
+          label: "Smoothness",
+          value: .float(range: 0 ... 1, defaultValue: 0.08),
+          property: .key(.effectGreenScreenSmoothness),
+          id: selection
+        ),
+        EffectProperty(
+          label: "Spill",
+          value: .float(range: 0 ... 1, defaultValue: 0),
+          property: .key(.effectGreenScreenSpill),
+          id: selection
+        )
+      ]
     default:
       return []
     }

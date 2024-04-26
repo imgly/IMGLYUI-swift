@@ -22,13 +22,13 @@ class AssetLibraryInteractorMock: ObservableObject {
       let engine = try await Engine(license: secrets.licenseKey)
       self.engine = engine
       try engine.scene.createVideo()
-      let basePath = "https://cdn.img.ly/packages/imgly/cesdk-engine/1.25.0/assets"
+      let basePath = "https://cdn.img.ly/packages/imgly/cesdk-engine/1.26.0-rc.0/assets"
       try engine.editor.setSettingString("basePath", value: basePath)
       async let loadDefault: () = engine.addDefaultAssetSources()
       async let loadDemo: () = engine.addDemoAssetSources(sceneMode: engine.scene.getMode(),
                                                           withUploadAssetSources: true)
       _ = try await (loadDefault, loadDemo)
-      try engine.asset.addSource(TextAssetSource(engine: engine))
+      try await engine.asset.addSource(TextAssetSource(engine: engine))
       sceneMode = try engine.scene.getMode()
     }
   }
@@ -71,10 +71,5 @@ extension AssetLibraryInteractorMock: AssetLibraryInteractor {
       try await Task.sleep(nanoseconds: NSEC_PER_SEC)
       isAddingAsset = false
     }
-  }
-
-  func getBasePath() throws -> String {
-    guard let engine else { throw Error(errorDescription: "Engine unavailable.") }
-    return try engine.editor.getSettingString("basePath")
   }
 }

@@ -28,20 +28,16 @@ struct TextItem: View {
           placeholder
             .task {
               do {
-                guard let basePath = URL(string: try interactor.getBasePath()),
-                      let fontPath = asset.result.url
-                else {
+                guard let url = asset.result.url else {
                   fontName = "" // Fallback system font
                   return
                 }
-                let url = basePath.appendingPathComponent(fontPath.path, isDirectory: false)
-                let fontID = url.absoluteString
-                if let registeredFontName = FontImporter.registeredFonts[fontID] {
+                if let registeredFontName = FontImporter.registeredFonts[url] {
                   fontName = registeredFontName
                   return
                 }
                 let (data, _) = try await URLSession.shared.get(url)
-                let fonts = FontImporter.importFonts([fontID: data])
+                let fonts = FontImporter.importFonts([url: data])
                 if let name = fonts.first?.value {
                   fontName = name
                   return

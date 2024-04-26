@@ -34,10 +34,6 @@ class AnyAssetLibraryInteractor: AssetLibraryInteractor {
     interactor.assetTapped(sourceID: sourceID, asset: asset)
   }
 
-  func getBasePath() throws -> String {
-    try interactor.getBasePath()
-  }
-
   private let interactor: any AssetLibraryInteractor
 
   init(erasing interactor: some AssetLibraryInteractor) {

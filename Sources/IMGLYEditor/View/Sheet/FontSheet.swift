@@ -1,4 +1,6 @@
 import SwiftUI
+@_spi(Internal) import IMGLYCore
+@_spi(Internal) import IMGLYCoreUI
 
 struct FontSheet: View {
   @EnvironmentObject private var interactor: Interactor
@@ -6,23 +8,24 @@ struct FontSheet: View {
   @Environment(\.imglyFontFamilies) private var fontFamilies
   private var fontLibrary: FontLibrary { interactor.fontLibrary }
 
-  var fonts: [FontFamily] {
+  var assets: [AssetLoader.Asset] {
     if let fontFamilies {
       return fontFamilies.compactMap {
-        fontLibrary.fontFamilyFor(id: $0)
+        fontLibrary.assetFor(typefaceName: $0)
       }
     } else {
-      return fontLibrary.fonts
+      return fontLibrary.assets
     }
   }
 
   var body: some View {
-    let text = interactor.bindTextState(id, resetFontProperties: true)
+    let text = interactor.bindTextState(id, resetFontProperties: true, overrideScopes: [.key(.textCharacter)])
 
     BottomSheet {
-      ListPicker(data: fonts, selection: text.fontFamilyID) { fontFamily, isSelected in
-        Label(fontFamily.name, systemImage: "checkmark")
-          .labelStyle(.icon(hidden: !isSelected, titleFont: .custom(fontFamily.someFontName ?? "", size: 17)))
+      ListPicker(data: assets, selection: text.assetID) { asset, isSelected in
+        Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
+          .labelStyle(.icon(hidden: !isSelected,
+                            titleFont: .custom(asset.result.payload?.typeface?.previewFontName ?? "", size: 17)))
       }
     }
   }

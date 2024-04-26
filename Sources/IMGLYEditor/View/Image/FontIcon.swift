@@ -1,4 +1,5 @@
 import SwiftUI
+@_spi(Internal) import IMGLYCoreUI
 
 struct FontIcon: View {
   @EnvironmentObject private var interactor: Interactor
@@ -8,9 +9,9 @@ struct FontIcon: View {
   var body: some View {
     let text = interactor.bindTextState(id, resetFontProperties: true)
 
-    if let fontFamilyID = text.wrappedValue.fontFamilyID,
-       let fontFamily = fontLibrary.fontFamilyFor(id: fontFamilyID),
-       let fontName = fontFamily.someFontName {
+    if let assetID = text.wrappedValue.assetID,
+       let typeface = fontLibrary.typefaceFor(id: assetID),
+       let fontName = typeface.previewFontName {
       FontImage(font: .custom(fontName, size: 28))
     }
   }

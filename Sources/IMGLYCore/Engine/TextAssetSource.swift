@@ -2,44 +2,59 @@ import Foundation
 import IMGLYEngine
 
 public final class TextAssetSource: NSObject {
-  private let assets: [AssetResult] = [
-    createAsset(id: "title", label: "Title", fontWeight: 700, fontSize: 32),
-    createAsset(id: "headline", label: "Headline", fontWeight: 500, fontSize: 18),
-    createAsset(id: "body", label: "Body", fontWeight: 400, fontSize: 14)
-  ]
+  private weak var engine: Engine?
+  private let assets: [AssetResult]
 
-  weak var engine: Engine?
-
-  public init(engine: Engine) {
-    self.engine = engine
-  }
-
-  private static let basePath = URL(string: "/extensions/ly.img.cesdk.fonts")!
-  private static let fontPath = [
-    700: "fonts/Roboto/Roboto-Bold.ttf",
-    500: "fonts/Roboto/Roboto-Medium.ttf",
-    400: "fonts/Roboto/Roboto-Regular.ttf"
-  ]
-  private static func uri(fontWeight: Int) -> String? {
-    guard let fontPath = fontPath[fontWeight] else {
-      return nil
+  @MainActor
+  public convenience init(
+    engine: Engine,
+    typefaceName: String = "Roboto",
+    typefaceSourceID: String = Engine.DefaultAssetSource.typeface.rawValue
+  ) async throws {
+    guard let asset = try await engine.asset.findAssets(
+      sourceID: typefaceSourceID,
+      query: .init(query: typefaceName, page: 0, locale: "en", perPage: 1)
+    ).assets.first, let typeface = asset.payload?.typeface, typeface.name == typefaceName else {
+      throw Error(errorDescription: "Typeface \(typefaceName) not found in \(typefaceSourceID) asset source.")
     }
-    let fontURL = basePath.appendingPathComponent(fontPath, isDirectory: false)
-    return fontURL.absoluteString
+    try self.init(engine: engine, typeface: typeface)
   }
 
-  private static func createAsset(id: String, label: String, fontWeight: Int, fontSize: Int) -> AssetResult {
-    .init(id: id,
-          locale: "en",
-          label: label,
-          meta: [
-            "uri": uri(fontWeight: fontWeight)!,
-            "fontFamily": "Roboto",
-            "fontWeight": String(fontWeight),
-            "fontSize": String(fontSize),
-            "blockType": DesignBlockType.text.rawValue
-          ],
-          context: .init(sourceID: Self.id))
+  public init(engine: Engine, typeface: Typeface) throws {
+    self.engine = engine
+    assets = try [
+      Self.createAsset(typeface, id: "title", label: "Title", fontWeight: .bold, fontSize: 32),
+      Self.createAsset(typeface, id: "headline", label: "Headline", fontWeight: .medium, fontSize: 18),
+      Self.createAsset(typeface, id: "body", label: "Body", fontWeight: .normal, fontSize: 14)
+    ]
+  }
+
+  private static func createAsset(
+    _ typeface: Typeface,
+    id: String,
+    label: String,
+    fontWeight: FontWeight,
+    fontSize: Int
+  ) throws -> AssetResult {
+    guard let uri = typeface.fonts.first(where: {
+      $0.weight == fontWeight && $0.style == .normal
+    })?.uri else {
+      throw Error(errorDescription: "Typeface must support \(fontWeight) font weight.")
+    }
+    return .init(
+      id: id,
+      locale: "en",
+      label: label,
+      meta: [
+        "uri": uri.absoluteString,
+        "fontFamily": typeface.name,
+        "fontWeight": String(fontWeight.rawValue),
+        "fontSize": String(fontSize),
+        "blockType": DesignBlockType.text.rawValue
+      ],
+      payload: .init(typeface: typeface),
+      context: .init(sourceID: Self.id)
+    )
   }
 }
 

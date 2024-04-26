@@ -28,7 +28,6 @@ import UIKit
 
   func uploadAsset(to sourceID: String, asset: AssetUpload) async throws -> AssetResult
   func assetTapped(sourceID: String, asset: AssetResult)
-  func getBasePath() throws -> String
 
   typealias AssetUpload = () throws -> AssetUploadResult
 }

@@ -301,6 +301,16 @@ private struct Random: RandomNumberGenerator {
     // 2. OR the selection is `nil`
     let shouldZoomToPage = ((zoomToPage && editMode != .text) || selection == nil)
 
+    try engine.scene.unstable_enableCameraPositionClamping(blocks,
+                                                           paddingLeft: paddingLeft - margin,
+                                                           paddingTop: paddingTop - margin,
+                                                           paddingRight: paddingRight - margin,
+                                                           paddingBottom: paddingBottom - margin,
+                                                           scaledPaddingLeft: margin,
+                                                           scaledPaddingTop: margin,
+                                                           scaledPaddingRight: margin,
+                                                           scaledPaddingBottom: margin)
+
     // If `clampOnly` is enabled, we only need position clamping.
     if (!clampOnly && shouldZoomToPage) || isDefaultZoomLevel {
       try engine.scene.unstable_enableCameraZoomClamping(blocks, minZoomLimit: 1,
@@ -313,16 +323,6 @@ private struct Random: RandomNumberGenerator {
       let zoom = try engine.scene.getZoom()
       zoomModel.defaultZoomLevel = zoom
     }
-
-    try engine.scene.unstable_enableCameraPositionClamping(blocks,
-                                                           paddingLeft: paddingLeft - margin,
-                                                           paddingTop: paddingTop - margin,
-                                                           paddingRight: paddingRight - margin,
-                                                           paddingBottom: paddingBottom - margin,
-                                                           scaledPaddingLeft: margin,
-                                                           scaledPaddingTop: margin,
-                                                           scaledPaddingRight: margin,
-                                                           scaledPaddingBottom: margin)
 
     if let selection, !zoomToPage, editMode != .text {
       let boundingBox = try engine.block.getScreenSpaceBoundingBox(containing: [selection])
@@ -367,18 +367,6 @@ private struct Random: RandomNumberGenerator {
         }
       }
     }
-  }
-
-  // MARK: - Add
-
-  func addText(_ url: URL, fontSize: CGFloat, toPage index: Int) throws {
-    let fontSize = (50.0 / 24.0) * Float(fontSize) // Scale font size to match scene.
-    let block = try engine.block.create(.text)
-    try engine.block.set(block, property: .key(.textFontFileURI), value: url)
-    try engine.block.set(block, property: .key(.textFontSize), value: fontSize)
-    try engine.block.set(block, property: .key(.textHorizontalAlignment), value: HorizontalAlignment.center)
-    try engine.block.setHeightMode(block, mode: .auto)
-    try addBlock(block, toPage: index)
   }
 
   // MARK: - Actions

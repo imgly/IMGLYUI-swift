@@ -22,8 +22,6 @@ extension Interactor: TimelineInteractor {
 
     refreshTimeline()
     updateDurations()
-
-    try engine.editor.resetHistory()
   }
 
   internal func createBackgroundTrackIfNeeded() {

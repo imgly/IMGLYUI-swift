@@ -45,7 +45,7 @@ public enum OnCreate {
     async let loadDemo: () = engine.addDemoAssetSources(sceneMode: engine.scene.getMode(),
                                                         withUploadAssetSources: true)
     _ = try await (loadDefault, loadDemo)
-    try engine.asset.addSource(TextAssetSource(engine: engine))
+    try await engine.asset.addSource(TextAssetSource(engine: engine))
   }
 }
 

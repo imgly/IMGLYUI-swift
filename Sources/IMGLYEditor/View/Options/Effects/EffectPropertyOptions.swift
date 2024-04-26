@@ -11,14 +11,27 @@ struct EffectPropertyOptions: View {
   var body: some View {
     List {
       ForEach(properties, id: \.property) { property in
-        Section(property.label) {
-          PropertySlider(
-            property.label,
-            in: property.range,
-            property: property.property,
-            selection: property.id,
-            defaultValue: property.defaultValue
-          )
+        switch property.value {
+        case let .float(range, defaultValue):
+          Section(property.label) {
+            PropertySlider(
+              property.label,
+              in: range,
+              property: property.property,
+              selection: property.id,
+              defaultValue: defaultValue
+            )
+          }
+        case let .color(supportsOpacity, defaultValue):
+          Section {
+            PropertyColorPicker(
+              property.label,
+              supportsOpacity: supportsOpacity,
+              property: property.property,
+              selection: property.id,
+              defaultValue: defaultValue
+            )
+          }
         }
       }
     }

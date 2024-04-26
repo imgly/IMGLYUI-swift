@@ -1,8 +1,8 @@
 import CoreGraphics
+@_spi(Internal) import IMGLYCoreUI
 
 struct TextState: BatchMutable {
-  var fontID: String?
-  var fontFamilyID: String?
+  var assetID: String?
 
   var bold: TextProperty?
   var italic: TextProperty?
@@ -26,12 +26,5 @@ struct TextState: BatchMutable {
     } else {
       italic = nil
     }
-  }
-
-  func fontFamilyName(_ fontLibrary: FontLibrary) -> String? {
-    guard let fontFamilyID else {
-      return nil
-    }
-    return fontLibrary.fontFamilyFor(id: fontFamilyID)?.name
   }
 }

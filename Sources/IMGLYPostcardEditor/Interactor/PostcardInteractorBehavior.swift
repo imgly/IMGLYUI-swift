@@ -28,7 +28,7 @@ final class PostcardInteractorBehavior: InteractorBehavior {
       }
       return [
         .font(id, fontFamilies: [
-          "Caveat", "AmaticSC", "Courier Prime", "Archivo", "Roboto", "Parisienne"
+          "Caveat", "Amatic SC", "Courier Prime", "Archivo", "Roboto", "Parisienne"
         ]),
         .fontSize(id),
         .color(id, colorPalette: [

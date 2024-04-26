@@ -148,7 +148,7 @@ struct Canvas: View {
             Color.clear
           }
         }
-        .frame(height: safeAreaInsetHeight)
+        .modifier(HeightAnimationModifier(targetHeight: safeAreaInsetHeight))
         .transition(.move(edge: .bottom))
       }
     }

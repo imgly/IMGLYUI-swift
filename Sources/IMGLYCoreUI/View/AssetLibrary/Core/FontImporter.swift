@@ -2,10 +2,10 @@ import UIKit
 
 @MainActor
 @_spi(Internal) public enum FontImporter {
-  @_spi(Internal) public static var registeredFonts = [String: String]()
+  @_spi(Internal) public static var registeredFonts = [URL: String]()
   private static var registeredFontNames = [String]()
 
-  @_spi(Internal) public static func importFonts(_ fonts: [String: Data]) -> [String: String] {
+  @_spi(Internal) public static func importFonts(_ fonts: [URL: Data]) -> [URL: String] {
     // There is a bug in Apple's font loading system, dating back to at least 2010
     // (https://lists.apple.com/archives/cocoa-dev/2010/Sep/msg00450.html and
     // http://www.openradar.me/18778790) which can lead to a deadlock when loading custom fonts.
@@ -13,7 +13,7 @@ import UIKit
     // the below line works around the issue, so we're adding it to be on the safe side.
     _ = UIFont()
 
-    var fontIDtoName = [String: String]()
+    var fontIDtoName = [URL: String]()
 
     for font in fonts {
       guard

@@ -136,6 +136,17 @@ import Foundation
 
   case effectExtrudeBlurAmount = "effect/extrude_blur/amount"
 
+  case effectRecolorFromColor = "effect/recolor/fromColor"
+  case effectRecolorColorMatch = "effect/recolor/colorMatch"
+  case effectRecolorBrightnessMatch = "effect/recolor/brightnessMatch"
+  case effectRecolorSmoothness = "effect/recolor/smoothness"
+  case effectRecolorToColor = "effect/recolor/toColor"
+
+  case effectGreenScreenFromColor = "effect/green_screen/fromColor"
+  case effectGreenScreenColorMatch = "effect/green_screen/colorMatch"
+  case effectGreenScreenSmoothness = "effect/green_screen/smoothness"
+  case effectGreenScreenSpill = "effect/green_screen/spill"
+
   case cameraPixelRatio = "camera/pixelRatio"
   case cameraResolutionWidth = "camera/resolution/width"
   case cameraResolutionHeight = "camera/resolution/height"

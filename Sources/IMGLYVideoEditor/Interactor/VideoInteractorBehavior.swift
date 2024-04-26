@@ -24,8 +24,6 @@ final class VideoInteractorBehavior: InteractorBehavior {
 
     // Make sure to set all settings before calling `onCreate` callback so that the consumer can change them if needed!
     try await context.interactor.config.callbacks.onCreate(context.engine)
-
-    try context.engine.editor.resetHistory()
   }
 
   func rootBottomBarItems(_ context: InteractorContext) throws -> [RootBottomBarItem] {

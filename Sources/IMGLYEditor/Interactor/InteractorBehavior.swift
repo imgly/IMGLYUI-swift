@@ -146,7 +146,6 @@ import SwiftUI
     var zoomModel = context.interactor.zoomModel
     try await context.engine.zoomToPage(context.interactor.page, insets, zoomModel: &zoomModel)
     context.interactor.zoomModel = zoomModel
-    try context.engine.editor.resetHistory()
   }
 
   func showAllPages(_ context: InteractorContext) throws {

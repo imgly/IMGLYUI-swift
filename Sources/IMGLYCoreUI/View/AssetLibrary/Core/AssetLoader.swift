@@ -436,8 +436,17 @@ public extension AssetLoader {
       result.thumbURL ?? result.url
     }
 
+    @_spi(Internal) public var labelOrTypefaceName: String? {
+      result.label ?? result.payload?.typeface?.name
+    }
+
     @_spi(Internal) public var id: String {
       sourceID + result.id // Make sure that id is really unique across sources.
+    }
+
+    @_spi(Internal) public init(sourceID: String, result: AssetResult) {
+      self.sourceID = sourceID
+      self.result = result
     }
   }
 

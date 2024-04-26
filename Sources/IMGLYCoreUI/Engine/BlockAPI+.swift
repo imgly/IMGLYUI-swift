@@ -315,6 +315,31 @@ extension MappedType {
   }
 }
 
+// MARK: - Fonts
+
+@_spi(Internal) public extension BlockAPI {
+  func isBoldFont(_ id: DesignBlockID) throws -> Bool {
+    try getTextFontWeights(id).contains { $0.rawValue >= 700 }
+  }
+
+  func isItalicFont(_ id: DesignBlockID) throws -> Bool {
+    try getTextFontStyles(id).contains(.italic)
+  }
+
+  func getFontProperties(_ id: DesignBlockID) throws -> FontProperties? {
+    switch try (canToggleBoldFont(id), canToggleItalicFont(id)) {
+    case (true, true):
+      return try .init(bold: isBoldFont(id), italic: isItalicFont(id))
+    case (false, true):
+      return try .init(bold: nil, italic: isItalicFont(id))
+    case (true, false):
+      return try .init(bold: isBoldFont(id), italic: nil)
+    case (false, false):
+      return nil
+    }
+  }
+}
+
 // MARK: - Scopes
 
 @_spi(Internal) public extension BlockAPI {
@@ -330,32 +355,27 @@ extension MappedType {
     try isAllowedByScope(id, key: scope.rawValue)
   }
 
-  func overrideAndRestore<T>(_ id: DesignBlockID, _ propertyBlock: PropertyBlock? = nil,
-                             scope: Scope,
+  func overrideAndRestore<T>(_ id: DesignBlockID, scope: Scope,
                              action: (DesignBlockID) throws -> T) throws -> T {
     let action: ([DesignBlockID]) throws -> T = { ids in try action(ids.first!) }
-    return try overrideAndRestore([id], propertyBlock, scopes: [scope], action: action)
+    return try overrideAndRestore([id], scopes: [scope], action: action)
   }
 
-  func overrideAndRestore<T>(_ id: DesignBlockID, _ propertyBlock: PropertyBlock? = nil,
-                             scopes: Set<Scope>,
+  func overrideAndRestore<T>(_ id: DesignBlockID, scopes: Set<Scope>,
                              action: (DesignBlockID) throws -> T) throws -> T {
     let action: ([DesignBlockID]) throws -> T = { ids in try action(ids.first!) }
-    return try overrideAndRestore([id], propertyBlock, scopes: scopes, action: action)
+    return try overrideAndRestore([id], scopes: scopes, action: action)
   }
 
-  func overrideAndRestore<T>(_ ids: [DesignBlockID], _ propertyBlock: PropertyBlock? = nil,
-                             scope: Scope,
+  func overrideAndRestore<T>(_ ids: [DesignBlockID], scope: Scope,
                              action: ([DesignBlockID]) throws -> T) throws -> T {
-    try overrideAndRestore(ids, propertyBlock, scopes: [scope], action: action)
+    try overrideAndRestore(ids, scopes: [scope], action: action)
   }
 
   func overrideAndRestore<T>(_ ids: [DesignBlockID],
-                             _ propertyBlock: PropertyBlock? = nil,
                              scopes: Set<Scope>,
                              action: ([DesignBlockID]) throws -> T) throws -> T {
-    let resolvedIds = try ids.map { try resolve(propertyBlock, parent: $0) }
-    let enabledScopesPerID = try resolvedIds.map { id in
+    let enabledScopesPerID = try ids.map { id in
       let enabledScopes = try scopes.map { scope in
         let wasEnabled = try isScopeEnabled(id, scope: scope)
         try setScopeEnabled(id, scope: scope, enabled: true)
@@ -364,7 +384,7 @@ extension MappedType {
       return (id: id, enabledScopes: enabledScopes)
     }
 
-    let result = try action(resolvedIds)
+    let result = try action(ids)
 
     try enabledScopesPerID.forEach { id, enabledScopes in
       try enabledScopes.forEach { scope, isEnabled in

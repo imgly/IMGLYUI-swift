@@ -12,12 +12,13 @@ struct TextFormatOptions: View {
     let text = interactor.bindTextState(id, resetFontProperties: false)
     let textReset = interactor.bindTextState(id, resetFontProperties: true)
 
-    NavigationLinkPicker(title: "Font", data: fontLibrary.fonts,
-                         selection: textReset.fontFamilyID) { fontFamily, isSelected in
-      Label(fontFamily.name, systemImage: "checkmark")
-        .labelStyle(.icon(hidden: !isSelected, titleFont: .custom(fontFamily.someFontName ?? "", size: 17)))
+    NavigationLinkPicker(title: "Font", data: fontLibrary.assets,
+                         selection: textReset.assetID) { asset, isSelected in
+      Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
+        .labelStyle(.icon(hidden: !isSelected,
+                          titleFont: .custom(asset.result.payload?.typeface?.previewFontName ?? "", size: 17)))
     } linkLabel: { selection in
-      Text(selection?.name ?? "")
+      Text(selection?.labelOrTypefaceName ?? "Unnamed Typeface")
     }
 
     HStack(spacing: 32) {
