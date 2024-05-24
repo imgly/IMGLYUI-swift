@@ -2,7 +2,15 @@ import CoreMedia
 @_spi(Internal) import IMGLYCore
 import SwiftUI
 
+/// Camera configuration options.
 public struct CameraConfiguration {
+  /// Creates a camera configuration.
+  /// - Parameters:
+  ///   - recordingColor: The color of the record button while recording, and all the other recording indicators.
+  ///   - highlightColor: The color used to highlight the camera buttons on tap.
+  ///   - maxTotalDuration: The target duration for the recording.
+  ///   - allowExceedingMaxDuration: Adjusts the segments visualization to use the max duration, but does not enforce
+  /// the limit.
   public init(
     recordingColor: Color = .pink,
     highlightColor: Color = .pink,

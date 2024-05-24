@@ -7,32 +7,48 @@ import struct SwiftUI.LocalizedStringKey
 @_exported import IMGLYCore
 @_exported import IMGLYCoreUI
 
+/// An export progress visualization.
 public enum ExportProgress {
+  /// Show spinner.
   case spinner
+  /// Show relative progress for given percentage value.
   case relative(_ percentage: Float)
 }
 
+/// An editor event that can be sent via `EditorEventHandler`.
 public enum EditorEvent {
+  /// Show share sheet for given URL.
   case shareFile(URL)
+  /// Show export progress sheet for given state.
   case exportProgress(ExportProgress = .spinner)
+  /// Show export completed sheet and perform given action after dismissal.
   case exportCompleted(action: () -> Void = {})
 }
 
+/// An interface for sending editor events.
 @MainActor
 public protocol EditorEventHandler {
+  /// A function for sending `EditorEvent`s.
+  /// - Parameter event: The event to send.
   func send(_ event: EditorEvent)
 }
 
 // MARK: - Callbacks
 
+/// A namespace for `onCreate` callbacks.
 public enum OnCreate {
+  /// The callback type.
   public typealias Callback = @Sendable @MainActor (_ engine: Engine) async throws -> Void
 
+  /// The default callback which creates a new scene and loads the default and demo asset sources.
   public static let `default`: Callback = { engine in
     try engine.scene.create()
     try await loadAssetSources(engine)
   }
 
+  /// Creates a callback that loads a scene and the default and demo asset sources.
+  /// - Parameter url: The URL of the scene file.
+  /// - Returns: The callback.
   public static func loadScene(from url: URL) -> Callback {
     { engine in
       try await engine.scene.load(from: url)
@@ -40,6 +56,7 @@ public enum OnCreate {
     }
   }
 
+  /// A callback that loads the default and demo asset sources.
   public static let loadAssetSources: Callback = { engine in
     async let loadDefault: () = engine.addDefaultAssetSources()
     async let loadDemo: () = engine.addDemoAssetSources(sceneMode: engine.scene.getMode(),
@@ -49,10 +66,15 @@ public enum OnCreate {
   }
 }
 
+/// A namespace for `onExport` callbacks.
 public enum OnExport {
+  /// The callback type.
   public typealias Callback = @Sendable @MainActor (_ engine: Engine, _ eventHandler: EditorEventHandler) async throws
     -> Void
 
+  /// The default callback which calls `BlockAPI.export` or `BlockAPI.exportVideo`
+  /// based on the engine's `SceneMode`, displays a progress indicator for video exports, writes the content into a
+  /// temporary file, and opens a system dialog for sharing the exported file.
   public static let `default`: Callback = { engine, eventHandler in
     let data: Data, contentType: UTType
     switch try engine.scene.getMode() {
@@ -71,6 +93,9 @@ public enum OnExport {
     }
   }
 
+  /// A utility that calls `BlockAPI.export`.
+  /// - Parameter engine: The used engine.
+  /// - Returns: The exported data and type.
   @MainActor
   public static func export(_ engine: Engine) async throws -> (Data, UTType) {
     guard let scene = try engine.scene.get() else {
@@ -86,6 +111,11 @@ public enum OnExport {
     return (data, mimeType.uniformType)
   }
 
+  /// A utility that calls `BlockAPI.exportVideo` and displays a progress indicator.
+  /// - Parameters:
+  ///   - engine: The used engine.
+  ///   - eventHandler: The used event handler.
+  /// - Returns: The exported data and type.
   @MainActor
   public static func exportVideo(_ engine: Engine, _ eventHandler: EditorEventHandler) async throws -> (Data, UTType) {
     guard let page = try engine.scene.getCurrentPage() else {
@@ -109,13 +139,16 @@ public enum OnExport {
   }
 }
 
+/// A namespace for `onUpload` callbacks.
 public enum OnUpload {
+  /// The callback type.
   public typealias Callback = @Sendable @MainActor (
     _ engine: Engine,
     _ sourceID: String,
     _ asset: AssetDefinition
   ) async throws -> AssetDefinition
 
+  /// The default callback which forwards the unmodified `AssetDefinition`.
   public static let `default`: Callback = { _, _, asset in
     asset
   }

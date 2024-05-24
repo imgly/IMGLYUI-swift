@@ -1,7 +1,9 @@
 import IMGLYEngine
 import SwiftUI
 
+/// A list of text assets for preview.
 public struct TextPreview: View {
+  /// Creates a list of text assets for preview.
   public init() {}
 
   public var body: some View {

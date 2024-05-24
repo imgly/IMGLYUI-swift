@@ -1,10 +1,16 @@
 import Foundation
 import IMGLYEngine
 
+/// A custom asset source that applies different font weight and size when applied to a text block.
 public final class TextAssetSource: NSObject {
   private weak var engine: Engine?
   private let assets: [AssetResult]
 
+  /// Creates a text asset source and fetches the used typeface from another asset source.
+  /// - Parameters:
+  ///   - engine: The used engine.
+  ///   - typefaceName: The name of the typeface that should be used.
+  ///   - typefaceSourceID: The asset source ID where the typeface should be fetched from.
   @MainActor
   public convenience init(
     engine: Engine,
@@ -20,6 +26,10 @@ public final class TextAssetSource: NSObject {
     try self.init(engine: engine, typeface: typeface)
   }
 
+  /// Creates a text asset source with a typeface.
+  /// - Parameters:
+  ///   - engine: The used engine.
+  ///   - typeface: The typeface that should be used when applying text asset.
   public init(engine: Engine, typeface: Typeface) throws {
     self.engine = engine
     assets = try [

@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// A group of hierarchical asset library content. It is used within an `AssetLibraryBuilder` context.
 public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
   public var id: Int {
     var hasher = Hasher()
@@ -24,6 +25,11 @@ public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
     title = nil
   }
 
+  /// Creates a group of asset library `content`. It is displayed as a section with a `title` and a `preview`.
+  /// - Parameters:
+  ///   - title: The displayed name of the group.
+  ///   - content: The asset library content.
+  ///   - preview: The preview view of the group.
   public init(_ title: String, @AssetLibraryBuilder content: () -> AssetLibraryContent,
               @ViewBuilder preview: @MainActor @escaping () -> Preview = { AssetPreview.imageOrVideo }) {
     let content = content()
@@ -45,7 +51,7 @@ public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
     }
   }
 
-  @ViewBuilder public var body: some View {
+  public var body: some View {
     if let title {
       AssetLibrarySection(title) {
         scrollView

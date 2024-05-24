@@ -1,7 +1,9 @@
 import IMGLYCore
 import SwiftUI
 
+/// A grid of audio assets with an upload button.
 public struct AudioUploadGrid: View {
+  /// Creates a grid of audio assets with an upload button.
   public init() {}
 
   @State private var showFileImporter = false

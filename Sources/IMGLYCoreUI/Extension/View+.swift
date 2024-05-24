@@ -6,10 +6,16 @@ import UniformTypeIdentifiers
 // MARK: - Public interface
 
 public extension View {
+  /// Gets a namespace holder for `IMGLY` compatible types.
   var imgly: IMGLY<Self> { .init(self) }
 }
 
 public extension IMGLY where Wrapped: View {
+  /// Sets the asset library UI definition used by the editor. By default, the predefined `DefaultAssetLibrary` is used.
+  /// To use custom asset sources in the asset library UI, the custom asset source must be first added to the engine. In
+  /// addition to creating or loading a scene, registering the asset sources should be done in the `onCreate` callback.
+  /// - Parameter assetLibrary: The asset library.
+  /// - Returns: A view that has the given asset library set.
   @MainActor
   func assetLibrary(_ assetLibrary: () -> some AssetLibrary) -> some View {
     wrapped.environment(\.imglyAssetLibrary, AnyAssetLibrary(erasing: assetLibrary()))

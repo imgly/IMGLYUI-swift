@@ -13,6 +13,7 @@ struct AssetLibraryKey: EnvironmentKey {
 
 @MainActor
 @_spi(Internal) public struct AnyAssetLibrary: AssetLibrary {
+  @_spi(Internal) public var elementsTab: some View { AnyView(erasing: assetLibrary().elementsTab) }
   @_spi(Internal) public var videosTab: some View { AnyView(erasing: assetLibrary().videosTab) }
   @_spi(Internal) public var audioTab: some View { AnyView(erasing: assetLibrary().audioTab) }
   @_spi(Internal) public var imagesTab: some View { AnyView(erasing: assetLibrary().imagesTab) }

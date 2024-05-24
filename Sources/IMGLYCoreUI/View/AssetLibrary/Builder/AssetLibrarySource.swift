@@ -12,6 +12,7 @@ import SwiftUI
   }
 }
 
+/// The leaf nodes of hierarchical asset library content. It is used within an `AssetLibraryBuilder` context.
 public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: View>: AssetLibraryContent, View {
   public var id: Int {
     var hasher = Hasher()
@@ -35,17 +36,27 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
   @ViewBuilder private let preview: () -> Preview
   @ViewBuilder private let accessory: () -> Accessory
 
+  /// The display mode of an asset source.
   public enum Mode {
-    /// A single `AssetLibrarySection` is created which contains all groups for the asset source configuration.
+    /// A single section is created which contains all groups for the asset source configuration.
     case title(String)
-    /// Multiple `AssetLibrarySection`s are created. One for each group of the asset source configuration.
-    /// If `groups` of the asset source configuration is `nil` or empty avilable groups will be queried from the asset
+    /// Multiple sections are created. One for each group of the asset source configuration.
+    /// If `groups` of the asset source configuration is `nil` or empty available groups will be queried from the asset
     /// source. `group` for the `.titleForGroup` closure is `nil` when there are no groups available. In this case the
     /// resulting behavior is identical to the single `.title` mode and the `.titleForGroup` closure should return a
     /// valid title.
     case titleForGroup((_ group: String?) -> String = { $0 ?? "Assets" })
   }
 
+  /// Creates one or more sections for an asset `source` depending on the used display `mode`. Each section is displayed
+  /// with a `preview` and an optional `accessory` view. The `destination` view is used to browse the entire content of
+  /// the asset source.
+  /// - Parameters:
+  ///   - mode: The display mode which defines the section title(s).
+  ///   - source: The asset source definition.
+  ///   - destination: The destination view to browse the entire content of the asset source.
+  ///   - preview: The section preview view.
+  ///   - accessory: The accessory view.
   public init(_ mode: Mode,
               source: AssetLoader.SourceData,
               @ViewBuilder destination: @escaping () -> Destination,
@@ -77,7 +88,7 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
     }
   }
 
-  @ViewBuilder public var body: some View {
+  public var body: some View {
     if source.expandGroups {
       if let groups = source.config.groups, !groups.isEmpty {
         sections(groups)

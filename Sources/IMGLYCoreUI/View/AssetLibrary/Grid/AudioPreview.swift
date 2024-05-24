@@ -1,7 +1,9 @@
 import IMGLYEngine
 import SwiftUI
 
+/// A list of audio assets for preview.
 public struct AudioPreview: View {
+  /// Creates a list of audio assets for preview.
   public init() {}
 
   public var body: some View {

@@ -2,10 +2,13 @@
 import IMGLYEngine
 import SwiftUI
 
+/// A grid of assets for preview.
 public struct AssetPreview: View {
   @Environment(\.imglySeeAllView) private var seeAllView
   private let height: CGFloat?
 
+  /// Creates a grid of assets for preview.
+  /// - Parameter height: The height of the frame.
   public init(height: CGFloat?) {
     self.height = height
   }

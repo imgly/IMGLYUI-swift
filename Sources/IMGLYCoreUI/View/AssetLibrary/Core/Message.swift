@@ -1,7 +1,10 @@
 import SwiftUI
 
+/// A message view used in the `AssetLibrary`.
 public struct Message: View {
+  /// No elements message.
   public static let noElements = Message("No Elements")
+  /// No service message.
   public static let noService = Message("Cannot Connect to Service", systemImage: "exclamationmark.triangle")
 
   private let title: LocalizedStringKey

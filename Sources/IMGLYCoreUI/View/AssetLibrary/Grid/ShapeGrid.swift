@@ -1,7 +1,9 @@
 import IMGLYCore
 import SwiftUI
 
+/// A grid of shape assets.
 public struct ShapeGrid: View {
+  /// Creates a grid of shape assets.
   public init() {}
 
   public var body: some View {

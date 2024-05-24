@@ -923,7 +923,7 @@ extension Interactor: TimelineInteractor {
   // MARK: - Adding Assets
 
   func addAssetToBackgroundTrack() {
-    bottomBarButtonTapped(for: .openBackgroundClipLibrary)
+    bottomBarButtonTapped(for: .addClip)
   }
 
   func addAudioAsset() {
@@ -948,7 +948,7 @@ extension Interactor: TimelineInteractor {
     isCameraSheetShown = true
   }
 
-  public func addCameraRecordings(_ recordings: [Recording]) {
+  func addCameraRecordings(_ recordings: [Recording]) {
     setPlayheadPositionToEnding()
 
     guard let totalDuration = timelineProperties.timeline?.totalDuration else { return }
@@ -961,7 +961,7 @@ extension Interactor: TimelineInteractor {
           defer {
             isAddingCameraRecording = false
           }
-          let asset = try await uploadVideo(to: Engine.DemoAssetSource.videoUpload.rawValue) { video.url }
+          let asset = try await uploadVideo(to: videoUploadAssetSourceID) { video.url }
 
           guard let assetURL = asset.url else { continue }
           await addCameraVideo(
@@ -1025,20 +1025,23 @@ extension Interactor: TimelineInteractor {
 
   // MARK: - Photo Roll
 
+  internal func openSystemCamera() {
+    isSystemCameraShown = true
+    sheet.model.type = .clip // Set to clip to add to background track
+  }
+
   internal func openImagePicker() {
     isImagePickerShown = true
+    sheet.model.type = .clip // Set to clip to add to background track
   }
 
   internal func addAssetFromImagePicker(url: URL, mediaType: MediaType) {
     Task {
-      // This must currently be reset by assetTapped because it’s async.
-      isAddingFromImagePicker = true
-
       switch mediaType {
       case .image:
-        _ = try await uploadImage(to: Engine.DemoAssetSource.videoUpload.rawValue) { url }
+        _ = try await uploadImage(to: imageUploadAssetSourceID) { url }
       case .movie:
-        _ = try await uploadVideo(to: Engine.DemoAssetSource.videoUpload.rawValue) { url }
+        _ = try await uploadVideo(to: videoUploadAssetSourceID) { url }
       }
     }
   }

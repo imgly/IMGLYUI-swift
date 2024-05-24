@@ -1,11 +1,17 @@
 import IMGLYCore
 import SwiftUI
 
+/// A tab used in an `AssetLibrary` to display any `View`.
 public struct AssetLibraryTabView<Content: View, Label: View>: View {
   private let title: String
   @ViewBuilder private let content: () -> Content
   @ViewBuilder private let label: (_ title: LocalizedStringKey) -> Label
 
+  /// Creates an asset library tab with any `content`.
+  /// - Parameters:
+  ///   - title: The title of the tab.
+  ///   - content: The content.
+  ///   - label: The label of the tab. The `title` is passed to this closure.
   public init(_ title: String,
               @ViewBuilder content: @escaping () -> Content,
               @ViewBuilder label: @escaping (_ title: LocalizedStringKey) -> Label) {

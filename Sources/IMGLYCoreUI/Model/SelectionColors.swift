@@ -2,7 +2,7 @@ import CoreGraphics
 @_spi(Internal) import IMGLYCore
 import IMGLYEngine
 
-@_spi(Internal) public struct SelectionColors {
+@_spi(Internal) public struct SelectionColors: Equatable {
   @_spi(Internal) public typealias Blocks = [DesignBlockID]
   @_spi(Internal) public typealias Properties = [Property: Blocks]
   typealias Colors = [CGColor: Properties]

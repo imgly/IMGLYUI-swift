@@ -5,9 +5,7 @@ enum SheetType: Labelable, IdentifiableByHash {
   case image, text, shape, sticker, group, page, video, audio
   case selectionColors, font, fontSize, color
   case reorder
-  case backgroundTrackLibrary
-  case overlayLibrary
-  case stickerShapesLibrary
+  case asset, elements, clip, overlay, stickerOrShape
 
   var description: String {
     switch self {
@@ -24,9 +22,11 @@ enum SheetType: Labelable, IdentifiableByHash {
     case .video: return "Video"
     case .audio: return "Audio"
     case .reorder: return "Reorder"
-    case .backgroundTrackLibrary: return "Background Track"
-    case .overlayLibrary: return "Overlay Library"
-    case .stickerShapesLibrary: return "Stickers"
+    case .asset: return "Asset"
+    case .elements: return "Elements"
+    case .clip: return "Clip"
+    case .overlay: return "Overlay"
+    case .stickerOrShape: return "Sticker"
     }
   }
 

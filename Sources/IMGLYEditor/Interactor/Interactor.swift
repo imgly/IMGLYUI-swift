@@ -67,12 +67,16 @@ import SwiftUI
   @Published private var isKeyboardPresented = false
   @Published private(set) var isDefaultZoomLevel = false
   @Published var isCameraSheetShown = false
+  @Published var isSystemCameraShown = false
   @Published var isImagePickerShown = false
   @Published var isLoopingPlaybackEnabled = true
   @Published var isSelectionVisible = true
 
+  // Upload asset source IDs should be configurable or pulled from asset library.
+  let imageUploadAssetSourceID = Engine.DemoAssetSource.imageUpload.rawValue
+  let videoUploadAssetSourceID = Engine.DemoAssetSource.videoUpload.rawValue
+
   var isAddingCameraRecording = false
-  var isAddingFromImagePicker = false
 
   var zoomModel = ZoomModel() { didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) } }
   var defaultPinchAction: String = ""
@@ -95,7 +99,8 @@ import SwiftUI
 
   var isCanvasActionEnabled: Bool {
     let isGrouped = isGrouped(selection?.blocks.first)
-    return !isLoading && !sheet.isPresented && editMode == .transform && !isGrouped && isSelectionVisible
+    return !isLoading && !sheet
+      .isPresented && editMode == .transform && !isGrouped && isSelectionVisible && sheetTypeForSelection != .page
   }
 
   var sheetTypeForSelection: SheetType? {
@@ -200,6 +205,9 @@ import SwiftUI
   }
 
   func onDisappear() {
+    guard !isSystemCameraShown else {
+      return
+    }
     stateTask?.cancel()
     eventTask?.cancel()
     sceneTask?.cancel()
@@ -654,7 +662,8 @@ extension Interactor {
       return isAllowed(id, Action.delete)
     case .duplicate:
       return isAllowed(id, Action.duplicate)
-    case .openCamera, .openPhotoRoll, .openBackgroundClipLibrary, .openOverlayLibrary, .addText, .addSticker, .addAudio:
+    case .addElements, .addFromCamera, .addFromPhotoRoll, .addClip, .addOverlay, .addImage, .addText,
+         .addShape, .addSticker, .addStickerOrShape, .addAudio:
       return true
     }
   }
@@ -780,10 +789,7 @@ extension Interactor: AssetLibraryInteractor {
             try engine.block.setDuration(id, duration: min(newFootageDuration, oldDuration))
           }
         } else {
-          let addToBackgroundTrack = sheet.type == .backgroundTrackLibrary || isAddingFromImagePicker
-
-          // This works, but it would be nicer to reset this at the call site.
-          isAddingFromImagePicker = false
+          let addToBackgroundTrack = sheet.type == .clip
 
           if let id = try await engine.asset.apply(sourceID: sourceID, assetResult: asset) {
             let pageID = try engine.getPage(page)
@@ -966,35 +972,58 @@ extension Interactor {
       case .add:
         try engine?.block.deselectAll()
         sheet.commit { model in
-          model = .init(mode, .image)
+          model = .init(mode, .asset)
           model.detent = .adaptiveLarge
         }
-      case .openCamera:
-        try engine?.block.deselectAll()
-        isCameraSheetShown = true
-      case .openPhotoRoll:
-        try engine?.block.deselectAll()
-        isImagePickerShown = true
-      case .openBackgroundClipLibrary:
-        try engine?.block.deselectAll()
+      case .addElements:
         sheet.commit { model in
-          model = .init(.add, .backgroundTrackLibrary)
+          model = .init(.add, .elements)
           model.detent = .adaptiveLarge
         }
-      case .openOverlayLibrary:
+      case let .addFromCamera(systemCamera):
+        try engine?.block.deselectAll()
+        if systemCamera {
+          openSystemCamera()
+        } else {
+          isCameraSheetShown = true
+        }
+      case .addFromPhotoRoll:
+        try engine?.block.deselectAll()
+        openImagePicker()
+      case .addClip:
         try engine?.block.deselectAll()
         sheet.commit { model in
-          model = .init(.add, .overlayLibrary)
+          model = .init(.add, .clip)
+          model.detent = .adaptiveLarge
+        }
+      case .addOverlay:
+        try engine?.block.deselectAll()
+        sheet.commit { model in
+          model = .init(.add, .overlay)
+          model.detent = .adaptiveLarge
+        }
+      case .addImage:
+        sheet.commit { model in
+          model = .init(.add, .image)
           model.detent = .adaptiveLarge
         }
       case .addText:
         sheet.commit { model in
           model = .init(.add, .text)
-          model.detent = .large
+        }
+      case .addShape:
+        sheet.commit { model in
+          model = .init(.add, .shape)
+          model.detent = .adaptiveLarge
         }
       case .addSticker:
         sheet.commit { model in
-          model = .init(.add, .stickerShapesLibrary)
+          model = .init(.add, .sticker)
+          model.detent = .adaptiveLarge
+        }
+      case .addStickerOrShape:
+        sheet.commit { model in
+          model = .init(.add, .stickerOrShape)
           model.detent = .adaptiveLarge
         }
       case .addAudio:
@@ -1460,7 +1489,7 @@ internal extension Interactor {
     }
   }
 
-  func updateState() {
+  func updateState(_ events: [BlockEvent] = []) {
     guard let engine else {
       return
     }
@@ -1486,8 +1515,14 @@ internal extension Interactor {
         return .init(blocks: selected, boundingBox: box ?? .zero)
       }
     }()
+    let selectedBlockChanged = events.contains { event in
+      event.type == .updated && selected.contains { $0 == event.block }
+    }
 
-    if self.selection != selection {
+    if self.selection != selection || selectedBlockChanged {
+      // Force updating the published property if "something" changed for the selected block
+      // to trigger `Interactor.objectWillChange` and thus updating all views that depend on the interactor.
+      // This in turn will trigger to update any binding created with `Interactor.bind`.
       self.selection = selection
     }
 
@@ -1531,7 +1566,7 @@ internal extension Interactor {
         return
       }
       for await events in engine.event.subscribe(to: []) {
-        updateState()
+        updateState(events)
         updateTimeline(events)
         updatePlaybackState()
       }

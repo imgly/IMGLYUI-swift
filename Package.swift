@@ -26,7 +26,7 @@ let package = Package(
              ])
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.27.1"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.28.0-rc.0"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "1.1.2"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.10.0")
   ],

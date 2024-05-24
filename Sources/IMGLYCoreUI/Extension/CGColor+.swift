@@ -8,6 +8,9 @@ import SwiftUI
 extension CGColor: IMGLYCompatible {}
 
 public extension IMGLY where Wrapped == CGColor {
+  /// Convert a hex string to a `CGColor`.
+  /// - Parameter hexString: The hex string that encodes a color.
+  /// - Returns: The `CGColor` representation or `nil` if the input string was invalid.
   static func hex(_ hexString: String) -> CGColor? {
     let hex = hexString.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
     var int = UInt64()

@@ -1,7 +1,9 @@
 import IMGLYCore
 import SwiftUI
 
+/// A grid of sticker assets.
 public struct StickerGrid: View {
+  /// Creates a grid of sticker assets.
   public init() {}
 
   public var body: some View {

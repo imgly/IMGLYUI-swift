@@ -153,7 +153,7 @@ struct Canvas: View {
       }
     }
     .overlay(alignment: .bottom) {
-      if interactor.sceneMode == .video, interactor.editMode != .text {
+      if !interactor.isLoading, interactor.sceneMode == .video, interactor.editMode != .text {
         VStack(spacing: 0) {
           VStack(spacing: 0) {
             playerBar()
@@ -194,7 +194,7 @@ struct Canvas: View {
     .overlay(alignment: .bottom) {
       VStack {
         Spacer()
-        if interactor.isEditing {
+        if !interactor.isLoading, interactor.isEditing {
           ZStack {
             bottomBar(type: nil)
               .disabled(interactor.sheet.isPresented)
@@ -262,7 +262,16 @@ struct Canvas: View {
         }
       }
     }
-    .imgly.imagePicker(isPresented: $interactor.isImagePickerShown, media: [.image, .movie]) { result in
+    .imgly.camera(isPresented: $interactor.isSystemCameraShown, media: media, onComplete: mediaCompletion)
+    .imgly.imagePicker(isPresented: $interactor.isImagePickerShown, media: media, onComplete: mediaCompletion)
+  }
+
+  private var media: [MediaType] {
+    interactor.sceneMode == .video ? [.image, .movie] : [.image]
+  }
+
+  private var mediaCompletion: MediaCompletion {
+    { result in
       switch result {
       case let .success((url, mediaType)):
         interactor.addAssetFromImagePicker(url: url, mediaType: mediaType)

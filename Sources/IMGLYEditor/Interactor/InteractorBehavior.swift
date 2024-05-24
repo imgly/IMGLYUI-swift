@@ -21,12 +21,15 @@ import SwiftUI
   case color(_ id: DesignBlockID, colorPalette: [NamedColor]? = nil)
   case reorder
 
-  case openCamera
-  case openCameraRoll
-  case openBackgroundClipLibrary
-  case openOverlayLibrary
+  case addElements
+  case addFromPhotoRoll
+  case addFromCamera(systemCamera: Bool)
+  case addOverlay
+  case addImage
   case addText
+  case addShape
   case addSticker
+  case addStickerOrShape
   case addAudio
 
   var sheetMode: SheetMode {
@@ -38,12 +41,15 @@ import SwiftUI
     case let .fontSize(id): return .fontSize(id)
     case let .color(id, palette): return .color(id, palette)
 
-    case .openCamera: return .openCamera
-    case .openCameraRoll: return .openPhotoRoll
-    case .openBackgroundClipLibrary: return .openBackgroundClipLibrary
-    case .openOverlayLibrary: return .openOverlayLibrary
+    case .addElements: return .addElements
+    case .addFromPhotoRoll: return .addFromPhotoRoll
+    case let .addFromCamera(systemCamera): return .addFromCamera(systemCamera)
+    case .addOverlay: return .addOverlay
+    case .addImage: return .addImage
     case .addText: return .addText
+    case .addShape: return .addShape
     case .addSticker: return .addSticker
+    case .addStickerOrShape: return .addStickerOrShape
     case .addAudio: return .addAudio
     }
   }
@@ -218,7 +224,10 @@ import SwiftUI
     guard !context.interactor.isLoading else {
       return
     }
-    context.interactor.selectionColors = try context.engine.selectionColors(forPage: context.interactor.page)
+    let selectionColors = try context.engine.selectionColors(forPage: context.interactor.page)
+    if context.interactor.selectionColors != selectionColors {
+      context.interactor.selectionColors = selectionColors
+    }
   }
 }
 

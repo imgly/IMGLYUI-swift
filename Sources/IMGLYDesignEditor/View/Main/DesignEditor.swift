@@ -3,12 +3,16 @@ import SwiftUI
 
 @_exported import IMGLYEditor
 
+/// Built to support versatile editing capabilities for a broad range of design applications.
 public struct DesignEditor: View {
+  /// Scene that will be loaded by the default implementation of the `onCreate` callback.
   public static let defaultScene = Bundle.module.url(forResource: "design-ui-empty", withExtension: "scene")!
 
   @Environment(\.imglyOnCreate) private var onCreate
   private let settings: EngineSettings
 
+  /// Creates a design editor with settings.
+  /// - Parameter settings: The settings to initialize the underlying engine.
   public init(_ settings: EngineSettings) {
     self.settings = settings
   }

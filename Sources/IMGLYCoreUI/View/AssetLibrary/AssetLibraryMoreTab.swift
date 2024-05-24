@@ -1,9 +1,12 @@
 @_spi(Internal) import IMGLYCore
 import SwiftUI
 
+/// Use this view if you have more than five `AssetLibraryTab`s to workaround various SwiftUI `TabView` shortcomings.
 public struct AssetLibraryMoreTab<Content: View>: View {
   @ViewBuilder private let content: () -> Content
 
+  /// Creates a more tab with `content`.
+  /// - Parameter content: The content of the more tab.
   public init(@ViewBuilder content: @escaping () -> Content) {
     self.content = content
   }

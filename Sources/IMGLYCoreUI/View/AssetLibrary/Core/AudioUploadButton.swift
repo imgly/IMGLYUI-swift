@@ -1,7 +1,9 @@
 import IMGLYCore
 import SwiftUI
 
+/// A button to open a file import dialog for audio files that are added to an asset source.
 public struct AudioUploadButton: View {
+  /// Creates a button to add audio files to an asset source.
   public init() {}
 
   @State private var showFileImporter = false

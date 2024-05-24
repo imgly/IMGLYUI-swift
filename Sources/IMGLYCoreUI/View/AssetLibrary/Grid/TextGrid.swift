@@ -1,7 +1,9 @@
 import IMGLYEngine
 import SwiftUI
 
+/// A grid of text assets.
 public struct TextGrid: View {
+  /// Creates a grid of text assets.
   public init() {}
 
   public var body: some View {

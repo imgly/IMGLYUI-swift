@@ -2,11 +2,14 @@
 import IMGLYEngine
 import SwiftUI
 
+/// A grid of assets with an upload button.
 public struct UploadGrid: View {
   @Environment(\.imglyAssetLibrarySources) private var sources
   @EnvironmentObject private var interactor: AnyAssetLibraryInteractor
   private let media: [MediaType]
 
+  /// Creates grid of assets with an upload button.
+  /// - Parameter media: The allowed media type(s) to upload.
   public init(media: [MediaType]) {
     self.media = media
   }

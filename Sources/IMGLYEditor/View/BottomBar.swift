@@ -51,7 +51,7 @@ struct BottomBar: View {
     if Set([.image, .video]).contains(type) {
       modes += [.crop]
     }
-    if !(type == .page && isVideo) {
+    if type != .page {
       modes += [.duplicate]
     }
     if !Set([.page, .audio]).contains(type) {
@@ -79,7 +79,7 @@ struct BottomBar: View {
       modes += [.enterGroup]
     }
     modes += [.selectGroup]
-    if !(type == .page && isVideo) {
+    if type != .page {
       modes += [.delete]
     }
 

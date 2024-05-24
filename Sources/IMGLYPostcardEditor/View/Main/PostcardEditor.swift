@@ -19,12 +19,17 @@ enum Page: Int, Localizable {
   var index: Int { rawValue }
 }
 
+/// Built to facilitate optimal post- & greeting- card design, from changing accent colors and selecting fonts to custom
+/// messages and pictures.
 public struct PostcardEditor: View {
+  /// Scene that will be loaded by the default implementation of the `onCreate` callback.
   public static let defaultScene = Bundle.module.url(forResource: "postcard-empty", withExtension: "scene")!
 
   @Environment(\.imglyOnCreate) private var onCreate
   private let settings: EngineSettings
 
+  /// Creates a postcard editor with settings.
+  /// - Parameter settings: The settings to initialize the underlying engine.
   public init(_ settings: EngineSettings) {
     self.settings = settings
   }

@@ -5,7 +5,7 @@ import SwiftUI
 
 @_exported import IMGLYCore
 
-/// The IMGLYCamera captures video.
+/// A camera for capturing videos.
 public struct Camera: View {
   @StateObject var camera: CameraModel
 
@@ -16,8 +16,9 @@ public struct Camera: View {
 
   @ScaledMetric private var recordButtonSize: Double = 82
 
+  /// Creates a camera.
   /// - Parameters:
-  ///   - settings: The IMGLY Engine settings that contain the license.
+  ///   - settings: The settings to initialize the underlying engine.
   ///   - config: Customize the camera experience and behavior.
   ///   - onDismiss: When the camera is dismissed, it calls the `onDismiss` and passes a `Result`.
   ///     - If the user has recorded videos, you’ll receive a `.success` result and an array of `Recording`s.

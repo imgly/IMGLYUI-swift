@@ -1,9 +1,12 @@
 import IMGLYEngine
 import SwiftUI
 
+/// A list of text assets.
 public struct TextList<Empty: View>: View {
   @ViewBuilder private let empty: (_ search: String) -> Empty
 
+  /// Creates a list of text assets.
+  /// - Parameter empty: A view to display when the list is empty.
   public init(@ViewBuilder empty: @escaping (_ search: String) -> Empty = { _ in Message.noElements }) {
     self.empty = empty
   }

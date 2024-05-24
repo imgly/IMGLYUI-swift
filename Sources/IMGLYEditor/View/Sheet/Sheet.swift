@@ -24,7 +24,7 @@ struct Sheet: View {
     case .video: VideoSheet()
     case .audio: AudioSheet()
     case .reorder: ReorderSheet()
-    case .backgroundTrackLibrary, .overlayLibrary, .stickerShapesLibrary: EmptyView()
+    case .asset, .elements, .clip, .overlay, .stickerOrShape: EmptyView()
     }
   }
 
@@ -49,12 +49,17 @@ struct Sheet: View {
       switch sheet.mode {
       case .add:
         switch sheet.type {
-        case .backgroundTrackLibrary: assetLibrary.clipsTab
-        case .overlayLibrary: assetLibrary.overlaysTab
-        case .stickerShapesLibrary: assetLibrary.stickersAndShapesTab
-        case .audio: assetLibrary.audioTab
+        case .asset: assetLibrary
+        case .elements: assetLibrary.elementsTab
+        case .image: assetLibrary.imagesTab
         case .text: assetLibrary.textTab
-        default: assetLibrary
+        case .shape: assetLibrary.shapesTab
+        case .sticker: assetLibrary.stickersTab
+        case .clip: assetLibrary.clipsTab
+        case .overlay: assetLibrary.overlaysTab
+        case .stickerOrShape: assetLibrary.stickersAndShapesTab
+        case .audio: assetLibrary.audioTab
+        default: EmptyView()
         }
 
       case .replace:

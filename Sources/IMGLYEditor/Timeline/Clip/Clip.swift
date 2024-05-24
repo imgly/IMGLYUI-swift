@@ -15,7 +15,7 @@ enum ClipType {
 }
 
 extension ClipType: CustomStringConvertible {
-  public var description: String {
+  var description: String {
     switch self {
     case .invalid:
       return ""
@@ -43,7 +43,7 @@ final class Clip: Identifiable, Hashable, ObservableObject, @unchecked Sendable 
     lhs.id == rhs.id
   }
 
-  public func hash(into hasher: inout Hasher) {
+  func hash(into hasher: inout Hasher) {
     hasher.combine(id)
   }
 

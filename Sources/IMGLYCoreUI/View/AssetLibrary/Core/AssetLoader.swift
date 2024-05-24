@@ -2,6 +2,7 @@
 import IMGLYEngine
 import SwiftUI
 
+/// A loader that fetches asset data from asset sources.
 public struct AssetLoader: ViewModifier {
   private let sources: [SourceData]
   @Binding private var search: QueryData
@@ -88,11 +89,18 @@ public struct AssetLoader: ViewModifier {
 // MARK: - Public interface
 
 public extension AssetLoader {
+  /// An asset source definition.
   struct SourceData: Hashable, Sendable {
+    /// The asset source ID.
     public let id: String
+    /// The configuration query to limit the results of this asset source.
     public let config: QueryData
     let expandGroups: Bool
 
+    /// Creates an asset source definition.
+    /// - Parameters:
+    ///   - id: The asset source ID.
+    ///   - config: The configuration query to limit the results of this asset source.
     public init(id: String, config: QueryData = .init()) {
       self.id = id
       self.config = config
@@ -115,13 +123,28 @@ public extension AssetLoader {
     }
   }
 
+  /// A wrapper for `IMGLYEngine.AssetQueryData` without explicit page handling.
   struct QueryData: Hashable, Sendable {
+    ///  A query string used for (fuzzy) searching of labels and tags.
     public let query: String?
+    /// Tags are searched with the query parameter, but this search is fuzzy.
+    /// If one needs to get assets with exactly the tag (from a tag cloud or filter)
+    /// this query parameter should be used.
     public let tags: [String]?
+    /// Query only these groups.
     public let groups: IMGLYEngine.Groups?
+    /// Filter out assets with this groups.
     public let excludedGroups: IMGLYEngine.Groups?
+    /// Choose the locale of the label and tags for localized search and filtering.
     public let locale: IMGLYEngine.Locale?
 
+    /// Initializes a request for querying assets.
+    /// - Parameters:
+    ///   - query: A query string used for (fuzzy) searching of label and tags.
+    ///   - tags:  Tags are searched with the query parameter, but this search is fuzzy.
+    ///   - groups: Query only these groups.
+    ///   - excludedGroups: Filter out assets with this groups.
+    ///   - locale: Choose the locale of the label and tags for localized search and filtering.
     public init(query: String? = nil, tags: [String]? = nil,
                 groups: IMGLYEngine.Groups? = nil, excludedGroups: IMGLYEngine.Groups? = nil,
                 locale: IMGLYEngine.Locale? = "en") {

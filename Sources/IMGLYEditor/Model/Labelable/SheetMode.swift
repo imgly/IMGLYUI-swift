@@ -4,7 +4,12 @@ import SwiftUI
 enum SheetMode: Labelable, IdentifiableByHash {
   case add, replace, edit, format, options, crop, fillAndStroke, layer, enterGroup, selectGroup, filter, adjustments,
        effect, blur
-  case openCamera, openPhotoRoll, openBackgroundClipLibrary, openOverlayLibrary, addText, addSticker, addAudio
+
+  case addElements
+  case addFromPhotoRoll
+  case addFromCamera(_ systemCamera: Bool)
+  case addClip, addOverlay, addImage, addText, addShape, addSticker, addStickerOrShape, addAudio
+
   case selectionColors
   case font(_ id: Interactor.BlockID?, _ fontFamilies: [String]?)
   case fontSize(_ id: Interactor.BlockID?)
@@ -62,12 +67,16 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .duplicate: return "Duplicate"
     case .attachToBackground: return "As Clip"
     case .detachFromBackground: return "As Overlay"
-    case .openCamera: return "Camera"
-    case .openPhotoRoll: return "Photo Roll"
-    case .openBackgroundClipLibrary: return "Clip"
-    case .openOverlayLibrary: return "Overlay"
+
+    case .addElements: return "Elements"
+    case .addFromPhotoRoll: return "Photo Roll"
+    case .addFromCamera: return "Camera"
+    case .addClip: return "Clip"
+    case .addOverlay: return "Overlay"
+    case .addImage: return "Image"
     case .addText: return "Text"
-    case .addSticker: return "Sticker"
+    case .addShape: return "Shape"
+    case .addSticker, .addStickerOrShape: return "Sticker"
     case .addAudio: return "Audio"
     }
   }
@@ -97,20 +106,23 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .attachToBackground: return "custom.as.clip"
     case .detachFromBackground: return "custom.as.overlay"
 
-    case .openCamera: return "custom.camera.fill.badge.plus"
-    case .openPhotoRoll: return "custom.photo.fill.on.rectangle.fill.badge.plus"
-    case .openBackgroundClipLibrary: return "custom.add.clip"
-    case .openOverlayLibrary: return "custom.film.stack.badge.plus"
+    case .addElements: return "custom.books.vertical.badge.plus"
+    case .addFromPhotoRoll, .addFromCamera: return nil
+    case .addClip: return "custom.add.clip"
+    case .addOverlay: return "custom.film.stack.badge.plus"
+    case .addImage: return "custom.photo.badge.plus"
     case .addText: return "custom.textformat.alt.badge.plus"
-    case .addSticker: return "custom.face.smiling.badge.plus"
+    case .addShape: return "custom.square.on.circle.badge.plus"
+    case .addSticker, .addStickerOrShape: return "custom.face.smiling.badge.plus"
     case .addAudio: return "custom.audio.badge.plus"
     }
   }
 
   var isSystemImage: Bool {
     switch self {
-    case .enterGroup, .selectGroup, .attachToBackground, .detachFromBackground, .openCamera, .openPhotoRoll,
-         .openBackgroundClipLibrary, .openOverlayLibrary, .addText, .addSticker, .addAudio:
+    case .enterGroup, .selectGroup, .attachToBackground, .detachFromBackground, .addElements, .addFromCamera,
+         .addFromPhotoRoll, .addClip, .addOverlay, .addImage, .addText, .addShape, .addSticker,
+         .addStickerOrShape, .addAudio:
       return false
     default:
       return true
@@ -133,8 +145,8 @@ enum SheetMode: Labelable, IdentifiableByHash {
     }
   }
 
-  @MainActor
-  @ViewBuilder func label(_ id: Interactor.BlockID?, _ interactor: Interactor) -> some View {
+  // swiftlint:disable:next cyclomatic_complexity
+  @MainActor @ViewBuilder func label(_ id: Interactor.BlockID?, _ interactor: Interactor) -> some View {
     switch self {
     case .fillAndStroke:
       Label {
@@ -178,6 +190,26 @@ enum SheetMode: Labelable, IdentifiableByHash {
         Text(localizedStringKey)
       } icon: {
         FillColorIcon()
+      }
+    case .addFromCamera:
+      Label {
+        Text(localizedStringKey)
+      } icon: {
+        Image(
+          interactor.sceneMode == .video ? "custom.camera.fill.badge.plus" :
+            "custom.camera.badge.plus",
+          bundle: .module
+        )
+      }
+    case .addFromPhotoRoll:
+      Label {
+        Text(localizedStringKey)
+      } icon: {
+        Image(
+          interactor.sceneMode == .video ? "custom.photo.fill.on.rectangle.fill.badge.plus" :
+            "custom.photo.on.rectangle.badge.plus",
+          bundle: .module
+        )
       }
     default: label
     }
