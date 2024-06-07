@@ -1,6 +1,4 @@
-@_spi(Internal) import struct IMGLYCore.Error
 @_spi(Internal) import IMGLYEditor
-import IMGLYEngine
 import SwiftUI
 
 @_exported import IMGLYEditor

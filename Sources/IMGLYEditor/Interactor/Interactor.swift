@@ -107,6 +107,22 @@ import SwiftUI
     isLoading ? nil : sheetType(for: selection)
   }
 
+  var sheetTypeForBottomBar: SheetType? {
+    isBottomBarEnabled ? sheetTypeForSelection : nil
+  }
+
+  var isBottomBarEnabled: Bool {
+    guard let engine else {
+      return false
+    }
+    do {
+      return try behavior.isBottomBarEnabled(.init(engine, self))
+    } catch {
+      handleErrorWithTask(error)
+      return false
+    }
+  }
+
   func sheetType(_ id: BlockID?) -> SheetType? {
     guard let id, let engine, let type = try? engine.block.getType(id) else {
       return nil
@@ -154,7 +170,7 @@ import SwiftUI
     do {
       return try behavior.rootBottomBarItems(.init(engine, self))
     } catch {
-      handleError(error)
+      handleErrorWithTask(error)
       return []
     }
   }
@@ -227,6 +243,7 @@ import SwiftUI
   private var _engine: Engine?
 
   private var previousEditMode: EditMode?
+  private var exitCropModeAction: RootBottomBarItem.Action?
 
   private var stateTask: Task<Void, Never>?
   private var eventTask: Task<Void, Never>?
@@ -691,7 +708,7 @@ extension Interactor {
       return isAllowed(id, scope: .lifecycleDestroy) && !isGrouped(id)
     case .previousPage, .nextPage, .page: return true
     case .resetCrop, .flipCrop:
-      return isAllowed(id, .crop) && !isGrouped(id)
+      return isAllowed(id, .crop()) && !isGrouped(id)
     }
   }
 }
@@ -1033,8 +1050,20 @@ extension Interactor {
         }
       case .edit:
         setEditMode(.text)
-      case .crop:
-        setEditMode(.crop)
+      case let .crop(id, enter, exit):
+        if let engine, let id {
+          try engine.block.overrideAndRestore(id, scope: .key(.editorSelect)) {
+            try engine.block.select($0)
+          }
+          try enter?.action()
+          exitCropModeAction = exit
+          Task {
+            try await Task.sleep(for: .milliseconds(50))
+            setEditMode(.crop)
+          }
+        } else {
+          setEditMode(.crop)
+        }
       case .enterGroup:
         if let group = selection?.blocks.first {
           try engine?.block.enterGroup(group)
@@ -1064,7 +1093,7 @@ extension Interactor {
           model.detents = [.adaptiveTiny]
         }
       case .filter, .effect, .blur:
-        guard let type = sheetTypeForSelection else {
+        guard let type = sheetType(mode.pinnedBlockID) ?? sheetTypeForSelection else {
           return
         }
         sheet.commit { model in
@@ -1080,7 +1109,7 @@ extension Interactor {
           model.detents = [.adaptiveMedium]
         }
       case .layer, .adjustments:
-        guard let type = sheetTypeForSelection else {
+        guard let type = sheetType(mode.pinnedBlockID) ?? sheetTypeForSelection else {
           return
         }
         sheet.commit { model in
@@ -1181,7 +1210,11 @@ extension Interactor {
   // MARK: - Zoom
 
   func updateZoom(for event: ZoomEvent,
-                  with zoom: (insets: EdgeInsets?, canvasHeight: CGFloat)) {
+                  // swiftlint:disable:next large_tuple
+                  with zoom: (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat)) {
+    if zoomModel.defaultPadding != zoom.padding {
+      zoomModel.defaultPadding = zoom.padding
+    }
     switch event {
     case .canvasGeometryChanged:
       zoomModel.defaultInsets = zoom.insets ?? EdgeInsets()
@@ -1203,6 +1236,11 @@ extension Interactor {
     }
   }
 
+  @_spi(Internal) public func zoomToPage(withAdditionalPadding padding: CGFloat) {
+    zoomModel.padding = padding
+    updateZoom(zoomToPage: true)
+  }
+
   private func updateZoom(
     with insets: EdgeInsets? = nil,
     canvasHeight: CGFloat = 0,
@@ -1222,13 +1260,20 @@ extension Interactor {
       do {
         if isEditing {
           if sheet.mode == .add, sheet.isPresented { return }
-          var zoomModel = self.zoomModel
+          let zoomLevel: Float?
           if zoomToPage {
-            try await engine?.zoomToPage(page, insets, zoomModel: &zoomModel)
+            zoomLevel = try await engine?.zoomToPage(page, insets, zoomModel: zoomModel)
           } else {
-            try await engine?.updateZoom(with: insets, and: canvasHeight, clampOnly: clampOnly, zoomModel: &zoomModel)
+            zoomLevel = try await engine?.updateZoom(
+              with: insets,
+              and: canvasHeight,
+              clampOnly: clampOnly,
+              zoomModel: zoomModel
+            )
           }
-          self.zoomModel = zoomModel
+          if let zoomLevel {
+            zoomModel.defaultZoomLevel = zoomLevel
+          }
           if editMode == .text {
             try engine?.zoomToSelectedText(insets, canvasHeight: canvasHeight)
           }
@@ -1639,7 +1684,7 @@ internal extension Interactor {
     guard oldValue != sheet else {
       return
     }
-    if !sheet.isPresented, oldValue.state == .init(.crop, .image) {
+    if !sheet.isPresented, oldValue.state == .init(.crop(), .image) {
       setEditMode(.transform)
     }
   }
@@ -1704,10 +1749,10 @@ internal extension Interactor {
         sheet.isPresented = false
       }
     }
-    if editMode == .crop, sheet.state != .init(.crop, .image) {
+    if editMode == .crop, sheet.state != .init(.crop(), .image) {
       func showCropSheet() {
         sheet.commit { model in
-          model = .init(.crop, .image)
+          model = .init(.crop(), .image)
           model.detent = .adaptiveSmall
           model.detents = [.adaptiveSmall, .adaptiveLarge]
         }
@@ -1722,6 +1767,14 @@ internal extension Interactor {
       } else {
         showCropSheet()
       }
+    }
+    if let exitCropModeAction, oldValue == .crop {
+      do {
+        try exitCropModeAction.action()
+      } catch {
+        handleError(error)
+      }
+      self.exitCropModeAction = nil
     }
   }
 
@@ -1745,6 +1798,11 @@ internal extension Interactor {
     self.canUndo = canUndo
     let canRedo = (try? engine.editor.canRedo()) ?? false
     self.canRedo = canRedo
+    do {
+      try behavior.historyChanged(.init(engine, self))
+    } catch {
+      handleError(error)
+    }
   }
 }
 

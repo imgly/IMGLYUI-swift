@@ -24,7 +24,7 @@ final class PostcardInteractorBehavior: InteractorBehavior {
       return [.fab, .selectionColors]
     } else {
       guard let id = context.engine.block.find(byName: "Greeting").first else {
-        return []
+        throw Error(errorDescription: "No greeting found.")
       }
       return [
         .font(id, fontFamilies: [

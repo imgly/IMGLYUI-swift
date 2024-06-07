@@ -16,8 +16,11 @@ import SwiftUI
   private var sheetGeometryIfPresented: Geometry? { interactor.sheet.isPresented ? sheetGeometry : nil }
   private let zoomPadding: CGFloat
 
-  private func zoomParameters(canvasGeometry: Geometry?,
-                              sheetGeometry: Geometry?) -> (insets: EdgeInsets?, canvasHeight: CGFloat) {
+  private func zoomParameters(
+    canvasGeometry: Geometry?,
+    sheetGeometry: Geometry?
+    // swiftlint:disable:next large_tuple
+  ) -> (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat) {
     let canvasHeight = canvasGeometry?.size.height ?? 0
 
     let insets: EdgeInsets?
@@ -34,10 +37,10 @@ import SwiftUI
 
     if var rtl = insets, layoutDirection == .rightToLeft {
       swap(&rtl.leading, &rtl.trailing)
-      return (rtl, canvasHeight)
+      return (rtl, canvasHeight, zoomPadding)
     }
 
-    return (insets, canvasHeight)
+    return (insets, canvasHeight, zoomPadding)
   }
 
   @State private var interactivePopGestureRecognizer: UIGestureRecognizer?

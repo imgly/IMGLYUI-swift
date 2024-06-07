@@ -202,13 +202,13 @@ struct Canvas: View {
                 barContentGeometry = newValue
               }
             Group {
-              if let type = interactor.sheetTypeForSelection {
+              if let type = interactor.sheetTypeForBottomBar {
                 bottomBar(type: type)
                   .zIndex(1)
                   .transition(.move(edge: .bottom))
               }
             }
-            .animation(.easeInOut(duration: 0.2), value: interactor.sheetTypeForSelection)
+            .animation(.easeInOut(duration: 0.2), value: interactor.sheetTypeForBottomBar)
           }
           .transition(.move(edge: .bottom))
         }

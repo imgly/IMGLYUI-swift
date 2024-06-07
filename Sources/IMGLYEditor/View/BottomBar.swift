@@ -34,7 +34,7 @@ struct BottomBar: View {
 
     var modes = [SheetMode]()
     if Set([.image, .video]).contains(type) {
-      modes += [.adjustments, .filter, .effect, .blur]
+      modes += [.adjustments(), .filter(), .effect(), .blur()]
     }
     if type == .text {
       modes += [.edit, .format]
@@ -49,7 +49,7 @@ struct BottomBar: View {
       modes += [.volume]
     }
     if Set([.image, .video]).contains(type) {
-      modes += [.crop]
+      modes += [.crop()]
     }
     if type != .page {
       modes += [.duplicate]

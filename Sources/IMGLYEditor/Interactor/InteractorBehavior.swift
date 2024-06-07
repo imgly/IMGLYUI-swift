@@ -21,6 +21,27 @@ import SwiftUI
   case color(_ id: DesignBlockID, colorPalette: [NamedColor]? = nil)
   case reorder
 
+  case adjustments(_ id: DesignBlockID)
+  case filter(_ id: DesignBlockID)
+  case effect(_ id: DesignBlockID)
+  case blur(_ id: DesignBlockID)
+
+  @_spi(Internal) public struct Action: Hashable {
+    @_spi(Internal) public static func == (_: Self, _: Self) -> Bool {
+      true
+    }
+
+    @_spi(Internal) public func hash(into _: inout Hasher) {}
+
+    let action: () throws -> Void
+
+    @_spi(Internal) public init(action: @escaping () throws -> Void = {}) {
+      self.action = action
+    }
+  }
+
+  case crop(_ id: DesignBlockID, enter: Action, exit: Action)
+
   case addElements
   case addFromPhotoRoll
   case addFromCamera(systemCamera: Bool)
@@ -40,6 +61,12 @@ import SwiftUI
     case let .font(id, families): return .font(id, families)
     case let .fontSize(id): return .fontSize(id)
     case let .color(id, palette): return .color(id, palette)
+
+    case let .adjustments(id): return .adjustments(id)
+    case let .filter(id): return .filter(id)
+    case let .effect(id): return .effect(id)
+    case let .blur(id): return .blur(id)
+    case let .crop(id, enter, exit): return .crop(id, enter, exit)
 
     case .addElements: return .addElements
     case .addFromPhotoRoll: return .addFromPhotoRoll
@@ -71,8 +98,10 @@ import SwiftUI
   func enableEditMode(_ context: InteractorContext) throws
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws
   func isGestureActive(_ context: InteractorContext, _ started: Bool) throws
+  func isBottomBarEnabled(_ context: InteractorContext) throws -> Bool
   func rootBottomBarItems(_ context: InteractorContext) throws -> [RootBottomBarItem]
   func pageChanged(_ context: InteractorContext) throws
+  func historyChanged(_ context: InteractorContext) throws
   func updateState(_ context: InteractorContext) throws
 }
 
@@ -149,9 +178,14 @@ import SwiftUI
     try context.engine.showOutline(false)
     try context.engine.showPage(context.interactor.page)
     try enableEditMode(context)
-    var zoomModel = context.interactor.zoomModel
-    try await context.engine.zoomToPage(context.interactor.page, insets, zoomModel: &zoomModel)
-    context.interactor.zoomModel = zoomModel
+    let zoomLevel = try await context.engine.zoomToPage(
+      context.interactor.page,
+      insets,
+      zoomModel: context.interactor.zoomModel
+    )
+    if let zoomLevel {
+      context.interactor.zoomModel.defaultZoomLevel = zoomLevel
+    }
   }
 
   func showAllPages(_ context: InteractorContext) throws {
@@ -175,12 +209,17 @@ import SwiftUI
   }
 
   private func enableScrollableCameraClamping(_ context: InteractorContext, _ insets: EdgeInsets?) async throws {
-    let updatedInsets = insets ?? .init()
+    var updatedInsets = insets ?? .init()
+    updatedInsets.leading += context.interactor.zoomModel.padding
+    updatedInsets.trailing += context.interactor.zoomModel.padding
+    updatedInsets.top += context.interactor.zoomModel.padding
+    updatedInsets.bottom += context.interactor.zoomModel.padding
+
     let paddingLeft = Float(updatedInsets.leading)
     let paddingRight = Float(updatedInsets.trailing)
     let paddingTop = Float(updatedInsets.top)
     let paddingBottom = Float(updatedInsets.bottom)
-    let margin: Float = 16
+    let margin = Float(context.interactor.zoomModel.defaultPadding + context.interactor.zoomModel.padding)
 
     guard let pages = try? context.engine.getSortedPages(), let firstPage = pages.first else {
       return
@@ -214,11 +253,17 @@ import SwiftUI
 
   func isGestureActive(_: InteractorContext, _: Bool) throws {}
 
+  func isBottomBarEnabled(_: InteractorContext) throws -> Bool {
+    true
+  }
+
   func rootBottomBarItems(_: InteractorContext) throws -> [RootBottomBarItem] {
     [.fab]
   }
 
   func pageChanged(_: InteractorContext) throws {}
+
+  func historyChanged(_: InteractorContext) throws {}
 
   func updateState(_ context: InteractorContext) throws {
     guard !context.interactor.isLoading else {

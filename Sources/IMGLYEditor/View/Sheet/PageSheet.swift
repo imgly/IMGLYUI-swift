@@ -9,7 +9,12 @@ struct PageSheet: View {
   var body: some View {
     BottomSheet {
       switch sheet.mode {
+      case .crop: CropOptions()
       case .fillAndStroke: FillAndStrokeOptions()
+      case .adjustments: AdjustmentsOptions()
+      case .filter: FilterOptions()
+      case .blur: BlurOptions()
+      case .effect: FXEffectOptions()
       default: EmptyView()
       }
     }

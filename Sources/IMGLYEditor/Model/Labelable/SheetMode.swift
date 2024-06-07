@@ -2,8 +2,17 @@ import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
 
 enum SheetMode: Labelable, IdentifiableByHash {
-  case add, replace, edit, format, options, crop, fillAndStroke, layer, enterGroup, selectGroup, filter, adjustments,
-       effect, blur
+  case add, replace, edit, format, options, fillAndStroke, layer, enterGroup, selectGroup
+
+  case adjustments(_ id: Interactor.BlockID? = nil)
+  case filter(_ id: Interactor.BlockID? = nil)
+  case effect(_ id: Interactor.BlockID? = nil)
+  case blur(_ id: Interactor.BlockID? = nil)
+  case crop(
+    _ id: Interactor.BlockID? = nil,
+    _ enter: RootBottomBarItem.Action? = nil,
+    _ exit: RootBottomBarItem.Action? = nil
+  )
 
   case addElements
   case addFromPhotoRoll
@@ -19,6 +28,11 @@ enum SheetMode: Labelable, IdentifiableByHash {
 
   var pinnedBlockID: Interactor.BlockID? {
     switch self {
+    case let .adjustments(id): return id
+    case let .filter(id): return id
+    case let .effect(id): return id
+    case let .blur(id): return id
+    case let .crop(id, _, _): return id
     case let .font(id, _): return id
     case let .fontSize(id): return id
     case let .color(id, _): return id

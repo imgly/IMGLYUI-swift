@@ -1,6 +1,6 @@
-@_spi(Internal) import IMGLYEditor
 @_spi(Internal) import IMGLYCore
 @_spi(Internal) import IMGLYCoreUI
+@_spi(Internal) import IMGLYEditor
 import IMGLYEngine
 import SwiftUI
 

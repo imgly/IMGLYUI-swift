@@ -9,6 +9,7 @@ let package = Package(
     .library(name: "IMGLYCamera", targets: ["IMGLYCamera"]),
     .library(name: "IMGLYDesignEditor", targets: ["IMGLYDesignEditor"]),
     .library(name: "IMGLYVideoEditor", targets: ["IMGLYVideoEditor"]),
+    .library(name: "IMGLYPhotoEditor", targets: ["IMGLYPhotoEditor"]),
     .library(name: "IMGLYApparelEditor", targets: ["IMGLYApparelEditor"]),
     .library(name: "IMGLYPostcardEditor", targets: ["IMGLYPostcardEditor"]),
 
@@ -21,12 +22,13 @@ let package = Package(
                "IMGLYEditor",
                "IMGLYDesignEditor",
                "IMGLYVideoEditor",
+               "IMGLYPhotoEditor",
                "IMGLYApparelEditor",
                "IMGLYPostcardEditor"
              ])
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.28.0"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.29.0-rc.0"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "1.1.2"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.10.0")
   ],
@@ -58,6 +60,11 @@ let package = Package(
     ),
     .target(
       name: "IMGLYVideoEditor",
+      dependencies: [.target(name: "IMGLYEditor")],
+      resources: [.process("Resources")]
+    ),
+    .target(
+      name: "IMGLYPhotoEditor",
       dependencies: [.target(name: "IMGLYEditor")],
       resources: [.process("Resources")]
     ),

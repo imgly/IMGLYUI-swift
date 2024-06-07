@@ -28,14 +28,6 @@ private struct Random: RandomNumberGenerator {
 
   // MARK: - Scene
 
-  var sceneMode: SceneMode? {
-    // Make sure scene is loaded before calling `scene.getMode()` as it'll force unwrap the scene.
-    guard (try? engine.scene.get()) != nil else {
-      return nil
-    }
-    return try? engine.scene.getMode()
-  }
-
   static let outlineBlockName = "always-on-top-page-outline"
 
   func showOutline(_ isVisible: Bool) throws {
@@ -198,10 +190,10 @@ private struct Random: RandomNumberGenerator {
 
     let allPages = index == nil
 
-    if sceneMode != .video {
-      try engine.block.set(getStack(), property: .key(.stackAxis), value: axis)
+    if let stack = try? getStack() {
+      try engine.block.set(stack, property: .key(.stackAxis), value: axis)
       if let spacing {
-        try engine.block.set(getStack(), property: .key(.stackSpacing), value: spacing)
+        try engine.block.set(stack, property: .key(.stackSpacing), value: spacing)
       }
     }
 
@@ -221,8 +213,8 @@ private struct Random: RandomNumberGenerator {
     try await zoomToBlock(getScene(), with: insets)
   }
 
-  func zoomToPage(_ index: Int, _ insets: EdgeInsets?, zoomModel: inout ZoomModel) async throws {
-    try await updateZoom(with: insets, zoomToPage: true, pageIndex: index, zoomModel: &zoomModel)
+  func zoomToPage(_ index: Int, _ insets: EdgeInsets?, zoomModel: ZoomModel) async throws -> Float? {
+    try await updateZoom(with: insets, zoomToPage: true, pageIndex: index, zoomModel: zoomModel)
   }
 
   func zoomToBlock(_ block: DesignBlockID, with insets: EdgeInsets?) async throws {
@@ -273,15 +265,21 @@ private struct Random: RandomNumberGenerator {
     zoomToPage: Bool = false,
     clampOnly: Bool = false,
     pageIndex: Int = 0,
-    zoomModel: inout ZoomModel
-  ) async throws {
-    let updatedInsets = insets ?? zoomModel.defaultInsets
+    zoomModel: ZoomModel
+  ) async throws -> Float? {
+    var updatedDefaultZoomLevel: Float?
+
+    var updatedInsets = insets ?? zoomModel.defaultInsets
+    updatedInsets.leading += zoomModel.padding
+    updatedInsets.trailing += zoomModel.padding
+    updatedInsets.top += zoomModel.padding
+    updatedInsets.bottom += zoomModel.padding
 
     let paddingLeft = Float(updatedInsets.leading)
     let paddingRight = Float(updatedInsets.trailing)
     let paddingTop = Float(updatedInsets.top)
     let paddingBottom = Float(updatedInsets.bottom)
-    let margin: Float = 16
+    let margin = Float(zoomModel.defaultPadding + zoomModel.padding)
     let page = try engine.getPage(pageIndex)
 
     let zoomLevel = try engine.scene.getZoom()
@@ -321,7 +319,7 @@ private struct Random: RandomNumberGenerator {
                                                          paddingBottom: paddingBottom)
       try await zoomToBlock(page, with: updatedInsets)
       let zoom = try engine.scene.getZoom()
-      zoomModel.defaultZoomLevel = zoom
+      updatedDefaultZoomLevel = zoom
     }
 
     if let selection, !zoomToPage, editMode != .text {
@@ -367,6 +365,7 @@ private struct Random: RandomNumberGenerator {
         }
       }
     }
+    return updatedDefaultZoomLevel
   }
 
   // MARK: - Actions
@@ -574,14 +573,7 @@ private struct Random: RandomNumberGenerator {
 
   func getSortedPages() throws -> [DesignBlockID] {
     guard (try? engine.scene.get()) != nil else { return [] }
-    switch sceneMode {
-    case .video:
-      return try engine.scene.getPages()
-    case .design:
-      return try engine.block.getChildren(getStack())
-    default:
-      fatalError("Unknown scene mode.")
-    }
+    return try engine.scene.getPages()
   }
 
   func getScene() throws -> DesignBlockID {
