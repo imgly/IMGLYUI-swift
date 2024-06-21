@@ -26,6 +26,8 @@ struct VideoSheet: View {
         FXEffectOptions()
       case .reorder:
         ReorderOptions()
+      case .shape:
+        ShapeOptions()
       default: EmptyView()
       }
     }

@@ -626,7 +626,7 @@ extension Interactor {
       return isAllowed(id, scope: .layerCrop) || isAllowed(id, scope: .layerClipping)
     case .format:
       return isAllowed(id, scope: .textCharacter)
-    case .options:
+    case .shape:
       return isAllowed(id, scope: .shapeChange)
     case .fillAndStroke:
       return isAllowed(id, scope: .fillChange) && isAllowed(id, scope: .strokeChange)
@@ -1131,6 +1131,15 @@ extension Interactor {
         try engine?.duplicateSelectedElement()
       case .attachToBackground, .detachFromBackground:
         toggleSelectedClipIsInBackgroundTrack()
+      case .shape:
+        guard let type = sheetTypeForSelection else {
+          return
+        }
+        sheet.commit { model in
+          model = .init(mode, type)
+          model.detent = .adaptiveSmall
+          model.detents = [.adaptiveTiny, .adaptiveSmall]
+        }
       default:
         guard let type = sheetTypeForSelection else {
           return

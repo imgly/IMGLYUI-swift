@@ -42,6 +42,11 @@ import Foundation
   case shapeStarPoints = "shape/star/points"
   case shapeStarInnerDiameter = "shape/star/innerDiameter"
   case shapePolygonSides = "shape/polygon/sides"
+  case shapePolygonCornerRadius = "shape/polygon/cornerRadius"
+  case shapeRectCornerRadiusTL = "shape/rect/cornerRadiusTL"
+  case shapeRectCornerRadiusTR = "shape/rect/cornerRadiusTR"
+  case shapeRectCornerRadiusBL = "shape/rect/cornerRadiusBL"
+  case shapeRectCornerRadiusBR = "shape/rect/cornerRadiusBR"
 
   case sceneDesignUnit = "scene/designUnit"
   case sceneDPI = "scene/dpi"

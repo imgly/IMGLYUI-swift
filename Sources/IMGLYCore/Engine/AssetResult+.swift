@@ -20,6 +20,13 @@ import IMGLYEngine
     return URL(string: string)
   }
 
+  var previewURL: URL? {
+    guard let string = meta(.previewUri) else {
+      return nil
+    }
+    return URL(string: string)
+  }
+
   var blockType: String? {
     meta(.blockType)
   }

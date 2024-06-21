@@ -11,8 +11,6 @@ struct BottomSheet<Content: View>: View {
 
   var title: LocalizedStringKey {
     switch sheet.mode {
-    case .options:
-      return LocalizedStringKey("\(String(describing: sheet.type)) \(String(describing: sheet.mode))")
     case .selectionColors, .font, .fontSize, .color:
       return sheet.type.localizedStringKey
     default:

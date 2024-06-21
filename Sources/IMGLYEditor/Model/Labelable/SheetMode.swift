@@ -2,7 +2,7 @@ import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
 
 enum SheetMode: Labelable, IdentifiableByHash {
-  case add, replace, edit, format, options, fillAndStroke, layer, enterGroup, selectGroup
+  case add, replace, edit, format, shape, fillAndStroke, layer, enterGroup, selectGroup
 
   case adjustments(_ id: Interactor.BlockID? = nil)
   case filter(_ id: Interactor.BlockID? = nil)
@@ -60,7 +60,7 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .replace: return "Replace"
     case .edit: return "Edit"
     case .format: return "Format"
-    case .options: return "Options"
+    case .shape: return "Shape"
     case .crop: return "Crop"
     case .fillAndStroke: return "Fill & Stroke"
     case .layer: return "Layer"
@@ -101,7 +101,7 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .replace: return "arrow.left.arrow.right.square"
     case .edit: return "keyboard"
     case .format: return "textformat.alt"
-    case .options: return "slider.horizontal.below.rectangle"
+    case .shape: return "square.on.circle"
     case .crop: return "crop.rotate"
     case .fillAndStroke: return nil
     case .layer: return "square.3.stack.3d"

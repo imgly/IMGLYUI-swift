@@ -17,4 +17,5 @@ import Foundation
   case fillType
   case blurType
   case effectType
+  case previewUri
 }

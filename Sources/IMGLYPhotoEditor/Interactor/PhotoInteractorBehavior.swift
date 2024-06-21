@@ -71,11 +71,6 @@ final class PhotoInteractorBehavior: InteractorBehavior {
     if try context.engine.block.isSelected(page), context.engine.editor.getEditMode() != .crop {
       try context.engine.block.setSelected(page, selected: false)
     }
-    // Workaround for undo is enabling scope
-    let scope = Scope.key(.editorSelect)
-    if try context.engine.block.isScopeEnabled(page, scope: scope) {
-      try context.engine.block.setScopeEnabled(page, scope: scope, enabled: false)
-    }
   }
 }
 

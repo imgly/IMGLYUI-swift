@@ -7,7 +7,7 @@ struct ShapeSheet: View {
   var body: some View {
     BottomSheet {
       switch sheet.mode {
-      case .options: ShapeOptions()
+      case .shape: ShapeOptions()
       case .fillAndStroke: FillAndStrokeOptions()
       case .layer: LayerOptions()
       default: EmptyView()

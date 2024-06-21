@@ -459,6 +459,10 @@ public extension AssetLoader {
       result.thumbURL ?? result.url
     }
 
+    @_spi(Internal) public var previewURLorURL: URL? {
+      result.previewURL ?? result.url
+    }
+
     @_spi(Internal) public var labelOrTypefaceName: String? {
       result.label ?? result.payload?.typeface?.name
     }

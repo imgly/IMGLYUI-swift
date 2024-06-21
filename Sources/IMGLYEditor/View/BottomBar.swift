@@ -42,14 +42,14 @@ struct BottomBar: View {
     if Set([.text, .shape, .page]).contains(type) {
       modes += [.fillAndStroke]
     }
-    if type == .shape, Set([.line, .star, .polygon]).contains(interactor.shapeType(id)) {
-      modes += [.options]
-    }
     if isVideo, Set([.audio, .video]).contains(type) {
       modes += [.volume]
     }
     if Set([.image, .video]).contains(type) {
-      modes += [.crop()]
+      modes += [.crop(), .shape]
+    }
+    if type == .shape, Set([.line, .star, .polygon, .rect]).contains(interactor.shapeType(id)) {
+      modes += [.shape]
     }
     if type != .page {
       modes += [.duplicate]

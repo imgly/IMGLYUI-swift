@@ -26,9 +26,12 @@ public struct AudioList<Empty: View, First: View>: View {
     }
     .imgly.assetGrid(axis: .vertical)
     .imgly.assetGrid(items: [GridItem(.flexible(), spacing: 8)])
-    .imgly.assetGrid(spacing: 8)
-    .imgly.assetGrid(padding: 16)
+    .imgly.assetGrid(spacing: 0)
     .imgly.assetLoader()
+    .environmentObject(AudioPreviewPlayer.shared)
+    .onDisappear {
+      AudioPreviewPlayer.shared.stop()
+    }
   }
 }
 
