@@ -86,8 +86,8 @@ private struct Random: RandomNumberGenerator {
       }
     }
 
-    let hasFill = try engine.block.hasFill(id)
-    let hasStroke = try engine.block.hasStroke(id)
+    let hasFill = try engine.block.supportsFill(id)
+    let hasStroke = try engine.block.supportsStroke(id)
 
     if hasFill, hasStroke {
       // Assign enabled color to disabled color to ease template creation.
@@ -448,7 +448,7 @@ private struct Random: RandomNumberGenerator {
       // Delay real deletion, e.g., to wait for sheet disappear animations
       // to complete but fake deletion in the meantime.
       try ids.forEach {
-        if try engine.block.hasOpacity($0) {
+        if try engine.block.supportsOpacity($0) {
           try engine.block.overrideAndRestore($0, scope: .key(.layerOpacity)) {
             try engine.block.setOpacity($0, value: 0)
           }
@@ -522,7 +522,7 @@ private struct Random: RandomNumberGenerator {
   private func getBackdropImage() throws -> DesignBlockID {
     let childIDs = try engine.block.getChildren(getScene())
     let imageID = try childIDs.first {
-      guard try engine.block.getType($0) == DesignBlockType.graphic.rawValue, try engine.block.hasFill($0) else {
+      guard try engine.block.getType($0) == DesignBlockType.graphic.rawValue, try engine.block.supportsFill($0) else {
         return false
       }
       return try engine.block.getType(try engine.block.getFill($0)) == FillType.image.rawValue

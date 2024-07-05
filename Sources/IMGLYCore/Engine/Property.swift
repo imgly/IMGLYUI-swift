@@ -38,6 +38,8 @@ import Foundation
   case textLetterSpacing = "text/letterSpacing"
   case textLineHeight = "text/lineHeight"
   case textVerticalAlignment = "text/verticalAlignment"
+  case textClipLinesOutsideOfFrame = "text/clipLinesOutsideOfFrame"
+  case textParagraphSpacing = "text/paragraphSpacing"
 
   case shapeStarPoints = "shape/star/points"
   case shapeStarInnerDiameter = "shape/star/innerDiameter"

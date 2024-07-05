@@ -137,6 +137,12 @@ public extension AssetLoader {
     public let excludedGroups: IMGLYEngine.Groups?
     /// Choose the locale of the label and tags for localized search and filtering.
     public let locale: IMGLYEngine.Locale?
+    /// The order to sort by if the asset source supports sorting.
+    /// If set to None, the order is the same as the assets were added to the source.
+    public let sortingOrder: IMGLYEngine.SortingOrder
+    /// The key that identifies the meta data value to sort by or 'id' to sort by the asset ID.
+    /// If empty, the assets are sorted by the index.
+    public let sortKey: IMGLYEngine.SortKey?
 
     /// Initializes a request for querying assets.
     /// - Parameters:
@@ -145,14 +151,21 @@ public extension AssetLoader {
     ///   - groups: Query only these groups.
     ///   - excludedGroups: Filter out assets with this groups.
     ///   - locale: Choose the locale of the label and tags for localized search and filtering.
+    ///   - sortingOrder: The order to sort by if the asset source supports sorting.
+    ///   - sortKey: The key that identifies the meta data value to sort by or 'id' to sort by the asset ID.
     public init(query: String? = nil, tags: [String]? = nil,
-                groups: IMGLYEngine.Groups? = nil, excludedGroups: IMGLYEngine.Groups? = nil,
-                locale: IMGLYEngine.Locale? = "en") {
+                groups: IMGLYEngine.Groups? = nil,
+                excludedGroups: IMGLYEngine.Groups? = nil,
+                locale: IMGLYEngine.Locale? = "en",
+                sortingOrder: IMGLYEngine.SortingOrder = .none,
+                sortKey: IMGLYEngine.SortKey? = nil) {
       self.query = query
       self.tags = tags
       self.groups = groups
       self.excludedGroups = excludedGroups
       self.locale = locale
+      self.sortingOrder = sortingOrder
+      self.sortKey = sortKey
     }
 
     func narrowed(by other: Self) -> Self {
@@ -178,7 +191,9 @@ public extension AssetLoader {
         tags: intersection(other.tags, tags),
         groups: intersection(other.groups, groups),
         excludedGroups: union(other.excludedGroups, excludedGroups),
-        locale: other.locale ?? locale
+        locale: other.locale ?? locale,
+        sortingOrder: other.sortingOrder != .none ? other.sortingOrder : sortingOrder,
+        sortKey: other.sortKey ?? sortKey
       )
     }
   }
@@ -420,7 +435,8 @@ public extension AssetLoader {
       let data = data.narrowed(by: source.config)
       return .init(query: data.query, page: page,
                    tags: data.tags, groups: data.groups, excludedGroups: data.excludedGroups,
-                   locale: data.locale, perPage: perPage)
+                   locale: data.locale, perPage: perPage, sortingOrder: data.sortingOrder,
+                   sortKey: data.sortKey)
     }
   }
 

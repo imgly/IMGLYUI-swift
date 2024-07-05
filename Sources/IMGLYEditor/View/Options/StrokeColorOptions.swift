@@ -7,7 +7,7 @@ struct StrokeColorOptions: View {
   @Environment(\.imglySelection) private var id
 
   var body: some View {
-    if interactor.hasStroke(id) {
+    if interactor.supportsStroke(id) {
       ColorOptions(title: "Stroke Color",
                    isEnabled: interactor.bind(id, property: .key(.strokeEnabled), default: false),
                    color: interactor.bind(id, property: .key(.strokeColor), default: .imgly.black, completion:

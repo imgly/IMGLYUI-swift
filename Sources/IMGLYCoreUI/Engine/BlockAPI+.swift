@@ -182,7 +182,7 @@ extension MappedType {
       if colorFillType == .none {
         try setFillEnabled(parentId, enabled: false)
       } else {
-        if try hasFill(parentId) {
+        if try supportsFill(parentId) {
           try destroy(getFill(parentId))
         }
         let newFill = try createFill(colorFillType.fillType())

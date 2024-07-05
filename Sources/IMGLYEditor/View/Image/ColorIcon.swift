@@ -7,7 +7,7 @@ struct FillColorIcon: View {
   @Environment(\.imglySelection) private var id
 
   var body: some View {
-    if interactor.hasColorFill(id) {
+    if interactor.isColorFill(id) {
       let isEnabled: Binding<Bool> = interactor.bind(id, property: .key(.fillEnabled), default: false)
 
       FillColorImage(
@@ -42,7 +42,7 @@ struct StrokeColorIcon: View {
   @Environment(\.imglySelection) private var id
 
   var body: some View {
-    if interactor.hasStroke(id) {
+    if interactor.supportsStroke(id) {
       let isEnabled: Binding<Bool> = interactor.bind(id, property: .key(.strokeEnabled), default: false)
       let color: Binding<CGColor> = interactor.bind(id, property: .key(.strokeColor), default: .imgly.black)
 

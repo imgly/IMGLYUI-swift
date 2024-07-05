@@ -9,7 +9,7 @@ enum VerticalAlignment: String, MappedEnum {
   var description: String {
     switch self {
     case .top: return "Align Top"
-    case .center: return "Align Center"
+    case .center: return "Align Vertical Center"
     case .bottom: return "Align Bottom"
     }
   }

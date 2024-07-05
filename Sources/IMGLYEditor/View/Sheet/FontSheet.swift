@@ -22,7 +22,7 @@ struct FontSheet: View {
     let text = interactor.bindTextState(id, resetFontProperties: true, overrideScopes: [.key(.textCharacter)])
 
     BottomSheet {
-      ListPicker(data: assets, selection: text.assetID) { asset, isSelected in
+      ListPicker(data: [assets], selection: text.assetID) { asset, isSelected in
         Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
           .labelStyle(.icon(hidden: !isSelected,
                             titleFont: .custom(asset.result.payload?.typeface?.previewFontName ?? "", size: 17)))

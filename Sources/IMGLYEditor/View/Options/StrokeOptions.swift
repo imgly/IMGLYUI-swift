@@ -9,7 +9,7 @@ struct StrokeOptions: View {
   @Binding var isEnabled: Bool
 
   var body: some View {
-    if interactor.hasStroke(id) {
+    if interactor.supportsStroke(id) {
       StrokeColorOptions()
       if isEnabled {
         PropertySlider<Float>("Width", in: -3 ... 3, property: .key(.strokeWidth)) { value, bounds in

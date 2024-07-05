@@ -50,6 +50,8 @@ import SwiftUI
   typealias DefaultAssetSource = Engine.DefaultAssetSource
   typealias BlurType = IMGLYEngine.BlurType
   typealias EffectType = IMGLYEngine.EffectType
+  typealias Font = IMGLYEngine.Font
+  typealias TextCase = IMGLYEngine.TextCase
 
   struct Selection: Equatable {
     let blocks: [BlockID]
@@ -269,7 +271,7 @@ extension Interactor {
     }
   }
 
-  private func hasColorFillType(_ id: DesignBlockID?, type: ColorFillType) -> Bool {
+  private func isColorFillType(_ id: DesignBlockID?, type: ColorFillType) -> Bool {
     guard let id, let engine else { return false }
     do {
       let fillType: ColorFillType? = try engine.block.get(id, .fill, property: .key(.type))
@@ -281,17 +283,17 @@ extension Interactor {
 
   func canBringForward(_ id: BlockID?) -> Bool { block(id, engine?.block.canBringForward) ?? false }
   func canBringBackward(_ id: BlockID?) -> Bool { block(id, engine?.block.canBringBackward) ?? false }
-  func hasFill(_ id: BlockID?) -> Bool { block(id, engine?.block.hasFill) ?? false }
-  func hasStroke(_ id: BlockID?) -> Bool { block(id, engine?.block.hasStroke) ?? false }
-  func hasOpacity(_ id: BlockID?) -> Bool { block(id, engine?.block.hasOpacity) ?? false }
-  func hasBlendMode(_ id: BlockID?) -> Bool { block(id, engine?.block.hasBlendMode) ?? false }
-  func hasBlur(_ id: BlockID?) -> Bool { block(id, engine?.block.hasBlur) ?? false }
-  func hasCrop(_ id: BlockID?) -> Bool { block(id, engine?.block.hasCrop) ?? false }
+  func supportsFill(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsFill) ?? false }
+  func supportsStroke(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsStroke) ?? false }
+  func supportsOpacity(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsOpacity) ?? false }
+  func supportsBlendMode(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlendMode) ?? false }
+  func supportsBlur(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlur) ?? false }
+  func supportsCrop(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsCrop) ?? false }
   func canResetCrop(_ id: BlockID?) -> Bool { block(id, engine?.block.canResetCrop) ?? false }
   func isGrouped(_ id: BlockID?) -> Bool { block(id, engine?.block.isGrouped) ?? false }
-  func hasSolidFill(_ id: DesignBlockID?) -> Bool { hasColorFillType(id, type: .solid) }
-  func hasGradientFill(_ id: DesignBlockID?) -> Bool { hasColorFillType(id, type: .gradient) }
-  func hasColorFill(_ id: DesignBlockID?) -> Bool { hasSolidFill(id) || hasGradientFill(id) }
+  func isSolidFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .solid) }
+  func isGradientFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .gradient) }
+  func isColorFill(_ id: DesignBlockID?) -> Bool { isSolidFill(id) || isGradientFill(id) }
   func isVisibleAtCurrentPlaybackTime(_ id: BlockID?) -> Bool {
     block(id, engine?.block.isVisibleAtCurrentPlaybackTime) ?? false
   }
@@ -370,7 +372,7 @@ extension Interactor {
             if let validBlock {
               // If the property is set to solid fill color we need to
               // check for gradient color as well.
-              if property == .key(.fillSolidColor), self.hasGradientFill(validBlock) {
+              if property == .key(.fillSolidColor), self.isGradientFill(validBlock) {
                 if let engine = self.engine, let colorStops: [GradientColorStop] = try? engine.block.get(
                   validBlock,
                   .fill,
@@ -395,7 +397,7 @@ extension Interactor {
           properties.forEach { property, ids in
             var gradientIDs: [DesignBlockID] = []
             ids.forEach { id in
-              if self.hasGradientFill(id) {
+              if self.isGradientFill(id) {
                 gradientIDs.append(id)
               }
             }
@@ -792,7 +794,7 @@ extension Interactor: AssetLibraryInteractor {
             try engine.block.setMetadata(id, key: "name", value: label)
           }
 
-          if try engine.block.hasFill(id) {
+          if try engine.block.supportsFill(id) {
             let fillID = try engine.block.getFill(id)
             let fillType = try engine.block.getType(fillID)
             if fillType == FillType.video.rawValue {
@@ -872,7 +874,7 @@ extension Interactor: AssetLibraryInteractor {
                 try engine.block.setMetadata(id, key: "name", value: label)
               }
 
-              if try engine.block.hasFill(id) {
+              if try engine.block.supportsFill(id) {
                 let fillID = try engine.block.getFill(id)
                 let fillType = try engine.block.getType(fillID)
                 if fillType == FillType.video.rawValue {
@@ -1122,6 +1124,14 @@ extension Interactor {
           model = .init(mode, .video)
           model.detent = .adaptiveTiny
           model.detents = [.adaptiveTiny]
+        }
+      case .format:
+        guard let type = sheetTypeForSelection else {
+          return
+        }
+        sheet.commit { model in
+          model = .init(mode, type)
+          model.detents = [.adaptiveMedium]
         }
       case .split:
         splitSelectedClipAtPlayheadPosition()
@@ -1525,7 +1535,7 @@ internal extension Interactor {
     }
     do {
       guard try engine.editor.getRole() == "Adopter",
-            try engine.block.hasPlaceholderControls(block) else {
+            try engine.block.supportsPlaceholderControls(block) else {
         return nil
       }
       let isPlaceholder = try engine.block.isPlaceholderEnabled(block)

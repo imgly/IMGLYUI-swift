@@ -8,7 +8,7 @@ import Foundation
   @_spi(Internal) public var description: String {
     switch self {
     case .left: return "Align Left"
-    case .center: return "Align Center"
+    case .center: return "Align Horizontal Center"
     case .right: return "Align Right"
     }
   }

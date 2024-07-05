@@ -15,7 +15,7 @@ struct ColorSheet: View {
   var body: some View {
     BottomSheet {
       List {
-        if interactor.hasFill(id) {
+        if interactor.supportsFill(id) {
           ColorOptions(title: "Color", color: fillColor, addUndoStep: interactor.addUndoStep)
             .labelStyle(.iconOnly)
             .buttonStyle(.borderless)

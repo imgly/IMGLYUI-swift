@@ -4,15 +4,21 @@ import SwiftUI
 /// selections.
 struct NavigationLinkPicker<Data, ElementLabel: View, LinkLabel: View>: View where
   Data: RandomAccessCollection,
-  Data.Element: Identifiable {
+  Data.Element: RandomAccessCollection & Hashable,
+  Data.Element.Element: Identifiable {
   let title: LocalizedStringKey
   let data: Data
-  @Binding var selection: Data.Element.ID?
+  var inlineTitle: Bool = true
+  @Binding var selection: Data.Element.Element.ID?
 
-  @ViewBuilder let elementLabel: (_ element: Data.Element, _ isSelected: Bool) -> ElementLabel
-  @ViewBuilder let linkLabel: (_ selection: Data.Element?) -> LinkLabel
+  @ViewBuilder let elementLabel: (_ element: Data.Element.Element, _ isSelected: Bool) -> ElementLabel
+  @ViewBuilder let linkLabel: (_ selection: Data.Element.Element?) -> LinkLabel
 
-  private func isSelecetd(_ element: Data.Element) -> Bool { selection == element.id }
+  private func isSelecetd(_ element: Data.Element.Element) -> Bool { selection == element.id }
+
+  private var flatData: [Data.Element.Element] {
+    data.flatMap { $0 }
+  }
 
   var body: some View {
     NavigationLink {
@@ -27,9 +33,11 @@ struct NavigationLinkPicker<Data, ElementLabel: View, LinkLabel: View>: View whe
         }
     } label: {
       HStack {
-        Text(title)
+        if inlineTitle {
+          Text(title)
+        }
         Spacer()
-        linkLabel(data.first(where: isSelecetd))
+        linkLabel(flatData.first(where: isSelecetd))
           .foregroundColor(.accentColor)
           .lineLimit(1)
       }

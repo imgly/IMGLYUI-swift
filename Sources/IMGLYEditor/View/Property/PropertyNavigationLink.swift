@@ -26,7 +26,7 @@ struct PropertyNavigationLink<T: MappedEnum>: View {
       }
     }
 
-    NavigationLinkPicker(title: title, data: values, selection: selection) { value, isSelected in
+    NavigationLinkPicker(title: title, data: [values], selection: selection) { value, isSelected in
       Label(value.localizedStringKey, systemImage: "checkmark")
         .labelStyle(.icon(hidden: !isSelected))
     } linkLabel: { selection in

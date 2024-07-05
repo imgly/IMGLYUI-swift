@@ -2,25 +2,30 @@ import SwiftUI
 
 struct ListPicker<Data, ElementLabel: View>: View where
   Data: RandomAccessCollection,
-  Data.Element: Identifiable {
+  Data.Element: RandomAccessCollection & Hashable,
+  Data.Element.Element: Identifiable {
   let data: Data
-  @Binding var selection: Data.Element.ID?
+  @Binding var selection: Data.Element.Element.ID?
 
-  @ViewBuilder let elementLabel: (_ element: Data.Element, _ isSelected: Bool) -> ElementLabel
+  @ViewBuilder let elementLabel: (_ element: Data.Element.Element, _ isSelected: Bool) -> ElementLabel
 
-  private func isSelecetd(_ element: Data.Element) -> Bool { selection == element.id }
+  private func isSelecetd(_ element: Data.Element.Element) -> Bool { selection == element.id }
 
   var body: some View {
     ScrollViewReader { proxy in
-      List(data) { element in
-        Button {
-          selection = element.id
-        } label: {
-          let isSelected = isSelecetd(element)
-          elementLabel(element, isSelected)
-            .foregroundColor(isSelected ? .accentColor : .primary)
+      List(data, id: \.sectionId) { element in
+        Section {
+          ForEach(element) { item in
+            Button {
+              selection = item.id
+            } label: {
+              let isSelected = isSelecetd(item)
+              elementLabel(item, isSelected)
+                .foregroundColor(isSelected ? .accentColor : .primary)
+            }
+            .id(item.id)
+          }
         }
-        .id(element.id)
       }
       .safeAreaInset(edge: .top) { Color.clear.frame(height: 15) }
       .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 15) }
@@ -33,5 +38,11 @@ struct ListPicker<Data, ElementLabel: View>: View where
         }
       }
     }
+  }
+}
+
+private extension RandomAccessCollection where Self: Hashable, Element: Identifiable {
+  var sectionId: Int {
+    map(\.id).hashValue
   }
 }

@@ -148,10 +148,10 @@ enum SheetMode: Labelable, IdentifiableByHash {
     switch self {
     case .fillAndStroke:
       var title = [String]()
-      if interactor.hasColorFill(id) {
+      if interactor.isColorFill(id) {
         title.append("Fill")
       }
-      if interactor.hasStroke(id) {
+      if interactor.supportsStroke(id) {
         title.append("Stroke")
       }
       return LocalizedStringKey(title.joined(separator: " & "))
@@ -166,7 +166,7 @@ enum SheetMode: Labelable, IdentifiableByHash {
       Label {
         Text(localizedStringKey(id, interactor))
       } icon: {
-        switch (interactor.hasColorFill(id), interactor.hasStroke(id)) {
+        switch (interactor.isColorFill(id), interactor.supportsStroke(id)) {
         case (true, true):
           AdaptiveOverlay {
             FillColorIcon()

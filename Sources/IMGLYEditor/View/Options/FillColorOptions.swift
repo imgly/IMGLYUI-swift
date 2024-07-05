@@ -9,14 +9,14 @@ struct FillColorOptions: View {
   @Binding var fillType: ColorFillType?
 
   var body: some View {
-    if interactor.hasFill(id) {
+    if interactor.supportsFill(id) {
       MenuPicker<ColorFillType.AllCases>(title: "Type", data: ColorFillType.allCases, selection: $fillType)
         .disabled(interactor.sheet.type == .text)
         .accessibilityLabel("Fill Type")
 
-      if interactor.hasGradientFill(id), fillType == .gradient {
+      if interactor.isGradientFill(id), fillType == .gradient {
         GradientOptions()
-      } else if interactor.hasSolidFill(id) {
+      } else if interactor.isSolidFill(id) {
         let colorBinding = interactor.bind(
           id,
           property: .key(.fillSolidColor),
@@ -50,7 +50,7 @@ struct GradientOptions: View {
   @Environment(\.imglySelection) private var id
 
   var body: some View {
-    if interactor.hasGradientFill(id) {
+    if interactor.isGradientFill(id) {
       ColorOptions(title: "Gradient Start Color",
                    color: gradientBinding(.start, defaultValue: .imgly.black),
                    addUndoStep: interactor.addUndoStep)

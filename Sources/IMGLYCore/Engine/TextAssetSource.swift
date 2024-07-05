@@ -94,13 +94,14 @@ extension TextAssetSource: AssetSource {
       return nil
     }
 
-    try engine.block.setString(id, property: "text/text", value: "Text")
+    try engine.block.setString(id, property: "text/text", value: asset.label ?? "Text")
     if let fontSize = asset.fontSize {
       let fontSize = (50.0 / 24.0) * Float(fontSize) // Scale font size to match scene.
       try engine.block.setFloat(id, property: "text/fontSize", value: fontSize)
     }
     try engine.block.setEnum(id, property: "text/horizontalAlignment", value: "Center")
     try engine.block.setHeightMode(id, mode: .auto)
+    try engine.block.setBool(id, property: "text/clipLinesOutsideOfFrame", value: false)
 
     return .init(value: id)
   }

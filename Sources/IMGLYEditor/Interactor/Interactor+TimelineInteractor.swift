@@ -322,7 +322,7 @@ extension Interactor: TimelineInteractor {
         clip = Clip(id: id)
       }
 
-      let fillID = try engine.block.hasFill(id) ? try engine.block.getFill(id) : nil
+      let fillID = try engine.block.supportsFill(id) ? try engine.block.getFill(id) : nil
       let fillType = fillID != nil ? try engine.block.getType(fillID!) : nil
 
       clip.fillID = fillID
@@ -334,13 +334,13 @@ extension Interactor: TimelineInteractor {
         clip.trimmableID = id
       }
 
-      let shapeID = try engine.block.hasShape(id) ? try engine.block.getShape(id) : nil
+      let shapeID = try engine.block.supportsShape(id) ? try engine.block.getShape(id) : nil
       clip.shapeID = shapeID
 
-      let effectIDs = try engine.block.hasEffects(id) ? try engine.block.getEffects(id) : nil
+      let effectIDs = try engine.block.supportsEffects(id) ? try engine.block.getEffects(id) : nil
       clip.effectIDs = effectIDs ?? []
 
-      let blurID = try engine.block.hasBlur(id) ? try engine.block.getBlur(id) : nil
+      let blurID = try engine.block.supportsBlur(id) ? try engine.block.getBlur(id) : nil
       clip.blurID = blurID
 
       switch blockType {
@@ -418,7 +418,7 @@ extension Interactor: TimelineInteractor {
 
       clip.allowsSelecting = try engine.block.isAllowedByScope(id, scope: .init(.editorSelect))
 
-      clip.allowsTrimming = try engine.block.hasTrim(clip.trimmableID)
+      clip.allowsTrimming = try engine.block.supportsTrim(clip.trimmableID)
 
       if clip.allowsTrimming {
         // Create the clip even if the trimOffset is not available yet

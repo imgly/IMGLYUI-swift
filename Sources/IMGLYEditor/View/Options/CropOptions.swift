@@ -85,7 +85,7 @@ struct CropOptions: View {
 
   var body: some View {
     List {
-      if interactor.hasCrop(id) {
+      if interactor.supportsCrop(id) {
         cropOptions
       }
     }
