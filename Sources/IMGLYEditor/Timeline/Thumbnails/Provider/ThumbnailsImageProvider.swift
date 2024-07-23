@@ -1,6 +1,7 @@
 import CoreMedia
 import IMGLYCore
 import IMGLYEngine
+import SwiftUI
 
 /// Provider for loading image thumbnails
 @MainActor

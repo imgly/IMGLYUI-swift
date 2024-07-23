@@ -1,3 +1,4 @@
+import Foundation
 @_spi(Internal) import IMGLYCore
 @_spi(Internal) import IMGLYCoreUI
 import IMGLYEngine
