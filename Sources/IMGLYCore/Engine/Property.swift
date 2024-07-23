@@ -157,6 +157,8 @@ import Foundation
   case cameraPixelRatio = "camera/pixelRatio"
   case cameraResolutionWidth = "camera/resolution/width"
   case cameraResolutionHeight = "camera/resolution/height"
+
+  case audioFileURI = "audio/fileURI"
 }
 
 @_spi(Internal) public extension Property {

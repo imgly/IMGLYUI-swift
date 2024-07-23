@@ -52,6 +52,7 @@ import SwiftUI
   case addSticker
   case addStickerOrShape
   case addAudio
+  case addVoiceOver
 
   var sheetMode: SheetMode {
     switch self {
@@ -78,6 +79,7 @@ import SwiftUI
     case .addSticker: return .addSticker
     case .addStickerOrShape: return .addStickerOrShape
     case .addAudio: return .addAudio
+    case .addVoiceOver: return .addVoiceOver
     }
   }
 }
@@ -161,7 +163,7 @@ import SwiftUI
     }
   }
 
-  func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws {
+  func loadScene(_ context: InteractorContext, with _: EdgeInsets?) async throws {
     try loadSettings(context)
 
     try context.engine.editor.setSettingBool("touch/singlePointPanning", value: true)
@@ -180,7 +182,7 @@ import SwiftUI
     try enableEditMode(context)
     let zoomLevel = try await context.engine.zoomToPage(
       context.interactor.page,
-      insets,
+      context.interactor.zoomModel.defaultInsets,
       zoomModel: context.interactor.zoomModel
     )
     if let zoomLevel {
@@ -261,7 +263,13 @@ import SwiftUI
     [.fab]
   }
 
-  func pageChanged(_: InteractorContext) throws {}
+  func pageChanged(_ context: InteractorContext) throws {
+    try context.engine.showPage(
+      context.interactor.page,
+      historyResetBehavior: historyResetOnPageChange,
+      deselectAll: deselectOnPageChange
+    )
+  }
 
   func historyChanged(_: InteractorContext) throws {}
 

@@ -12,13 +12,18 @@ struct ErrorAlert: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-      .alert("Error", isPresented: $error.isPresented, presenting: error.details) { details in
-        Button("Dismiss") {}
+      .alert(error.details?.title ?? "", isPresented: $error.isPresented, presenting: error.details) { details in
+        Button(details.dismissTitle) {}
           .onDisappear {
             if details.shouldDismiss {
               dismiss()
             }
           }
+        if let confirmTitle = details.confirmTitle {
+          Button(confirmTitle) {
+            details.confirmCallback?()
+          }
+        }
       } message: { details in
         Text(details.message)
       }

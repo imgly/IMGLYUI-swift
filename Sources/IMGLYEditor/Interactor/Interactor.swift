@@ -60,6 +60,7 @@ import SwiftUI
 
   @Published var verticalSizeClass: UserInterfaceSizeClass?
   @Published @_spi(Internal) public private(set) var page = 0 { didSet { pageChanged(oldValue) } }
+  @Published var pageOverview = PageOverviewState() { didSet { pageOverviewChanged(oldValue) } }
   @Published @_spi(Internal) public var selectionColors = SelectionColors()
   @Published private(set) var selection: Selection? { didSet { selectionChanged(oldValue) } }
   @Published private(set) var editMode: EditMode = .transform { didSet { editModeChanged(oldValue) } }
@@ -71,6 +72,18 @@ import SwiftUI
   @Published var isCameraSheetShown = false
   @Published var isSystemCameraShown = false
   @Published var isImagePickerShown = false
+  @Published var isPageOverviewShown = false {
+    willSet {
+      if newValue {
+        do {
+          try engine?.block.deselectAll()
+        } catch {
+          handleError(error)
+        }
+      }
+    }
+  }
+
   @Published var isLoopingPlaybackEnabled = true
   @Published var isSelectionVisible = true
 
@@ -80,11 +93,18 @@ import SwiftUI
 
   var isAddingCameraRecording = false
 
-  var zoomModel = ZoomModel() { didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) } }
+  @_spi(Internal) public var zoomModel = ZoomModel() { didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) } }
   var defaultPinchAction: String = ""
 
   var pageCount: Int {
     (try? engine?.getSortedPages().count) ?? 0
+  }
+
+  func generatePageThumbnail(_ id: BlockID, height: CGFloat) async throws -> UIImage {
+    guard let engine else {
+      throw Error(errorDescription: "Engine unavailable.")
+    }
+    return try await engine.block.generatePageThumbnail(id, height: height, scale: UIScreen.main.scale)
   }
 
   var isCanvasHitTestingEnabled: Bool {
@@ -102,7 +122,8 @@ import SwiftUI
   var isCanvasActionEnabled: Bool {
     let isGrouped = isGrouped(selection?.blocks.first)
     return !isLoading && !sheet
-      .isPresented && editMode == .transform && !isGrouped && isSelectionVisible && sheetTypeForSelection != .page
+      .isPresented && editMode == .transform && !isGrouped && isSelectionVisible && sheetTypeForSelection != .page &&
+      timelineProperties.selectedClip?.clipType != .voiceOver
   }
 
   var sheetTypeForSelection: SheetType? {
@@ -110,7 +131,10 @@ import SwiftUI
   }
 
   var sheetTypeForBottomBar: SheetType? {
-    isBottomBarEnabled ? sheetTypeForSelection : nil
+    guard isBottomBarEnabled else {
+      return nil
+    }
+    return isPageOverviewShown ? .pageOverview : sheetTypeForSelection
   }
 
   var isBottomBarEnabled: Bool {
@@ -207,6 +231,7 @@ import SwiftUI
     exportTask?.cancel()
     zoomLevelTask?.cancel()
     historyTask?.cancel()
+    pageTask?.cancel()
   }
 
   private func onAppear() {
@@ -215,6 +240,7 @@ import SwiftUI
     eventTask = observeEvent()
     zoomLevelTask = observeZoomLevel()
     historyTask = observeHistory()
+    pageTask = observePage()
     keyboardPublisher.assign(to: &$isKeyboardPresented)
   }
 
@@ -233,6 +259,7 @@ import SwiftUI
     exportTask?.cancel()
     zoomLevelTask?.cancel()
     historyTask?.cancel()
+    pageTask?.cancel()
     _engine = nil
     timelineProperties.timeline = nil
   }
@@ -254,6 +281,7 @@ import SwiftUI
   private var exportTask: Task<Void, Never>?
   private var zoomLevelTask: Task<Void, Never>?
   private var historyTask: Task<Void, Never>?
+  private var pageTask: Task<Void, Never>?
 }
 
 // MARK: - Block queries
@@ -681,8 +709,14 @@ extension Interactor {
       return isAllowed(id, Action.delete)
     case .duplicate:
       return isAllowed(id, Action.duplicate)
+    case .editPage, .addPage:
+      return true
+    case .moveUp:
+      return isAllowed(id, Action.up)
+    case .moveDown:
+      return isAllowed(id, Action.down)
     case .addElements, .addFromCamera, .addFromPhotoRoll, .addClip, .addOverlay, .addImage, .addText,
-         .addShape, .addSticker, .addStickerOrShape, .addAudio:
+         .addShape, .addSticker, .addStickerOrShape, .addAudio, .addVoiceOver, .editVoiceOver:
       return true
     }
   }
@@ -698,7 +732,7 @@ extension Interactor {
     case .toTop, .up, .down, .toBottom:
       let canReorderTrack: Bool
       if let id, let clip = timelineProperties.dataSource.findClip(id: id),
-         clip.isInBackgroundTrack || clip.clipType == .audio {
+         clip.isInBackgroundTrack || Set([.audio, .voiceOver]).contains(clip.clipType) {
         canReorderTrack = false
       } else {
         canReorderTrack = true
@@ -708,7 +742,7 @@ extension Interactor {
       return isAllowed(id, scope: .lifecycleDuplicate) && !isGrouped(id)
     case .delete:
       return isAllowed(id, scope: .lifecycleDestroy) && !isGrouped(id)
-    case .previousPage, .nextPage, .page: return true
+    case .previousPage, .nextPage, .page, .addPage: return true
     case .resetCrop, .flipCrop:
       return isAllowed(id, .crop()) && !isGrouped(id)
     }
@@ -1125,6 +1159,10 @@ extension Interactor {
           model.detent = .adaptiveTiny
           model.detents = [.adaptiveTiny]
         }
+      case .addVoiceOver:
+        openVoiceOver()
+      case .editVoiceOver:
+        editVoiceOver()
       case .format:
         guard let type = sheetTypeForSelection else {
           return
@@ -1136,11 +1174,43 @@ extension Interactor {
       case .split:
         splitSelectedClipAtPlayheadPosition()
       case .delete:
-        try engine?.deleteSelectedElement(delay: NSEC_PER_MSEC * 200)
+        if isPageOverviewShown {
+          if let currentPage = pageOverview.currentPage {
+            try engine?.delete([currentPage])
+          }
+        } else {
+          try engine?.deleteSelectedElement(delay: NSEC_PER_MSEC * 200)
+        }
       case .duplicate:
-        try engine?.duplicateSelectedElement()
+        if isPageOverviewShown {
+          if let currentPage = pageOverview.currentPage {
+            try engine?.duplicate([currentPage])
+          }
+        } else {
+          try engine?.duplicateSelectedElement()
+        }
       case .attachToBackground, .detachFromBackground:
         toggleSelectedClipIsInBackgroundTrack()
+      case .editPage:
+        isPageOverviewShown = false
+      case .addPage:
+        try engine?.addPage(page + 1)
+      case .moveUp:
+        if isPageOverviewShown {
+          if let currentPage = pageOverview.currentPage {
+            try engine?.sendBackward([currentPage])
+          }
+        } else {
+          try engine?.bringForwardSelectedElement()
+        }
+      case .moveDown:
+        if isPageOverviewShown {
+          if let currentPage = pageOverview.currentPage {
+            try engine?.bringForward([currentPage])
+          }
+        } else {
+          try engine?.sendBackwardSelectedElement()
+        }
       case .shape:
         guard let type = sheetTypeForSelection else {
           return
@@ -1181,6 +1251,7 @@ extension Interactor {
       case .previousPage: try setPage(page - 1)
       case .nextPage: try setPage(page + 1)
       case let .page(index): try setPage(index)
+      case let .addPage(index): try engine?.addPage(index)
       case .resetCrop: try engine?.resetCropSelectedElement()
       case .flipCrop: try engine?.flipCropSelectedElement()
       }
@@ -1242,7 +1313,12 @@ extension Interactor {
         canvasHeight: zoom.canvasHeight,
         zoomToPage: previousEditMode != .text
       )
-    case .pageChanged, .sheetGeometryChanged:
+    case .pageChanged:
+      let pageIndex = try? engine?.getCurrentPageIndex()
+      if let pageIndex, pageIndex != page {
+        updateZoom(with: zoom.insets, canvasHeight: zoom.canvasHeight, zoomToPage: true)
+      }
+    case .sheetGeometryChanged:
       updateZoom(with: zoom.insets, canvasHeight: zoom.canvasHeight)
     case .sheetClosed:
       updateZoom(
@@ -1287,6 +1363,7 @@ extension Interactor {
               with: insets,
               and: canvasHeight,
               clampOnly: clampOnly,
+              pageIndex: page,
               zoomModel: zoomModel
             )
           }
@@ -1491,7 +1568,11 @@ internal extension Interactor {
     case BlockType.text.rawValue: return .text
     case BlockType.group.rawValue: return .group
     case BlockType.page.rawValue: return .page
-    case BlockType.audio.rawValue: return .audio
+    case BlockType.audio.rawValue:
+      if kind == .key(.voiceover) {
+        return .voiceover
+      }
+      return .audio
     case BlockType.graphic.rawValue:
       guard let fillType else { return nil }
       switch fillType {
@@ -1662,6 +1743,20 @@ internal extension Interactor {
     }
   }
 
+  func observePage() -> Task<Void, Never> {
+    Task {
+      guard let engine else {
+        return
+      }
+      for await page in engine.scene.onCarouselPageChanged {
+        let pageIndex = try? engine.getPageIndex(page)
+        if !isLoading, !isPageOverviewShown, let pageIndex, pageIndex != self.page {
+          self.page = pageIndex
+        }
+      }
+    }
+  }
+
   func setEditMode(_ newValue: EditMode) {
     guard newValue != editMode else {
       return
@@ -1687,13 +1782,39 @@ internal extension Interactor {
       return
     }
     do {
-      try engine.showPage(
-        page,
-        historyResetBehavior: behavior.historyResetOnPageChange,
-        deselectAll: behavior.deselectOnPageChange
-      )
+      let currentPage = try engine.getPage(page)
+      if pageOverview.currentPage != currentPage {
+        pageOverview.currentPage = currentPage
+      }
       try behavior.pageChanged(.init(engine, self))
       sheet.isPresented = false
+    } catch {
+      handleError(error)
+    }
+  }
+
+  func pageOverviewChanged(_ oldValue: PageOverviewState) {
+    guard let engine, oldValue != pageOverview, isPageOverviewShown else {
+      return
+    }
+    do {
+      // Apply new page ordering to engine
+      let currentPages = pageOverview.pages.map(\.block)
+      if oldValue.pages.map(\.block) != currentPages,
+         try engine.getSortedPages() != currentPages,
+         let firstPage = currentPages.first,
+         let parent = try engine.block.getParent(firstPage) {
+        for (index, page) in currentPages.enumerated() {
+          try engine.block.insertChild(into: parent, child: page, at: index)
+        }
+        // Make sure that current page stays selected
+        if let currentPage = pageOverview.currentPage {
+          page = try engine.getPageIndex(currentPage)
+        }
+      } else if oldValue.currentPage != pageOverview.currentPage,
+                let currentPage = pageOverview.currentPage {
+        page = try engine.getPageIndex(currentPage)
+      }
     } catch {
       handleError(error)
     }
@@ -1807,11 +1928,26 @@ internal extension Interactor {
 
   func historyChanged() {
     guard let engine else { return }
-    let pages = try? engine.getSortedPages()
-    let currentPage = try? engine.scene.getCurrentPage()
-    let pageIndex = pages?.firstIndex(where: { $0 == currentPage })
-    if let pageIndex, pageIndex != page {
-      page = pageIndex
+    do {
+      if isPageOverviewShown {
+        try pageOverview.update(from: engine)
+      } else {
+        pageOverview = try .init(from: engine)
+      }
+    } catch {
+      handleError(error)
+    }
+    guard !isLoading else { return }
+    if isPageOverviewShown {
+      if let currentPage = pageOverview.currentPage,
+         let pageIndex = try? engine.getPageIndex(currentPage) {
+        page = pageIndex
+      }
+    } else {
+      let pageIndex = try? engine.getCurrentPageIndex()
+      if let pageIndex, pageIndex != page {
+        page = pageIndex
+      }
     }
     let canUndo = (try? engine.editor.canUndo()) ?? false
     self.canUndo = canUndo
@@ -1837,5 +1973,63 @@ private extension Engine {
     }
     let didChange = try block.set(valid, propertyBlock, property: property, value: value)
     return try (completion?(self, valid, didChange) ?? false) || didChange
+  }
+}
+
+@MainActor
+extension PageOverviewState {
+  init(from engine: Engine) throws {
+    currentPage = try engine.scene.getCurrentPage()
+    pages = try engine.getSortedPages().map {
+      .init(uuid: try engine.block.getUUID($0),
+            block: $0,
+            width: CGFloat(try engine.block.getFrameWidth($0)),
+            height: CGFloat(try engine.block.getFrameHeight($0)),
+            // When engine exposes the page(s) changed for `onHistoryUpdated` we can selectively refresh pages instead
+            // of all.
+            refresh: UUID())
+    }
+  }
+
+  mutating func update(from engine: Engine) throws {
+    let new = try Self(from: engine)
+    let nextPage = nextPage
+    let previousPage = previousPage
+    // 1. Pick any new page first
+    // 2. If no new page, pick same page as before
+    // 3. If that page is gone, try to pick the next page
+    // 4. If next page is not available, pick the previous page (guaranteed to exist)
+    // 5. Just pick new first page
+    let newSelectedPage = new.pages.first { newPage in pages.allSatisfy { $0.block != newPage.block } }
+      ?? new.pages.first { $0.block == currentPage }
+      ?? new.pages.first { $0.block == nextPage?.block }
+      ?? new.pages.first { $0.block == previousPage?.block }
+      ?? new.pages.first
+    self = .init(currentPage: newSelectedPage?.block, pages: new.pages)
+  }
+
+  private var currentPageIndex: Int? {
+    pages.firstIndex { $0.block == currentPage }
+  }
+
+  private func getPage(_ index: Int) -> Page? {
+    guard pages.indices.contains(index) else {
+      return nil
+    }
+    return pages[index]
+  }
+
+  private var nextPage: Page? {
+    guard let currentPageIndex else {
+      return nil
+    }
+    return getPage(currentPageIndex + 1)
+  }
+
+  private var previousPage: Page? {
+    guard let currentPageIndex else {
+      return nil
+    }
+    return getPage(currentPageIndex - 1)
   }
 }

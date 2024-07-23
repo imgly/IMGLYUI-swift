@@ -19,6 +19,12 @@ enum SheetMode: Labelable, IdentifiableByHash {
   case addFromCamera(_ systemCamera: Bool)
   case addClip, addOverlay, addImage, addText, addShape, addSticker, addStickerOrShape, addAudio
 
+  case editPage
+  case addPage
+  case addVoiceOver, editVoiceOver
+  case moveUp
+  case moveDown
+
   case selectionColors
   case font(_ id: Interactor.BlockID?, _ fontFamilies: [String]?)
   case fontSize(_ id: Interactor.BlockID?)
@@ -82,6 +88,11 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .attachToBackground: return "As Clip"
     case .detachFromBackground: return "As Overlay"
 
+    case .editPage: return "Edit"
+    case .addPage: return "Add Page"
+    case .moveUp: return "Move Up"
+    case .moveDown: return "Move Down"
+
     case .addElements: return "Elements"
     case .addFromPhotoRoll: return "Photo Roll"
     case .addFromCamera: return "Camera"
@@ -92,6 +103,8 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .addShape: return "Shape"
     case .addSticker, .addStickerOrShape: return "Sticker"
     case .addAudio: return "Audio"
+    case .addVoiceOver: return "Voiceover"
+    case .editVoiceOver: return "Edit"
     }
   }
 
@@ -120,6 +133,11 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .attachToBackground: return "custom.as.clip"
     case .detachFromBackground: return "custom.as.overlay"
 
+    case .editPage: return "square.and.pencil"
+    case .addPage: return "custom.doc.badge.plus"
+    case .moveUp: return "arrow.up.doc"
+    case .moveDown: return "arrow.down.doc"
+
     case .addElements: return "custom.books.vertical.badge.plus"
     case .addFromPhotoRoll, .addFromCamera: return nil
     case .addClip: return "custom.add.clip"
@@ -129,18 +147,16 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .addShape: return "custom.square.on.circle.badge.plus"
     case .addSticker, .addStickerOrShape: return "custom.face.smiling.badge.plus"
     case .addAudio: return "custom.audio.badge.plus"
+    case .addVoiceOver: return "custom.mic.badge.plus"
+    case .editVoiceOver: return "custom.waveform.badge.mic"
     }
   }
 
   var isSystemImage: Bool {
-    switch self {
-    case .enterGroup, .selectGroup, .attachToBackground, .detachFromBackground, .addElements, .addFromCamera,
-         .addFromPhotoRoll, .addClip, .addOverlay, .addImage, .addText, .addShape, .addSticker,
-         .addStickerOrShape, .addAudio:
-      return false
-    default:
+    guard let imageName else {
       return true
     }
+    return !imageName.hasPrefix("custom.")
   }
 
   @MainActor

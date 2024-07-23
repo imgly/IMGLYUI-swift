@@ -3,7 +3,7 @@ import Foundation
 
 @_spi(Internal) public enum Action: Labelable, IdentifiableByHash {
   case undo, redo, previewMode, editMode, export, toTop, up, down, toBottom, duplicate, delete
-  case previousPage, nextPage, page(Int)
+  case previousPage, nextPage, page(Int), addPage(Int)
   case resetCrop, flipCrop
 
   @_spi(Internal) public var description: String {
@@ -22,6 +22,7 @@ import Foundation
     case .previousPage: return "Back"
     case .nextPage: return "Next"
     case let .page(index): return "Page \(index + 1)"
+    case .addPage: return "Add Page"
     case .resetCrop: return "Reset Crop"
     case .flipCrop: return "Flip"
     }
@@ -43,6 +44,7 @@ import Foundation
     case .previousPage: return "chevron.backward"
     case .nextPage: return "chevron.forward"
     case .page: return "doc"
+    case .addPage: return "plus"
     case .resetCrop: return "arrow.counterclockwise"
     case .flipCrop: return "arrow.left.and.right.righttriangle.left.righttriangle.right"
     }

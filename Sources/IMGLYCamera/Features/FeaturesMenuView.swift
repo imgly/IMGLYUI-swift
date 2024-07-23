@@ -6,8 +6,6 @@ struct FeaturesMenuView: View {
 
   @EnvironmentObject var camera: CameraModel
 
-  @State private var isMinimized = false
-  @State private var allowsMinimizing = false
   @State private var hasTransientLabel = true
   @State private var transientLabelTimer: Timer?
 
@@ -20,10 +18,6 @@ struct FeaturesMenuView: View {
         if camera.isMultiCamSupported {
           dualCameraButton()
         }
-
-        if !isMinimized || camera.dualCameraMode != .disabled {
-          // Minimizable features go here
-        }
       }
       .simultaneousGesture(
         DragGesture(minimumDistance: 0)
@@ -33,12 +27,7 @@ struct FeaturesMenuView: View {
       )
       .menuOrder(.fixed)
       .transition(.offset(x: -20).combined(with: .opacity))
-
-      if allowsMinimizing {
-        minimizeButton()
-      }
     }
-    .animation(.easeInOut, value: isMinimized)
     .padding(.leading, 12)
     .onAppear {
       showTransientLabels()
@@ -55,6 +44,44 @@ struct FeaturesMenuView: View {
 }
 
 // MARK: -
+
+extension CameraModel {
+  var isDualCameraActive: Bool {
+    switch cameraMode {
+    case .dualCamera: true
+    default: false
+    }
+  }
+
+  var dualCameraModeBinding: Binding<CameraLayoutMode?> {
+    .init { [unowned self] in
+      guard case let .dualCamera(layoutMode) = cameraMode else { return nil }
+      return layoutMode
+    } set: { [unowned self] newMode in
+      switch newMode {
+      case let .some(layout):
+        cameraMode = .dualCamera(layout)
+      case .none:
+        cameraMode = .standard
+      }
+    }
+  }
+
+  var dualCameraModeMenuOptions: [PickerOption<CameraLayoutMode?>] {
+    CameraLayoutMode.allCases.map {
+      PickerOption(label: $0.name, icon: $0.image, tag: $0)
+    } + [
+      PickerOption(label: "Off", icon: Image(systemName: "xmark"), tag: nil)
+    ]
+  }
+}
+
+struct PickerOption<T>: Identifiable, Equatable where T: Hashable {
+  var label: LocalizedStringKey
+  var icon: Image
+  var tag: T
+  var id: T { tag }
+}
 
 extension FeaturesMenuView {
   @ViewBuilder func countdownButton() -> some View {
@@ -80,38 +107,26 @@ extension FeaturesMenuView {
 
   @ViewBuilder func dualCameraButton() -> some View {
     Menu {
-      Picker("Dual Camera", selection: $camera.dualCameraMode) {
-        ForEach(DualCameraMode.allCases, id: \.rawValue) { mode in
-          if mode == .disabled {
+      Picker("Dual Camera", selection: camera.dualCameraModeBinding) {
+        ForEach(camera.dualCameraModeMenuOptions) { mode in
+          if mode == camera.dualCameraModeMenuOptions.last {
             Divider()
           }
-
           Label {
-            Text(mode.name)
+            Text(mode.label)
           } icon: {
-            mode.image
+            mode.icon
           }
-          .tag(mode)
+          .tag(mode.tag)
         }
       }
     } label: {
       FeatureLabelView(
         text: "Dual Camera",
-        image: camera.dualCameraMode == .disabled
-          ? Image("custom.camera.dual", bundle: .module)
-          : camera.dualCameraMode.image,
-        isSelected: camera.dualCameraMode != .disabled,
+        image: camera.cameraMode.layoutMode?.image ?? Image("custom.camera.dual", bundle: .module),
+        isSelected: camera.cameraMode.isMultiCamera,
         hasLabel: hasTransientLabel
       )
-    }
-  }
-
-  @ViewBuilder func minimizeButton() -> some View {
-    Button {
-      showTransientLabels()
-      isMinimized.toggle()
-    } label: {
-      FeatureCloseLabelView(isMinimized: isMinimized)
     }
   }
 }

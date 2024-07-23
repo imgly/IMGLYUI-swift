@@ -4,6 +4,10 @@ import SwiftUI
 
 /// A `ClipView` that is displayed in the `TimelineView`.
 struct ClipView: View {
+  private enum Metrics {
+    static let borderWidthClip: CGFloat = 2.0
+  }
+
   @EnvironmentObject var timeline: Timeline
   @EnvironmentObject var timelineProperties: TimelineProperties
   @Environment(\.colorScheme) private var colorScheme
@@ -29,14 +33,14 @@ struct ClipView: View {
     RoundedRectangle(cornerRadius: cornerRadius)
       .fill(Color.clear)
       .background(alignment: .bottomLeading) {}
-      .clipShape(RoundedRectangle(cornerRadius: cornerRadius - 2).inset(by: clip.clipType != .audio ? 0 : 1))
+      .clipShape(RoundedRectangle(cornerRadius: cornerRadius - 2).inset(by: clip.clipType != .voiceOver ? 0 : 1))
       .background {
-        if let thumbnailsProvider = try? timelineProperties.thumbnailsManager.getProvider(id: clip.id) {
+        if let thumbnailsProvider = try? timelineProperties.thumbnailsManager.getProvider(clip: clip) {
           ClipBackgroundView(
             clip: clip,
             cornerRadius: cornerRadius,
             pointsTrimOffsetWidth: 0,
-            thumbnailsProvider: thumbnailsProvider
+            thumbnailsProvider: AnyThumbnailsProvider(erasing: thumbnailsProvider)
           )
           .overlay {
             RoundedRectangle(cornerRadius: cornerRadius - 1)
@@ -48,7 +52,7 @@ struct ClipView: View {
                   : SwiftUI.StrokeStyle(lineWidth: 0.5, dash: [2], dashPhase: 4)
               )
           }
-          .opacity(isSelected ? 0 : 1)
+          .opacity(clipOpacity)
           .modifier(Shimmering(isShimmering: clip.isLoading))
         }
       }
@@ -82,17 +86,7 @@ struct ClipView: View {
             : Color(uiColor: .secondarySystemBackground).opacity(0.8))
           .frame(width: max(0, -overflow))
       }
-      .overlay {
-        if isSelected {
-          ClipTrimmingView(
-            clip: clip,
-            horizontalClipSpacing: clipSpacing,
-            cornerRadius: cornerRadius,
-            trimHandleWidth: configuration.trimHandleWidth,
-            icon: clip.configuration.icon
-          )
-        }
-      }
+      .overlay(selectedOverlay)
       .padding(.leading, pointsTimeOffsetWidth)
       .zIndex(isSelected ? 2 : 1)
       // Use .task instead of .onAppear to prevent animation glitches
@@ -113,6 +107,52 @@ struct ClipView: View {
       .onChange(of: timeline.zoomLevel) { _ in
         updateWidths(duration: clip.duration)
         updateTimeOffsetWidth(timeOffset: clip.timeOffset)
+      }
+  }
+
+  private var clipOpacity: Double {
+    (isSelected && clip.clipType != .voiceOver) ? 0 : 1
+  }
+
+  @ViewBuilder
+  private var selectedOverlay: some View {
+    if isSelected {
+      switch clip.clipType {
+      case .voiceOver:
+        selectedView
+      default:
+        selectedTrimmingView
+      }
+    }
+  }
+
+  private var selectedTrimmingView: some View {
+    ClipTrimmingView(
+      clip: clip,
+      horizontalClipSpacing: clipSpacing,
+      cornerRadius: configuration.cornerRadius,
+      trimHandleWidth: configuration.trimHandleWidth,
+      icon: clip.configuration.icon
+    )
+  }
+
+  private var selectedView: some View {
+    Rectangle()
+      .fill(Color.clear)
+      .clipShape(RoundedRectangle(cornerRadius: configuration.cornerRadius))
+      .overlay(
+        RoundedRectangle(cornerRadius: configuration.cornerRadius)
+          .stroke(configuration.clipSelectionColor, lineWidth: Metrics.borderWidthClip)
+      )
+      .overlay(alignment: .topLeading) {
+        ClipLabelView(
+          duration: nil,
+          icon: clip.configuration.icon,
+          title: clip.title.isEmpty ? clip.clipType.description : clip.title,
+          isMuted: clip.audioVolume == 0 || clip.isMuted,
+          isSelectable: clip.allowsSelecting,
+          cornerRadius: configuration.cornerRadius
+        )
       }
   }
 

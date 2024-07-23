@@ -1,10 +1,13 @@
 import SwiftUI
-@_spi(Advanced) import SwiftUIIntrospect
 @_spi(Internal) import IMGLYCoreUI
+@_spi(Advanced) import SwiftUIIntrospect
 
+// Sheet to be reused by content sheets like voiceover
+// Can be reused to enable custom toolbar buttons or merge with bottom sheet
 struct BottomSheet<Content: View>: View {
-  @ViewBuilder let content: Content
+  // MARK: Properties
 
+  @ViewBuilder let content: Content
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
   private var sheet: SheetState { interactor.sheet }
@@ -18,17 +21,13 @@ struct BottomSheet<Content: View>: View {
     }
   }
 
+  // MARK: Body
+
   var body: some View {
     NavigationView {
       content
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(title)
-        .toolbar {
-          ToolbarItem(placement: .navigationBarTrailing) {
-            SheetDismissButton()
-              .buttonStyle(.borderless)
-          }
-        }
     }
     .navigationViewStyle(.stack)
     .introspect(.navigationStack, on: .iOS(.v16...)) { navigationController in
@@ -36,11 +35,5 @@ struct BottomSheet<Content: View>: View {
       // Fix cases when `.navigationBarTitleDisplayMode(.inline)` does not work.
       navigationBar.prefersLargeTitles = false
     }
-  }
-}
-
-struct BottomSheet_Previews: PreviewProvider {
-  static var previews: some View {
-    defaultPreviews(sheet: .init(.add, .image))
   }
 }

@@ -420,6 +420,25 @@ extension MappedType {
   }
 }
 
+// MARK: - Thumbnails
+
+@_spi(Internal) public extension BlockAPI {
+  func generatePageThumbnail(_ id: DesignBlockID, height: CGFloat, scale: CGFloat) async throws -> UIImage {
+    let stream = generateVideoThumbnailSequence(
+      id,
+      thumbnailHeight: Int(height * scale),
+      timeRange: 0 ... 0.1,
+      numberOfFrames: 1
+    )
+    for try await thumbnail in stream {
+      try Task.checkCancellation()
+      return .init(cgImage: thumbnail.image, scale: scale, orientation: .up)
+    }
+    try Task.checkCancellation()
+    throw Error(errorDescription: "Could not generate page thumbnail.")
+  }
+}
+
 // MARK: - Utilities
 
 @_spi(Internal) public extension BlockAPI {

@@ -124,6 +124,7 @@ struct VolumeSliderView: View {
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
+    .accessibilityLabel(isMuted ? "Unmute" : "Mute")
   }
 
   private var slider: some View {

@@ -10,7 +10,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
   private(set) var isRecording = false
 
   private(set) var isFlipped = false
-  private(set) var dualCameraMode = DualCameraMode.disabled
+  private(set) var cameraMode: CameraMode = .standard
 
   var currentlyRecordedClipDuration: CMTime?
 
@@ -62,7 +62,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
     captureSession.usesApplicationAudioSession = false
 
     configure()
-    rewireConnections(dualCameraMode: dualCameraMode, isFlipped: isFlipped)
+    rewireConnections(cameraMode: cameraMode, isFlipped: isFlipped)
   }
 
   private func configure() {
@@ -124,22 +124,24 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
   // MARK: - Connections
 
-  func setDualCameraMode(_ dualCameraMode: DualCameraMode) {
-    guard dualCameraMode != self.dualCameraMode,
-          AVCaptureMultiCamSession.isMultiCamSupported else { return }
-    rewireConnections(dualCameraMode: dualCameraMode, isFlipped: isFlipped)
+  func setCameraMode(_ cameraMode: CameraMode) {
+    guard cameraMode != self.cameraMode else { return }
+    if cameraMode.isMultiCamera, !AVCaptureMultiCamSession.isMultiCamSupported {
+      return
+    }
+    rewireConnections(cameraMode: cameraMode, isFlipped: isFlipped)
   }
 
   func flipCamera() {
-    rewireConnections(dualCameraMode: dualCameraMode, isFlipped: !isFlipped)
+    rewireConnections(cameraMode: cameraMode, isFlipped: !isFlipped)
   }
 
-  private func rewireConnections(dualCameraMode: DualCameraMode, isFlipped: Bool) {
+  private func rewireConnections(cameraMode: CameraMode, isFlipped: Bool) {
     queue.async { [weak self] in
       guard let self else { return }
 
       defer {
-        self.dualCameraMode = dualCameraMode
+        self.cameraMode = cameraMode
         self.isFlipped = isFlipped
       }
 
@@ -175,18 +177,16 @@ final class CaptureService: NSObject, @unchecked Sendable {
         captureSession.addConnection(connection)
       }
 
-      if AVCaptureMultiCamSession.isMultiCamSupported {
-        if dualCameraMode != .disabled {
-          if let input = isFlipped ? camera1Input : camera2Input {
-            if captureSession.canAddInput(input) {
-              captureSession.addInputWithNoConnections(input)
-            }
-            let connection = AVCaptureConnection(inputPorts: input.ports, output: videoOutput2)
-            camera2Connection = connection
-            connection.isVideoMirrored = input.device.position == .front
-            connection.videoOrientation = videoOrientation
-            captureSession.addConnection(connection)
+      if AVCaptureMultiCamSession.isMultiCamSupported, cameraMode.isMultiCamera {
+        if let input = isFlipped ? camera1Input : camera2Input {
+          if captureSession.canAddInput(input) {
+            captureSession.addInputWithNoConnections(input)
           }
+          let connection = AVCaptureConnection(inputPorts: input.ports, output: videoOutput2)
+          camera2Connection = connection
+          connection.isVideoMirrored = input.device.position == .front
+          connection.videoOrientation = videoOrientation
+          captureSession.addConnection(connection)
         }
       }
 
@@ -196,7 +196,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
   // MARK: -
 
-  func resumeStreaming(with flashMode: CameraModel.FlashMode) -> AsyncThrowingStream<CaptureStreamUpdate, Error> {
+  func resumeStreaming(with flashMode: FlashMode) -> AsyncThrowingStream<CaptureStreamUpdate, Error> {
     startRunning()
     setFlash(mode: flashMode)
     isStreaming = true
@@ -246,8 +246,9 @@ final class CaptureService: NSObject, @unchecked Sendable {
         videoTransform: CGAffineTransformIdentity
       )
       recorder1?.startRecording(to: fileURL1, fileType: videoFileType)
+      recorder2 = nil
 
-      if dualCameraMode != .disabled {
+      if cameraMode != .standard {
         guard let output2Settings = output2Settings() else { return }
         let fileURL2 = URL(fileURLWithPath: NSTemporaryDirectory() + UUID().uuidString + "." + videoFileExtension)
         recorder2 = VideoRecorder(
@@ -266,16 +267,15 @@ final class CaptureService: NSObject, @unchecked Sendable {
     guard isRecording else { return }
     isRecording = false
 
-    if let recorder1,
-       let recorder2 {
+    if let recorder1, let recorder2 {
       Task {
         async let (firstVideoURL, recordedDuration) = recorder1.stopRecording()
         async let (secondVideoURL, _) = recorder2.stopRecording()
 
         let recordedClip = try await Recording(
           videos: [
-            .init(url: firstVideoURL, rect: dualCameraMode.rect1),
-            .init(url: secondVideoURL, rect: dualCameraMode.rect2)
+            .init(url: firstVideoURL, rect: cameraMode.rect1),
+            .init(url: secondVideoURL, rect: cameraMode.rect2 ?? .zero)
           ],
           duration: recordedDuration
         )
@@ -288,7 +288,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
         let recordedClip = try await Recording(
           videos: [
-            .init(url: firstVideoURL, rect: dualCameraMode.rect1)
+            .init(url: firstVideoURL, rect: cameraMode.rect1)
           ],
           duration: recordedDuration
         )
@@ -342,7 +342,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
     }
   }
 
-  func setFlash(mode: CameraModel.FlashMode) {
+  func setFlash(mode: FlashMode) {
     guard let device = camera1Input?.device, device.hasTorch else { return }
 
     queue.async {

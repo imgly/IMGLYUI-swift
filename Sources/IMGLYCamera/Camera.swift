@@ -151,7 +151,7 @@ public struct Camera: View {
     .overlay(alignment: .bottom) {
       if [.ready, .countingDown, .recording].contains(camera.state) {
         HStack {
-          if !(camera.isFrontBackFlipped && camera.dualCameraMode == .disabled) {
+          if !camera.isFrontBackFlipped, camera.cameraMode.supportsFlash {
             flashButton
           }
           Spacer()
@@ -183,11 +183,7 @@ public struct Camera: View {
       }
       Button("Settings") {
         camera.cancel()
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-          Task {
-            await UIApplication.shared.open(url)
-          }
-        }
+        AppSettingsHelper.openAppSettings()
       }
     } message: {
       Text(verbatim: CamMicUsageDescriptionFromBundleHelper.shared.cameraUsageDescription)
@@ -201,11 +197,7 @@ public struct Camera: View {
       }
       Button("Settings") {
         camera.cancel()
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-          Task {
-            await UIApplication.shared.open(url)
-          }
-        }
+        AppSettingsHelper.openAppSettings()
       }
     } message: {
       Text(verbatim: CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription)

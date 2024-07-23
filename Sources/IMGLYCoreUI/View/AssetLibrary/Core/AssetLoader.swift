@@ -143,6 +143,8 @@ public extension AssetLoader {
     /// The key that identifies the meta data value to sort by or 'id' to sort by the asset ID.
     /// If empty, the assets are sorted by the index.
     public let sortKey: IMGLYEngine.SortKey?
+    /// Sort assets that are marked as active first.
+    public let sortActiveFirst: Bool
 
     /// Initializes a request for querying assets.
     /// - Parameters:
@@ -153,12 +155,14 @@ public extension AssetLoader {
     ///   - locale: Choose the locale of the label and tags for localized search and filtering.
     ///   - sortingOrder: The order to sort by if the asset source supports sorting.
     ///   - sortKey: The key that identifies the meta data value to sort by or 'id' to sort by the asset ID.
+    ///   - sortActiveFirst: Sort assets that are marked as active first.
     public init(query: String? = nil, tags: [String]? = nil,
                 groups: IMGLYEngine.Groups? = nil,
                 excludedGroups: IMGLYEngine.Groups? = nil,
                 locale: IMGLYEngine.Locale? = "en",
                 sortingOrder: IMGLYEngine.SortingOrder = .none,
-                sortKey: IMGLYEngine.SortKey? = nil) {
+                sortKey: IMGLYEngine.SortKey? = nil,
+                sortActiveFirst: Bool = false) {
       self.query = query
       self.tags = tags
       self.groups = groups
@@ -166,6 +170,7 @@ public extension AssetLoader {
       self.locale = locale
       self.sortingOrder = sortingOrder
       self.sortKey = sortKey
+      self.sortActiveFirst = sortActiveFirst
     }
 
     func narrowed(by other: Self) -> Self {
@@ -193,7 +198,8 @@ public extension AssetLoader {
         excludedGroups: union(other.excludedGroups, excludedGroups),
         locale: other.locale ?? locale,
         sortingOrder: other.sortingOrder != .none ? other.sortingOrder : sortingOrder,
-        sortKey: other.sortKey ?? sortKey
+        sortKey: other.sortKey ?? sortKey,
+        sortActiveFirst: other.sortActiveFirst
       )
     }
   }

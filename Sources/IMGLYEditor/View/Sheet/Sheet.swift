@@ -23,8 +23,9 @@ struct Sheet: View {
     case .page: PageSheet()
     case .video: VideoSheet()
     case .audio: AudioSheet()
+    case .voiceover: VoiceOverSheet()
     case .reorder: ReorderSheet()
-    case .asset, .elements, .clip, .overlay, .stickerOrShape: EmptyView()
+    case .asset, .elements, .clip, .overlay, .stickerOrShape, .pageOverview: EmptyView()
     }
   }
 

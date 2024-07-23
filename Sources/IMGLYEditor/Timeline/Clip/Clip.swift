@@ -32,7 +32,7 @@ extension ClipType: CustomStringConvertible {
     case .video:
       return "Video Clip"
     case .voiceOver:
-      return "Voice-Over"
+      return "Voiceover"
     }
   }
 }

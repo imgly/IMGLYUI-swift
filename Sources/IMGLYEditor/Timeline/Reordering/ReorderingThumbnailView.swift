@@ -36,7 +36,7 @@ struct ReorderingThumbnailView: View {
   let index: Int
 
   @ObservedObject var clip: Clip
-  @ObservedObject var thumbnailsProvider: ThumbnailsProvider
+  @ObservedObject var thumbnailsProvider: ThumbnailsImageProvider
 
   @Binding var clips: [Clip]
   @Binding var draggedClip: Clip?
@@ -62,7 +62,7 @@ struct ReorderingThumbnailView: View {
        draggedClip: Binding<Clip?>,
        thumbnailHeight: CGFloat,
        thumbnailSpacing: CGFloat,
-       thumbnailsProvider: ThumbnailsProvider) {
+       thumbnailsProvider: ThumbnailsImageProvider) {
     self.index = index
     self.clip = clip
     _clips = clips

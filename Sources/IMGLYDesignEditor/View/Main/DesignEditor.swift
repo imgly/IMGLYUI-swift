@@ -24,7 +24,7 @@ public struct DesignEditor: View {
         ToolbarItemGroup(placement: .navigationBarTrailing) {
           HStack(spacing: 16) {
             UndoRedoButtons()
-            PreviewButton()
+            PageOverviewButton()
             ExportButton()
           }
           .labelStyle(.adaptiveIconOnly)
@@ -38,7 +38,6 @@ public struct DesignEditor: View {
         }
         try await onCreate(engine)
       }
-      .imgly.pageNavigation(true)
   }
 }
 

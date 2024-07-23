@@ -48,7 +48,7 @@ struct SelectableAssetItem<Content: View>: View {
   }
 
   var body: some View {
-    SelectableItem(title: localizedTitle, selected: selected) {
+    SelectableEffectItem(title: localizedTitle, selected: selected) {
       ZStack {
         content
         overlay

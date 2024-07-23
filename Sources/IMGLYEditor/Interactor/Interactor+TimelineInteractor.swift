@@ -272,25 +272,42 @@ extension Interactor: TimelineInteractor {
 
   // MARK: Refresh
 
+  /// Refreshes the thumbnails for all clips in the timeline.
   func refreshThumbnails() {
-    guard let timeline = timelineProperties.timeline else { return }
-    do {
-      for clip in timelineProperties.dataSource.allClips() {
-        if let duration = clip.duration {
-          let width = timeline.convertToPoints(time: duration)
-          let height = clip.isInBackgroundTrack
-            ? timelineProperties.configuration.backgroundTrackHeight
-            : timelineProperties.configuration.trackHeight
+    for clip in timelineProperties.dataSource.allClips() {
+      refreshThumbnail(clip: clip)
+    }
+  }
 
-          try timelineProperties.thumbnailsManager.refreshThumbnails(for: clip, width: width, height: height)
-        }
+  /// Refreshes the thumbnail for a specific clip.
+  /// - Parameter clip: The clip for which to refresh the thumbnail.
+  func refreshThumbnail(clip: Clip) {
+    guard let timeline = timelineProperties.timeline else { return }
+
+    if let duration = clip.duration {
+      let width = timeline.convertToPoints(time: duration)
+      let height = clip.isInBackgroundTrack
+        ? timelineProperties.configuration.backgroundTrackHeight
+        : timelineProperties.configuration.trackHeight
+
+      do {
+        try timelineProperties.thumbnailsManager.refreshThumbnails(for: clip, width: width, height: height)
+      } catch {
+        handleError(error)
       }
-    } catch {
-      handleError(error)
+    }
+  }
+
+  /// Refreshes the thumbnail for a specific clip by its ID.
+  /// - Parameter id: The ID of the clip.v
+  func refreshThumbnail(id: DesignBlockID) {
+    if let clip = timelineProperties.dataSource.findClip(id: id) {
+      refreshThumbnail(clip: clip)
     }
   }
 
   /// Updates a clip representation in the timeline.
+  /// - Parameter clip: The clip to update.
   private func refresh(clip: Clip) {
     refresh(id: clip.id, clip: clip)
   }
@@ -345,12 +362,20 @@ extension Interactor: TimelineInteractor {
 
       switch blockType {
       case DesignBlockType.audio.rawValue:
-        clip.clipType = .audio
-        clip.configuration = timelineProperties.configuration.audioClipConfiguration
+        let kind: BlockKind? = try? engine.block.getKind(id)
+        switch kind {
+        case .key(.voiceover):
+          clip.clipType = .voiceOver
+          clip.configuration = timelineProperties.configuration.voiceOverClipConfiguration
+        default:
+          clip.clipType = .audio
+          clip.configuration = timelineProperties.configuration.audioClipConfiguration
+        }
         if let name = try? engine.block.getMetadata(id, key: "name"),
            !name.isEmpty {
           clip.title = name
         }
+
       case DesignBlockType.graphic.rawValue:
         // Important: Don’t throw here!
         let kind: BlockKind? = try? engine.block.getKind(id)
@@ -404,7 +429,12 @@ extension Interactor: TimelineInteractor {
       let durationSeconds = try engine.block.getDuration(id)
       if durationSeconds > Double(Int.max) {
         // The block’s duration is infinity, but with nil it’s is easier to handle this special case in the timeline.
-        clip.duration = nil
+        if clip.clipType == .voiceOver {
+          // In the case of the voiceover it will always infinity, so we match the total duration
+          clip.duration = timelineProperties.timeline?.totalDuration
+        } else {
+          clip.duration = nil
+        }
       } else {
         clip.duration = CMTime(seconds: durationSeconds)
       }
@@ -555,6 +585,10 @@ extension Interactor: TimelineInteractor {
       if totalDuration != CMTime(seconds: timeline.totalDuration.seconds) {
         try engine.block.setDuration(pageID, duration: totalDuration.seconds)
         timelineProperties.timeline?.setTotalDuration(totalDuration)
+        // update clip elements that require to match duration of timeline
+        timelineProperties.dataSource.foregroundClips()
+          .filter { $0.clipType == .voiceOver }
+          .forEach { $0.duration = totalDuration }
       }
     } catch {
       handleError(error)
@@ -676,6 +710,40 @@ extension Interactor: TimelineInteractor {
     timelineProperties.selectedClip = nil
   }
 
+  // MARK: Deletion
+
+  func delete(id: DesignBlockID?) {
+    guard let id, let engine else {
+      return
+    }
+
+    do {
+      try engine.block.destroy(id)
+    } catch {
+      handleError(error)
+    }
+  }
+
+  // MARK: Audio
+
+  func setPageMuted(_ muted: Bool) {
+    guard let engine, let pageID = timelineProperties.currentPage else { return }
+    do {
+      try engine.block.setMuted(pageID, muted: muted)
+    } catch {
+      handleError(error)
+    }
+  }
+
+  func setBlockMuted(_ id: DesignBlockID?, muted: Bool) {
+    guard let engine, let id else { return }
+    do {
+      try engine.block.setMuted(id, muted: muted)
+    } catch {
+      handleError(error)
+    }
+  }
+
   // MARK: Update and sync the selection state
 
   /// Select a clip in the timeline to match what’s selected on canvas.
@@ -750,7 +818,7 @@ extension Interactor: TimelineInteractor {
   /// iPad and `3` on an iPhone.
   ///   - numberOfFrames: The desired frame count.
   /// - Returns: An async stream of images that finishes when all images have been loaded.
-  func generateThumbnails(
+  func generateImagesThumbnails(
     clip: Clip,
     thumbHeight: CGFloat,
     timeRange: ClosedRange<Double>,
@@ -766,6 +834,21 @@ extension Interactor: TimelineInteractor {
       timeRange: timeRange,
       numberOfFrames: numberOfFrames
     )
+  }
+
+  func generateAudioThumbnails(
+    clip: Clip,
+    timeRange: ClosedRange<Double>,
+    numberOfSamples: Int
+  ) async throws -> AsyncThrowingStream<AudioThumbnail, Swift.Error> {
+    guard let engine else { throw Error(errorDescription: "Missing engine") }
+    guard engine.block.isValid(clip.id) else { throw Error(errorDescription: "Block doesn’t exist") }
+
+    return engine.block.generateAudioThumbnailSequence(clip.id,
+                                                       samplesPerChunk: numberOfSamples,
+                                                       timeRange: timeRange,
+                                                       numberOfSamples: numberOfSamples,
+                                                       numberOfChannels: 1)
   }
 
   // MARK: Playback Control
@@ -935,12 +1018,49 @@ extension Interactor: TimelineInteractor {
         try await Task.sleep(for: .milliseconds(100))
         sheet.commit { model in
           model = .init(.replace, .audio)
-          model.detent = .large
+          model.detents = [.adaptiveMedium]
         }
       } catch {
         handleError(error)
       }
     }
+  }
+
+  private func showVoiceOverSheet() {
+    sheet.commit { model in
+      model = .init(.addVoiceOver, .voiceover)
+      model.detent = .adaptiveMedium
+      model.detents = [.adaptiveMedium]
+    }
+  }
+
+  func openVoiceOver() {
+    guard let duration = timelineProperties.timeline?.totalDuration.seconds, duration > 0 else {
+      error = .init("Unable to Record Voiceover",
+                    message: "Please add content to your timeline to start recording audio.",
+                    dismiss: false)
+      return
+    }
+
+    guard timelineProperties.dataSource.foregroundClips().allSatisfy({ $0.clipType != .voiceOver }) else {
+      error = .init("Only One Voiceover Recording Possible",
+                    message: "Please edit the existing voiceover.",
+                    dismiss: false,
+                    dismissTitle: "Cancel",
+                    confirmTitle: "Edit",
+                    confirmCallback: { [weak self] in
+                      self?.error.isPresented = false
+                      self?.editVoiceOver()
+                    })
+      return
+    }
+
+    pause()
+    showVoiceOverSheet()
+  }
+
+  func editVoiceOver() {
+    showVoiceOverSheet()
   }
 
   func openCamera() {

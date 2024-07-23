@@ -3,57 +3,59 @@ import SwiftUI
 
 /// Manages the thumbnail images or waveform for a `Clip`.
 struct ClipBackgroundView: View {
+  // MARK: - Properties
+
   @EnvironmentObject var timeline: Timeline
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
+  @ObservedObject var thumbnailsProvider: AnyThumbnailsProvider
 
-  @ObservedObject var thumbnailsProvider: ThumbnailsProvider
-
-  let clip: Clip
-  let cornerRadius: CGFloat
-
+  private let clip: Clip
+  private let cornerRadius: CGFloat
   private let pointsTrimOffsetWidth: CGFloat
-  private let maxWaveformHeight: CGFloat = 20
 
-  init(clip: Clip, cornerRadius: CGFloat, pointsTrimOffsetWidth: CGFloat, thumbnailsProvider: ThumbnailsProvider) {
+  // MARK: - Initializers
+
+  init(clip: Clip, cornerRadius: CGFloat, pointsTrimOffsetWidth: CGFloat, thumbnailsProvider: AnyThumbnailsProvider) {
     self.clip = clip
     self.cornerRadius = cornerRadius
     self.pointsTrimOffsetWidth = pointsTrimOffsetWidth
     self.thumbnailsProvider = thumbnailsProvider
   }
 
+  // MARK: - View
+
   var body: some View {
     RoundedRectangle(cornerRadius: cornerRadius)
       .fill(clip.configuration.backgroundColor)
       .overlay(alignment: .bottomLeading) {
-        // We could remove GeometryReader so that the clip doesn’t expand invisibly horizontally.
-        if clip.clipType == .audio {
-          GeometryReader { geometry in
-            AudioWaveformView(
-              zoomLevel: timeline.zoomLevel,
-              width: geometry.size.width + abs(pointsTrimOffsetWidth),
-              height: geometry.size.height
-            )
-            .foregroundColor(clip.configuration.color)
-            .frame(maxHeight: maxWaveformHeight)
-            .offset(x: pointsTrimOffsetWidth)
-            // Prevent animation glitch on expand/collapse timeline.
-            .drawingGroup()
-          }
-          .frame(maxHeight: maxWaveformHeight)
-          .padding(.vertical, 4)
-          .padding(.horizontal, 1)
-        } else {
-          ThumbnailsView(
-            provider: thumbnailsProvider,
-            isZooming: timeline.isPinchingZoom
-          )
+        thumbnailView
           .offset(x: pointsTrimOffsetWidth)
           .allowsHitTesting(false)
-        }
       }
       .mask {
         RoundedRectangle(cornerRadius: cornerRadius)
       }
       .clipped()
+  }
+
+  /// Returns the appropriate thumbnail view based on the provider type.
+  @ViewBuilder
+  private var thumbnailView: some View {
+    switch thumbnailsProvider.provider {
+    case let thumbnailsAudioProvider as ThumbnailsAudioProvider:
+      ThumbnailsAudioView(
+        provider: thumbnailsAudioProvider,
+        isZooming: timeline.isPinchingZoom,
+        pointsTrimOffsetWidth: pointsTrimOffsetWidth,
+        color: clip.configuration.color
+      )
+    case let thumbnailsImageProvider as ThumbnailsImageProvider:
+      ThumbnailsImageView(
+        provider: thumbnailsImageProvider,
+        isZooming: timeline.isPinchingZoom
+      )
+    default:
+      EmptyView()
+    }
   }
 }

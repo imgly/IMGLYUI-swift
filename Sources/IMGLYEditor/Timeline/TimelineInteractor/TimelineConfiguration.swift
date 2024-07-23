@@ -109,6 +109,6 @@ struct TimelineConfiguration {
   var voiceOverClipConfiguration = ClipConfiguration(
     color: Color.pink,
     backgroundColor: Color.pink.opacity(0.16),
-    icon: Image(systemName: "mic")
+    icon: Image(systemName: "mic.fill")
   )
 }

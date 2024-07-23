@@ -1,5 +1,6 @@
 import CoreMedia
 import SwiftUI
+@_spi(Internal) import IMGLYCore
 @_spi(Advanced) import SwiftUIIntrospect
 import UIKit
 

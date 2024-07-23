@@ -7,7 +7,7 @@ struct PageSheet: View {
   private var sheet: SheetModel { interactor.sheet.model }
 
   var body: some View {
-    BottomSheet {
+    DismissableBottomSheet {
       switch sheet.mode {
       case .crop: CropOptions()
       case .fillAndStroke: FillAndStrokeOptions()

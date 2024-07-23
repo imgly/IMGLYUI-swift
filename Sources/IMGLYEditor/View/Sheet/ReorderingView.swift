@@ -16,7 +16,8 @@ struct ReorderingView: View {
         HStack(spacing: thumbnailSpacing) {
           let clips = track.clips
           ForEach(Array(zip(clips, clips.indices)), id: \.0) { clip, index in
-            if let thumbnailProvider = try? interactor.timelineProperties.thumbnailsManager.getProvider(id: clip.id) {
+            if let thumbnailProvider = try? interactor.timelineProperties.thumbnailsManager
+              .getProvider(clip: clip) as? ThumbnailsImageProvider {
               ReorderingThumbnailView(index: index,
                                       clip: clip,
                                       clips: $track.clips,

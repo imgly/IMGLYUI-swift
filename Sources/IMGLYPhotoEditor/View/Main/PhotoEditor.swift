@@ -82,7 +82,7 @@ public extension OnCreate {
   }
 }
 
-struct DesignEditor_Previews: PreviewProvider {
+struct PhotoEditor_Previews: PreviewProvider {
   static var previews: some View {
     defaultPreviews
   }

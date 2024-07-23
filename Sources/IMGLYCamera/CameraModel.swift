@@ -133,40 +133,33 @@ final class CameraModel: ObservableObject {
   let countdownTimer = CountdownTimer()
 
   @Published var countdownMode = CountdownMode.disabled
-
-  @Published var dualCameraMode = DualCameraMode.disabled {
+  @Published var cameraMode: CameraMode = .standard {
     didSet {
-      captureService.setDualCameraMode(dualCameraMode)
-      do {
-        try interactor?.purgeBuffers()
-        try interactor?.setDualCameraMode(dualCameraMode)
-      } catch {
-        handleEngineError(error)
-      }
-
-      // Re-enable the flash in case it was previously activated.
-      captureService.setFlash(mode: flashMode)
+      cameraModeUpdated(cameraMode)
     }
   }
 
-  enum FlashMode {
-    case off
-    case on
+  private func cameraModeUpdated(_ cameraMode: CameraMode) {
+    captureService.setCameraMode(cameraMode)
+    do {
+      try interactor?.purgeBuffers()
+      try interactor?.setCameraLayout(cameraMode.rect1, cameraMode.rect2)
+    } catch {
+      handleEngineError(error)
+    }
+
+    // Re-enable the flash in case it was previously activated.
+    captureService.setFlash(mode: flashMode)
   }
 
   @Published var flashMode = FlashMode.off
 
   func toggleFlashMode() {
     // The flash can only be used on the back camera
-    guard !(isFrontBackFlipped && dualCameraMode == .disabled) else {
+    guard !isFrontBackFlipped, cameraMode.supportsFlash else {
       return
     }
-    switch flashMode {
-    case .off:
-      flashMode = .on
-    case .on:
-      flashMode = .off
-    }
+    flashMode.toggle()
     captureService.setFlash(mode: flashMode)
   }
 
@@ -229,7 +222,7 @@ final class CameraModel: ObservableObject {
         do {
           isInitializingStream = true
           self.interactor = try await CameraCanvasInteractor(settings: settings, videoSize: configuration.videoSize)
-          try self.interactor?.setDualCameraMode(dualCameraMode)
+          try self.interactor?.setCameraLayout(cameraMode.rect1, cameraMode.rect2)
           DispatchQueue.main.async { [weak self] in
             self?.state = .ready
           }
