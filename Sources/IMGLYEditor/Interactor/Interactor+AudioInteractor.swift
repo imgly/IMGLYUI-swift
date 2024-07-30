@@ -21,6 +21,7 @@ extension Interactor: AudioInteractor {
     try _engine.block.setKind(audioBlock, kind: BlockKindKey.voiceover.rawValue)
     try _engine.block.setLooping(audioBlock, looping: false)
     try _engine.block.appendChild(to: pageID, child: audioBlock)
+    try _engine.block.setAlwaysOnTop(audioBlock, enabled: true)
 
     return audioBlock
   }

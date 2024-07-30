@@ -22,6 +22,7 @@ struct FillColorOptions: View {
           property: .key(.fillSolidColor),
           default: .imgly.black,
           getter: temporaryColorGetter,
+          setter: colorSetter,
           completion: Interactor.Completion.set(property: .key(.fillEnabled), value: true)
         )
         ColorOptions(title: "Fill Color",
@@ -38,10 +39,38 @@ struct FillColorOptions: View {
   ///         when switching between solid and gradient color fill mode.
   let temporaryColorGetter: Interactor.PropertyGetter<CGColor> = { engine, id, _, property in
     do {
+      let blockType = try engine.block.getType(id)
+      if blockType == Interactor.BlockType.text.rawValue,
+         let textColor = try engine.block.getTextColors(id).first?.cgColor {
+        return textColor
+      }
       return try engine.block.get(id, property: property)
     } catch {
       return .imgly.black
     }
+  }
+
+  let colorSetter: Interactor.PropertySetter<CGColor> = { engine, blocks, _, property, value, completion in
+    var didChange = false
+
+    try blocks.forEach {
+      guard let color = Interactor.Color(cgColor: value) else { return }
+      let blockType = try engine.block.getType($0)
+
+      if blockType == Interactor.BlockType.text.rawValue {
+        if let originalTextColor = try engine.block.getTextColors($0).first, originalTextColor != color {
+          didChange = true
+          try engine.block.setTextColor($0, color: color)
+        }
+      } else {
+        let originalColor: Interactor.Color = try engine.block.get($0, property: property)
+        if originalColor != color {
+          didChange = true
+          try engine.block.set($0, property: property, value: value)
+        }
+      }
+    }
+    return try (completion?(engine, blocks, didChange) ?? false) || didChange
   }
 }
 
@@ -94,7 +123,7 @@ extension GradientOptions {
     }
 
     let setter: Interactor.PropertySetter<CGColor> = { engine, blocks, _, _, value, completion in
-      var hasChanges = false
+      var didChange = false
 
       try blocks.forEach {
         guard let color = Interactor.Color(cgColor: value) else { return }
@@ -103,7 +132,7 @@ extension GradientOptions {
 
         let original = colorStops[position.rawValue]
         if original.color != color {
-          hasChanges = true
+          didChange = true
           let modified = GradientColorStop(color: color, stop: original.stop)
           colorStops[position.rawValue] = modified
 
@@ -111,7 +140,7 @@ extension GradientOptions {
         }
       }
 
-      return try (completion?(engine, blocks, true) ?? false) || hasChanges
+      return try (completion?(engine, blocks, didChange) ?? false) || didChange
     }
 
     return interactor.bind(

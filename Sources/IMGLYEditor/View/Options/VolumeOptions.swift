@@ -13,7 +13,7 @@ struct VolumeOptions: View {
   }
 
   let volumeSetter: Interactor.PropertySetter<Double> = { engine, blocks, _, _, value, completion in
-    var hasChanges = false
+    var didChange = false
     try blocks.forEach { id in
       let type = try engine.block.getType(id)
       let isAudio = type == Interactor.BlockType.audio.rawValue
@@ -26,10 +26,10 @@ struct VolumeOptions: View {
         } else if value > 0 {
           try engine.block.setMuted(block, muted: false)
         }
-        hasChanges = true
+        didChange = true
       }
     }
-    return try (completion?(engine, blocks, hasChanges) ?? false) || hasChanges
+    return try (completion?(engine, blocks, didChange) ?? false) || didChange
   }
 
   let mutedGetter: Interactor.PropertyGetter<Bool> = { engine, id, _, _ in
@@ -40,7 +40,7 @@ struct VolumeOptions: View {
   }
 
   let mutedSetter: Interactor.PropertySetter<Bool> = { engine, blocks, _, _, value, completion in
-    var hasChanges = false
+    var didChange = false
     try blocks.forEach { id in
       let type = try engine.block.getType(id)
       let isAudio = type == Interactor.BlockType.audio.rawValue
@@ -51,10 +51,10 @@ struct VolumeOptions: View {
           try engine.block.setVolume(block, volume: 0.2)
         }
         try engine.block.setMuted(block, muted: value)
-        hasChanges = true
+        didChange = true
       }
     }
-    return try (completion?(engine, blocks, hasChanges) ?? false) || hasChanges
+    return try (completion?(engine, blocks, didChange) ?? false) || didChange
   }
 
   var body: some View {
