@@ -135,6 +135,7 @@ private extension AssetLibraryInteractor {
         meta[.thumbUri] = thumbURL.absoluteString
       }
       return meta
+
     default:
       throw Error(errorDescription: "Unsupported block type for upload.")
     }
@@ -165,6 +166,7 @@ private extension AssetLibraryInteractor {
         let thumbURL = try data.writeToUniqueCacheURL(for: .jpeg)
         return (image.size, thumbURL)
       }
+
     default:
       throw Error(errorDescription: "Unsupported block type for upload.")
     }

@@ -1,3 +1,4 @@
+@_spi(Internal) import IMGLYCore
 import IMGLYCoreUI
 import SwiftUI
 
@@ -18,6 +19,9 @@ struct FeaturesMenuView: View {
         if camera.isMultiCamSupported {
           dualCameraButton()
         }
+        if FeatureFlags.videoReactions {
+          reactionsButton()
+        }
       }
       .simultaneousGesture(
         DragGesture(minimumDistance: 0)
@@ -37,9 +41,12 @@ struct FeaturesMenuView: View {
   private func showTransientLabels() {
     hasTransientLabel = true
     transientLabelTimer?.invalidate()
-    transientLabelTimer = Timer.scheduledTimer(withTimeInterval: labelDisappearInterval, repeats: false, block: { _ in
+    transientLabelTimer = Timer.scheduledTimer(
+      withTimeInterval: labelDisappearInterval,
+      repeats: false
+    ) { _ in
       hasTransientLabel = false
-    })
+    }
   }
 }
 
@@ -124,6 +131,19 @@ extension FeaturesMenuView {
       FeatureLabelView(
         text: "Dual Camera",
         image: camera.cameraMode.layoutMode?.image ?? Image("custom.camera.dual", bundle: .module),
+        isSelected: camera.cameraMode.isMultiCamera,
+        hasLabel: hasTransientLabel
+      )
+    }
+  }
+
+  @ViewBuilder func reactionsButton() -> some View {
+    Button {
+      camera.pickReactionVideo()
+    } label: {
+      FeatureLabelView(
+        text: "React",
+        image: Image(systemName: "arrow.2.squarepath"),
         isSelected: camera.cameraMode.isMultiCamera,
         hasLabel: hasTransientLabel
       )

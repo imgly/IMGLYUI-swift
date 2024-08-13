@@ -3,6 +3,7 @@ import Combine
 import CoreMedia
 import Foundation
 import SwiftUI
+@_spi(Internal) import IMGLYCoreUI
 
 /// Provides camera state and functionality to the `Camera`.
 /// - Manages the `CaptureService`.
@@ -44,19 +45,19 @@ final class CameraModel: ObservableObject {
 
   @Published private(set) var hasVideoPermissions = false
   @Published private(set) var hasAudioPermissions = false
-
-  @Published var isShowingErrorAlert = false
-  var errorMessage: String?
+  @Published var alertState: AlertState?
 
   // MARK: - Lifecycle
 
   init(
     _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
+    cameraMode: CameraMode = .standard,
     onDismiss: @escaping (Result<[Recording], CameraError>) -> Void
   ) {
     self.onDismiss = onDismiss
     self.settings = settings
+    self.cameraMode = cameraMode
     configuration = config
     recordingsManager = RecordingsManager(configuration: configuration)
     configureNotificationHandlers()
@@ -126,6 +127,16 @@ final class CameraModel: ObservableObject {
 
     hasVideoPermissions = isVideoAuthorized
     hasAudioPermissions = isAudioAuthorized
+
+    if !isVideoAuthorized {
+      alertState = .cameraPermissions {
+        self.cancel()
+      }
+    } else if !isAudioAuthorized {
+      alertState = .microphonePermissions {
+        self.cancel()
+      }
+    }
   }
 
   // MARK: - Camera Settings
@@ -197,6 +208,12 @@ final class CameraModel: ObservableObject {
     self.previousZoom = nil
   }
 
+  @Published var isReactionVideoSheetPresented = false
+
+  func pickReactionVideo() {
+    isReactionVideoSheetPresented = true
+  }
+
   // MARK: - Streaming
 
   func retry() {
@@ -221,7 +238,10 @@ final class CameraModel: ObservableObject {
       if self.interactor == nil {
         do {
           isInitializingStream = true
-          self.interactor = try await CameraCanvasInteractor(settings: settings, videoSize: configuration.videoSize)
+          self.interactor = try await CameraCanvasInteractor(
+            settings: settings,
+            videoSize: configuration.videoSize
+          )
           try self.interactor?.setCameraLayout(cameraMode.rect1, cameraMode.rect2)
           DispatchQueue.main.async { [weak self] in
             self?.state = .ready
@@ -244,6 +264,7 @@ final class CameraModel: ObservableObject {
             if recordingsManager.currentlyRecordedClipDuration != captureService.currentlyRecordedClipDuration {
               recordingsManager.currentlyRecordedClipDuration = captureService.currentlyRecordedClipDuration
             }
+
           case let .output2Frame(buffer):
             try interactor.updatePixelStreamFill2(buffer: buffer)
 
@@ -328,8 +349,13 @@ final class CameraModel: ObservableObject {
   }
 
   func handleActionError(_ error: Error) {
-    errorMessage = error.localizedDescription
-    isShowingErrorAlert = true
+    alertState = AlertState(
+      title: "Error",
+      message: error.localizedDescription,
+      buttons: [
+        .init(title: "OK", action: {})
+      ]
+    )
   }
 }
 

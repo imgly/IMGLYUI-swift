@@ -11,10 +11,29 @@ public struct Camera: View {
 
   @State private var isShowingDeleteDialog = false
   @State private var isShowingDeleteAllDialog = false
-  @State private var isShowingPermissionsAlertForCamera = false
-  @State private var isShowingPermissionsAlertForMicrophone = false
 
   @ScaledMetric private var recordButtonSize: Double = 82
+
+  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
+  var assetLibrary: some AssetLibrary {
+    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
+  }
+
+  var showsCameraUI: Bool {
+    [.ready, .countingDown, .recording].contains(camera.state)
+  }
+
+  var showsFlashButton: Bool {
+    !camera.isFrontBackFlipped && camera.cameraMode.supportsFlash
+  }
+
+  var didRecord: Bool {
+    camera.recordingsManager.hasRecordings && ![.countingDown, .recording].contains(camera.state)
+  }
+
+  var maxDuration: String {
+    camera.configuration.maxTotalDuration.imgly.formattedDurationStringForClip()
+  }
 
   /// Creates a camera.
   /// - Parameters:
@@ -28,7 +47,36 @@ public struct Camera: View {
     config: CameraConfiguration = .init(),
     onDismiss: @escaping (Result<[Recording], CameraError>) -> Void
   ) {
-    let camera = CameraModel(settings, config: config, onDismiss: onDismiss)
+    let camera = CameraModel(
+      settings,
+      config: config,
+      cameraMode: .standard,
+      onDismiss: onDismiss
+    )
+
+    _camera = StateObject(wrappedValue: camera)
+  }
+
+  /// Creates a camera.
+  /// - Parameters:
+  ///   - settings: The settings to initialize the underlying engine.
+  ///   - config: Customize the camera experience and behavior.
+  ///   - mode: The mode to launch the camera in.
+  ///   - onDismiss: When the camera is dismissed, it calls the `onDismiss` and passes a `Result`.
+  ///     - If the user has recorded videos, you’ll receive a `.success` result and an array of `Recording`s.
+  ///     - If the user exits the camera without recording a video, you’ll get a `.failure` of `CameraError.cancelled`.
+  @_spi(Internal) public init(
+    _ settings: EngineSettings,
+    config: CameraConfiguration = .init(),
+    mode: CameraMode = .standard,
+    onDismiss: @escaping (Result<[Recording], CameraError>) -> Void
+  ) {
+    let camera = CameraModel(
+      settings,
+      config: config,
+      cameraMode: mode,
+      onDismiss: onDismiss
+    )
 
     _camera = StateObject(wrappedValue: camera)
   }
@@ -64,30 +112,25 @@ public struct Camera: View {
             .overlay(alignment: .top) {
               Group {
                 if camera.recordingsManager.hasReachedMaxDuration {
-                  Text(
-                    "Recording limit is \(camera.configuration.maxTotalDuration.imgly.formattedDurationStringForClip())"
-                  )
-                  .fixedSize()
-                  .offset(x: 0, y: -50)
-                  .transition(.offset(x: 0, y: 20).combined(with: .opacity))
+                  Text("Recording limit is \(maxDuration)")
+                    .fixedSize()
+                    .offset(x: 0, y: -50)
+                    .transition(.offset(x: 0, y: 20).combined(with: .opacity))
                 }
               }
               .animation(.spring(), value: camera.recordingsManager.hasReachedMaxDuration)
             }
-            .disabled(
-              camera.recordingsManager.hasReachedMaxDuration
-                || ![.ready, .countingDown, .recording].contains(camera.state)
-            )
+            .disabled(camera.recordingsManager.hasReachedMaxDuration || !showsCameraUI)
         } leading: {
           Spacer()
-          if camera.recordingsManager.hasRecordings, ![.countingDown, .recording].contains(camera.state) {
+          if didRecord {
             deleteLastRecordingButton
               .padding(.trailing)
               .transition(.offset(x: -20).combined(with: .opacity))
           }
         } trailing: {
           Spacer()
-          if camera.recordingsManager.hasRecordings, ![.countingDown, .recording].contains(camera.state) {
+          if didRecord {
             doneButton
               .padding(.trailing)
               .transition(.offset(x: 20).combined(with: .opacity))
@@ -99,118 +142,72 @@ public struct Camera: View {
       }
       .aspectRatio(9 / 16, contentMode: .fit)
       .overlay {
-        countdownView
-          .offset(x: 0, y: -44)
+        countdownView.offset(x: 0, y: -44)
       }
-      .background {
-        if [.ready, .countingDown, .recording].contains(camera.state) {
-          Rectangle()
-            .fill(.clear)
-            .contentShape(Rectangle())
-            .onTapGesture(count: 2) {
-              camera.flipCamera()
-            }
-            .gesture(
-              MagnificationGesture()
-                .onChanged { value in
-                  camera.updateZoom(value)
-                }
-                .onEnded { value in
-                  camera.finishZoom(value)
-                }
-            )
-        }
-      }
-      .background {
-        switch camera.state {
-        case .preparing:
-          ProgressView()
-        case let .error(error):
-          CameraErrorView(error: error) {
-            camera.retry()
-          }
-        default:
-          if let interactor = camera.interactor {
-            CameraCanvasView(interactor: interactor)
-              // Only prevent the phone from sleeping if the camera is visible.
-              .onAppear {
-                UIApplication.shared.isIdleTimerDisabled = true
-              }
-              .onDisappear {
-                UIApplication.shared.isIdleTimerDisabled = false
-              }
-          }
-        }
-      }
+      .background { zoomGesture() }
+      .background { cameraCanvas() }
       .animation(.easeInOut(duration: 0.3), value: camera.state)
       // Animation when deleting a clip
       .animation(.easeInOut(duration: 0.3), value: camera.recordingsManager.clips.count)
       Spacer()
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .overlay(alignment: .bottom) {
-      if [.ready, .countingDown, .recording].contains(camera.state) {
-        HStack {
-          if !camera.isFrontBackFlipped, camera.cameraMode.supportsFlash {
-            flashButton
-          }
-          Spacer()
-          flipButton
-        }
-        .padding(.horizontal)
-        .padding(.bottom, 4)
-      }
-    }
-    .background {
-      Color.black
-        .ignoresSafeArea()
-    }
+    .overlay(alignment: .bottom) { bottomButtons() }
+    .background { Color.black.ignoresSafeArea() }
     .environment(\.colorScheme, .dark)
     .environmentObject(camera)
     .environmentObject(camera.recordingsManager)
     .task {
       await camera.updatePermissions()
-      isShowingPermissionsAlertForMicrophone = !camera.hasAudioPermissions
-      isShowingPermissionsAlertForCamera = !camera.hasVideoPermissions
       camera.startStreaming()
     }
-    .alert(
-      Text(verbatim: CamMicUsageDescriptionFromBundleHelper.shared.cameraAlertHeadline),
-      isPresented: $isShowingPermissionsAlertForCamera
-    ) {
-      Button("Don’t Allow", role: .cancel) {
-        camera.cancel()
-      }
-      Button("Settings") {
-        camera.cancel()
-        AppSettingsHelper.openAppSettings()
-      }
-    } message: {
-      Text(verbatim: CamMicUsageDescriptionFromBundleHelper.shared.cameraUsageDescription)
+    .alert($camera.alertState)
+  }
+
+  @ViewBuilder private func zoomGesture() -> some View {
+    if showsCameraUI {
+      Rectangle()
+        .fill(.clear)
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) {
+          camera.flipCamera()
+        }
+        .gesture(
+          MagnificationGesture()
+            .onChanged { camera.updateZoom($0) }
+            .onEnded { camera.finishZoom($0) }
+        )
     }
-    .alert(
-      Text(verbatim: CamMicUsageDescriptionFromBundleHelper.shared.microphoneAlertHeadline),
-      isPresented: $isShowingPermissionsAlertForMicrophone
-    ) {
-      Button("Don’t Allow", role: .cancel) {
-        camera.cancel()
+  }
+
+  @ViewBuilder private func cameraCanvas() -> some View {
+    switch camera.state {
+    case .preparing:
+      ProgressView()
+    case let .error(error):
+      CameraErrorView(error: error) {
+        camera.retry()
       }
-      Button("Settings") {
-        camera.cancel()
-        AppSettingsHelper.openAppSettings()
+    default:
+      if let interactor = camera.interactor {
+        CameraCanvasView(interactor: interactor)
+          .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
+          .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
       }
-    } message: {
-      Text(verbatim: CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription)
     }
-    .alert(
-      Text(verbatim: "Error"),
-      isPresented: $camera.isShowingErrorAlert
-    ) {
-      Button("OK", role: .cancel) {
-        camera.errorMessage = nil
+  }
+
+  @ViewBuilder private func bottomButtons() -> some View {
+    if showsCameraUI {
+      HStack {
+        if showsFlashButton {
+          flashButton
+        }
+        Spacer()
+        flipButton
       }
-    } message: {
-      Text(verbatim: camera.errorMessage ?? "Unknown")
+      .padding(.horizontal)
+      .padding(.bottom, 4)
     }
   }
 }

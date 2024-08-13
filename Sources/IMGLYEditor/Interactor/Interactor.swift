@@ -245,6 +245,7 @@ import SwiftUI
   }
 
   func onWillDisappear() {
+    try? engine?.block.deselectAll()
     sheet.isPresented = false
   }
 
@@ -1830,7 +1831,7 @@ internal extension Interactor {
   }
 
   func selectionChanged(_ oldValue: Selection?) {
-    guard oldValue != selection else {
+    guard !isLoading, oldValue != selection else {
       return
     }
     if selection?.blocks.isEmpty ?? true, isEditing {

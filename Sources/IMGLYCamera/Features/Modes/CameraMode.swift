@@ -1,8 +1,12 @@
 import SwiftUI
 
-enum CameraMode: Equatable {
+/// Enumerates the different camera modes.
+@_spi(Internal) public enum CameraMode: Equatable, Sendable {
+  /// The standard, main, camera.
   case standard
+  /// Records with two cameras at once into a given layout.
   case dualCamera(CameraLayoutMode = .vertical)
+  /// Records with one camera while playing a video.
   case reactions(CameraLayoutMode = .vertical, video: URL)
 
   var rect1: CGRect {
