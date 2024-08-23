@@ -76,7 +76,6 @@ struct ClipView: View {
       // We don’t show the gap when the clip is selected.
       .padding(.trailing, isSelected ? 0 : clipSpacing)
       .frame(width: pointsDurationWidth)
-
       // Dimming overlay where clip exceeds total duration
       .overlay(alignment: .trailing) {
         let overflow = timeline.totalWidth - pointsTimeOffsetWidth - pointsDurationWidth

@@ -13,9 +13,9 @@
     @_spi(Internal) public var errorDescription: String? {
       switch self {
       case .imageNotAvailable:
-        return NSLocalizedString("The original image was not available", comment: "")
+        NSLocalizedString("The original image was not available", comment: "")
       case .urlMissing:
-        return NSLocalizedString("The URL was missing", comment: "")
+        NSLocalizedString("The URL was missing", comment: "")
       }
     }
   }
@@ -26,13 +26,13 @@
 
     var identifier: String {
       switch self {
-      case .image: return UTType.image.identifier
-      case .movie: return UTType.movie.identifier
+      case .image: UTType.image.identifier
+      case .movie: UTType.movie.identifier
       }
     }
   }
 
-  internal struct MediaView: UIViewControllerRepresentable {
+  struct MediaView: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
     let source: UIImagePickerController.SourceType
     let media: [MediaType]

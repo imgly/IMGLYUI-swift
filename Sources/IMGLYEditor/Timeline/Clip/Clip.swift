@@ -17,22 +17,14 @@ enum ClipType {
 extension ClipType: CustomStringConvertible {
   var description: String {
     switch self {
-    case .invalid:
-      return ""
-    case .audio:
-      return "Audio Clip"
-    case .image:
-      return "Image"
-    case .shape:
-      return "Shape"
-    case .sticker:
-      return "Sticker"
-    case .text:
-      return "Text"
-    case .video:
-      return "Video Clip"
-    case .voiceOver:
-      return "Voiceover"
+    case .invalid: ""
+    case .audio: "Audio Clip"
+    case .image: "Image"
+    case .shape: "Shape"
+    case .sticker: "Sticker"
+    case .text: "Text"
+    case .video: "Video Clip"
+    case .voiceOver: "Voiceover"
     }
   }
 }

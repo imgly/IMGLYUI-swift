@@ -37,11 +37,11 @@ import SwiftUI
 
   var mediaDescription: String {
     if media.contains(.image), media.contains(.movie) {
-      return "Photo or Video"
+      "Photo or Video"
     } else if media.contains(.image) {
-      return "Photo"
+      "Photo"
     } else {
-      return "Video"
+      "Video"
     }
   }
 
@@ -69,8 +69,8 @@ import SwiftUI
     .imgly.camera(isPresented: $showCamera, media: media, onComplete: mediaCompletion)
     .imgly.assetFileUploader(isPresented: $showFileImporter, allowedContentTypes: media.map {
       switch $0 {
-      case .image: return .image
-      case .movie: return .movie
+      case .image: .image
+      case .movie: .movie
       }
     })
   }

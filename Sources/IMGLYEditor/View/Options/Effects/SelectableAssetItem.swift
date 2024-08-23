@@ -17,9 +17,9 @@ struct SelectableAssetItem<Content: View>: View {
 
   private var image: Image {
     if #available(iOS 17.0, *) {
-      return Image(systemName: "slider.horizontal.2.square")
+      Image(systemName: "slider.horizontal.2.square")
     } else {
-      return Image("custom.slider.horizontal.2.square", bundle: .module)
+      Image("custom.slider.horizontal.2.square", bundle: .module)
     }
   }
 

@@ -28,7 +28,7 @@ final class PostcardInteractorBehavior: InteractorBehavior {
       }
       return [
         .font(id, fontFamilies: [
-          "Caveat", "Amatic SC", "Courier Prime", "Archivo", "Roboto", "Parisienne"
+          "Caveat", "Amatic SC", "Courier Prime", "Archivo", "Roboto", "Parisienne",
         ]),
         .fontSize(id),
         .color(id, colorPalette: [
@@ -38,8 +38,8 @@ final class PostcardInteractorBehavior: InteractorBehavior {
           .init("Blue Charcoal", .imgly.hex("#000514")!),
           .init("Black", .imgly.hex("#000000")!),
           .init("Dove Gray", .imgly.hex("#696969")!),
-          .init("Dusty Gray", .imgly.hex("#999999")!)
-        ])
+          .init("Dusty Gray", .imgly.hex("#999999")!),
+        ]),
       ]
     }
   }

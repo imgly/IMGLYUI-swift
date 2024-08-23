@@ -7,7 +7,7 @@ import SwiftUI
 
 extension Interactor: TimelineInteractor {
   /// Configure the timeline.
-  internal func configureTimeline() throws {
+  func configureTimeline() throws {
     guard let engine,
           sceneMode == .video else { return }
 
@@ -24,7 +24,7 @@ extension Interactor: TimelineInteractor {
     updateDurations()
   }
 
-  internal func createBackgroundTrackIfNeeded() {
+  func createBackgroundTrackIfNeeded() {
     guard let engine,
           timelineProperties.backgroundTrack == nil,
           sceneMode == .video,
@@ -44,7 +44,7 @@ extension Interactor: TimelineInteractor {
 
   // swiftlint:disable cyclomatic_complexity
   /// Updates the timeline. Called on every change from the engine events subscription.
-  internal func updateTimeline(_ events: [BlockEvent]) {
+  func updateTimeline(_ events: [BlockEvent]) {
     guard let engine,
           !timelineProperties.isScrubbing,
           let page = timelineProperties.currentPage else { return }
@@ -106,7 +106,7 @@ extension Interactor: TimelineInteractor {
   // swiftlint:enable cyclomatic_complexity
 
   /// Updates the play/pause state from the engine state.
-  internal func updatePlaybackState() {
+  func updatePlaybackState() {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }
 
@@ -330,13 +330,12 @@ extension Interactor: TimelineInteractor {
     do {
       let blockType = try engine.block.getType(id)
 
-      var clip: Clip
-      if let existingClip {
+      let clip: Clip = if let existingClip {
         // Modify the existing clip representation
-        clip = existingClip
+        existingClip
       } else {
         // Create a new clip representation
-        clip = Clip(id: id)
+        Clip(id: id)
       }
 
       let fillID = try engine.block.supportsFill(id) ? try engine.block.getFill(id) : nil
@@ -375,7 +374,6 @@ extension Interactor: TimelineInteractor {
            !name.isEmpty {
           clip.title = name
         }
-
       case DesignBlockType.graphic.rawValue:
         // Important: Don’t throw here!
         let kind: BlockKind? = try? engine.block.getKind(id)
@@ -468,11 +466,12 @@ extension Interactor: TimelineInteractor {
           clip.footageDuration = clip.duration
           clip.allowsTrimming = false
           clip.isLoading = true
-          Task {
-            // This is a hack to update the loading state correctly.
-            // There is currently no other way to be notified when loading the asset has finished.
-            try? await engine.block.forceLoadAVResource(clip.trimmableID)
+
+          blockTasks[clip.trimmableID]?.cancel()
+          blockTasks[clip.trimmableID] = Task {
+            try? await self.engine?.block.forceLoadAVResource(clip.trimmableID)
             clip.isLoading = false
+            self.blockTasks[id] = nil
           }
         }
       } else {
@@ -747,7 +746,7 @@ extension Interactor: TimelineInteractor {
   // MARK: Update and sync the selection state
 
   /// Select a clip in the timeline to match what’s selected on canvas.
-  internal func updateTimelineSelectionFromCanvas() {
+  func updateTimelineSelectionFromCanvas() {
     guard sceneMode == .video else { return }
     guard let engine else { return }
     let selected = engine.block.findAllSelected()
@@ -918,7 +917,7 @@ extension Interactor: TimelineInteractor {
     }
   }
 
-  internal func clampPlayheadPositionToSelectedClip() {
+  func clampPlayheadPositionToSelectedClip() {
     guard let engine,
           let pageID = timelineProperties.currentPage,
           let totalDuration = timelineProperties.timeline?.totalDuration,
@@ -926,11 +925,10 @@ extension Interactor: TimelineInteractor {
     do {
       let currentPlaybackPosition = timelineProperties.player.playheadPosition
       let clipIn = absoluteStartTime(clip: clip)
-      var clipOut: CMTime
-      if let duration = clip.duration {
-        clipOut = clipIn + duration
+      var clipOut: CMTime = if let duration = clip.duration {
+        clipIn + duration
       } else {
-        clipOut = totalDuration
+        totalDuration
       }
       // Go back a tiny bit so that we’re at the end of this clip and not at the beginning of the next.
       clipOut = CMTime(value: clipOut.value - 1)
@@ -980,7 +978,7 @@ extension Interactor: TimelineInteractor {
   }
 
   /// Finds or calculates a block’s absolute start time even if it’s not currently in the data source.
-  internal func absoluteStartTime(id: DesignBlockID) -> TimeInterval {
+  func absoluteStartTime(id: DesignBlockID) -> TimeInterval {
     guard let engine else { return 0 }
     do {
       if let backgroundTrack = timelineProperties.backgroundTrack,
@@ -1145,17 +1143,17 @@ extension Interactor: TimelineInteractor {
 
   // MARK: - Photo Roll
 
-  internal func openSystemCamera() {
+  func openSystemCamera() {
     isSystemCameraShown = true
     sheet.model.type = .clip // Set to clip to add to background track
   }
 
-  internal func openImagePicker() {
+  func openImagePicker() {
     isImagePickerShown = true
     sheet.model.type = .clip // Set to clip to add to background track
   }
 
-  internal func addAssetFromImagePicker(url: URL, mediaType: MediaType) {
+  func addAssetFromImagePicker(url: URL, mediaType: MediaType) {
     Task {
       switch mediaType {
       case .image:
@@ -1169,7 +1167,7 @@ extension Interactor: TimelineInteractor {
   // MARK: - Background Track Management
 
   /// Moves the currently selected `Clip` in or out of the background track.
-  internal func toggleSelectedClipIsInBackgroundTrack() {
+  func toggleSelectedClipIsInBackgroundTrack() {
     createBackgroundTrackIfNeeded()
     guard let engine,
           let pageID = timelineProperties.currentPage,

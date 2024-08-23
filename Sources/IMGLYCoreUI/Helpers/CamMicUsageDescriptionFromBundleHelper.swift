@@ -12,17 +12,17 @@ import Foundation
 
   @_spi(Internal) public var cameraAlertHeadline: String {
     if let appName {
-      return "“\(appName)” Would Like to Access Your Camera"
+      "“\(appName)” Would Like to Access Your Camera"
     } else {
-      return "This App Would Like to Access Your Camera"
+      "This App Would Like to Access Your Camera"
     }
   }
 
   @_spi(Internal) public var microphoneAlertHeadline: String {
     if let appName {
-      return "“\(appName)” Would Like to Access Your Microphone"
+      "“\(appName)” Would Like to Access Your Microphone"
     } else {
-      return "This App Would Like to Access Your Microphone"
+      "This App Would Like to Access Your Microphone"
     }
   }
 

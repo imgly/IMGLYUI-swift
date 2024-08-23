@@ -4,9 +4,6 @@ import UniformTypeIdentifiers
 import IMGLYEngine
 import struct SwiftUI.LocalizedStringKey
 
-@_exported import IMGLYCore
-@_exported import IMGLYCoreUI
-
 /// An export progress visualization.
 public enum ExportProgress {
   /// Show spinner.

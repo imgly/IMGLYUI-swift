@@ -6,16 +6,15 @@ import Foundation
 class ThumbnailsAudioProvider {
   // MARK: - Properties
 
-  @Published internal var isLoading = false
-  @Published internal var thumbHeight: Double = 44
-  @Published internal var availableWidth: Double = 0
+  @Published var isLoading = false
+  @Published var thumbHeight: Double = 44
+  @Published var availableWidth: Double = 0
 
   @Published private(set) var audioWaves = [Float]()
 
-  internal weak var interactor: (any TimelineInteractor)?
-  internal var task: Task<Void, Never>?
-  internal var previousFootageURLString: String?
-  internal var debounceTimer: Timer?
+  weak var interactor: (any TimelineInteractor)?
+  var task: Task<Void, Never>?
+  var previousFootageURLString: String?
 
   // MARK: - Initializers
 
@@ -31,15 +30,6 @@ class ThumbnailsAudioProvider {
 // MARK: - ThumbnailsProvider
 
 extension ThumbnailsAudioProvider: ThumbnailsProvider {
-  func loadThumbnails(clip: Clip, availableWidth: Double, thumbHeight: Double, debounce: TimeInterval) {
-    debounceTimer?.invalidate()
-    debounceTimer = Timer.scheduledTimer(withTimeInterval: debounce, repeats: false, block: { [weak self] _ in
-      Task { @MainActor [weak self] in
-        self?.loadThumbnails(clip: clip, availableWidth: availableWidth, thumbHeight: thumbHeight)
-      }
-    })
-  }
-
   func loadThumbnails(clip: Clip, availableWidth: Double, thumbHeight: Double) {
     guard availableWidth > 0, let duration = clip.duration else { return }
 

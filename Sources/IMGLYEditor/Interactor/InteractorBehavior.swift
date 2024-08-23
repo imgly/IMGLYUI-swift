@@ -56,30 +56,28 @@ import SwiftUI
 
   var sheetMode: SheetMode {
     switch self {
-    case .fab: return .add
-    case .selectionColors: return .selectionColors
-    case .reorder: return .reorder
-    case let .font(id, families): return .font(id, families)
-    case let .fontSize(id): return .fontSize(id)
-    case let .color(id, palette): return .color(id, palette)
-
-    case let .adjustments(id): return .adjustments(id)
-    case let .filter(id): return .filter(id)
-    case let .effect(id): return .effect(id)
-    case let .blur(id): return .blur(id)
-    case let .crop(id, enter, exit): return .crop(id, enter, exit)
-
-    case .addElements: return .addElements
-    case .addFromPhotoRoll: return .addFromPhotoRoll
-    case let .addFromCamera(systemCamera): return .addFromCamera(systemCamera)
-    case .addOverlay: return .addOverlay
-    case .addImage: return .addImage
-    case .addText: return .addText
-    case .addShape: return .addShape
-    case .addSticker: return .addSticker
-    case .addStickerOrShape: return .addStickerOrShape
-    case .addAudio: return .addAudio
-    case .addVoiceOver: return .addVoiceOver
+    case .fab: .add
+    case .selectionColors: .selectionColors
+    case .reorder: .reorder
+    case let .font(id, families): .font(id, families)
+    case let .fontSize(id): .fontSize(id)
+    case let .color(id, palette): .color(id, palette)
+    case let .adjustments(id): .adjustments(id)
+    case let .filter(id): .filter(id)
+    case let .effect(id): .effect(id)
+    case let .blur(id): .blur(id)
+    case let .crop(id, enter, exit): .crop(id, enter, exit)
+    case .addElements: .addElements
+    case .addFromPhotoRoll: .addFromPhotoRoll
+    case let .addFromCamera(systemCamera): .addFromCamera(systemCamera)
+    case .addOverlay: .addOverlay
+    case .addImage: .addImage
+    case .addText: .addText
+    case .addShape: .addShape
+    case .addSticker: .addSticker
+    case .addStickerOrShape: .addStickerOrShape
+    case .addAudio: .addAudio
+    case .addVoiceOver: .addVoiceOver
     }
   }
 }
@@ -157,7 +155,7 @@ import SwiftUI
       .shapeChange,
 
       .textEdit,
-      .textCharacter
+      .textCharacter,
     ]).forEach { scope in
       try context.engine.editor.setGlobalScope(key: scope.rawValue, value: .defer)
     }

@@ -158,7 +158,7 @@ extension GradientOptions {
       .key(.fillGradientLinearStartX),
       .key(.fillGradientLinearStartY),
       .key(.fillGradientLinearEndX),
-      .key(.fillGradientLinearEndY)
+      .key(.fillGradientLinearEndY),
     ]
 
     let gradientAngleGetter: Interactor.PropertyGetter<Double> = { engine, id, _, _ in

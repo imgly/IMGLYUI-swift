@@ -95,7 +95,7 @@ private extension AssetLibraryInteractor {
         .width: String(Int(size.width)),
         .height: String(Int(size.height)),
         .blockType: DesignBlockType.graphic.rawValue,
-        .fillType: fillType.rawValue
+        .fillType: fillType.rawValue,
       ]
       return meta
 
@@ -107,7 +107,7 @@ private extension AssetLibraryInteractor {
         .uri: url.absoluteString,
         .blockType: DesignBlockType.audio.rawValue,
         .kind: blockKind.rawValue,
-        .duration: String(duration.seconds)
+        .duration: String(duration.seconds),
       ]
 
       @Sendable func parse(key: AVMetadataKey) -> AVMetadataItem? {

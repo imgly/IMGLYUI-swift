@@ -15,7 +15,6 @@ struct TimelineView: View {
           .environmentObject(interactor.timelineProperties.dataSource)
           .environment(\.imglyTimelineConfiguration, interactor.timelineProperties.configuration)
           .environment(\.imglyViewportWidth, geometry.size.width)
-
           //  Video timelines should not flip; see: https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPInternational/SupportingRight-To-LeftLanguages/SupportingRight-To-LeftLanguages.html
           .environment(\.layoutDirection, .leftToRight)
       }

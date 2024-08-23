@@ -35,7 +35,7 @@ public final class TextAssetSource: NSObject {
     assets = try [
       Self.createAsset(typeface, id: "title", label: "Title", fontWeight: .bold, fontSize: 32, fontScale: 4),
       Self.createAsset(typeface, id: "headline", label: "Headline", fontWeight: .medium, fontSize: 18, fontScale: 2.8),
-      Self.createAsset(typeface, id: "body", label: "Body", fontWeight: .normal, fontSize: 14, fontScale: 2)
+      Self.createAsset(typeface, id: "body", label: "Body", fontWeight: .normal, fontSize: 14, fontScale: 2),
     ]
   }
 
@@ -62,7 +62,7 @@ public final class TextAssetSource: NSObject {
         "fontWeight": String(fontWeight.rawValue),
         "fontSize": String(fontSize),
         "fontScale": String(fontScale),
-        "blockType": DesignBlockType.text.rawValue
+        "blockType": DesignBlockType.text.rawValue,
       ],
       payload: .init(typeface: typeface),
       context: .init(sourceID: Self.id)

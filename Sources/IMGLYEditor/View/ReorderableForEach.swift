@@ -1,7 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-typealias Reorderable = Identifiable & Equatable
+typealias Reorderable = Equatable & Identifiable
 
 extension UTType: IMGLYCompatible {}
 

@@ -187,13 +187,13 @@ private struct PageThumbnail: View {
   private var debounceDuration: Duration {
     switch (isInitialLoading, isSelected) {
     case (true, true):
-      return .zero
+      .zero
     case (true, false):
-      return .milliseconds(10)
+      .milliseconds(10)
     case (false, true):
-      return .milliseconds(200)
+      .milliseconds(200)
     case (false, false):
-      return .milliseconds(250)
+      .milliseconds(250)
     }
   }
 

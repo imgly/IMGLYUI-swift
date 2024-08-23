@@ -10,9 +10,9 @@ extension CameraError: LocalizedError {
   public var errorDescription: String? {
     switch self {
     case .cancelled:
-      return "The user has cancelled the camera."
+      "The user has cancelled the camera."
     case .permissionsMissing:
-      return "The user has denied camera or microphone access."
+      "The user has denied camera or microphone access."
     }
   }
 }
@@ -37,33 +37,29 @@ extension CameraCaptureError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case let .captureError(localizedDescription):
-      return localizedDescription
+      localizedDescription
     case .unknownCaptureError:
-      return "Camera recording is not working properly."
+      "Camera recording is not working properly."
     case let .imglyEngineError(localizedDescription):
-      return localizedDescription
+      localizedDescription
     case .permissionsMissing:
-      return "Please allow using your camera and microphone."
+      "Please allow using your camera and microphone."
     case .noCameraAvailable:
-      return "No camera could be found."
+      "No camera could be found."
     case .videoDeviceNotAvailableInBackground:
-      return "The app was sent to the background while using a camera."
+      "The app was sent to the background while using a camera."
     case .audioDeviceInUseByAnotherClient:
-      return "The audio hardware is temporarily not available."
+      "The audio hardware is temporarily not available."
     case .videoDeviceInUseByAnotherClient:
-      return "The video device is temporarily not available."
+      "The video device is temporarily not available."
     case .videoDeviceNotAvailableWithMultipleForegroundApps:
-      return "The video device doesn’t work in Slide Over Split View, or Picture in Picture mode."
+      "The video device doesn’t work in Slide Over Split View, or Picture in Picture mode."
     case .videoDeviceNotAvailableDueToSystemPressure:
-      return "The camera ran too hot. Please wait and try again."
+      "The camera ran too hot. Please wait and try again."
     }
   }
 }
 
-internal struct InternalCameraError: LocalizedError {
+struct InternalCameraError: LocalizedError {
   let errorDescription: String?
-
-  init(errorDescription: String?) {
-    self.errorDescription = errorDescription
-  }
 }

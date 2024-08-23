@@ -39,10 +39,10 @@ extension MappedType {
 
   private func resolve(_ propertyBlock: PropertyBlock?, parent: DesignBlockID) throws -> DesignBlockID {
     switch propertyBlock {
-    case .none: return parent
-    case .fill: return try getFill(parent)
-    case .blur: return try getBlur(parent)
-    case .shape: return try getShape(parent)
+    case .none: parent
+    case .fill: try getFill(parent)
+    case .blur: try getBlur(parent)
+    case .shape: try getShape(parent)
     }
   }
 
@@ -73,7 +73,6 @@ extension MappedType {
     switch (T.objectIdentifier, type) {
     case (Bool.objectIdentifier, .bool):
       return try unwrap(getBool(id, property: property) as? T)
-
     // .int mappings
     case (Int.objectIdentifier, .int):
       return try unwrap(getInt(id, property: property) as? T)
@@ -81,17 +80,14 @@ extension MappedType {
       return try unwrap(Float(getInt(id, property: property)) as? T)
     case (Double.objectIdentifier, .int):
       return try unwrap(Double(getInt(id, property: property)) as? T)
-
     // .float mappings
     case (Float.objectIdentifier, .float):
       return try unwrap(getFloat(id, property: property) as? T)
     case (Double.objectIdentifier, .float):
       return try unwrap(Double(getFloat(id, property: property)) as? T)
-
     // .double mappings
     case (Double.objectIdentifier, .double):
       return try unwrap(getDouble(id, property: property) as? T)
-
     // .string mappings
     case (String.objectIdentifier, .string):
       return try unwrap(getString(id, property: property) as? T)
@@ -101,7 +97,6 @@ extension MappedType {
       return try unwrap(getEnum(id, property: property) as? T)
     case (ColorFillType.objectIdentifier, .string):
       return try unwrap(ColorFillType(rawValue: getString(id, property: property)) as? T)
-
     // .color mappings
     case (IMGLYEngine.Color.objectIdentifier, .color):
       let color: IMGLYEngine.Color = try getColor(id, property: property)
@@ -118,7 +113,6 @@ extension MappedType {
         throw Error(errorDescription: "Could not convert IMGLYEngine.Color to CGColor.")
       }
       return try unwrap(SwiftUI.Color(cgColor: cgColor) as? T)
-
     // .struct mappings
     case ([GradientColorStop].objectIdentifier, .struct):
       return try unwrap(getGradientColorStops(id, property: property) as? T)
@@ -151,7 +145,6 @@ extension MappedType {
     switch (T.objectIdentifier, type) {
     case (Bool.objectIdentifier, .bool):
       try setBool(id, property: property, value: unwrap(value as? Bool))
-
     // .int mappings
     case (Int.objectIdentifier, .int):
       try setInt(id, property: property, value: unwrap(value as? Int))
@@ -159,17 +152,14 @@ extension MappedType {
       try setInt(id, property: property, value: Int(unwrap(value as? Float)))
     case (Double.objectIdentifier, .int):
       try setInt(id, property: property, value: Int(unwrap(value as? Double)))
-
     // .float mappings
     case (Float.objectIdentifier, .float):
       try setFloat(id, property: property, value: unwrap(value as? Float))
     case (Double.objectIdentifier, .float):
       try setFloat(id, property: property, value: Float(unwrap(value as? Double)))
-
     // .double mappings
     case (Double.objectIdentifier, .double):
       try setDouble(id, property: property, value: unwrap(value as? Double))
-
     // .string mappings
     case (String.objectIdentifier, .string):
       try setString(id, property: property, value: unwrap(value as? String))
@@ -188,7 +178,6 @@ extension MappedType {
         let newFill = try createFill(colorFillType.fillType())
         try setFill(parentId, fill: newFill)
       }
-
     // .color mappings
     case (IMGLYEngine.Color.objectIdentifier, .color):
       try setColor(id, property: property, color: unwrap(value as? IMGLYEngine.Color))
@@ -205,7 +194,6 @@ extension MappedType {
         throw Error(errorDescription: "Could not convert CGColor to IMGLYEngine.Color.")
       }
       try setColor(id, property: property, color: color)
-
     // .struct mappings
     case ([GradientColorStop].objectIdentifier, .struct):
       let colorStops = try unwrap(value as? [GradientColorStop])
@@ -303,12 +291,11 @@ extension MappedType {
     return try getChildren(parent).filter {
       let matchingIsAlwaysOnTop = try childIsAlwaysOnTop == isAlwaysOnTop($0)
       let matchingIsAlwaysOnBottom = try childIsAlwaysOnBottom == isAlwaysOnBottom($0)
-      let matchingType: Bool
-      switch childType {
+      let matchingType: Bool = switch childType {
       case DesignBlockType.audio.rawValue:
-        matchingType = try DesignBlockType.audio.rawValue == getType($0)
+        try DesignBlockType.audio.rawValue == getType($0)
       default:
-        matchingType = try DesignBlockType.audio.rawValue != getType($0)
+        try DesignBlockType.audio.rawValue != getType($0)
       }
       return matchingIsAlwaysOnTop && matchingIsAlwaysOnBottom && matchingType
     }
@@ -329,13 +316,13 @@ extension MappedType {
   func getFontProperties(_ id: DesignBlockID) throws -> FontProperties? {
     switch try (canToggleBoldFont(id), canToggleItalicFont(id)) {
     case (true, true):
-      return try .init(bold: isBoldFont(id), italic: isItalicFont(id))
+      try .init(bold: isBoldFont(id), italic: isItalicFont(id))
     case (false, true):
-      return try .init(bold: nil, italic: isItalicFont(id))
+      try .init(bold: nil, italic: isItalicFont(id))
     case (true, false):
-      return try .init(bold: isBoldFont(id), italic: nil)
+      try .init(bold: isBoldFont(id), italic: nil)
     case (false, false):
-      return nil
+      nil
     }
   }
 }

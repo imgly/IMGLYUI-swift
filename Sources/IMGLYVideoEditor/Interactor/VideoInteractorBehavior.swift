@@ -35,7 +35,7 @@ final class VideoInteractorBehavior: InteractorBehavior {
       .addText,
       .addStickerOrShape,
       .addAudio,
-      .addVoiceOver
+      .addVoiceOver,
     ]
 
     if context.interactor.backgroundTracksItemCount > 1 {

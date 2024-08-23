@@ -15,9 +15,9 @@ struct BottomSheet<Content: View>: View {
   var title: LocalizedStringKey {
     switch sheet.mode {
     case .selectionColors, .font, .fontSize, .color:
-      return sheet.type.localizedStringKey
+      sheet.type.localizedStringKey
     default:
-      return sheet.mode.localizedStringKey(id, interactor)
+      sheet.mode.localizedStringKey(id, interactor)
     }
   }
 

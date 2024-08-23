@@ -21,10 +21,6 @@ final class AnyThumbnailsProvider {
 // MARK: - ThumbnailsProvider
 
 extension AnyThumbnailsProvider: ThumbnailsProvider {
-  func loadThumbnails(clip: Clip, availableWidth: Double, thumbHeight: Double, debounce: TimeInterval) {
-    provider.loadThumbnails(clip: clip, availableWidth: availableWidth, thumbHeight: thumbHeight, debounce: debounce)
-  }
-
   func loadThumbnails(clip: Clip, availableWidth: Double, thumbHeight: Double) {
     provider.loadThumbnails(clip: clip, availableWidth: availableWidth, thumbHeight: thumbHeight)
   }

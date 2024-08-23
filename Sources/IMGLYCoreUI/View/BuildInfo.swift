@@ -146,9 +146,9 @@ private struct SwitchBranchSheet: View {
 
   var canUpdate: Bool {
     if case let .loaded(update) = state {
-      return update.build != BuildInfo.build || update.branch != BuildInfo.branch
+      update.build != BuildInfo.build || update.branch != BuildInfo.branch
     } else {
-      return false
+      false
     }
   }
 

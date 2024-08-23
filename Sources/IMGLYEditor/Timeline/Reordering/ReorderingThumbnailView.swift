@@ -11,18 +11,18 @@ struct ReorderingThumbnailView: View {
     var translation: CGSize {
       switch self {
       case .inactive, .pressing:
-        return .zero
+        .zero
       case let .dragging(translation):
-        return translation
+        translation
       }
     }
 
     var isDragging: Bool {
       switch self {
       case .inactive, .pressing:
-        return false
+        false
       case .dragging:
-        return true
+        true
       }
     }
   }

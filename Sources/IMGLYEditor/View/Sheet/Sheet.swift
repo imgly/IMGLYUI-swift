@@ -74,6 +74,7 @@ struct Sheet: View {
           }
         }
         .imgly.assetLibrary(titleDisplayMode: .inline)
+
       default:
         if let id = sheet.mode.pinnedBlockID {
           sheet(sheet.type)

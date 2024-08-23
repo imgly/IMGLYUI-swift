@@ -185,9 +185,9 @@ public extension AssetLoader {
 
       func union(_ lhs: [String]?, _ rhs: [String]?) -> [String]? {
         if let rhs {
-          return lhs ?? [] + rhs
+          lhs ?? [] + rhs
         } else {
-          return lhs
+          lhs
         }
       }
 
@@ -258,9 +258,9 @@ public extension AssetLoader {
 
       let orderedAssetsBySources = sources.compactMap { uuid, _ in
         if let model = models[uuid] {
-          return model.assets
+          model.assets
         } else {
-          return nil
+          nil
         }
       }
 
@@ -290,9 +290,9 @@ public extension AssetLoader {
       let results = models.merging(results) { _, new in new }
       let error = results.allSatisfy { _, result in
         if case .error = result.state {
-          return true
+          true
         } else {
-          return false
+          false
         }
       }
       if error {
@@ -348,9 +348,9 @@ public extension AssetLoader {
     @_spi(Internal) public var total: Int {
       models.reduce(0) {
         if $0 < 0 || $1.value.total < 0 {
-          return -1
+          -1
         } else {
-          return $0 + $1.value.total
+          $0 + $1.value.total
         }
       }
     }
@@ -409,17 +409,17 @@ public extension AssetLoader {
 
     @_spi(Internal) public var isValid: Bool {
       if case .error = state {
-        return false
+        false
       } else {
-        return !assets.isEmpty
+        !assets.isEmpty
       }
     }
 
     @_spi(Internal) public var total: Int {
       if case let .loaded(result) = state {
-        return result.response.total
+        result.response.total
       } else {
-        return 0
+        0
       }
     }
   }

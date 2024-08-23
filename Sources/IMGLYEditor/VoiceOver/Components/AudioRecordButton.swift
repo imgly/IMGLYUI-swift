@@ -98,19 +98,19 @@ struct AudioRecordButton: View {
   // Accessibility
   private func accessibilityLabel(for state: RecordingState) -> LocalizedStringKey {
     switch state {
-    case .start: return Localization.startHint
-    case .pause: return Localization.pauseHint
-    case .resume: return Localization.buttonResume
-    case .replace: return Localization.buttonReplace
+    case .start: Localization.startHint
+    case .pause: Localization.pauseHint
+    case .resume: Localization.buttonResume
+    case .replace: Localization.buttonReplace
     }
   }
 
   private func accessibilityHint(for state: RecordingState) -> LocalizedStringKey {
     switch state {
-    case .start: return Localization.startHint
-    case .pause: return Localization.pauseHint
-    case .resume: return Localization.resumeHint
-    case .replace: return Localization.replaceHint
+    case .start: Localization.startHint
+    case .pause: Localization.pauseHint
+    case .resume: Localization.resumeHint
+    case .replace: Localization.replaceHint
     }
   }
 }
@@ -120,59 +120,59 @@ struct AudioRecordButton: View {
 extension RecordingState {
   var width: CGFloat {
     switch self {
-    case .start: return 50
-    case .pause: return 62
-    case .resume, .replace: return 99
+    case .start: 50
+    case .pause: 62
+    case .resume, .replace: 99
     }
   }
 
   var height: CGFloat {
     switch self {
-    case .start: return 50
-    case .pause: return 62
-    case .resume, .replace: return 50
+    case .start: 50
+    case .pause: 62
+    case .resume, .replace: 50
     }
   }
 
   var fillColor: Color {
     switch self {
-    case .start: return .pink
-    case .pause: return .pink.opacity(0.3)
-    case .resume: return .pink.opacity(0.16)
-    case .replace: return .pink
+    case .start: .pink
+    case .pause: .pink.opacity(0.3)
+    case .resume: .pink.opacity(0.16)
+    case .replace: .pink
     }
   }
 
   var haveStroke: Bool {
     switch self {
-    case .start, .resume, .replace: return true
-    case .pause: return false
+    case .start, .resume, .replace: true
+    case .pause: false
     }
   }
 
   var strokeColor: Color {
     switch self {
-    case .start: return .gray.opacity(0.5)
-    case .pause: return .clear
-    case .resume: return .pink
-    case .replace: return .gray.opacity(0.5)
+    case .start: .gray.opacity(0.5)
+    case .pause: .clear
+    case .resume: .pink
+    case .replace: .gray.opacity(0.5)
     }
   }
 
   var displayText: String {
     switch self {
-    case .resume: return "Resume"
-    case .replace: return "Replace"
-    default: return ""
+    case .resume: "Resume"
+    case .replace: "Replace"
+    default: ""
     }
   }
 
   var foregroundColor: Color {
     switch self {
-    case .start: return .white
-    case .pause: return .pink
-    case .resume: return .pink
-    case .replace: return .white
+    case .start: .white
+    case .pause: .pink
+    case .resume: .pink
+    case .replace: .white
     }
   }
 }

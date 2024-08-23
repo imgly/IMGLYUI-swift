@@ -353,7 +353,7 @@ final class CameraModel: ObservableObject {
       title: "Error",
       message: error.localizedDescription,
       buttons: [
-        .init(title: "OK", action: {})
+        .init(title: "OK", action: {}),
       ]
     )
   }

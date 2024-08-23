@@ -34,121 +34,117 @@ enum SheetMode: Labelable, IdentifiableByHash {
 
   var pinnedBlockID: Interactor.BlockID? {
     switch self {
-    case let .adjustments(id): return id
-    case let .filter(id): return id
-    case let .effect(id): return id
-    case let .blur(id): return id
-    case let .crop(id, _, _): return id
-    case let .font(id, _): return id
-    case let .fontSize(id): return id
-    case let .color(id, _): return id
-    default: return nil
+    case let .adjustments(id): id
+    case let .filter(id): id
+    case let .effect(id): id
+    case let .blur(id): id
+    case let .crop(id, _, _): id
+    case let .font(id, _): id
+    case let .fontSize(id): id
+    case let .color(id, _): id
+    default: nil
     }
   }
 
   var fontFamilies: [String]? {
     switch self {
-    case let .font(_, families): return families
-    default: return nil
+    case let .font(_, families): families
+    default: nil
     }
   }
 
   var colorPalette: [NamedColor]? {
     switch self {
-    case let .color(_, palette): return palette
-    default: return nil
+    case let .color(_, palette): palette
+    default: nil
     }
   }
 
   var description: String {
     switch self {
-    case .add: return "Add"
-    case .replace: return "Replace"
-    case .edit: return "Edit"
-    case .format: return "Format"
-    case .shape: return "Shape"
-    case .crop: return "Crop"
-    case .fillAndStroke: return "Fill & Stroke"
-    case .layer: return "Layer"
-    case .enterGroup: return "Enter Group"
-    case .selectGroup: return "Select Group"
-    case .selectionColors: return "Colors"
-    case .font: return "Font"
-    case .fontSize: return "Size"
-    case .color: return "Color"
-    case .filter: return "Filter"
-    case .adjustments: return "Adjustments"
-    case .effect: return "Effect"
-    case .blur: return "Blur"
-    case .reorder: return "Reorder"
-    case .split: return "Split"
-    case .volume: return "Volume"
-    case .delete: return "Delete"
-    case .duplicate: return "Duplicate"
-    case .attachToBackground: return "As Clip"
-    case .detachFromBackground: return "As Overlay"
-
-    case .editPage: return "Edit"
-    case .addPage: return "Add Page"
-    case .moveUp: return "Move Up"
-    case .moveDown: return "Move Down"
-
-    case .addElements: return "Elements"
-    case .addFromPhotoRoll: return "Photo Roll"
-    case .addFromCamera: return "Camera"
-    case .addClip: return "Clip"
-    case .addOverlay: return "Overlay"
-    case .addImage: return "Image"
-    case .addText: return "Text"
-    case .addShape: return "Shape"
-    case .addSticker, .addStickerOrShape: return "Sticker"
-    case .addAudio: return "Audio"
-    case .addVoiceOver: return "Voiceover"
-    case .editVoiceOver: return "Edit"
+    case .add: "Add"
+    case .replace: "Replace"
+    case .edit: "Edit"
+    case .format: "Format"
+    case .shape: "Shape"
+    case .crop: "Crop"
+    case .fillAndStroke: "Fill & Stroke"
+    case .layer: "Layer"
+    case .enterGroup: "Enter Group"
+    case .selectGroup: "Select Group"
+    case .selectionColors: "Colors"
+    case .font: "Font"
+    case .fontSize: "Size"
+    case .color: "Color"
+    case .filter: "Filter"
+    case .adjustments: "Adjustments"
+    case .effect: "Effect"
+    case .blur: "Blur"
+    case .reorder: "Reorder"
+    case .split: "Split"
+    case .volume: "Volume"
+    case .delete: "Delete"
+    case .duplicate: "Duplicate"
+    case .attachToBackground: "As Clip"
+    case .detachFromBackground: "As Overlay"
+    case .editPage: "Edit"
+    case .addPage: "Add Page"
+    case .moveUp: "Move Up"
+    case .moveDown: "Move Down"
+    case .addElements: "Elements"
+    case .addFromPhotoRoll: "Photo Roll"
+    case .addFromCamera: "Camera"
+    case .addClip: "Clip"
+    case .addOverlay: "Overlay"
+    case .addImage: "Image"
+    case .addText: "Text"
+    case .addShape: "Shape"
+    case .addSticker, .addStickerOrShape: "Sticker"
+    case .addAudio: "Audio"
+    case .addVoiceOver: "Voiceover"
+    case .editVoiceOver: "Edit"
     }
   }
 
   var imageName: String? {
     switch self {
-    case .add: return "plus"
-    case .replace: return "arrow.left.arrow.right.square"
-    case .edit: return "keyboard"
-    case .format: return "textformat.alt"
-    case .shape: return "square.on.circle"
-    case .crop: return "crop.rotate"
-    case .fillAndStroke: return nil
-    case .layer: return "square.3.stack.3d"
-    case .enterGroup: return "enter_group"
-    case .selectGroup: return "select_group"
-    case .adjustments: return "slider.horizontal.3"
-    case .filter: return "camera.filters"
-    case .effect: return "fx"
-    case .blur: return "aqi.medium"
-    case .selectionColors, .font, .fontSize, .color: return nil
-    case .reorder: return "rectangle.portrait.arrowtriangle.2.outward"
-    case .split: return "square.and.line.vertical.and.square"
-    case .volume: return "speaker.wave.3.fill"
-    case .delete: return "trash"
-    case .duplicate: return "plus.square.on.square"
-    case .attachToBackground: return "custom.as.clip"
-    case .detachFromBackground: return "custom.as.overlay"
-
-    case .editPage: return "square.and.pencil"
-    case .addPage: return "custom.doc.badge.plus"
-    case .moveUp: return "arrow.up.doc"
-    case .moveDown: return "arrow.down.doc"
-
-    case .addElements: return "custom.books.vertical.badge.plus"
-    case .addFromPhotoRoll, .addFromCamera: return nil
-    case .addClip: return "custom.add.clip"
-    case .addOverlay: return "custom.film.stack.badge.plus"
-    case .addImage: return "custom.photo.badge.plus"
-    case .addText: return "custom.textformat.alt.badge.plus"
-    case .addShape: return "custom.square.on.circle.badge.plus"
-    case .addSticker, .addStickerOrShape: return "custom.face.smiling.badge.plus"
-    case .addAudio: return "custom.audio.badge.plus"
-    case .addVoiceOver: return "custom.mic.badge.plus"
-    case .editVoiceOver: return "custom.waveform.badge.mic"
+    case .add: "plus"
+    case .replace: "arrow.left.arrow.right.square"
+    case .edit: "keyboard"
+    case .format: "textformat.alt"
+    case .shape: "square.on.circle"
+    case .crop: "crop.rotate"
+    case .fillAndStroke: nil
+    case .layer: "square.3.stack.3d"
+    case .enterGroup: "enter_group"
+    case .selectGroup: "select_group"
+    case .adjustments: "slider.horizontal.3"
+    case .filter: "camera.filters"
+    case .effect: "fx"
+    case .blur: "aqi.medium"
+    case .selectionColors, .font, .fontSize, .color: nil
+    case .reorder: "rectangle.portrait.arrowtriangle.2.outward"
+    case .split: "square.and.line.vertical.and.square"
+    case .volume: "speaker.wave.3.fill"
+    case .delete: "trash"
+    case .duplicate: "plus.square.on.square"
+    case .attachToBackground: "custom.as.clip"
+    case .detachFromBackground: "custom.as.overlay"
+    case .editPage: "square.and.pencil"
+    case .addPage: "custom.doc.badge.plus"
+    case .moveUp: "arrow.up.doc"
+    case .moveDown: "arrow.down.doc"
+    case .addElements: "custom.books.vertical.badge.plus"
+    case .addFromPhotoRoll, .addFromCamera: nil
+    case .addClip: "custom.add.clip"
+    case .addOverlay: "custom.film.stack.badge.plus"
+    case .addImage: "custom.photo.badge.plus"
+    case .addText: "custom.textformat.alt.badge.plus"
+    case .addShape: "custom.square.on.circle.badge.plus"
+    case .addSticker, .addStickerOrShape: "custom.face.smiling.badge.plus"
+    case .addAudio: "custom.audio.badge.plus"
+    case .addVoiceOver: "custom.mic.badge.plus"
+    case .editVoiceOver: "custom.waveform.badge.mic"
     }
   }
 

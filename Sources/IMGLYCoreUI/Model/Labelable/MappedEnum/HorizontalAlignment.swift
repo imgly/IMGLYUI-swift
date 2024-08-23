@@ -7,17 +7,17 @@ import Foundation
 
   @_spi(Internal) public var description: String {
     switch self {
-    case .left: return "Align Left"
-    case .center: return "Align Horizontal Center"
-    case .right: return "Align Right"
+    case .left: "Align Left"
+    case .center: "Align Horizontal Center"
+    case .right: "Align Right"
     }
   }
 
   @_spi(Internal) public var imageName: String? {
     switch self {
-    case .left: return "text.alignleft"
-    case .center: return "text.aligncenter"
-    case .right: return "text.alignright"
+    case .left: "text.alignleft"
+    case .center: "text.aligncenter"
+    case .right: "text.alignright"
     }
   }
 }

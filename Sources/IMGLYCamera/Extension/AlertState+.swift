@@ -15,7 +15,7 @@ extension AlertState {
               await UIApplication.shared.open(url)
             }
           }
-        }
+        },
       ]
     )
   }
@@ -33,7 +33,7 @@ extension AlertState {
               await UIApplication.shared.open(url)
             }
           }
-        }
+        },
       ]
     )
   }

@@ -14,9 +14,9 @@ struct AudioRecordSettings {
 
     var value: Double {
       switch self {
-      case .rate44100: return 44100
-      case .rate48000: return 48000
-      case let .other(value): return value
+      case .rate44100: 44100
+      case .rate48000: 48000
+      case let .other(value): value
       }
     }
   }
@@ -28,8 +28,8 @@ struct AudioRecordSettings {
 
     var value: UInt32 {
       switch self {
-      case .mono: return 1
-      case .stereo: return 2
+      case .mono: 1
+      case .stereo: 2
       }
     }
   }
@@ -37,15 +37,4 @@ struct AudioRecordSettings {
   var channels: Channels
   var sampleRate: SampleRate
   var format: AVAudioCommonFormat
-
-  /// Initializes a new audio recording configuration with specified settings.
-  /// - Parameters:
-  ///   - channels: The number of channels, either `.mono` or `.stereo`.
-  ///   - sampleRate: The sample rate; can be one of the standard rates or a custom rate using `.other`.
-  ///   - format: The common format for the audio.
-  init(channels: Channels, sampleRate: SampleRate, format: AVAudioCommonFormat) {
-    self.channels = channels
-    self.sampleRate = sampleRate
-    self.format = format
-  }
 }

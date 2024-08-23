@@ -31,18 +31,18 @@ struct BottomBar: View {
     switch mode {
     case .moveUp:
       if type == .pageOverview {
-        return interactor.canBringBackward(interactor.pageOverview.currentPage)
+        interactor.canBringBackward(interactor.pageOverview.currentPage)
       } else {
-        return interactor.canBringForward(id)
+        interactor.canBringForward(id)
       }
     case .moveDown:
       if type == .pageOverview {
-        return interactor.canBringForward(interactor.pageOverview.currentPage)
+        interactor.canBringForward(interactor.pageOverview.currentPage)
       } else {
-        return interactor.canBringBackward(id)
+        interactor.canBringBackward(id)
       }
     default:
-      return true
+      true
     }
   }
 
@@ -162,7 +162,6 @@ struct BottomBar: View {
             .frame(width: 30)
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
-
           .drawingGroup()
           .blendMode(.destinationOut)
         }

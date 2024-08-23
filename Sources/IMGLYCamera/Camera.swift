@@ -3,8 +3,6 @@ import CoreMedia
 @_spi(Internal) import IMGLYCoreUI
 import SwiftUI
 
-@_exported import IMGLYCore
-
 /// A camera for capturing videos.
 public struct Camera: View {
   @StateObject var camera: CameraModel

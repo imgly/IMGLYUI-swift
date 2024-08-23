@@ -275,7 +275,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
         let recordedClip = try await Recording(
           videos: [
             .init(url: firstVideoURL, rect: cameraMode.rect1),
-            .init(url: secondVideoURL, rect: cameraMode.rect2 ?? .zero)
+            .init(url: secondVideoURL, rect: cameraMode.rect2 ?? .zero),
           ],
           duration: recordedDuration
         )
@@ -288,7 +288,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
         let recordedClip = try await Recording(
           videos: [
-            .init(url: firstVideoURL, rect: cameraMode.rect1)
+            .init(url: firstVideoURL, rect: cameraMode.rect1),
           ],
           duration: recordedDuration
         )

@@ -6,17 +6,17 @@ enum TextProperty: Labelable, IdentifiableByHash, CaseIterable {
 
   var description: String {
     switch self {
-    case .inactive: return "Inactive"
-    case .bold: return "Bold"
-    case .italic: return "Italic"
+    case .inactive: "Inactive"
+    case .bold: "Bold"
+    case .italic: "Italic"
     }
   }
 
   var imageName: String? {
     switch self {
-    case .inactive: return nil
-    case .bold: return "bold"
-    case .italic: return "italic"
+    case .inactive: nil
+    case .bold: "bold"
+    case .italic: "italic"
     }
   }
 }

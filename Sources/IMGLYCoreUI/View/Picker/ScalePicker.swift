@@ -78,8 +78,8 @@ import SwiftUI
 
   var isDragging: Bool {
     switch gestureHelper.state {
-    case .began, .changed: return true
-    default: return false
+    case .began, .changed: true
+    default: false
     }
   }
 

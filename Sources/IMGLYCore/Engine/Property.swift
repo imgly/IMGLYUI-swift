@@ -164,9 +164,9 @@ import Foundation
 @_spi(Internal) public extension Property {
   var enabled: Property? {
     switch rawValue {
-    case _ where rawValue.hasPrefix("fill/"): return .key(.fillEnabled)
-    case _ where rawValue.hasPrefix("stroke/"): return .key(.strokeEnabled)
-    default: return nil
+    case _ where rawValue.hasPrefix("fill/"): .key(.fillEnabled)
+    case _ where rawValue.hasPrefix("stroke/"): .key(.strokeEnabled)
+    default: nil
     }
   }
 }

@@ -1,8 +1,6 @@
 @_spi(Internal) import IMGLYEditor
 import SwiftUI
 
-@_exported import IMGLYEditor
-
 /// Built to support versatile editing capabilities for a broad range of design applications.
 public struct DesignEditor: View {
   /// Scene that will be loaded by the default implementation of the `onCreate` callback.

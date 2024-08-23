@@ -59,7 +59,7 @@ private extension String {
       let permitted: [Interactor.EffectType] = [
         .adjustments,
         .lutFilter,
-        .duotoneFilter
+        .duotoneFilter,
       ]
       return !permitted.contains(effect)
     }

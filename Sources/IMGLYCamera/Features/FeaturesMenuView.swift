@@ -78,7 +78,7 @@ extension CameraModel {
     CameraLayoutMode.allCases.map {
       PickerOption(label: $0.name, icon: $0.image, tag: $0)
     } + [
-      PickerOption(label: "Off", icon: Image(systemName: "xmark"), tag: nil)
+      PickerOption(label: "Off", icon: Image(systemName: "xmark"), tag: nil),
     ]
   }
 }

@@ -93,9 +93,9 @@ extension IMGLY where Wrapped: View {
     if #available(iOS 16.4, *) {
       wrapped.presentationBackgroundInteraction({
         if let largestUndimmedDetent {
-          return .enabled(upThrough: largestUndimmedDetent)
+          .enabled(upThrough: largestUndimmedDetent)
         } else {
-          return .disabled
+          .disabled
         }
       }())
         .presentationContentInteraction(.scrolls)

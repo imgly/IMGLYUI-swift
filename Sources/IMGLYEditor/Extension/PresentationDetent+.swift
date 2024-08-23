@@ -9,14 +9,14 @@ extension PresentationDetent {
   @MainActor
   var identifier: UISheetPresentationController.Detent.Identifier? {
     switch self {
-    case .adaptiveTiny: return AdaptiveTinyPresentationDetent.identifier
-    case .adaptiveSmall: return AdaptiveSmallPresentationDetent.identifier
-    case .adaptiveMedium: return AdaptiveMediumPresentationDetent.identifier
-    case .adaptiveLarge: return AdaptiveLargePresentationDetent.identifier
-    case .medium: return UISheetPresentationController.Detent.medium().identifier
-    case .large: return UISheetPresentationController.Detent.large().identifier
+    case .adaptiveTiny: AdaptiveTinyPresentationDetent.identifier
+    case .adaptiveSmall: AdaptiveSmallPresentationDetent.identifier
+    case .adaptiveMedium: AdaptiveMediumPresentationDetent.identifier
+    case .adaptiveLarge: AdaptiveLargePresentationDetent.identifier
+    case .medium: UISheetPresentationController.Detent.medium().identifier
+    case .large: UISheetPresentationController.Detent.large().identifier
     default:
-      return nil
+      nil
     }
   }
 }
@@ -37,9 +37,9 @@ private struct AdaptiveTinyPresentationDetent: CustomPresentationDetent {
 private struct AdaptiveSmallPresentationDetent: CustomPresentationDetent {
   static func height(in context: Context) -> CGFloat? {
     if context.verticalSizeClass == .compact {
-      return 160
+      160
     } else {
-      return 280
+      280
     }
   }
 }
@@ -47,9 +47,9 @@ private struct AdaptiveSmallPresentationDetent: CustomPresentationDetent {
 private struct AdaptiveMediumPresentationDetent: CustomPresentationDetent {
   static func height(in context: Context) -> CGFloat? {
     if context.verticalSizeClass == .compact {
-      return 160
+      160
     } else {
-      return 340
+      340
     }
   }
 }

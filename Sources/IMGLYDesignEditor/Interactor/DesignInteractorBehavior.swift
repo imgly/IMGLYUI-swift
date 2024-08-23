@@ -41,7 +41,7 @@ final class DesignInteractorBehavior: InteractorBehavior {
       .addImage,
       .addText,
       .addShape,
-      .addSticker
+      .addSticker,
     ]
   }
 

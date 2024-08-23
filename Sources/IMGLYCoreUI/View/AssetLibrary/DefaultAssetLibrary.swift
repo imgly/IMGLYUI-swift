@@ -177,36 +177,36 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @AssetLibraryBuilder public static var stickers: AssetLibraryContent {
     AssetLibrarySource.sticker(.titleForGroup { group in
       if let name = group?.split(separator: "/").last {
-        return name.capitalized
+        name.capitalized
       } else {
-        return "Stickers"
+        "Stickers"
       }
     }, source: .init(defaultSource: .sticker))
   }
 
   func tabContent(_ tab: Tab) -> AssetLibraryContent {
     switch tab {
-    case .elements: return AssetLibraryGroup.empty
-    case .uploads: return uploads
-    case .videos: return videos
-    case .audio: return audio
-    case .images: return images
-    case .text: return text
-    case .shapes: return shapes
-    case .stickers: return stickers
+    case .elements: AssetLibraryGroup.empty
+    case .uploads: uploads
+    case .videos: videos
+    case .audio: audio
+    case .images: images
+    case .text: text
+    case .shapes: shapes
+    case .stickers: stickers
     }
   }
 
   func elementsContent(_ tab: Tab) -> AssetLibraryContent {
     switch tab {
-    case .elements: return AssetLibraryGroup.empty
-    case .uploads: return AssetLibraryGroup.upload("Photo Roll") { uploads }
-    case .videos: return AssetLibraryGroup.video("Videos") { videos }
-    case .audio: return AssetLibraryGroup.audio("Audio") { audio }
-    case .images: return AssetLibraryGroup.image("Images") { images }
-    case .text: return text
-    case .shapes: return AssetLibraryGroup.shape("Shapes") { shapes }
-    case .stickers: return AssetLibraryGroup.sticker("Stickers") { stickers }
+    case .elements: AssetLibraryGroup.empty
+    case .uploads: AssetLibraryGroup.upload("Photo Roll") { uploads }
+    case .videos: AssetLibraryGroup.video("Videos") { videos }
+    case .audio: AssetLibraryGroup.audio("Audio") { audio }
+    case .images: AssetLibraryGroup.image("Images") { images }
+    case .text: text
+    case .shapes: AssetLibraryGroup.shape("Shapes") { shapes }
+    case .stickers: AssetLibraryGroup.sticker("Stickers") { stickers }
     }
   }
 

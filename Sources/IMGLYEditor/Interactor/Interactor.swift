@@ -202,7 +202,7 @@ import SwiftUI
   }
 
   /// All timeline-specific properties are bundled here.
-  internal var timelineProperties = TimelineProperties()
+  var timelineProperties = TimelineProperties()
 
   @_spi(Internal) public var backgroundTracksItemCount: Int {
     timelineProperties.dataSource.backgroundTrack.clips.count
@@ -232,6 +232,8 @@ import SwiftUI
     zoomLevelTask?.cancel()
     historyTask?.cancel()
     pageTask?.cancel()
+    blockTasks.forEach { $0.value.cancel() }
+    blockTasks.removeAll()
   }
 
   private func onAppear() {
@@ -263,6 +265,9 @@ import SwiftUI
     pageTask?.cancel()
     _engine = nil
     timelineProperties.timeline = nil
+    timelineProperties.thumbnailsManager.destroyProviders()
+    blockTasks.forEach { $0.value.cancel() }
+    blockTasks.removeAll()
   }
 
   // MARK: - Private properties
@@ -283,6 +288,7 @@ import SwiftUI
   private var zoomLevelTask: Task<Void, Never>?
   private var historyTask: Task<Void, Never>?
   private var pageTask: Task<Void, Never>?
+  var blockTasks = [BlockID: Task<Void, Never>]()
 }
 
 // MARK: - Block queries
@@ -347,9 +353,9 @@ extension Interactor {
 
       func font(typeface: Typeface) -> IMGLYEngine.Font? {
         if resetFontProperties {
-          return typeface.previewFont
+          typeface.previewFont
         } else {
-          return typeface.font(for: .init(bold: text.isBold, italic: text.isItalic)) ?? typeface.previewFont
+          typeface.font(for: .init(bold: text.isBold, italic: text.isItalic)) ?? typeface.previewFont
         }
       }
 
@@ -370,6 +376,7 @@ extension Interactor {
     }
   }
 
+  // swiftlint:disable cyclomatic_complexity
   /// Create `SelectionColor` bindings categorized by block names for a given set of `selectionColors`.
   func bind(_ selectionColors: SelectionColors,
             completion: PropertyCompletion? = Completion.addUndoStep) -> [(name: String, colors: [SelectionColor])] {
@@ -423,12 +430,10 @@ extension Interactor {
           guard let properties = selectionColors[name, color] else {
             return
           }
-          properties.forEach { property, ids in
+          for (property, ids) in properties {
             var gradientIDs: [DesignBlockID] = []
-            ids.forEach { id in
-              if self.isGradientFill(id) {
-                gradientIDs.append(id)
-              }
+            for id in ids where self.isGradientFill(id) {
+              gradientIDs.append(id)
             }
             _ = self.set(gradientIDs, .fill, property: .key(.type), value: ColorFillType.solid, completion: nil)
             _ = self.set(ids, property: property, value: value,
@@ -441,6 +446,8 @@ extension Interactor {
       return (name: name, colors: colors)
     }
   }
+
+  // swiftlint:enable cyclomatic_complexity
 
   /// Create a `property` `Binding` for a block `id`. The `defaultValue` will be used as fallback if the property
   /// cannot be resolved.
@@ -731,12 +738,11 @@ extension Interactor {
     case .editMode: return true
     case .export: return true
     case .toTop, .up, .down, .toBottom:
-      let canReorderTrack: Bool
-      if let id, let clip = timelineProperties.dataSource.findClip(id: id),
-         clip.isInBackgroundTrack || Set([.audio, .voiceOver]).contains(clip.clipType) {
-        canReorderTrack = false
+      let canReorderTrack = if let id, let clip = timelineProperties.dataSource.findClip(id: id),
+                               clip.isInBackgroundTrack || Set([.audio, .voiceOver]).contains(clip.clipType) {
+        false
       } else {
-        canReorderTrack = true
+        true
       }
       return isAllowed(id, scope: .editorAdd) && !isGrouped(id) && canReorderTrack
     case .duplicate:
@@ -1356,11 +1362,10 @@ extension Interactor {
       do {
         if isEditing {
           if sheet.mode == .add, sheet.isPresented { return }
-          let zoomLevel: Float?
-          if zoomToPage {
-            zoomLevel = try await engine?.zoomToPage(page, insets, zoomModel: zoomModel)
+          let zoomLevel: Float? = if zoomToPage {
+            try await engine?.zoomToPage(page, insets, zoomModel: zoomModel)
           } else {
-            zoomLevel = try await engine?.updateZoom(
+            try await engine?.updateZoom(
               with: insets,
               and: canvasHeight,
               clampOnly: clampOnly,
@@ -1418,7 +1423,7 @@ extension Interactor {
 
 // MARK: - Private implementation
 
-internal extension Interactor {
+extension Interactor {
   var engine: Engine? {
     guard let engine = _engine else {
       return nil

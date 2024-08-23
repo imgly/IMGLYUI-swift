@@ -12,31 +12,31 @@ import SwiftUI
   var rect1: CGRect {
     switch layoutMode {
     case .horizontal:
-      return CGRect(x: 0, y: 0, width: 1080 / 2, height: 1920)
+      CGRect(x: 0, y: 0, width: 1080 / 2, height: 1920)
     case .vertical:
-      return CGRect(x: 0, y: 0, width: 1080, height: 1920 / 2)
+      CGRect(x: 0, y: 0, width: 1080, height: 1920 / 2)
     case .none:
-      return CGRect(x: 0, y: 0, width: 1080, height: 1920)
+      CGRect(x: 0, y: 0, width: 1080, height: 1920)
     }
   }
 
   var rect2: CGRect? {
     switch layoutMode {
     case .horizontal:
-      return CGRect(x: 1080 / 2, y: 0, width: 1080 / 2, height: 1920)
+      CGRect(x: 1080 / 2, y: 0, width: 1080 / 2, height: 1920)
     case .vertical:
-      return CGRect(x: 0, y: 1920 / 2, width: 1080, height: 1920 / 2)
+      CGRect(x: 0, y: 1920 / 2, width: 1080, height: 1920 / 2)
     case .none:
-      return nil
+      nil
     }
   }
 
   var layoutMode: CameraLayoutMode? {
     switch self {
     case let .dualCamera(layoutMode), let .reactions(layoutMode, _):
-      return layoutMode
+      layoutMode
     case .standard:
-      return nil
+      nil
     }
   }
 

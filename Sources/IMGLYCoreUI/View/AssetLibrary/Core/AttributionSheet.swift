@@ -40,23 +40,23 @@ private struct Attribution: View {
 
   var credits: LocalizedStringKey? {
     if let assetCredits, let sourceCredits {
-      return .init("By \(assetCredits) on \(sourceCredits)")
+      .init("By \(assetCredits) on \(sourceCredits)")
     } else if let assetCredits {
-      return .init("By \(assetCredits)")
+      .init("By \(assetCredits)")
     } else if let sourceCredits {
-      return .init("On \(sourceCredits)")
+      .init("On \(sourceCredits)")
     } else {
-      return nil
+      nil
     }
   }
 
   var license: LocalizedStringKey? {
     if let assetLicense {
-      return .init("\(assetLicense)")
+      .init("\(assetLicense)")
     } else if let sourceLicense {
-      return .init("\(sourceLicense)")
+      .init("\(sourceLicense)")
     } else {
-      return nil
+      nil
     }
   }
 
@@ -140,9 +140,9 @@ extension AssetLicense: AttributionLink {}
 private struct AttributionPresentationDetent: CustomPresentationDetent {
   static func height(in context: Context) -> CGFloat? {
     if context.verticalSizeClass == .compact {
-      return 160
+      160
     } else {
-      return 280
+      280
     }
   }
 }

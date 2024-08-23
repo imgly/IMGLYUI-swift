@@ -9,6 +9,19 @@ class ThumbnailsManager {
 
   private(set) var providers = [DesignBlockID: any ThumbnailsProvider]()
 
+  private func createProvider(for clip: Clip) throws {
+    guard let interactor else { throw Error(errorDescription: "Missing Interactor") }
+
+    switch clip.clipType {
+    case .audio, .voiceOver:
+      let provider = ThumbnailsAudioProvider(interactor: interactor)
+      providers[clip.id] = provider
+    default:
+      let provider = ThumbnailsImageProvider(interactor: interactor)
+      providers[clip.id] = provider
+    }
+  }
+
   func getProvider(clip: Clip) throws -> any ThumbnailsProvider {
     if let provider = providers[clip.id] {
       return provider
@@ -21,32 +34,19 @@ class ThumbnailsManager {
     }
   }
 
-  func refreshThumbnails(for clip: Clip, width: Double, height: Double) throws {
-    let provider = try getProvider(clip: clip)
-    provider.loadThumbnails(clip: clip, availableWidth: width, thumbHeight: height)
-  }
-
-  func refreshThumbnailsDebounced(for clip: Clip, width: Double, height: Double) throws {
-    let provider = try getProvider(clip: clip)
-    provider.loadThumbnails(clip: clip, availableWidth: width, thumbHeight: height, debounce: 0.1)
-  }
-
   func destroyProvider(id: DesignBlockID) {
     guard let provider = providers[id] else { return }
     provider.cancel()
     providers[id] = nil
   }
 
-  private func createProvider(for clip: Clip) throws {
-    guard let interactor else { throw Error(errorDescription: "Missing Interactor") }
+  func destroyProviders() {
+    providers.forEach { $0.value.cancel() }
+    providers.removeAll()
+  }
 
-    switch clip.clipType {
-    case .audio, .voiceOver:
-      let provider = ThumbnailsAudioProvider(interactor: interactor)
-      providers[clip.id] = provider
-    default:
-      let provider = ThumbnailsImageProvider(interactor: interactor)
-      providers[clip.id] = provider
-    }
+  func refreshThumbnails(for clip: Clip, width: Double, height: Double) throws {
+    let provider = try getProvider(clip: clip)
+    provider.loadThumbnails(clip: clip, availableWidth: width, thumbHeight: height)
   }
 }

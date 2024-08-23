@@ -55,13 +55,13 @@ final class PhotoInteractorBehavior: InteractorBehavior {
         }, exit: .init {
           context.interactor.zoomToPage(withAdditionalPadding: 0)
           try context.engine.block.setSelected(page, selected: false)
-        })
+        }),
       ]
     }
     items += [
       .addText,
       .addShape,
-      .addSticker
+      .addSticker,
     ]
     return items
   }
