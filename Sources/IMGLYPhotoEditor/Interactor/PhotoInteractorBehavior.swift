@@ -18,6 +18,7 @@ final class PhotoInteractorBehavior: InteractorBehavior {
     try context.engine.editor.setSettingBool("page/allowCropInteraction", value: true)
     try context.engine.editor.setSettingBool("page/allowMoveInteraction", value: false)
     try context.engine.editor.setSettingBool("page/allowResizeInteraction", value: false)
+    try context.engine.editor.setSettingBool("page/restrictResizeInteractionToFixedAspectRatio", value: false)
     try context.engine.editor.setSettingBool("page/allowRotateInteraction", value: false)
   }
 

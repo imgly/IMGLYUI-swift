@@ -12,6 +12,8 @@ struct FeaturesMenuView: View {
 
   private let labelDisappearInterval: TimeInterval = 3
 
+  @Feature(.videoReactions) private var isVideoReactionsEnabled
+
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       Group {
@@ -19,7 +21,7 @@ struct FeaturesMenuView: View {
         if camera.isMultiCamSupported {
           dualCameraButton()
         }
-        if FeatureFlags.videoReactions {
+        if isVideoReactionsEnabled {
           reactionsButton()
         }
       }
