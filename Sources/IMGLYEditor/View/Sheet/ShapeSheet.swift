@@ -5,7 +5,7 @@ struct ShapeSheet: View {
   private var sheet: SheetModel { interactor.sheet.model }
 
   var body: some View {
-    DismissableBottomSheet {
+    BottomSheet {
       switch sheet.mode {
       case .shape: ShapeOptions()
       case .fillAndStroke: FillAndStrokeOptions()

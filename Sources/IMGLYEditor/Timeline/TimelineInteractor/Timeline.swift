@@ -76,17 +76,18 @@ final class Timeline: ObservableObject, @unchecked Sendable {
   }
 
   private func updateScaleInterval() {
-    let timelineRulerScaleInterval: TimeInterval = switch zoomLevel {
+    let timelineRulerScaleInterval: TimeInterval
+    switch zoomLevel {
     case 0 ..< 0.4:
-      60
+      timelineRulerScaleInterval = 60
     case 0.4 ..< 0.6:
-      40
+      timelineRulerScaleInterval = 40
     case 0.6 ..< 1:
-      20
+      timelineRulerScaleInterval = 20
     case 1 ..< 2:
-      10
+      timelineRulerScaleInterval = 10
     default:
-      5
+      timelineRulerScaleInterval = 5
     }
     if self.timelineRulerScaleInterval != timelineRulerScaleInterval {
       self.timelineRulerScaleInterval = timelineRulerScaleInterval

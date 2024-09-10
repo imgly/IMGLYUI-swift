@@ -80,12 +80,12 @@ struct ClipTrimmingView: View {
       .padding(.horizontal, -trimHandleWidth)
       .padding(.vertical, -2)
       .background(alignment: .leading) {
-        if let thumbnailsProvider = try? interactor.timelineProperties.thumbnailsManager.getProvider(clip: clip) {
+        if let thumbnailsProvider = try? interactor.timelineProperties.thumbnailsManager.getProvider(id: clip.id) {
           ClipBackgroundView(
             clip: clip,
             cornerRadius: cornerRadius,
             pointsTrimOffsetWidth: -timeline.convertToPoints(time: startTrimDurationDelta),
-            thumbnailsProvider: AnyThumbnailsProvider(erasing: thumbnailsProvider)
+            thumbnailsProvider: thumbnailsProvider
           )
           .padding(.leading, timeline.convertToPoints(time: startTrimOvershoot))
           // Dimming overlay where clip exceeds total duration

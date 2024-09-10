@@ -30,7 +30,7 @@ struct FontSizeSheet: View {
   }
 
   var body: some View {
-    DismissableBottomSheet {
+    BottomSheet {
       List {
         PropertyStack("Message") {
           propertyButton(property: .small)

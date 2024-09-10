@@ -264,7 +264,7 @@ private struct Random: RandomNumberGenerator {
     and canvasHeight: CGFloat? = nil,
     zoomToPage: Bool = false,
     clampOnly: Bool = false,
-    pageIndex: Int,
+    pageIndex: Int = 0,
     zoomModel: ZoomModel
   ) async throws -> Float? {
     var updatedDefaultZoomLevel: Float?
@@ -378,22 +378,14 @@ private struct Random: RandomNumberGenerator {
   }
 
   func bringForwardSelectedElement() throws {
-    try bringForward(engine.block.findAllSelected())
-  }
-
-  func bringForward(_ ids: [DesignBlockID]) throws {
-    try ids.forEach {
+    try engine.block.findAllSelected().forEach {
       try engine.block.bringForward($0)
     }
     try engine.editor.addUndoStep()
   }
 
   func sendBackwardSelectedElement() throws {
-    try sendBackward(engine.block.findAllSelected())
-  }
-
-  func sendBackward(_ ids: [DesignBlockID]) throws {
-    try ids.forEach {
+    try engine.block.findAllSelected().forEach {
       try engine.block.sendBackward($0)
     }
     try engine.editor.addUndoStep()
@@ -407,15 +399,10 @@ private struct Random: RandomNumberGenerator {
   }
 
   func duplicateSelectedElement() throws {
-    try duplicate(engine.block.findAllSelected())
-  }
-
-  func duplicate(_ ids: [DesignBlockID]) throws {
-    try ids.forEach {
+    try engine.block.findAllSelected().forEach {
       let duplicate = try engine.block.duplicate($0)
 
-      let isPage = try engine.block.getType($0) == DesignBlockType.page.rawValue
-      if !isPage, try !engine.block.isTransformLocked($0) {
+      if try !engine.block.isTransformLocked($0) {
         // Remember values
         let positionModeX = try engine.block.getPositionXMode($0)
         let positionModeY = try engine.block.getPositionYMode($0)
@@ -441,19 +428,15 @@ private struct Random: RandomNumberGenerator {
         try engine.block.setScopeEnabled(duplicate, scope: .key(.layerCrop), enabled: false)
       }
 
-      if !isPage {
-        try engine.block.setSelected(duplicate, selected: true)
-        try engine.block.setSelected($0, selected: false)
-      }
+      try engine.block.setSelected(duplicate, selected: true)
+      try engine.block.setSelected($0, selected: false)
     }
     try engine.editor.addUndoStep()
   }
 
   func deleteSelectedElement(delay nanoseconds: UInt64 = .zero) throws {
-    try delete(engine.block.findAllSelected(), delay: nanoseconds)
-  }
+    let ids = engine.block.findAllSelected()
 
-  func delete(_ ids: [DesignBlockID], delay nanoseconds: UInt64 = .zero) throws {
     func delete() throws {
       try ids.forEach {
         try engine.block.destroy($0)
@@ -534,20 +517,6 @@ private struct Random: RandomNumberGenerator {
     try engine.editor.addUndoStep()
   }
 
-  func addPage(_ index: Int) throws {
-    guard let currentPage = try engine.scene.getCurrentPage(),
-          let parent = try engine.block.getParent(currentPage) else {
-      throw Error(errorDescription: "Invalid current page.")
-    }
-    let newPage = try engine.block.create(.page)
-    try engine.block.setWidthMode(newPage, mode: engine.block.getWidthMode(currentPage))
-    try engine.block.setHeightMode(newPage, mode: engine.block.getHeightMode(currentPage))
-    try engine.block.setWidth(newPage, value: engine.block.getWidth(currentPage))
-    try engine.block.setHeight(newPage, value: engine.block.getHeight(currentPage))
-    try engine.block.insertChild(into: parent, child: newPage, at: index)
-    try engine.editor.addUndoStep()
-  }
-
   // Note: Backdrop Images are not officially supported yet.
   // The backdrop image is the only image that is a direct child of the scene block.
   private func getBackdropImage() throws -> DesignBlockID {
@@ -587,7 +556,7 @@ private struct Random: RandomNumberGenerator {
     return camera
   }
 
-  func getStack() throws -> DesignBlockID {
+  private func getStack() throws -> DesignBlockID {
     guard let stack = try engine.block.find(byType: .stack).first else {
       throw Error(errorDescription: "No stack found.")
     }
@@ -605,26 +574,6 @@ private struct Random: RandomNumberGenerator {
   func getSortedPages() throws -> [DesignBlockID] {
     guard (try? engine.scene.get()) != nil else { return [] }
     return try engine.scene.getPages()
-  }
-
-  func getPageIndex(_ id: DesignBlockID) throws -> Int {
-    guard let pageIndex = try getSortedPages().firstIndex(of: id) else {
-      throw Error(errorDescription: "Page not found.")
-    }
-    return pageIndex
-  }
-
-  func getCurrentPageIndex() throws -> Int {
-    guard (try? engine.scene.get()) != nil else {
-      throw Error(errorDescription: "No scene found.")
-    }
-    guard let currentPage = try engine.scene.getCurrentPage() else {
-      throw Error(errorDescription: "No current page available.")
-    }
-    guard let currentPageIndex = try engine.scene.getPages().firstIndex(of: currentPage) else {
-      throw Error(errorDescription: "No current page found.")
-    }
-    return currentPageIndex
   }
 
   func getScene() throws -> DesignBlockID {

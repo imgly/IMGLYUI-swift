@@ -17,7 +17,7 @@ struct EffectOptions<Item: View>: View {
         case let .asset(asset):
           item(asset, $sheetState)
         case .placeholder:
-          SelectableEffectItem(title: "", selected: false) {
+          SelectableItem(title: "", selected: false) {
             GridItemBackground()
               .aspectRatio(1, contentMode: .fit)
           }

@@ -157,16 +157,14 @@ import Foundation
   case cameraPixelRatio = "camera/pixelRatio"
   case cameraResolutionWidth = "camera/resolution/width"
   case cameraResolutionHeight = "camera/resolution/height"
-
-  case audioFileURI = "audio/fileURI"
 }
 
 @_spi(Internal) public extension Property {
   var enabled: Property? {
     switch rawValue {
-    case _ where rawValue.hasPrefix("fill/"): .key(.fillEnabled)
-    case _ where rawValue.hasPrefix("stroke/"): .key(.strokeEnabled)
-    default: nil
+    case _ where rawValue.hasPrefix("fill/"): return .key(.fillEnabled)
+    case _ where rawValue.hasPrefix("stroke/"): return .key(.strokeEnabled)
+    default: return nil
     }
   }
 }

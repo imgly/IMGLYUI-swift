@@ -45,7 +45,7 @@ import SwiftUI
 
   @State private var interactivePopGestureRecognizer: UIGestureRecognizer?
 
-  var isBackButtonHidden: Bool { !interactor.isEditing || interactor.isPageOverviewShown }
+  var isBackButtonHidden: Bool { !interactor.isEditing }
 
   @_spi(Internal) public var body: some View {
     Canvas(zoomPadding: zoomPadding)
@@ -77,13 +77,6 @@ import SwiftUI
       .onChange(of: interactor.page) { _ in
         let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
         interactor.updateZoom(for: .pageChanged, with: zoom)
-      }
-      .onChange(of: interactor.isPageOverviewShown) { newValue in
-        if !newValue {
-          // Force zoom to page when the page overview is closed to be sure that the right page is always shown.
-          let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
-          interactor.updateZoom(for: .pageChanged, with: zoom)
-        }
       }
       .onChange(of: interactor.textCursorPosition) { newValue in
         let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)

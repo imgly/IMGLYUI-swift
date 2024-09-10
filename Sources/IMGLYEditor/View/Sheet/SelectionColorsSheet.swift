@@ -13,7 +13,7 @@ struct SelectionColorsSheet: View {
   }
 
   var body: some View {
-    DismissableBottomSheet {
+    BottomSheet {
       List {
         let sections = interactor.bind(selectionColors, completion: nil)
         ForEach(sections, id: \.name) { section in

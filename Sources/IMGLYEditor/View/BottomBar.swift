@@ -11,9 +11,7 @@ struct BottomBar: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.verticalSizeClass) private var verticalSizeClass
 
-  private let leadingPadding: CGFloat = 60
-
-  private var isCloseButtonEnabled: Bool { type != .pageOverview }
+  @State private var leadingPadding: CGFloat = 60
 
   private var isRoot: Bool { type == nil }
 
@@ -24,26 +22,6 @@ struct BottomBar: View {
       mode.label(id, interactor)
     }
     .foregroundColor(mode == .delete ? .red : nil)
-    .disabled(!isButtonEnabled(mode))
-  }
-
-  func isButtonEnabled(_ mode: SheetMode) -> Bool {
-    switch mode {
-    case .moveUp:
-      if type == .pageOverview {
-        interactor.canBringBackward(interactor.pageOverview.currentPage)
-      } else {
-        interactor.canBringForward(id)
-      }
-    case .moveDown:
-      if type == .pageOverview {
-        interactor.canBringForward(interactor.pageOverview.currentPage)
-      } else {
-        interactor.canBringBackward(id)
-      }
-    default:
-      true
-    }
   }
 
   // swiftlint:disable:next cyclomatic_complexity
@@ -55,20 +33,8 @@ struct BottomBar: View {
     let isVideo = interactor.sceneMode == .video
 
     var modes = [SheetMode]()
-
-    if type == .pageOverview {
-      modes += [.editPage, .addPage, .moveUp, .moveDown, .duplicate]
-      if interactor.pageCount > 1 {
-        modes += [.delete]
-      }
-      return modes.filter { interactor.isAllowed(interactor.pageOverview.currentPage, $0) }
-    }
-
     if Set([.image, .video]).contains(type) {
       modes += [.adjustments(), .filter(), .effect(), .blur()]
-    }
-    if type == .voiceover {
-      modes += [.editVoiceOver]
     }
     if type == .text {
       modes += [.edit, .format]
@@ -76,7 +42,7 @@ struct BottomBar: View {
     if Set([.text, .shape, .page]).contains(type) {
       modes += [.fillAndStroke]
     }
-    if isVideo, Set([.audio, .video, .voiceover]).contains(type) {
+    if isVideo, Set([.audio, .video]).contains(type) {
       modes += [.volume]
     }
     if Set([.image, .video]).contains(type) {
@@ -85,10 +51,10 @@ struct BottomBar: View {
     if type == .shape, Set([.line, .star, .polygon, .rect]).contains(interactor.shapeType(id)) {
       modes += [.shape]
     }
-    if !Set([.page, .voiceover]).contains(type) {
+    if type != .page {
       modes += [.duplicate]
     }
-    if !Set([.page, .audio, .voiceover]).contains(type) {
+    if !Set([.page, .audio]).contains(type) {
       modes += [.layer]
     }
     if isVideo, Set([.text, .image, .shape, .sticker, .video, .audio]).contains(type) {
@@ -97,7 +63,7 @@ struct BottomBar: View {
     if Set([.image, .video]).contains(type) {
       modes += [.fillAndStroke]
     }
-    if isVideo, !Set([.page, .audio, .voiceover]).contains(type) {
+    if isVideo, !Set([.page, .audio]).contains(type) {
       modes += [.attachToBackground, .detachFromBackground]
     }
     if isVideo, Set([.audio, .video]).contains(type) {
@@ -117,7 +83,9 @@ struct BottomBar: View {
       modes += [.delete]
     }
 
-    return modes.filter { interactor.isAllowed(id, $0) }
+    return modes.filter { mode in
+      interactor.isAllowed(id, mode)
+    }
   }
 
   @State var bottomBarWidth: CGFloat?
@@ -133,7 +101,7 @@ struct BottomBar: View {
       }
       .buttonStyle(.bottomBar)
       .labelStyle(.bottomBar)
-      .padding(.leading, isCloseButtonEnabled ? leadingPadding : nil)
+      .padding(.leading, leadingPadding)
       .padding([.top, .bottom], 8)
       .frame(minWidth: bottomBarWidth)
       .animation(nil, value: bottomBarWidth)
@@ -150,7 +118,7 @@ struct BottomBar: View {
               startPoint: UnitPoint(x: 0.8, y: 0.5),
               endPoint: .trailing
             )
-            .frame(width: isCloseButtonEnabled ? leadingPadding : 0)
+            .frame(width: 60)
             Spacer()
             LinearGradient(
               gradient: Gradient(
@@ -162,16 +130,15 @@ struct BottomBar: View {
             .frame(width: 30)
           }
           .frame(maxWidth: .infinity, maxHeight: .infinity)
+
           .drawingGroup()
           .blendMode(.destinationOut)
         }
     }
     .overlay(alignment: .leading) {
-      if isCloseButtonEnabled {
-        BottomBarCloseButton()
-          .padding()
-          .buttonStyle(.bottomBar)
-      }
+      BottomBarCloseButton()
+        .padding()
+        .buttonStyle(.bottomBar)
     }
     .background {
       GeometryReader { geo in

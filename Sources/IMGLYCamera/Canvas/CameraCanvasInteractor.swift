@@ -22,7 +22,7 @@ class CameraCanvasInteractor: ObservableObject {
   let canvasWidth: Float
   let canvasHeight: Float
 
-  private var currentCameraLayout: (CGRect, CGRect?) = (.zero, nil)
+  var dualCameraMode: DualCameraMode = .disabled
 
   init(settings: EngineSettings, videoSize: CGSize) async throws {
     let engine = try await Engine(license: settings.license, userID: settings.userID)
@@ -120,19 +120,22 @@ class CameraCanvasInteractor: ObservableObject {
     try engine.block.setNativePixelBuffer(pixelStreamFill2, buffer: buffer)
   }
 
-  func setCameraLayout(_ rect1: CGRect, _ rect2: CGRect? = nil) throws {
+  func setDualCameraMode(_ mode: DualCameraMode) throws {
     guard let engine else { throw Error(errorDescription: "Engine missing.") }
-    guard currentCameraLayout.0 != rect1 || currentCameraLayout.1 != rect2 else { return }
-    currentCameraLayout = (rect1, rect2)
+    guard mode != dualCameraMode else { return }
+    dualCameraMode = mode
 
-    try engine.block.setFrame(streamRect1, value: rect1)
+    try engine.block.setWidth(streamRect1, value: Float(mode.rect1.width))
+    try engine.block.setHeight(streamRect1, value: Float(mode.rect1.height))
+    try engine.block.setPositionX(streamRect1, value: Float(mode.rect1.origin.x))
+    try engine.block.setPositionY(streamRect1, value: Float(mode.rect1.origin.y))
 
-    if let rect2 {
-      try engine.block.setVisible(streamRect2, visible: true)
-      try engine.block.setFrame(streamRect2, value: rect2)
-    } else {
-      try engine.block.setVisible(streamRect2, visible: false)
-    }
+    try engine.block.setVisible(streamRect2, visible: mode != .disabled)
+
+    try engine.block.setWidth(streamRect2, value: Float(mode.rect2.width))
+    try engine.block.setHeight(streamRect2, value: Float(mode.rect2.height))
+    try engine.block.setPositionX(streamRect2, value: Float(mode.rect2.origin.x))
+    try engine.block.setPositionY(streamRect2, value: Float(mode.rect2.origin.y))
   }
 
   /// Clear both camera image buffers by filling them with a transparent pixel.

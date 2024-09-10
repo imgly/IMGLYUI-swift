@@ -23,9 +23,8 @@ struct Sheet: View {
     case .page: PageSheet()
     case .video: VideoSheet()
     case .audio: AudioSheet()
-    case .voiceover: VoiceOverSheet()
     case .reorder: ReorderSheet()
-    case .asset, .elements, .clip, .overlay, .stickerOrShape, .pageOverview: EmptyView()
+    case .asset, .elements, .clip, .overlay, .stickerOrShape: EmptyView()
     }
   }
 
@@ -74,7 +73,6 @@ struct Sheet: View {
           }
         }
         .imgly.assetLibrary(titleDisplayMode: .inline)
-
       default:
         if let id = sheet.mode.pinnedBlockID {
           sheet(sheet.type)

@@ -10,11 +10,11 @@ extension CountdownMode {
   var name: LocalizedStringKey {
     switch self {
     case .count10:
-      "10 Seconds"
+      return "10 Seconds"
     case .count3:
-      "3 Seconds"
+      return "3 Seconds"
     case .disabled:
-      "Off"
+      return "Off"
     }
   }
 }

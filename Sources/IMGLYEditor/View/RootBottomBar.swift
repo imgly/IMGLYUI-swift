@@ -47,9 +47,9 @@ struct RootBottomBar: View {
   var items: [RootBottomBarItem] {
     interactor.rootBottomBarItems.filter {
       switch $0 {
-      case .fab: false
-      case .selectionColors: !interactor.selectionColors.isEmpty
-      default: true
+      case .fab: return false
+      case .selectionColors: return !interactor.selectionColors.isEmpty
+      default: return true
       }
     }
   }
@@ -99,6 +99,7 @@ struct RootBottomBar: View {
               .frame(width: showFAB ? padding : padding / 2)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+
             .drawingGroup()
             .blendMode(.destinationOut)
           }

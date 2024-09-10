@@ -8,17 +8,17 @@ enum StrokeJoin: String, MappedEnum {
 
   var description: String {
     switch self {
-    case .miter: "Miter"
-    case .bevel: "Bevel"
-    case .round: "Round"
+    case .miter: return "Miter"
+    case .bevel: return "Bevel"
+    case .round: return "Round"
     }
   }
 
   var imageName: String? {
     switch self {
-    case .miter: "join_miter"
-    case .bevel: "join_bevel"
-    case .round: "join_round"
+    case .miter: return "join_miter"
+    case .bevel: return "join_bevel"
+    case .round: return "join_round"
     }
   }
 

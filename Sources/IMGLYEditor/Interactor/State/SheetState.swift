@@ -7,15 +7,15 @@ struct SheetState: BatchMutable {
   var detents: Set<PresentationDetent> = [.adaptiveMedium, .adaptiveLarge]
   var largestUndimmedDetent: PresentationDetent? {
     if detents.contains(.medium) {
-      .medium
+      return .medium
     } else if detents.contains(.adaptiveMedium) {
-      .adaptiveMedium
+      return .adaptiveMedium
     } else if detents.contains(.adaptiveSmall) {
-      .adaptiveSmall
+      return .adaptiveSmall
     } else if detents.contains(.adaptiveTiny) {
-      .adaptiveTiny
+      return .adaptiveTiny
     } else {
-      nil
+      return nil
     }
   }
 

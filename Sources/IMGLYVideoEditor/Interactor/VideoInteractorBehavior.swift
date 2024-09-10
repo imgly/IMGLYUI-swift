@@ -14,7 +14,6 @@ final class VideoInteractorBehavior: InteractorBehavior {
     try context.engine.editor.setSettingEnum("touch/rotateAction", value: "Rotate")
 
     try context.engine.editor.setSettingBool("controlGizmo/showCropHandles", value: true)
-    try context.engine.editor.setSettingBool("controlGizmo/showMoveHandles", value: false)
     try context.engine.editor.setSettingBool("controlGizmo/showResizeHandles", value: true)
     try context.engine.editor.setSettingBool("controlGizmo/showRotateHandles", value: false)
     try context.engine.editor.setSettingBool("controlGizmo/showScaleHandles", value: false)
@@ -34,8 +33,7 @@ final class VideoInteractorBehavior: InteractorBehavior {
       .addOverlay,
       .addText,
       .addStickerOrShape,
-      .addAudio,
-      .addVoiceOver,
+      .addAudio
     ]
 
     if context.interactor.backgroundTracksItemCount > 1 {

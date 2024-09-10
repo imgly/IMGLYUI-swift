@@ -10,18 +10,18 @@ struct FontSheet: View {
 
   var assets: [AssetLoader.Asset] {
     if let fontFamilies {
-      fontFamilies.compactMap {
+      return fontFamilies.compactMap {
         fontLibrary.assetFor(typefaceName: $0)
       }
     } else {
-      fontLibrary.assets
+      return fontLibrary.assets
     }
   }
 
   var body: some View {
     let text = interactor.bindTextState(id, resetFontProperties: true, overrideScopes: [.key(.textCharacter)])
 
-    DismissableBottomSheet {
+    BottomSheet {
       ListPicker(data: [assets], selection: text.assetID) { asset, isSelected in
         Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
           .labelStyle(.icon(hidden: !isSelected,

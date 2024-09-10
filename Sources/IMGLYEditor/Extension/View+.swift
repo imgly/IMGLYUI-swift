@@ -8,8 +8,8 @@ public extension IMGLY where Wrapped: View {
   /// Sets the callback that is invoked when the editor is created. This is the main initialization block of both the
   /// editor and engine. Normally, you should load or create a scene as well as prepare asset sources in this block.
   /// This callback does not have a default implementation, as default scenes are solution-specific, however
-  /// `OnCreate.loadScene` contains the default logic for most solutions. By default, it loads a scene and adds
-  /// all default and demo asset sources.
+  /// `OnCreate.loadScene` contains the default logic for most solutions. By default, it loads a scene and adds all
+  /// default and demo asset sources.
   /// - Parameter onCreate: The callback.
   /// - Returns: A view that has the given callback set.
   func onCreate(_ onCreate: @escaping OnCreate.Callback) -> some View {
@@ -93,9 +93,9 @@ extension IMGLY where Wrapped: View {
     if #available(iOS 16.4, *) {
       wrapped.presentationBackgroundInteraction({
         if let largestUndimmedDetent {
-          .enabled(upThrough: largestUndimmedDetent)
+          return .enabled(upThrough: largestUndimmedDetent)
         } else {
-          .disabled
+          return .disabled
         }
       }())
         .presentationContentInteraction(.scrolls)

@@ -10,9 +10,12 @@ enum TextFrameBehavior: Labelable, CaseIterable {
 
   var description: String {
     switch self {
-    case .auto: "Auto Size"
-    case .autoHeight: "Auto Height"
-    case .fixed: "Fixed Size"
+    case .auto:
+      return "Auto Size"
+    case .autoHeight:
+      return "Auto Height"
+    case .fixed:
+      return "Fixed Size"
     }
   }
 }

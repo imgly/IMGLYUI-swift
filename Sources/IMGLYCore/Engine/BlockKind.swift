@@ -14,5 +14,4 @@ import Foundation
   case text
   case shape
   case group
-  case voiceover
 }

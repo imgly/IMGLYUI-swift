@@ -8,20 +8,21 @@ struct ClipTrimHandleIconView: View {
     case right
 
     var iconPath: Path {
-      let path = switch self {
+      let path: Path
+      switch self {
       case .neutral:
-        Path { path in
+        path = Path { path in
           path.move(to: CGPoint(x: 2, y: 0))
           path.addLine(to: CGPoint(x: 2, y: 12))
         }
       case .left:
-        Path { path in
+        path = Path { path in
           path.move(to: CGPoint(x: 3, y: 0))
           path.addLine(to: CGPoint(x: 0, y: 6))
           path.addLine(to: CGPoint(x: 3, y: 12))
         }
       case .right:
-        Path { path in
+        path = Path { path in
           path.move(to: CGPoint(x: 1, y: 0))
           path.addLine(to: CGPoint(x: 4, y: 6))
           path.addLine(to: CGPoint(x: 1, y: 12))

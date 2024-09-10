@@ -17,10 +17,10 @@ import Photos
 }
 
 /// An observer used to observe changes on a `PHFetchResult`
-final class ResultsObserver<Result>: NSObject, ObservableObject,
+internal final class ResultsObserver<Result>: NSObject, ObservableObject,
   PHPhotoLibraryChangeObserver where Result: PHObject {
   @Published
-  var result: PHFetchResult<Result>
+  internal var result: PHFetchResult<Result>
 
   deinit {
     PHPhotoLibrary.shared().unregisterChangeObserver(self)

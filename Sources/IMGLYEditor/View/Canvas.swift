@@ -54,7 +54,6 @@ struct Canvas: View {
       if interactor.sceneMode == .video {
         if isTimelineMinimized || (interactor.sheet.isPresented
           && interactor.sheet.mode != .add
-          && interactor.sheet.mode != .addVoiceOver
           && interactor.sheet.mode != .replace) {
           height += timelinePlayerBarHeight
         } else {
@@ -69,7 +68,7 @@ struct Canvas: View {
 
   private var isPageNavigationHidden: Bool {
     !isPageNavigationEnabled || interactor.selection?.blocks.isEmpty != nil || !interactor
-      .isDefaultZoomLevel || interactor.pageCount < 2 || !interactor.isEditing || interactor.isPageOverviewShown
+      .isDefaultZoomLevel || interactor.pageCount < 2 || !interactor.isEditing
   }
 
   @State private var barContentGeometry: Geometry?
@@ -151,12 +150,6 @@ struct Canvas: View {
         }
         .modifier(HeightAnimationModifier(targetHeight: safeAreaInsetHeight))
         .transition(.move(edge: .bottom))
-      }
-    }
-    .overlay {
-      if !interactor.isLoading, interactor.isPageOverviewShown {
-        PageOverview()
-          .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: bottomBarHeight) }
       }
     }
     .overlay(alignment: .bottom) {

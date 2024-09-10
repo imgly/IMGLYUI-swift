@@ -5,7 +5,7 @@ import SwiftUI
 @propertyWrapper
 struct FetchAsset: DynamicProperty {
   @ObservedObject
-  private(set) var observer: AssetObserver
+  internal private(set) var observer: AssetObserver
 
   /// Represents the fetched asset
   @_spi(Internal) public var wrappedValue: MediaAsset {
@@ -31,9 +31,9 @@ struct MediaAsset {
   }
 }
 
-final class AssetObserver: NSObject, ObservableObject, PHPhotoLibraryChangeObserver {
+internal final class AssetObserver: NSObject, ObservableObject, PHPhotoLibraryChangeObserver {
   @Published
-  var asset: PHAsset?
+  internal var asset: PHAsset?
 
   deinit {
     PHPhotoLibrary.shared().unregisterChangeObserver(self)

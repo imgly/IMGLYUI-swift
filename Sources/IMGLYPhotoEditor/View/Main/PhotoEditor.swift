@@ -2,6 +2,8 @@
 @_spi(Internal) import struct IMGLYCore.Error
 import SwiftUI
 
+@_exported import IMGLYEditor
+
 /// Built to support versatile photo editing capabilities.
 public struct PhotoEditor: View {
   /// Image that will be loaded by the default implementation of the `onCreate` callback.
@@ -80,7 +82,7 @@ public extension OnCreate {
   }
 }
 
-struct PhotoEditor_Previews: PreviewProvider {
+struct DesignEditor_Previews: PreviewProvider {
   static var previews: some View {
     defaultPreviews
   }

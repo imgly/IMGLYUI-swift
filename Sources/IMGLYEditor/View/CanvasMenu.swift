@@ -18,11 +18,11 @@ struct CanvasMenu: View {
   func isDisabled(_ action: Action) -> Bool {
     switch action {
     case .toTop, .up:
-      !interactor.canBringForward(id)
+      return !interactor.canBringForward(id)
     case .toBottom, .down:
-      !interactor.canBringBackward(id)
+      return !interactor.canBringBackward(id)
     default:
-      false
+      return false
     }
   }
 

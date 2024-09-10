@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// Displays a sequence of thumbnail preview images that the `ThumbnailsProvider` fetches.
-struct ThumbnailsImageView: View {
-  @ObservedObject var provider: ThumbnailsImageProvider
+struct ThumbnailsView: View {
+  @ObservedObject var provider: ThumbnailsProvider
   let isZooming: Bool
 
   var body: some View {

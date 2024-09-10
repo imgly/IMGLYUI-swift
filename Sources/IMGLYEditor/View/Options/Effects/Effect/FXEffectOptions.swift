@@ -19,7 +19,7 @@ struct FXEffectOptions: View {
   }
 
   let setter: Interactor.RawSetter<AssetSelection> = { engine, blocks, value, completion in
-    var didChange = false
+    var hasChanges = false
     try blocks.forEach { block in
       let effects = try? engine.block.getEffects(block)
       if let effect = try effects?.first(where: { effect in
@@ -28,16 +28,16 @@ struct FXEffectOptions: View {
       }) {
         if let index = effects?.firstIndex(of: effect) {
           try engine.block.removeEffect(block, index: index)
-          didChange = true
+          hasChanges = true
         }
       }
       if let newIdentifier = value.identifier, let effect = Interactor.EffectType(rawValue: newIdentifier) {
         let newEffect = try engine.block.createEffect(effect)
         try engine.block.appendEffect(block, effectID: newEffect)
-        didChange = true
+        hasChanges = true
       }
     }
-    return try (completion?(engine, blocks, didChange) ?? false) || didChange
+    return try (completion?(engine, blocks, hasChanges) ?? false) || hasChanges
   }
 
   var body: some View {
@@ -59,7 +59,7 @@ private extension String {
       let permitted: [Interactor.EffectType] = [
         .adjustments,
         .lutFilter,
-        .duotoneFilter,
+        .duotoneFilter
       ]
       return !permitted.contains(effect)
     }

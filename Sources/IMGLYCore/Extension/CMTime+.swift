@@ -63,22 +63,4 @@ extension CMTime: IMGLYCompatible {}
   func makeNegative() -> CMTime {
     CMTime(value: -1 * wrapped.value, timescale: Self.timescale)
   }
-
-  /// Converts the duration in seconds to a formatted string for the player.
-  /// The format of the string is "MM:SS,MS", where:
-  /// - MM: Minutes (two digits)
-  /// - SS: Seconds (two digits)
-  /// - MS: Milliseconds (two digits, rounded)
-  /// - Returns: A string representing the timecode in the format "MM:SS,MS".
-  func formattedDurationMillisecondsStringForPlayer() -> String {
-    guard !wrapped.seconds.isNaN else { return "NaN" }
-    let totalSeconds = wrapped.seconds
-    let fullMilliseconds = (totalSeconds.truncatingRemainder(dividingBy: 1)) * 1000
-    let roundedMilliseconds = Int(fullMilliseconds / 10)
-    let wholeSeconds = Int(totalSeconds) % 60
-    let minutes = Int(totalSeconds) / 60
-
-    // Formatting string now expects two digits for milliseconds, correctly rounded
-    return String(format: "%02d:%02d,%02d", minutes, wholeSeconds, roundedMilliseconds)
-  }
 }

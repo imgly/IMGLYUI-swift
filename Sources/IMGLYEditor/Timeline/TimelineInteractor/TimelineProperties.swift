@@ -3,7 +3,7 @@ import IMGLYEngine
 import SwiftUI
 
 @MainActor
-class TimelineProperties: ObservableObject {
+internal class TimelineProperties: ObservableObject {
   // MARK: - Timeline
 
   /// The `TimelineDataSource` caches the engine’s state for the timeline.

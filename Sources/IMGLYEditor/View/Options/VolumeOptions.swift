@@ -13,7 +13,7 @@ struct VolumeOptions: View {
   }
 
   let volumeSetter: Interactor.PropertySetter<Double> = { engine, blocks, _, _, value, completion in
-    var didChange = false
+    var hasChanges = false
     try blocks.forEach { id in
       let type = try engine.block.getType(id)
       let isAudio = type == Interactor.BlockType.audio.rawValue
@@ -26,10 +26,10 @@ struct VolumeOptions: View {
         } else if value > 0 {
           try engine.block.setMuted(block, muted: false)
         }
-        didChange = true
+        hasChanges = true
       }
     }
-    return try (completion?(engine, blocks, didChange) ?? false) || didChange
+    return try (completion?(engine, blocks, hasChanges) ?? false) || hasChanges
   }
 
   let mutedGetter: Interactor.PropertyGetter<Bool> = { engine, id, _, _ in
@@ -40,7 +40,7 @@ struct VolumeOptions: View {
   }
 
   let mutedSetter: Interactor.PropertySetter<Bool> = { engine, blocks, _, _, value, completion in
-    var didChange = false
+    var hasChanges = false
     try blocks.forEach { id in
       let type = try engine.block.getType(id)
       let isAudio = type == Interactor.BlockType.audio.rawValue
@@ -51,10 +51,10 @@ struct VolumeOptions: View {
           try engine.block.setVolume(block, volume: 0.2)
         }
         try engine.block.setMuted(block, muted: value)
-        didChange = true
+        hasChanges = true
       }
     }
-    return try (completion?(engine, blocks, didChange) ?? false) || didChange
+    return try (completion?(engine, blocks, hasChanges) ?? false) || hasChanges
   }
 
   var body: some View {
@@ -124,7 +124,6 @@ struct VolumeSliderView: View {
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
-    .accessibilityLabel(isMuted ? "Unmute" : "Mute")
   }
 
   private var slider: some View {

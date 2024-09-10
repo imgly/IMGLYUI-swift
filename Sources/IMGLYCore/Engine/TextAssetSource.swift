@@ -33,9 +33,9 @@ public final class TextAssetSource: NSObject {
   public init(engine: Engine, typeface: Typeface) throws {
     self.engine = engine
     assets = try [
-      Self.createAsset(typeface, id: "title", label: "Title", fontWeight: .bold, fontSize: 32, fontScale: 4),
-      Self.createAsset(typeface, id: "headline", label: "Headline", fontWeight: .medium, fontSize: 18, fontScale: 2.8),
-      Self.createAsset(typeface, id: "body", label: "Body", fontWeight: .normal, fontSize: 14, fontScale: 2),
+      Self.createAsset(typeface, id: "title", label: "Title", fontWeight: .bold, fontSize: 32),
+      Self.createAsset(typeface, id: "headline", label: "Headline", fontWeight: .medium, fontSize: 18),
+      Self.createAsset(typeface, id: "body", label: "Body", fontWeight: .normal, fontSize: 14)
     ]
   }
 
@@ -44,8 +44,7 @@ public final class TextAssetSource: NSObject {
     id: String,
     label: String,
     fontWeight: FontWeight,
-    fontSize: Int,
-    fontScale: Double
+    fontSize: Int
   ) throws -> AssetResult {
     guard let uri = typeface.fonts.first(where: {
       $0.weight == fontWeight && $0.style == .normal
@@ -61,8 +60,7 @@ public final class TextAssetSource: NSObject {
         "fontFamily": typeface.name,
         "fontWeight": String(fontWeight.rawValue),
         "fontSize": String(fontSize),
-        "fontScale": String(fontScale),
-        "blockType": DesignBlockType.text.rawValue,
+        "blockType": DesignBlockType.text.rawValue
       ],
       payload: .init(typeface: typeface),
       context: .init(sourceID: Self.id)
@@ -97,9 +95,12 @@ extension TextAssetSource: AssetSource {
     }
 
     try engine.block.setString(id, property: "text/text", value: asset.label ?? "Text")
+    if let fontSize = asset.fontSize {
+      let fontSize = (50.0 / 24.0) * Float(fontSize) // Scale font size to match scene.
+      try engine.block.setFloat(id, property: "text/fontSize", value: fontSize)
+    }
     try engine.block.setEnum(id, property: "text/horizontalAlignment", value: "Center")
     try engine.block.setHeightMode(id, mode: .auto)
-    try engine.block.setWidthMode(id, mode: .absolute)
     try engine.block.setBool(id, property: "text/clipLinesOutsideOfFrame", value: false)
 
     return .init(value: id)

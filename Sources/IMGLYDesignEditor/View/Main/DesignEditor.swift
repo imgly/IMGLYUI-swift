@@ -1,6 +1,8 @@
 @_spi(Internal) import IMGLYEditor
 import SwiftUI
 
+@_exported import IMGLYEditor
+
 /// Built to support versatile editing capabilities for a broad range of design applications.
 public struct DesignEditor: View {
   /// Scene that will be loaded by the default implementation of the `onCreate` callback.
@@ -22,7 +24,7 @@ public struct DesignEditor: View {
         ToolbarItemGroup(placement: .navigationBarTrailing) {
           HStack(spacing: 16) {
             UndoRedoButtons()
-            PageOverviewButton()
+            PreviewButton()
             ExportButton()
           }
           .labelStyle(.adaptiveIconOnly)
@@ -36,6 +38,7 @@ public struct DesignEditor: View {
         }
         try await onCreate(engine)
       }
+      .imgly.pageNavigation(true)
   }
 }
 

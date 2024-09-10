@@ -6,7 +6,7 @@ struct AudioSheet: View {
   private var sheet: SheetModel { interactor.sheet.model }
 
   var body: some View {
-    DismissableBottomSheet {
+    BottomSheet {
       switch sheet.mode {
       case .volume:
         VolumeOptions()

@@ -8,9 +8,9 @@ public enum AssetLibraryBuilder {
   private static func flattenUnnamedGroups(_ components: [AssetLibraryContent]) -> AssetLibraryContent {
     let flattenUnnamedGroups = components.flatMap { component in
       if let group = component as? AssetLibraryGroup<EmptyView> {
-        group.components
+        return group.components
       } else {
-        [component]
+        return [component]
       }
     }
     return AssetLibraryGroup<EmptyView>(components: flattenUnnamedGroups)
@@ -22,9 +22,9 @@ public enum AssetLibraryBuilder {
 
   public static func buildOptional(_ component: AssetLibraryContent?) -> AssetLibraryContent {
     if let component {
-      AssetLibraryGroup<EmptyView>(components: [component])
+      return AssetLibraryGroup<EmptyView>(components: [component])
     } else {
-      AssetLibraryGroup.empty
+      return AssetLibraryGroup.empty
     }
   }
 

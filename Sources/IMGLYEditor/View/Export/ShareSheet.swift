@@ -39,9 +39,9 @@ struct ShareView: UIViewControllerRepresentable {
     -> UIActivityViewController {
     switch item {
     case let .url(url):
-      UIActivityViewController(activityItems: url, applicationActivities: nil)
+      return UIActivityViewController(activityItems: url, applicationActivities: nil)
     case let .data(data):
-      UIActivityViewController(activityItems: data, applicationActivities: nil)
+      return UIActivityViewController(activityItems: data, applicationActivities: nil)
     }
   }
 

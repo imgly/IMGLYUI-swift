@@ -143,8 +143,6 @@ public extension AssetLoader {
     /// The key that identifies the meta data value to sort by or 'id' to sort by the asset ID.
     /// If empty, the assets are sorted by the index.
     public let sortKey: IMGLYEngine.SortKey?
-    /// Sort assets that are marked as active first.
-    public let sortActiveFirst: Bool
 
     /// Initializes a request for querying assets.
     /// - Parameters:
@@ -155,14 +153,12 @@ public extension AssetLoader {
     ///   - locale: Choose the locale of the label and tags for localized search and filtering.
     ///   - sortingOrder: The order to sort by if the asset source supports sorting.
     ///   - sortKey: The key that identifies the meta data value to sort by or 'id' to sort by the asset ID.
-    ///   - sortActiveFirst: Sort assets that are marked as active first.
     public init(query: String? = nil, tags: [String]? = nil,
                 groups: IMGLYEngine.Groups? = nil,
                 excludedGroups: IMGLYEngine.Groups? = nil,
                 locale: IMGLYEngine.Locale? = "en",
                 sortingOrder: IMGLYEngine.SortingOrder = .none,
-                sortKey: IMGLYEngine.SortKey? = nil,
-                sortActiveFirst: Bool = false) {
+                sortKey: IMGLYEngine.SortKey? = nil) {
       self.query = query
       self.tags = tags
       self.groups = groups
@@ -170,7 +166,6 @@ public extension AssetLoader {
       self.locale = locale
       self.sortingOrder = sortingOrder
       self.sortKey = sortKey
-      self.sortActiveFirst = sortActiveFirst
     }
 
     func narrowed(by other: Self) -> Self {
@@ -185,9 +180,9 @@ public extension AssetLoader {
 
       func union(_ lhs: [String]?, _ rhs: [String]?) -> [String]? {
         if let rhs {
-          lhs ?? [] + rhs
+          return lhs ?? [] + rhs
         } else {
-          lhs
+          return lhs
         }
       }
 
@@ -198,8 +193,7 @@ public extension AssetLoader {
         excludedGroups: union(other.excludedGroups, excludedGroups),
         locale: other.locale ?? locale,
         sortingOrder: other.sortingOrder != .none ? other.sortingOrder : sortingOrder,
-        sortKey: other.sortKey ?? sortKey,
-        sortActiveFirst: other.sortActiveFirst
+        sortKey: other.sortKey ?? sortKey
       )
     }
   }
@@ -258,9 +252,9 @@ public extension AssetLoader {
 
       let orderedAssetsBySources = sources.compactMap { uuid, _ in
         if let model = models[uuid] {
-          model.assets
+          return model.assets
         } else {
-          nil
+          return nil
         }
       }
 
@@ -290,9 +284,9 @@ public extension AssetLoader {
       let results = models.merging(results) { _, new in new }
       let error = results.allSatisfy { _, result in
         if case .error = result.state {
-          true
+          return true
         } else {
-          false
+          return false
         }
       }
       if error {
@@ -348,9 +342,9 @@ public extension AssetLoader {
     @_spi(Internal) public var total: Int {
       models.reduce(0) {
         if $0 < 0 || $1.value.total < 0 {
-          -1
+          return -1
         } else {
-          $0 + $1.value.total
+          return $0 + $1.value.total
         }
       }
     }
@@ -409,17 +403,17 @@ public extension AssetLoader {
 
     @_spi(Internal) public var isValid: Bool {
       if case .error = state {
-        false
+        return false
       } else {
-        !assets.isEmpty
+        return !assets.isEmpty
       }
     }
 
     @_spi(Internal) public var total: Int {
       if case let .loaded(result) = state {
-        result.response.total
+        return result.response.total
       } else {
-        0
+        return 0
       }
     }
   }

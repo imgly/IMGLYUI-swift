@@ -28,9 +28,9 @@ class FontLibrary {
 
     let unregisteredFonts = assets.compactMap {
       if let url = $0.result.payload?.typeface?.previewFont?.uri, FontImporter.registeredFonts[url] == nil {
-        url
+        return url
       } else {
-        nil
+        return nil
       }
     }
     let previewFontData = await Self.loadFontData(urls: unregisteredFonts)

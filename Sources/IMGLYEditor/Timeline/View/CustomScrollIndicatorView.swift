@@ -57,12 +57,13 @@ struct CustomScrollIndicatorView: View {
 
     let bottomOvershoot = contentOffsetY - (contentSizeHeight - outerHeight)
 
-    let finalHandleHeight: CGFloat = if contentOffsetY < 0 {
-      max(7, handleHeight + contentOffsetY)
+    var finalHandleHeight: CGFloat
+    if contentOffsetY < 0 {
+      finalHandleHeight = max(7, handleHeight + contentOffsetY)
     } else if contentOffsetY + outerHeight > contentSizeHeight {
-      max(7, handleHeight - bottomOvershoot)
+      finalHandleHeight = max(7, handleHeight - bottomOvershoot)
     } else {
-      handleHeight
+      finalHandleHeight = handleHeight
     }
 
     let handleOffset = max(

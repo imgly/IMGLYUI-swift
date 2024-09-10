@@ -17,9 +17,9 @@ struct SelectableAssetItem<Content: View>: View {
 
   private var image: Image {
     if #available(iOS 17.0, *) {
-      Image(systemName: "slider.horizontal.2.square")
+      return Image(systemName: "slider.horizontal.2.square")
     } else {
-      Image("custom.slider.horizontal.2.square", bundle: .module)
+      return Image("custom.slider.horizontal.2.square", bundle: .module)
     }
   }
 
@@ -48,7 +48,7 @@ struct SelectableAssetItem<Content: View>: View {
   }
 
   var body: some View {
-    SelectableEffectItem(title: localizedTitle, selected: selected) {
+    SelectableItem(title: localizedTitle, selected: selected) {
       ZStack {
         content
         overlay

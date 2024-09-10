@@ -94,10 +94,11 @@ struct RecordingSegmentsView: View {
 
     let normalized = recordedDurations.reduce(into: [ClosedRange<Double>]()) { partialResult, value in
       guard value > .zero else { return }
-      let lowerBound: Double = if let previousItem = partialResult.last {
-        previousItem.upperBound + normalizedDurationGap
+      let lowerBound: Double
+      if let previousItem = partialResult.last {
+        lowerBound = previousItem.upperBound + normalizedDurationGap
       } else {
-        normalizedDurationGap / 2
+        lowerBound = normalizedDurationGap / 2
       }
 
       var duration = value.seconds / totalDuration.seconds // - normalizedDurationGap
