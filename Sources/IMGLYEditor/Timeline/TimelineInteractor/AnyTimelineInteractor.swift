@@ -29,6 +29,10 @@ class AnyTimelineInteractor: TimelineInteractor {
     interactor.refreshThumbnails()
   }
 
+  func refreshThumbnail(id: DesignBlockID) {
+    interactor.refreshThumbnail(id: id)
+  }
+
   func startScrubbing(clip: Clip) {
     interactor.startScrubbing(clip: clip)
   }
@@ -49,23 +53,44 @@ class AnyTimelineInteractor: TimelineInteractor {
     interactor.deselect()
   }
 
+  func delete(id: DesignBlockID?) {
+    interactor.delete(id: id)
+  }
+
+  func addUndoStep() {
+    interactor.addUndoStep()
+  }
+
   func getAspectRatio(clip: Clip) throws -> Double {
     try interactor.getAspectRatio(clip: clip)
   }
 
-  func generateThumbnails(
+  func generateImagesThumbnails(
     clip: Clip,
     thumbHeight: CGFloat,
     timeRange: ClosedRange<Double>,
     screenResolutionScaleFactor: CGFloat,
     numberOfFrames: Int
   ) async throws -> AsyncThrowingStream<VideoThumbnail, Swift.Error> {
-    try await interactor.generateThumbnails(
+    try await interactor.generateImagesThumbnails(
       clip: clip,
       thumbHeight: thumbHeight,
       timeRange: timeRange,
       screenResolutionScaleFactor: screenResolutionScaleFactor,
       numberOfFrames: numberOfFrames
+    )
+  }
+
+  func generateAudioThumbnails(clip: Clip,
+                               timeRange: ClosedRange<Double>,
+                               numberOfSamples: Int) async throws -> AsyncThrowingStream<
+    IMGLYEngine.AudioThumbnail,
+    Swift.Error
+  > {
+    try await interactor.generateAudioThumbnails(
+      clip: clip,
+      timeRange: timeRange,
+      numberOfSamples: numberOfSamples
     )
   }
 
@@ -75,6 +100,14 @@ class AnyTimelineInteractor: TimelineInteractor {
 
   func pause() {
     interactor.pause()
+  }
+
+  func setPageMuted(_ muted: Bool) {
+    interactor.setPageMuted(muted)
+  }
+
+  func setBlockMuted(_ id: IMGLYEngine.DesignBlockID?, muted: Bool) {
+    interactor.setBlockMuted(id, muted: muted)
   }
 
   func togglePlayback() {
@@ -99,6 +132,10 @@ class AnyTimelineInteractor: TimelineInteractor {
 
   func addAudioAsset() {
     interactor.addAudioAsset()
+  }
+
+  func openVoiceOver() {
+    interactor.openVoiceOver()
   }
 
   func openCamera() {

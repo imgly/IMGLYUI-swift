@@ -9,7 +9,7 @@ struct ColorPaletteKey: EnvironmentKey {
     .init("Red", .imgly.red),
     .init("Black", .imgly.black),
     .init("White", .imgly.white),
-    .init("Gray", .imgly.gray)
+    .init("Gray", .imgly.gray),
   ]
 }
 

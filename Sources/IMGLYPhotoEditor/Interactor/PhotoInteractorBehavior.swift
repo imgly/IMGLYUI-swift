@@ -18,6 +18,7 @@ final class PhotoInteractorBehavior: InteractorBehavior {
     try context.engine.editor.setSettingBool("page/allowCropInteraction", value: true)
     try context.engine.editor.setSettingBool("page/allowMoveInteraction", value: false)
     try context.engine.editor.setSettingBool("page/allowResizeInteraction", value: false)
+    try context.engine.editor.setSettingBool("page/restrictResizeInteractionToFixedAspectRatio", value: false)
     try context.engine.editor.setSettingBool("page/allowRotateInteraction", value: false)
   }
 
@@ -55,13 +56,13 @@ final class PhotoInteractorBehavior: InteractorBehavior {
         }, exit: .init {
           context.interactor.zoomToPage(withAdditionalPadding: 0)
           try context.engine.block.setSelected(page, selected: false)
-        })
+        }),
       ]
     }
     items += [
       .addText,
       .addShape,
-      .addSticker
+      .addSticker,
     ]
     return items
   }

@@ -8,12 +8,12 @@ extension ImagePaint {
       // Fix for iOS 17.0..<17.2 when compiled with Xcode 15 (https://github.com/oliverfoggin/ImagePaintTest)
       if #available(iOS 17.0, *) {
         if #available(iOS 17.2, *) {
-          return 1
+          1
         } else {
-          return 0.125
+          0.125
         }
       } else {
-        return 1
+        1
       }
     }()
   )

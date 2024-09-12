@@ -46,6 +46,7 @@ struct BuildInfo: View {
   @Environment(\.scenePhase) var scenePhase
 
   @State private var showSwitchBranchSheet = false
+  @State private var showFeatureFlagsSheet = false
 
   @ViewBuilder var menu: some View {
     if let commitURL {
@@ -59,6 +60,11 @@ struct BuildInfo: View {
       showSwitchBranchSheet = true
     } label: {
       Label("Switch Branch" + String.ellipsis, systemImage: "shuffle")
+    }
+    Button {
+      showFeatureFlagsSheet = true
+    } label: {
+      Label("Feature Flags" + String.ellipsis, systemImage: "flag.filled.and.flag.crossed")
     }
   }
 
@@ -87,6 +93,9 @@ struct BuildInfo: View {
     }
     .sheet(isPresented: $showSwitchBranchSheet) {
       SwitchBranchSheet(ciBuildsHost: ciBuildsHost)
+    }
+    .sheet(isPresented: $showFeatureFlagsSheet) {
+      FeatureFlagsSheet()
     }
   }
 
@@ -136,6 +145,38 @@ struct BuildInfo: View {
   }
 }
 
+private struct DevSheet<Content: View>: View {
+  let title: LocalizedStringKey
+  @ViewBuilder let content: () -> Content
+
+  @Environment(\.dismiss) var dismiss
+
+  var body: some View {
+    NavigationView {
+      List {
+        content()
+      }
+      .navigationTitle(title)
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .navigationBarTrailing) {
+          Button {
+            dismiss()
+          } label: {
+            Label("Cancel", systemImage: "xmark.circle.fill")
+              .symbolRenderingMode(.hierarchical)
+              .foregroundColor(.secondary)
+              .font(.title2)
+          }
+          .buttonStyle(.borderless)
+        }
+      }
+    }
+    .presentationDetents([.medium])
+    .presentationDragIndicator(.visible)
+  }
+}
+
 @MainActor
 private struct SwitchBranchSheet: View {
   @StateObject private var branch = Debouncer(initialValue: "")
@@ -146,9 +187,9 @@ private struct SwitchBranchSheet: View {
 
   var canUpdate: Bool {
     if case let .loaded(update) = state {
-      return update.build != BuildInfo.build || update.branch != BuildInfo.branch
+      update.build != BuildInfo.build || update.branch != BuildInfo.branch
     } else {
-      return false
+      false
     }
   }
 
@@ -178,72 +219,51 @@ private struct SwitchBranchSheet: View {
     }
   }
 
-  @Environment(\.dismiss) var dismiss
-
   var body: some View {
-    NavigationView {
-      List {
-        Section {
-          TextField(defaultBranch, text: $branch.value)
-            .font(.system(.body, design: .monospaced))
-            .keyboardType(.URL)
-            .submitLabel(.search)
-            .textInputAutocapitalization(.never)
-            .autocorrectionDisabled(true)
-            .introspect(.textField, on: .iOS(.v16...)) {
-              $0.clearButtonMode = .whileEditing
-            }
-            .onReceive(branch.$value) { newValue in
-              guard newValue != branch.value else {
-                return
-              }
-              state = .loading
-            }
-        } header: {
-          Text("Branch Name")
-        } footer: {
-          message.imageScale(.large)
-        }
-        .task(id: branch.debouncedValue) {
-          @MainActor func getBranch(_ branch: String) -> String {
-            branch.isEmpty ? defaultBranch : branch
+    DevSheet(title: "Switch Branch") {
+      Section {
+        TextField(defaultBranch, text: $branch.value)
+          .font(.system(.body, design: .monospaced))
+          .keyboardType(.URL)
+          .submitLabel(.search)
+          .textInputAutocapitalization(.never)
+          .autocorrectionDisabled(true)
+          .introspect(.textField, on: .iOS(.v16...)) {
+            $0.clearButtonMode = .whileEditing
           }
-          let branch = getBranch(branch.debouncedValue)
-          do {
-            let update = try await Update.request(branch: branch, ciBuildsHost: ciBuildsHost)
-            guard branch == getBranch(self.branch.value) else {
+          .onReceive(branch.$value) { newValue in
+            guard newValue != branch.value else {
               return
             }
-            state = .loaded(update)
-          } catch is CancellationError {
-          } catch {
-            guard branch == getBranch(self.branch.value) else {
-              return
-            }
-            state = .error(error)
-            print("Could not switch branch '\(branch)':", error.localizedDescription)
+            state = .loading
           }
-        }
-        switchButton
+      } header: {
+        Text("Branch Name")
+      } footer: {
+        message.imageScale(.large)
       }
-      .navigationTitle("Switch Branch")
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .navigationBarTrailing) {
-          Button {
-            dismiss()
-          } label: {
-            Label("Cancel", systemImage: "xmark.circle.fill")
-              .symbolRenderingMode(.hierarchical)
-              .foregroundColor(.secondary)
-              .font(.title2)
+      .task(id: branch.debouncedValue) {
+        @MainActor func getBranch(_ branch: String) -> String {
+          branch.isEmpty ? defaultBranch : branch
+        }
+        let branch = getBranch(branch.debouncedValue)
+        do {
+          let update = try await Update.request(branch: branch, ciBuildsHost: ciBuildsHost)
+          guard branch == getBranch(self.branch.value) else {
+            return
           }
-          .buttonStyle(.borderless)
+          state = .loaded(update)
+        } catch is CancellationError {
+        } catch {
+          guard branch == getBranch(self.branch.value) else {
+            return
+          }
+          state = .error(error)
+          print("Could not switch branch '\(branch)':", error.localizedDescription)
         }
       }
+      switchButton
     }
-    .presentationDetents([.medium])
-    .presentationDragIndicator(.visible)
   }
 }
 
@@ -301,6 +321,26 @@ private struct Update: Equatable {
       throw NetworkError.invalidURL
     }
     return Update(url: url, build: latest.build_number, branch: branch)
+  }
+}
+
+private struct FeatureFlagsSheet: View {
+  @Features var features
+
+  func binding(_ flag: FeatureFlag) -> Binding<Bool> {
+    .init {
+      features.isEnabled(flag)
+    } set: {
+      features.setEnabled(flag, value: $0)
+    }
+  }
+
+  var body: some View {
+    DevSheet(title: "Feature Flags") {
+      ForEach(FeatureFlag.allCases, id: \.self) {
+        Toggle($0.rawValue, isOn: binding($0))
+      }
+    }
   }
 }
 

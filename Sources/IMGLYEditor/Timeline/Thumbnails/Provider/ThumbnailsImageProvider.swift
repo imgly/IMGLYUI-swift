@@ -3,24 +3,25 @@ import IMGLYCore
 import IMGLYEngine
 import SwiftUI
 
-/// Asynchronously loads video thumbnail preview images.
+/// Provider for loading image thumbnails
 @MainActor
-class ThumbnailsProvider: ObservableObject {
-  weak var interactor: (any TimelineInteractor)?
+class ThumbnailsImageProvider {
+  // MARK: - Properties
 
-  @Published private(set) var availableWidth: Double = 0
-  @Published private(set) var aspectRatio: Double = 1
+  let screenResolutionScaleFactor: CGFloat = UIScreen.main.scale
+
+  @Published var isLoading = false
+  @Published var thumbHeight: Double = 44
+  @Published var availableWidth: Double = 0
+  @Published var aspectRatio: Double = 1
+
   @Published private(set) var images = [CGImage?]()
-  @Published private(set) var isLoading = false
-  @Published private(set) var thumbHeight: Double = 44
 
-  private var task: Task<Void, Never>?
+  weak var interactor: (any TimelineInteractor)?
+  var task: Task<Void, Never>?
+  var previousFootageURLString: String?
 
-  private let screenResolutionScaleFactor: CGFloat = UIScreen.main.scale
-
-  private var previousFootageURLString: String?
-
-  private var debounceTimer: Timer?
+  // MARK: - Initializers
 
   init(interactor: any TimelineInteractor) {
     self.interactor = interactor
@@ -29,20 +30,11 @@ class ThumbnailsProvider: ObservableObject {
   deinit {
     task?.cancel()
   }
+}
 
-  func cancel() {
-    task?.cancel()
-  }
+// MARK: - ThumbnailsProvider
 
-  func loadThumbnails(clip: Clip, availableWidth: Double, thumbHeight: Double, debounce: TimeInterval) {
-    debounceTimer?.invalidate()
-    debounceTimer = Timer.scheduledTimer(withTimeInterval: debounce, repeats: false, block: { [weak self] _ in
-      Task { @MainActor [weak self] in
-        self?.loadThumbnails(clip: clip, availableWidth: availableWidth, thumbHeight: thumbHeight)
-      }
-    })
-  }
-
+extension ThumbnailsImageProvider: ThumbnailsProvider {
   func loadThumbnails(clip: Clip, availableWidth: Double, thumbHeight: Double) {
     guard availableWidth > 0 else { return }
 
@@ -53,8 +45,6 @@ class ThumbnailsProvider: ObservableObject {
       assertionFailure("Missing interactor")
       return
     }
-
-    guard ![.audio, .voiceOver].contains(clip.clipType) else { return }
 
     guard let duration = clip.duration else { return }
     let timeRange = 0 ... duration.seconds
@@ -75,7 +65,7 @@ class ThumbnailsProvider: ObservableObject {
         guard numberOfFrames > 0 else { return }
 
         for try await thumb in
-          try await interactor.generateThumbnails(
+          try await interactor.generateImagesThumbnails(
             clip: clip,
             thumbHeight: thumbHeight,
             timeRange: timeRange,
@@ -95,5 +85,9 @@ class ThumbnailsProvider: ObservableObject {
         isLoading = false
       } catch {}
     }
+  }
+
+  func cancel() {
+    task?.cancel()
   }
 }

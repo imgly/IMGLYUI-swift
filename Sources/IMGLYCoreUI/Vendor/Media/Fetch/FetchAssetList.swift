@@ -5,7 +5,7 @@ import SwiftUI
 @propertyWrapper
 @_spi(Internal) public struct FetchAssetList<Result>: DynamicProperty where Result: PHAsset {
   @ObservedObject
-  internal private(set) var observer: ResultsObserver<Result>
+  private(set) var observer: ResultsObserver<Result>
 
   /// Represents the results of the fetch
   @_spi(Internal) public var wrappedValue: MediaResults<Result> {

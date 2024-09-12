@@ -19,8 +19,8 @@ import Foundation
 
   @_spi(Internal) public var rawValue: String {
     switch self {
-    case let .key(key): return key.rawValue
-    case let .raw(raw): return raw
+    case let .key(key): key.rawValue
+    case let .raw(raw): raw
     }
   }
 }

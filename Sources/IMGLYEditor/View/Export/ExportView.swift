@@ -132,15 +132,15 @@ private struct ExportFlowPreview: View {
   func nextState(_ currentState: ExportView.State) -> ExportView.State {
     switch currentState {
     case .exporting:
-      return .completed(title: "Halleluja") {
+      .completed(title: "Halleluja") {
         state = nextState(state)
       }
     case .completed:
-      return .error(Error(errorDescription: "Something really bad.")) {
+      .error(Error(errorDescription: "Something really bad.")) {
         state = nextState(state)
       }
     case .error:
-      return .exporting(.spinner) {
+      .exporting(.spinner) {
         state = nextState(state)
       }
     }

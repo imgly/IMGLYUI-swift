@@ -37,12 +37,12 @@ private extension Font {
   func font(for properties: FontProperties) -> IMGLYEngine.Font? {
     fonts.first { font in
       switch properties {
-      case .init(bold: false, italic: false): return font.isRegular && !font.isItalic
-      case .init(bold: true, italic: false): return font.isBold && !font.isItalic
-      case .init(bold: true, italic: true): return font.isBold && font.isItalic
-      case .init(bold: false, italic: true): return font.isRegular && font.isItalic
+      case .init(bold: false, italic: false): font.isRegular && !font.isItalic
+      case .init(bold: true, italic: false): font.isBold && !font.isItalic
+      case .init(bold: true, italic: true): font.isBold && font.isItalic
+      case .init(bold: false, italic: true): font.isRegular && font.isItalic
       default:
-        return false
+        false
       }
     }
   }

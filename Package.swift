@@ -24,13 +24,13 @@ let package = Package(
                "IMGLYVideoEditor",
                "IMGLYPhotoEditor",
                "IMGLYApparelEditor",
-               "IMGLYPostcardEditor"
-             ])
+               "IMGLYPostcardEditor",
+             ]),
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.31.1-rc.1"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.35.0-rc.1"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "1.1.2"),
-    .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.10.0")
+    .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.10.0"),
   ],
   targets: [
     .target(
@@ -42,7 +42,7 @@ let package = Package(
       dependencies: [
         .target(name: "IMGLYCore"),
         .product(name: "SwiftUIIntrospect", package: "SwiftUI-Introspect"),
-        .product(name: "Kingfisher", package: "Kingfisher")
+        .product(name: "Kingfisher", package: "Kingfisher"),
       ]
     ),
     .target(
@@ -77,7 +77,7 @@ let package = Package(
       name: "IMGLYPostcardEditor",
       dependencies: [.target(name: "IMGLYEditor")],
       resources: [.process("Resources")]
-    )
+    ),
   ]
 )
 

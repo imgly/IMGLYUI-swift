@@ -20,17 +20,17 @@ extension SizeLetter {
 
   var fontSize: Float {
     switch self {
-    case .small: return 14
-    case .medium: return 18
-    case .large: return 22
+    case .small: 14
+    case .medium: 18
+    case .large: 22
     }
   }
 
   var sizeLetter: String {
     switch self {
-    case .small: return "S"
-    case .medium: return "M"
-    case .large: return "L"
+    case .small: "S"
+    case .medium: "M"
+    case .large: "L"
     }
   }
 

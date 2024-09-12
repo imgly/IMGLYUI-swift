@@ -13,7 +13,7 @@ struct ColorSheet: View {
   }
 
   var body: some View {
-    BottomSheet {
+    DismissableBottomSheet {
       List {
         if interactor.supportsFill(id) {
           ColorOptions(title: "Color", color: fillColor, addUndoStep: interactor.addUndoStep)

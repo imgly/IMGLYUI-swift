@@ -4,9 +4,7 @@ import SwiftUI
 
 /// A timeline ruler that adapts to the current zoom level.
 struct TimelineRulerView: View {
-  @EnvironmentObject var interactor: AnyTimelineInteractor
   @EnvironmentObject var timeline: Timeline
-  @EnvironmentObject var dataSource: TimelineDataSource
   @Environment(\.imglyViewportWidth) var viewportWidth: CGFloat
 
   private let markerWidth: CGFloat = 3
@@ -16,6 +14,7 @@ struct TimelineRulerView: View {
     HStack(alignment: .center, spacing: 0) {
       let drawingDuration = timeline.totalDuration + timeline.convertToTime(points: viewportWidth / 2)
       let roundedUpToNearestTen = ceil(TimeInterval(drawingDuration.seconds) / 10 * 10)
+
       let markers: [TimeInterval] = Array(
         stride(
           from: 0,
@@ -23,7 +22,9 @@ struct TimelineRulerView: View {
           by: timeline.timelineRulerScaleInterval
         )
       )
+
       ForEach(markers, id: \.self) { marker in
+
         HStack {
           if timeline.timelineRulerScaleInterval == 5 {
             let ticks: [TimeInterval] = Array(stride(from: 1, through: 4, by: 1))

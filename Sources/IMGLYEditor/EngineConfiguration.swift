@@ -4,9 +4,6 @@ import UniformTypeIdentifiers
 import IMGLYEngine
 import struct SwiftUI.LocalizedStringKey
 
-@_exported import IMGLYCore
-@_exported import IMGLYCoreUI
-
 /// An export progress visualization.
 public enum ExportProgress {
   /// Show spinner.
@@ -37,7 +34,6 @@ public protocol EditorEventHandler {
 
 /// A namespace for `onCreate` callbacks.
 public enum OnCreate {
-  /// The callback type.
   public typealias Callback = @Sendable @MainActor (_ engine: Engine) async throws -> Void
 
   /// The default callback which creates a new scene and loads the default and demo asset sources.

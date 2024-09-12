@@ -14,19 +14,19 @@ struct BlurOptions: View {
   }
 
   let setter: Interactor.RawSetter<AssetSelection> = { engine, blocks, value, completion in
-    var hasChanges = false
+    var didChange = false
     try blocks.forEach { block in
       if let blur = try? engine.block.getBlur(block), engine.block.isValid(blur) {
         try engine.block.destroy(blur)
-        hasChanges = true
+        didChange = true
       }
       if let newIdentifier = value.identifier, let blur = Interactor.BlurType(rawValue: newIdentifier) {
         let newBlur = try engine.block.createBlur(blur)
         try engine.block.setBlur(block, blurID: newBlur)
-        hasChanges = true
+        didChange = true
       }
     }
-    return try (completion?(engine, blocks, hasChanges) ?? false) || hasChanges
+    return try (completion?(engine, blocks, didChange) ?? false) || didChange
   }
 
   var body: some View {

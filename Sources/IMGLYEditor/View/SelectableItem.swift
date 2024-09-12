@@ -9,10 +9,10 @@ struct SelectableItem<Content: View>: View {
     VStack(spacing: 3) {
       content
         .cornerRadius(8)
-        .frame(width: 80, height: 80)
-        .padding(3)
+        .padding(4)
         .overlay {
           RoundedRectangle(cornerRadius: 10)
+            .inset(by: 1)
             .stroke(Color.accentColor, lineWidth: 2)
             .opacity(selected ? 1 : 0)
         }

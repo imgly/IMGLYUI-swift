@@ -2,15 +2,13 @@
 @_spi(Internal) import IMGLYCoreUI
 import SwiftUI
 
-@_exported import IMGLYEditor
-
 enum Page: Int, Localizable {
   case design, write
 
   var description: String {
     switch self {
-    case .design: return "Design"
-    case .write: return "Write"
+    case .design: "Design"
+    case .write: "Write"
     }
   }
 

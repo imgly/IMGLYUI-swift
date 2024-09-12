@@ -4,7 +4,7 @@ import SwiftUI
 @propertyWrapper
 @_spi(Internal) public struct FetchCollectionList<Result>: DynamicProperty where Result: PHCollectionList {
   @ObservedObject
-  internal private(set) var observer: ResultsObserver<Result>
+  private(set) var observer: ResultsObserver<Result>
 
   @_spi(Internal) public var wrappedValue: MediaResults<Result> {
     get { MediaResults(observer.result) }

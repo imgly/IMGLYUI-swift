@@ -51,9 +51,9 @@ import IMGLYEngine
 
     let named = namedColors.keys.sorted().compactMap { name in
       if let colors = namedColors[name] {
-        return (name: name, colors: sort(colors: Set(colors.keys)))
+        (name: name, colors: sort(colors: Set(colors.keys)))
       } else {
-        return nil
+        nil
       }
     }
 
@@ -75,11 +75,11 @@ import IMGLYEngine
 extension SelectionColors: CustomDebugStringConvertible {
   @_spi(Internal) public var debugDescription: String {
     var string = "namedColors: \(namedColors.count)\n"
-    namedColors.forEach { name, colors in
+    for (name, colors) in namedColors {
       string += " name: \(name) colors: \(colors.count)\n"
-      colors.forEach { color, properties in
+      for (color, properties) in colors {
         string += "  color: \(color.components ?? []) properties: \(properties.count)\n"
-        properties.forEach { property, blocks in
+        for (property, blocks) in properties {
           string += "   property: \(property.rawValue) blocks: \(blocks)\n"
         }
       }

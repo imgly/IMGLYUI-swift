@@ -1,8 +1,6 @@
 @_spi(Internal) import IMGLYEditor
 import SwiftUI
 
-@_exported import IMGLYEditor
-
 /// Custom, mobile apparel UI for creating a print-ready design. The editable page is overlaid on a t-shirt mockup to
 /// give users an idea of where to position elements.
 public struct ApparelEditor: View {

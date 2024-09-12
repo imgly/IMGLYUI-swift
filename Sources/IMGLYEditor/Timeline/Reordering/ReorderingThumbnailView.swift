@@ -11,18 +11,18 @@ struct ReorderingThumbnailView: View {
     var translation: CGSize {
       switch self {
       case .inactive, .pressing:
-        return .zero
+        .zero
       case let .dragging(translation):
-        return translation
+        translation
       }
     }
 
     var isDragging: Bool {
       switch self {
       case .inactive, .pressing:
-        return false
+        false
       case .dragging:
-        return true
+        true
       }
     }
   }
@@ -36,7 +36,7 @@ struct ReorderingThumbnailView: View {
   let index: Int
 
   @ObservedObject var clip: Clip
-  @ObservedObject var thumbnailsProvider: ThumbnailsProvider
+  @ObservedObject var thumbnailsProvider: ThumbnailsImageProvider
 
   @Binding var clips: [Clip]
   @Binding var draggedClip: Clip?
@@ -62,7 +62,7 @@ struct ReorderingThumbnailView: View {
        draggedClip: Binding<Clip?>,
        thumbnailHeight: CGFloat,
        thumbnailSpacing: CGFloat,
-       thumbnailsProvider: ThumbnailsProvider) {
+       thumbnailsProvider: ThumbnailsImageProvider) {
     self.index = index
     self.clip = clip
     _clips = clips

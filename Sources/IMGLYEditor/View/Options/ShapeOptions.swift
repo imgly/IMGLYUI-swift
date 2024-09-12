@@ -95,7 +95,7 @@ struct ShapeOptions: View {
         cornerRadiusTL,
         cornerRadiusTR,
         cornerRadiusBL,
-        cornerRadiusBR
+        cornerRadiusBR,
       ].max() ?? 0
 
       return try cornerRadius / engine.block.getRadiusFactor(block)

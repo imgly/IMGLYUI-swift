@@ -8,7 +8,7 @@ struct NavigationLinkPicker<Data, ElementLabel: View, LinkLabel: View>: View whe
   Data.Element.Element: Identifiable {
   let title: LocalizedStringKey
   let data: Data
-  var inlineTitle: Bool = true
+  var inlineTitle = true
   @Binding var selection: Data.Element.Element.ID?
 
   @ViewBuilder let elementLabel: (_ element: Data.Element.Element, _ isSelected: Bool) -> ElementLabel

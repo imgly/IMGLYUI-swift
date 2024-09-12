@@ -3,6 +3,7 @@ import Combine
 import CoreMedia
 import Foundation
 import SwiftUI
+@_spi(Internal) import IMGLYCoreUI
 
 /// Provides camera state and functionality to the `Camera`.
 /// - Manages the `CaptureService`.
@@ -44,19 +45,19 @@ final class CameraModel: ObservableObject {
 
   @Published private(set) var hasVideoPermissions = false
   @Published private(set) var hasAudioPermissions = false
-
-  @Published var isShowingErrorAlert = false
-  var errorMessage: String?
+  @Published var alertState: AlertState?
 
   // MARK: - Lifecycle
 
   init(
     _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
+    cameraMode: CameraMode = .standard,
     onDismiss: @escaping (Result<[Recording], CameraError>) -> Void
   ) {
     self.onDismiss = onDismiss
     self.settings = settings
+    self.cameraMode = cameraMode
     configuration = config
     recordingsManager = RecordingsManager(configuration: configuration)
     configureNotificationHandlers()
@@ -126,6 +127,16 @@ final class CameraModel: ObservableObject {
 
     hasVideoPermissions = isVideoAuthorized
     hasAudioPermissions = isAudioAuthorized
+
+    if !isVideoAuthorized {
+      alertState = .cameraPermissions {
+        self.cancel()
+      }
+    } else if !isAudioAuthorized {
+      alertState = .microphonePermissions {
+        self.cancel()
+      }
+    }
   }
 
   // MARK: - Camera Settings
@@ -133,40 +144,33 @@ final class CameraModel: ObservableObject {
   let countdownTimer = CountdownTimer()
 
   @Published var countdownMode = CountdownMode.disabled
-
-  @Published var dualCameraMode = DualCameraMode.disabled {
+  @Published var cameraMode: CameraMode = .standard {
     didSet {
-      captureService.setDualCameraMode(dualCameraMode)
-      do {
-        try interactor?.purgeBuffers()
-        try interactor?.setDualCameraMode(dualCameraMode)
-      } catch {
-        handleEngineError(error)
-      }
-
-      // Re-enable the flash in case it was previously activated.
-      captureService.setFlash(mode: flashMode)
+      cameraModeUpdated(cameraMode)
     }
   }
 
-  enum FlashMode {
-    case off
-    case on
+  private func cameraModeUpdated(_ cameraMode: CameraMode) {
+    captureService.setCameraMode(cameraMode)
+    do {
+      try interactor?.purgeBuffers()
+      try interactor?.setCameraLayout(cameraMode.rect1, cameraMode.rect2)
+    } catch {
+      handleEngineError(error)
+    }
+
+    // Re-enable the flash in case it was previously activated.
+    captureService.setFlash(mode: flashMode)
   }
 
   @Published var flashMode = FlashMode.off
 
   func toggleFlashMode() {
     // The flash can only be used on the back camera
-    guard !(isFrontBackFlipped && dualCameraMode == .disabled) else {
+    guard !isFrontBackFlipped, cameraMode.supportsFlash else {
       return
     }
-    switch flashMode {
-    case .off:
-      flashMode = .on
-    case .on:
-      flashMode = .off
-    }
+    flashMode.toggle()
     captureService.setFlash(mode: flashMode)
   }
 
@@ -204,6 +208,12 @@ final class CameraModel: ObservableObject {
     self.previousZoom = nil
   }
 
+  @Published var isReactionVideoSheetPresented = false
+
+  func pickReactionVideo() {
+    isReactionVideoSheetPresented = true
+  }
+
   // MARK: - Streaming
 
   func retry() {
@@ -228,8 +238,11 @@ final class CameraModel: ObservableObject {
       if self.interactor == nil {
         do {
           isInitializingStream = true
-          self.interactor = try await CameraCanvasInteractor(settings: settings, videoSize: configuration.videoSize)
-          try self.interactor?.setDualCameraMode(dualCameraMode)
+          self.interactor = try await CameraCanvasInteractor(
+            settings: settings,
+            videoSize: configuration.videoSize
+          )
+          try self.interactor?.setCameraLayout(cameraMode.rect1, cameraMode.rect2)
           DispatchQueue.main.async { [weak self] in
             self?.state = .ready
           }
@@ -251,6 +264,7 @@ final class CameraModel: ObservableObject {
             if recordingsManager.currentlyRecordedClipDuration != captureService.currentlyRecordedClipDuration {
               recordingsManager.currentlyRecordedClipDuration = captureService.currentlyRecordedClipDuration
             }
+
           case let .output2Frame(buffer):
             try interactor.updatePixelStreamFill2(buffer: buffer)
 
@@ -335,8 +349,13 @@ final class CameraModel: ObservableObject {
   }
 
   func handleActionError(_ error: Error) {
-    errorMessage = error.localizedDescription
-    isShowingErrorAlert = true
+    alertState = AlertState(
+      title: "Error",
+      message: error.localizedDescription,
+      buttons: [
+        .init(title: "OK", action: {}),
+      ]
+    )
   }
 }
 

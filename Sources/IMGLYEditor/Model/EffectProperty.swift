@@ -28,7 +28,7 @@ struct EffectProperty: Identifiable {
   static func properties(for blur: Interactor.BlurType, and selection: Interactor.BlockID?) -> [EffectProperty] {
     switch blur {
     case .radial:
-      return [EffectProperty(
+      [EffectProperty(
         label: "Intensity",
         value: .float(range: 0 ... 100, defaultValue: 30),
         property: .key(.blurRadialBlurRadius),
@@ -59,7 +59,7 @@ struct EffectProperty: Identifiable {
         id: selection
       )]
     case .mirrored:
-      return [EffectProperty(
+      [EffectProperty(
         label: "Intensity",
         value: .float(range: 0 ... 100, defaultValue: 30),
         property: .key(.blurMirroredBlurRadius),
@@ -102,14 +102,14 @@ struct EffectProperty: Identifiable {
         id: selection
       )]
     case .uniform:
-      return [EffectProperty(
+      [EffectProperty(
         label: "Intensity",
         value: .float(range: 0 ... 1, defaultValue: 0.2),
         property: .key(.blurUniformIntensity),
         id: selection
       )]
     case .linear:
-      return [EffectProperty(
+      [EffectProperty(
         label: "Intensity",
         value: .float(range: 0 ... 100, defaultValue: 30),
         property: .key(.blurLinearBlurRadius),
@@ -140,7 +140,7 @@ struct EffectProperty: Identifiable {
         id: selection
       )]
     default:
-      return []
+      []
     }
   }
 
@@ -148,7 +148,7 @@ struct EffectProperty: Identifiable {
   static func properties(for effect: Interactor.EffectType, and selection: Interactor.BlockID?) -> [EffectProperty] {
     switch effect {
     case .pixelize:
-      return [
+      [
         EffectProperty(
           label: "Horizontal Count",
           value: .float(range: 5 ... 50, defaultValue: 20),
@@ -160,10 +160,10 @@ struct EffectProperty: Identifiable {
           value: .float(range: 5 ... 50, defaultValue: 20),
           property: .key(.effectPixelizeVerticalPixelSize),
           id: selection
-        )
+        ),
       ]
     case .radialPixel:
-      return [
+      [
         EffectProperty(
           label: "Radius per Row",
           value: .float(range: 0.05 ... 1, defaultValue: 0.1),
@@ -175,10 +175,10 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0.01 ... 1, defaultValue: 0.01),
           property: .key(.effectRadialPixelSegments),
           id: selection
-        )
+        ),
       ]
     case .crossCut:
-      return [
+      [
         EffectProperty(
           label: "Horizontal Cuts",
           value: .float(range: 1 ... 10, defaultValue: 5),
@@ -202,10 +202,10 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 1, defaultValue: 1),
           property: .key(.effectCrossCutTime),
           id: selection
-        )
+        ),
       ]
     case .liquid:
-      return [
+      [
         EffectProperty(
           label: "Intensity",
           value: .float(range: 0 ... 1, defaultValue: 0.06),
@@ -223,10 +223,10 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectLiquidTime),
           id: selection
-        )
+        ),
       ]
     case .outliner:
-      return [
+      [
         EffectProperty(
           label: "Intensity",
           value: .float(range: 0 ... 1, defaultValue: 0.5),
@@ -238,10 +238,10 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectOutlinerPassthrough),
           id: selection
-        )
+        ),
       ]
     case .dotPattern:
-      return [
+      [
         EffectProperty(
           label: "Number of Dots",
           value: .float(range: 1 ... 80, defaultValue: 30),
@@ -259,17 +259,17 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 1, defaultValue: 0.3),
           property: .key(.effectDotPatternBlur),
           id: selection
-        )
+        ),
       ]
     case .posterize:
-      return [EffectProperty(
+      [EffectProperty(
         label: "Number of Levels",
         value: .float(range: 1 ... 15, defaultValue: 3),
         property: .key(.effectPosterizeLevels),
         id: selection
       )]
     case .tvGlitch:
-      return [
+      [
         EffectProperty(
           label: "Rough Distortion",
           value: .float(range: 0 ... 10, defaultValue: 3),
@@ -293,10 +293,10 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 3, defaultValue: 1),
           property: .key(.effectTvGlitchRollSpeed),
           id: selection
-        )
+        ),
       ]
     case .halfTone:
-      return [
+      [
         EffectProperty(
           label: "Angle of Pattern",
           value: .float(range: 0 ... 1, defaultValue: 0),
@@ -308,17 +308,17 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectHalfToneScale),
           id: selection
-        )
+        ),
       ]
     case .linocut:
-      return [EffectProperty(
+      [EffectProperty(
         label: "Scale of Pattern",
         value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.effectLinocutScale),
         id: selection
       )]
     case .shifter:
-      return [
+      [
         EffectProperty(
           label: "Distance",
           value: .float(range: 0 ... 1, defaultValue: 0.05),
@@ -330,17 +330,17 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 6.3, defaultValue: 0.3),
           property: .key(.effectShifterAngle),
           id: selection
-        )
+        ),
       ]
     case .mirror:
-      return [EffectProperty(
+      [EffectProperty(
         label: "Mirrored Side",
         value: .float(range: 0 ... 3, defaultValue: 1),
         property: .key(.effectMirrorSide),
         id: selection
       )]
     case .glow:
-      return [
+      [
         EffectProperty(
           label: "Bloom",
           value: .float(range: 0 ... 10, defaultValue: 4),
@@ -358,10 +358,10 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 1, defaultValue: 0.3),
           property: .key(.effectGlowDarkness),
           id: selection
-        )
+        ),
       ]
     case .vignette:
-      return [
+      [
         EffectProperty(
           label: "Size",
           value: .float(range: 0 ... 5, defaultValue: 1),
@@ -373,10 +373,10 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 1, defaultValue: 1),
           property: .key(.effectVignetteDarkness),
           id: selection
-        )
+        ),
       ]
     case .tiltShift:
-      return [
+      [
         EffectProperty(
           label: "Intensity",
           value: .float(range: 0 ... 0.02, defaultValue: 0.016),
@@ -388,17 +388,17 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 1, defaultValue: 0.4),
           property: .key(.effectTiltShiftPosition),
           id: selection
-        )
+        ),
       ]
     case .extrudeBlur:
-      return [EffectProperty(
+      [EffectProperty(
         label: "Intensity",
         value: .float(range: 0 ... 1, defaultValue: 0.2),
         property: .key(.effectExtrudeBlurAmount),
         id: selection
       )]
     case .recolor:
-      return [
+      [
         EffectProperty(
           label: "Source Color",
           value: .color(supportsOpacity: false, defaultValue: .imgly.black),
@@ -428,10 +428,10 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 1, defaultValue: 0.08),
           property: .key(.effectRecolorSmoothness),
           id: selection
-        )
+        ),
       ]
     case .greenScreen:
-      return [
+      [
         EffectProperty(
           label: "Source Color",
           value: .color(supportsOpacity: false, defaultValue: .imgly.black),
@@ -455,10 +455,10 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 1, defaultValue: 0),
           property: .key(.effectGreenScreenSpill),
           id: selection
-        )
+        ),
       ]
     default:
-      return []
+      []
     }
   }
   // swiftlint:enable cyclomatic_complexity

@@ -1,7 +1,6 @@
-import IMGLYCore
+@_spi(Internal) import IMGLYCore
 import SwiftUI
 import UniformTypeIdentifiers
-@_spi(Internal) import IMGLYCore
 
 // MARK: - Public interface
 
