@@ -144,7 +144,6 @@ extension Interactor: TimelineInteractor {
   /// Sets the time offset.
   private func setTimeOffset(clip: Clip, timeOffset: CMTime) {
     guard let engine else { return }
-    guard !clip.isInBackgroundTrack else { return }
     do {
       try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
     } catch {
@@ -190,7 +189,7 @@ extension Interactor: TimelineInteractor {
 
     guard let clip = timelineProperties.selectedClip else { return }
 
-    let absoluteStartTime = absoluteStartTime(clip: clip)
+    let absoluteStartTime = clip.timeOffset
     let originalClipDurationOrInfinity = clip.duration ?? CMTime.positiveInfinity
 
     // Pick the clip that is currently under the playhead.
@@ -219,10 +218,8 @@ extension Interactor: TimelineInteractor {
         // Adjust the second clip.
         let secondClipID = try engine.block.duplicate(clip.id)
 
-        if !clip.isInBackgroundTrack {
-          let firstClipTimeOffset = try engine.block.getTimeOffset(clip.id)
-          try engine.block.setTimeOffset(secondClipID, offset: firstClipTimeOffset + firstClipDuration.seconds)
-        }
+        let firstClipTimeOffset = try engine.block.getTimeOffset(clip.id)
+        try engine.block.setTimeOffset(secondClipID, offset: firstClipTimeOffset + firstClipDuration.seconds)
 
         // We need to set the trim to the fill on videos but to the block itself for everything else.
         let secondClipTrimmableID = clip.clipType == .video ? try engine.block.getFill(secondClipID) : secondClipID
@@ -437,12 +434,8 @@ extension Interactor: TimelineInteractor {
         clip.duration = CMTime(seconds: durationSeconds)
       }
 
-      if clip.isInBackgroundTrack {
-        clip.timeOffset = CMTime(seconds: 0)
-      } else {
-        let timeOffsetSeconds = try engine.block.getTimeOffset(id)
-        clip.timeOffset = CMTime(seconds: timeOffsetSeconds)
-      }
+      let timeOffsetSeconds = try engine.block.getTimeOffset(id)
+      clip.timeOffset = CMTime(seconds: timeOffsetSeconds)
 
       clip.allowsSelecting = try engine.block.isAllowedByScope(id, scope: .init(.editorSelect))
 
@@ -924,7 +917,7 @@ extension Interactor: TimelineInteractor {
           let clip = timelineProperties.selectedClip else { return }
     do {
       let currentPlaybackPosition = timelineProperties.player.playheadPosition
-      let clipIn = absoluteStartTime(clip: clip)
+      let clipIn = clip.timeOffset
       var clipOut: CMTime = if let duration = clip.duration {
         clipIn + duration
       } else {
@@ -955,49 +948,6 @@ extension Interactor: TimelineInteractor {
       try engine.block.setLooping(pageID, looping: !isLoopingPlaybackEnabled)
     } catch {
       handleError(error)
-    }
-  }
-
-  // MARK: Calculating absolute time offsets
-
-  /// Finds or calculates a clip’s absolute start time.
-  func absoluteStartTime(clip: Clip) -> CMTime {
-    if timelineProperties.dataSource.backgroundTrack.clips.contains(clip) {
-      var startTime = CMTime(seconds: 0)
-      for backgroundTrackClip in timelineProperties.dataSource.backgroundTrack.clips {
-        if backgroundTrackClip == clip {
-          break
-        }
-        // swiftlint:disable:next shorthand_operator
-        startTime = startTime + (backgroundTrackClip.duration ?? CMTime(seconds: 0))
-      }
-      return startTime
-    } else {
-      return clip.timeOffset
-    }
-  }
-
-  /// Finds or calculates a block’s absolute start time even if it’s not currently in the data source.
-  func absoluteStartTime(id: DesignBlockID) -> TimeInterval {
-    guard let engine else { return 0 }
-    do {
-      if let backgroundTrack = timelineProperties.backgroundTrack,
-         let backgroundTrackBlocks = try? engine.block.getChildren(backgroundTrack),
-         backgroundTrackBlocks.contains(id) {
-        var startTime: TimeInterval = 0
-        for backgroundBlock in backgroundTrackBlocks {
-          if backgroundBlock == id {
-            break
-          }
-          startTime += try engine.block.getDuration(backgroundBlock)
-        }
-        return startTime
-      } else {
-        return try engine.block.getTimeOffset(id)
-      }
-    } catch {
-      handleError(error)
-      return 0
     }
   }
 

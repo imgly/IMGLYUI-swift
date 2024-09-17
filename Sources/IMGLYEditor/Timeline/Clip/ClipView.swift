@@ -167,7 +167,9 @@ struct ClipView: View {
   }
 
   private func updateTimeOffsetWidth(timeOffset: CMTime) {
-    pointsTimeOffsetWidth = timeline.convertToPoints(time: timeOffset)
+    if !clip.isInBackgroundTrack {
+      pointsTimeOffsetWidth = timeline.convertToPoints(time: timeOffset)
+    }
   }
 }
 

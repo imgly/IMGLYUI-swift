@@ -877,7 +877,10 @@ extension Interactor: AssetLibraryInteractor {
                 try engine.block.appendChild(to: backgroundTrack, child: id)
                 try engine.block.fillParent(id)
 
-                try engine.block.setPlaybackTime(pageID, time: absoluteStartTime(id: id))
+                // Make sure to put the playhead on the added track and not slightly before it due to floating-point
+                // precision issues.
+                let epsilon = 0.0001
+                try engine.block.setPlaybackTime(pageID, time: engine.block.getTimeOffset(id) + epsilon)
               } else {
                 // Append to page
                 try engine.block.appendChild(to: pageID, child: id)

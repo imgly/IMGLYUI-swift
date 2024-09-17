@@ -42,7 +42,6 @@ protocol TimelineInteractor: ObservableObject {
   func setBlockMuted(_ id: DesignBlockID?, muted: Bool)
   func setPlayheadPosition(_ time: CMTime)
   func toggleIsLoopingPlaybackEnabled()
-  func absoluteStartTime(clip: Clip) -> CMTime
   func addAssetToBackgroundTrack()
   func addAudioAsset()
   func openVoiceOver()
