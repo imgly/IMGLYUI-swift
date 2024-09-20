@@ -122,6 +122,10 @@ class AnyTimelineInteractor: TimelineInteractor {
     interactor.toggleIsLoopingPlaybackEnabled()
   }
 
+  func absoluteStartTime(clip: Clip) -> CMTime {
+    interactor.absoluteStartTime(clip: clip)
+  }
+
   func addAssetToBackgroundTrack() {
     interactor.addAssetToBackgroundTrack()
   }
