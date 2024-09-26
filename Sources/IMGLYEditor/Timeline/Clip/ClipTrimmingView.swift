@@ -90,9 +90,10 @@ struct ClipTrimmingView: View {
           .padding(.leading, timeline.convertToPoints(time: startTrimOvershoot))
           // Dimming overlay where clip exceeds total duration
           .overlay(alignment: .trailing) {
+            let timeOffset = clip.isInBackgroundTrack ? .zero : clip.timeOffset
             let overflow = timeline.convertToPoints(
               time: timeline.totalDuration
-                - clip.timeOffset - duration - offsetDelta
+                - timeOffset - duration - offsetDelta
                 - endTrimDurationDelta - endTrimOvershoot
             )
             Rectangle()
@@ -264,7 +265,7 @@ struct ClipTrimmingView: View {
     let proposedDraggingDelta = translationWidth
     let proposedDurationDelta = timeline.convertToTime(points: proposedDraggingDelta)
 
-    let clipStartTime = interactor.absoluteStartTime(clip: clip)
+    let clipStartTime = clip.timeOffset
 
     switch draggingType {
     case .none:
@@ -434,14 +435,11 @@ struct ClipTrimmingView: View {
 
     guard !cancelled else { return }
 
-    var timeOffset = CMTime(seconds: 0)
-    if !clip.isInBackgroundTrack {
-      // If clip was trimmed:
-      timeOffset = max(.zero, clip.timeOffset + startTrimDurationDelta)
-      // If clip was moved:
-      // swiftlint:disable:next shorthand_operator
-      timeOffset = timeOffset + offsetDelta
-    }
+    // If clip was trimmed:
+    var timeOffset = max(.zero, clip.timeOffset + startTrimDurationDelta)
+    // If clip was moved:
+    // swiftlint:disable:next shorthand_operator
+    timeOffset = timeOffset + offsetDelta
 
     let trimOffset = clip.trimOffset + startTrimDurationDelta
     let duration = duration + endTrimDurationDelta - startTrimDurationDelta
@@ -493,7 +491,7 @@ struct ClipTrimmingView: View {
 
     let snapTolerance = timeline.convertToTime(points: 5)
 
-    let absoluteStartPosition = interactor.absoluteStartTime(clip: clip)
+    let absoluteStartPosition = clip.timeOffset
 
     relativeSnapDetents = snapDetents.map { detent in
       let snap = detent - absoluteStartPosition
