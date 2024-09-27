@@ -11,7 +11,7 @@ struct ThumbnailsImageView: View {
         if let image {
           Image(uiImage: UIImage(cgImage: image))
             .resizable()
-            .frame(width: isZooming ? nil : provider.thumbHeight * provider.aspectRatio,
+            .frame(width: isZooming ? nil : provider.thumbWidth,
                    height: provider.thumbHeight)
         }
       }

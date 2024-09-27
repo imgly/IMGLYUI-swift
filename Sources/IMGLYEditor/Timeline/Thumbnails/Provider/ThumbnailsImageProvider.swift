@@ -11,9 +11,9 @@ class ThumbnailsImageProvider {
   let screenResolutionScaleFactor: CGFloat = UIScreen.main.scale
 
   @Published var isLoading = false
-  @Published var thumbHeight: Double = 44
   @Published var availableWidth: Double = 0
-  @Published var aspectRatio: Double = 1
+  @Published var thumbHeight: Double = 44
+  @Published var thumbWidth: Double = 2
 
   @Published private(set) var images = [CGImage?]()
 
@@ -59,10 +59,10 @@ extension ThumbnailsImageProvider: ThumbnailsProvider {
     task = Task { [weak self] in
       guard let self else { return }
       do {
-        self.aspectRatio = aspectRatio
-        let thumbWidth = round(thumbHeight * aspectRatio)
+        // Ensure thumbWidth is at least 4px otherwise is just a blur thumbnail
+        let thumbWidth = max(round(thumbHeight * aspectRatio), 4)
         let numberOfFrames = Int((availableWidth / thumbWidth).rounded(.awayFromZero))
-        guard numberOfFrames > 0 else { return }
+        self.thumbWidth = thumbWidth
 
         for try await thumb in
           try await interactor.generateImagesThumbnails(
