@@ -387,14 +387,12 @@ extension Interactor: TimelineInteractor {
             clip.configuration = timelineProperties.configuration.imageClipConfiguration
             clip.title = ""
           }
-          let fileURI = try engine.block.getString(fillID, property: "fill/image/imageFileURI")
-          clip.footageURLString = fileURI
+          clip.footageURLString = try engine.block.get(fillID, property: .key(.fillImageImageFileURI))
         case FillType.video.rawValue:
           guard let fillID else { throw Error(errorDescription: "Video block has no fill") }
           clip.clipType = .video
           clip.configuration = timelineProperties.configuration.videoClipConfiguration
-          let fileURI = try engine.block.getString(fillID, property: "fill/video/fileURI")
-          clip.footageURLString = fileURI
+          clip.footageURLString = try engine.block.get(fillID, property: .key(.fillVideoFileURI))
           clip.title = ""
         default:
           clip.clipType = .shape
@@ -1079,11 +1077,7 @@ extension Interactor: TimelineInteractor {
       try engine.block.setDuration(id, duration: duration.seconds)
       try engine.block.setTimeOffset(id, offset: timeOffset.seconds)
       let fill = try engine.block.createFill(.video)
-      try engine.block.setString(
-        fill,
-        property: "fill/video/fileURI",
-        value: fileURL.absoluteString
-      )
+      try engine.block.set(fill, property: .key(.fillVideoFileURI), value: fileURL)
       try engine.block.setFill(id, fill: fill)
       try await engine.block.forceLoadAVResource(fill)
     } catch {

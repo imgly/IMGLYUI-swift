@@ -1,8 +1,9 @@
 import AVFoundation
 import Combine
+@_spi(Internal) import IMGLYCore
 
 /// Enum representing errors that can occur during audio recording.
-enum AudioRecordError: Error {
+enum AudioRecordError: Swift.Error {
   case failedSetup
   case failedBuffer
   case noInputChannel
@@ -54,10 +55,6 @@ public final class AudioRecordManager {
   private var desiredAudioFormat: AVAudioCommonFormat
   private var desiredAudioSampleRate: Double
 
-  private var appCategoryBeforeRecording: AVAudioSession.Category?
-  private var appModeBeforeRecording: AVAudioSession.Mode?
-  private var appOptionsBeforeRecording: AVAudioSession.CategoryOptions?
-
   private(set) var status: AudioRecordStatus = .notInitialized
 
   weak var delegate: AudioRecordDelegate?
@@ -81,32 +78,13 @@ public final class AudioRecordManager {
   // MARK: - Private Methods
 
   private func setup() {
-    getAudioSessionInitialStates()
+    AVAudioSession.push()
+
     configurePreferredAudioSettings()
     configureNotifications()
 
     DispatchQueue.global(qos: .userInitiated).async { [weak self] in
       self?.configureAudioSession()
-    }
-  }
-
-  // in order to avoid affecting the app session in the end we try to reset the AVAudioSession to previous states
-  private func getAudioSessionInitialStates() {
-    let audioSession = AVAudioSession.sharedInstance()
-
-    appCategoryBeforeRecording = audioSession.category
-    appModeBeforeRecording = audioSession.mode
-    appOptionsBeforeRecording = audioSession.categoryOptions
-  }
-
-  private func setAudioSessionInitialStates() {
-    let audioSession = AVAudioSession.sharedInstance()
-
-    if let appCategoryBeforeRecording, let appOptionsBeforeRecording {
-      try? audioSession.setCategory(appCategoryBeforeRecording, options: appOptionsBeforeRecording)
-    }
-    if let appModeBeforeRecording {
-      try? audioSession.setMode(appModeBeforeRecording)
     }
   }
 
@@ -247,6 +225,10 @@ extension AudioRecordManager: AudioRecordManagerProvider {
   func stop() {
     audioEngine.inputNode.removeTap(onBus: inputBus)
     audioEngine.stop()
-    setAudioSessionInitialStates()
+    do {
+      try AVAudioSession.pop()
+    } catch {
+      print("Couldn't restore the audio session state. Did you pop it multiple times?")
+    }
   }
 }

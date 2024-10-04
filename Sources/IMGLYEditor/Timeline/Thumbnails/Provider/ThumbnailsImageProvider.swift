@@ -8,12 +8,17 @@ import SwiftUI
 class ThumbnailsImageProvider {
   // MARK: - Properties
 
+  private enum Metrics {
+    // Minimum width for thumbnail to avoid blurring; should be at least 4px.
+    static let thumbMinWidth: CGFloat = 4.0
+  }
+
   let screenResolutionScaleFactor: CGFloat = UIScreen.main.scale
 
   @Published var isLoading = false
   @Published var availableWidth: Double = 0
   @Published var thumbHeight: Double = 44
-  @Published var thumbWidth: Double = 2
+  @Published var thumbWidth: Double = Metrics.thumbMinWidth
 
   @Published private(set) var images = [CGImage?]()
 
@@ -59,10 +64,11 @@ extension ThumbnailsImageProvider: ThumbnailsProvider {
     task = Task { [weak self] in
       guard let self else { return }
       do {
-        // Ensure thumbWidth is at least 4px otherwise is just a blur thumbnail
-        let thumbWidth = max(round(thumbHeight * aspectRatio), 4)
-        let numberOfFrames = Int((availableWidth / thumbWidth).rounded(.awayFromZero))
+        let thumbWidth = max(round(thumbHeight * aspectRatio), Metrics.thumbMinWidth)
         self.thumbWidth = thumbWidth
+
+        let numberOfFrames = Int((availableWidth / thumbWidth).rounded(.awayFromZero))
+        guard numberOfFrames > 0 else { return }
 
         for try await thumb in
           try await interactor.generateImagesThumbnails(

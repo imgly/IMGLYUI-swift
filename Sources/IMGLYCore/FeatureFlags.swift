@@ -4,7 +4,6 @@ import SwiftUI
 @_spi(Internal) public enum FeatureFlag: String, CaseIterable {
   case designEditor
   case sceneUpload
-  case videoReactions
 
   fileprivate var isInitiallyEnabled: Bool {
     switch self {

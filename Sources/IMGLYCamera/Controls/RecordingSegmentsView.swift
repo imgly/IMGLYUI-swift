@@ -81,9 +81,9 @@ struct RecordingSegmentsView: View {
       totalClipsDuration = totalClipsDuration + currentlyRecordedClipDuration
     }
     // Limit the visualization to a sensible max duration even if there is no recording limit set
-    let maxTotalDuration = camera.configuration.maxTotalDuration == .positiveInfinity
+    let maxTotalDuration = recordingsManager.maxTotalDuration == .positiveInfinity
       ? CMTime(seconds: 60)
-      : camera.configuration.maxTotalDuration
+      : recordingsManager.maxTotalDuration
     var totalDuration = max(maxTotalDuration, totalClipsDuration)
 
     // Add the length of the visual gaps to the total duration to make calculations easier.

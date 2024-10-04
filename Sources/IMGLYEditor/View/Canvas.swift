@@ -262,8 +262,11 @@ struct Canvas: View {
       Camera(interactor.config.settings) { result in
         interactor.isCameraSheetShown = false
         switch result {
-        case let .success(recordings):
+        case let .success(.recording(recordings)):
           interactor.addCameraRecordings(recordings)
+        case .success(.reaction):
+          // Reaction case not handled here.
+          break
         case let .failure(error):
           print(error)
         }

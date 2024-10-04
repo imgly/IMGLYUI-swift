@@ -1,11 +1,11 @@
 import SwiftUI
 
 /// Determines the layout of the camera in case of dual camera or reactions.
-@_spi(Internal) public enum CameraLayoutMode: String, CaseIterable, Equatable, Sendable {
-  /// Displays two video feeds next to each other.
-  case horizontal
+public enum CameraLayoutMode: String, CaseIterable, Equatable, Sendable {
   /// Displays two video feeds, one on top of the other.
   case vertical
+  /// Displays two video feeds next to each other.
+  case horizontal
 }
 
 extension CameraLayoutMode {

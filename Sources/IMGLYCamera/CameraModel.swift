@@ -4,6 +4,32 @@ import CoreMedia
 import Foundation
 import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
+@_spi(Internal) import IMGLYCore
+
+/// Internal type for unifying handling of old and new school `onDismiss` callbacks.
+enum CameraOnDismissCallback {
+  case legacy((Result<[Recording], CameraError>) -> Void)
+  case modern((Result<CameraResult, CameraError>) -> Void)
+
+  func callAsFunction(_ result: Result<[Recording], CameraError>, _ reactionVideo: Recording? = nil) {
+    switch (self, result, reactionVideo) {
+    case let (.legacy(callback), .success(recordings), .some(reactionVideo)):
+      callback(.success([reactionVideo] + recordings))
+
+    case let (.legacy(callback), _, _):
+      callback(result)
+
+    case let (.modern(callback), .failure(error), _):
+      callback(.failure(error))
+
+    case let (.modern(callback), .success(recordings), .some(reactionVideo)):
+      callback(.success(.reaction(video: reactionVideo, reaction: recordings)))
+
+    case let (.modern(callback), .success(recordings), .none):
+      callback(.success(.recording(recordings)))
+    }
+  }
+}
 
 /// Provides camera state and functionality to the `Camera`.
 /// - Manages the `CaptureService`.
@@ -14,10 +40,10 @@ final class CameraModel: ObservableObject {
   let recordingsManager: RecordingsManager
   let isMultiCamSupported = AVCaptureMultiCamSession.isMultiCamSupported
 
-  private var onDismiss: (Result<[Recording], CameraError>) -> Void
+  private var onDismiss: CameraOnDismissCallback
 
   private(set) var interactor: CameraCanvasInteractor?
-  private var cameraStreamTask: Task<Void, Error>?
+  private var cameraStreamTask: Task<Void, Swift.Error>?
   private var isInitializingStream = false
 
   private var didEnterBackgroundNotificationPublisher: AnyCancellable?
@@ -42,39 +68,80 @@ final class CameraModel: ObservableObject {
   }
 
   @Published private(set) var state = CameraState.preparing
+  @Published var cameraMode: CameraMode = .standard {
+    didSet {
+      cameraModeUpdated(cameraMode, oldValue)
+    }
+  }
 
+  @Published private(set) var reactionVideoDuration: CMTime?
   @Published private(set) var hasVideoPermissions = false
   @Published private(set) var hasAudioPermissions = false
   @Published var alertState: AlertState?
+  @Published var isLoadingAsset: Bool = false
+
+  var hasRecordings: Bool {
+    !recordingsManager.clips.isEmpty
+  }
+
+  var isRecording: Bool {
+    captureService.isRecording
+  }
+
+  private var cancellables: Set<AnyCancellable> = []
 
   // MARK: - Lifecycle
 
   init(
     _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
-    cameraMode: CameraMode = .standard,
-    onDismiss: @escaping (Result<[Recording], CameraError>) -> Void
+    mode: CameraMode = .standard,
+    onDismiss: CameraOnDismissCallback
   ) {
     self.onDismiss = onDismiss
     self.settings = settings
-    self.cameraMode = cameraMode
+    cameraMode = mode
     configuration = config
-    recordingsManager = RecordingsManager(configuration: configuration)
+    recordingsManager = RecordingsManager(
+      maxTotalDuration: configuration.maxTotalDuration,
+      allowExceedingMaxDuration: configuration.allowExceedingMaxDuration
+    )
     configureNotificationHandlers()
     updateCameraCapabilities()
+    configureObservations()
+
+    captureService.delegate = self
+
+    if mode.isReaction {
+      flipCamera()
+    }
   }
 
-  private func cleanUp() {
+  private func configureObservations() {
+    // Observe the reaction video duration and update the recording manager's max duration accordingly.
+    $reactionVideoDuration
+      .replaceNil(with: configuration.maxTotalDuration)
+      .assignNoRetain(to: \.maxTotalDuration, on: recordingsManager)
+      .store(in: &cancellables)
+  }
+
+  private func cleanUp(callback: (() -> Void)? = nil) {
     stopRecording()
-    stopStreaming()
+    stopStreaming(callback: callback)
     interactor?.destroyEngine()
   }
 
   // MARK: - Callback
 
   func done() {
-    cleanUp()
-    onDismiss(.success(recordingsManager.clips))
+    let cameraMode = cameraMode
+    let reactionVideoDuration = reactionVideoDuration
+    let clips = recordingsManager.clips
+    let onDismiss = onDismiss
+    cleanUp {
+      let reactionVideo = reactionVideoDuration.flatMap { cameraMode.reactionVideo(duration: $0) }
+      onDismiss(.success(clips), reactionVideo)
+    }
   }
 
   func cancel() {
@@ -144,23 +211,47 @@ final class CameraModel: ObservableObject {
   let countdownTimer = CountdownTimer()
 
   @Published var countdownMode = CountdownMode.disabled
-  @Published var cameraMode: CameraMode = .standard {
-    didSet {
-      cameraModeUpdated(cameraMode)
-    }
-  }
 
-  private func cameraModeUpdated(_ cameraMode: CameraMode) {
+  private func cameraModeUpdated(_ cameraMode: CameraMode, _ previousValue: CameraMode?) {
     captureService.setCameraMode(cameraMode)
     do {
-      try interactor?.purgeBuffers()
       try interactor?.setCameraLayout(cameraMode.rect1, cameraMode.rect2)
+
+      // This should have some neater logic, but basically, when switching between different layouts/positions in
+      // reactions we want to avoid flashing black rectangles at the user.
+      switch (cameraMode, previousValue) {
+      case (.reaction, .reaction):
+        break
+      default:
+        try interactor?.purgeBuffers()
+      }
+
+      if case let .reaction(_, url, _) = cameraMode {
+        configureReactions(url: url)
+      } else {
+        reactionVideoDuration = nil
+        try? interactor?.clearVideo()
+      }
     } catch {
       handleEngineError(error)
     }
 
     // Re-enable the flash in case it was previously activated.
     captureService.setFlash(mode: flashMode)
+  }
+
+  private func configureReactions(url: URL) {
+    isLoadingAsset = true
+    Task { [weak self] in
+      defer { self?.isLoadingAsset = false }
+      do {
+        let video = try await self?.interactor?.loadVideo(url: url)
+        self?.reactionVideoDuration = video.map { CMTime(seconds: $0.duration) }
+      } catch {
+        print(error)
+        self?.alertState = .failedToLoadAsset()
+      }
+    }
   }
 
   @Published var flashMode = FlashMode.off
@@ -188,6 +279,11 @@ final class CameraModel: ObservableObject {
       handleEngineError(error)
     }
     isFrontBackFlipped.toggle()
+  }
+
+  func swapReactionVideoPosition() {
+    guard case let .reaction(layout, url, positionsSwapped) = cameraMode else { return }
+    cameraMode = .reaction(layout, video: url, positionsSwapped: !positionsSwapped)
   }
 
   private var previousZoom: Double?
@@ -242,9 +338,11 @@ final class CameraModel: ObservableObject {
             settings: settings,
             videoSize: configuration.videoSize
           )
-          try self.interactor?.setCameraLayout(cameraMode.rect1, cameraMode.rect2)
           DispatchQueue.main.async { [weak self] in
             self?.state = .ready
+            if let currentMode = self?.cameraMode {
+              self?.cameraModeUpdated(currentMode, nil)
+            }
           }
         } catch {
           handleEngineError(error)
@@ -281,8 +379,8 @@ final class CameraModel: ObservableObject {
     }
   }
 
-  func stopStreaming() {
-    captureService.pauseStreaming()
+  func stopStreaming(callback: (() -> Void)? = nil) {
+    captureService.pauseStreaming(callback: callback)
     cameraStreamTask?.cancel()
     cameraStreamTask = nil
     do {
@@ -320,6 +418,7 @@ final class CameraModel: ObservableObject {
     let remainingDuration = recordingsManager.remainingRecordingDuration
     state = .recording
     captureService.startRecording(remainingRecordingDuration: remainingDuration)
+    interactor?.reactionVideoSetPlaying(true)
   }
 
   func stopRecording() {
@@ -329,26 +428,38 @@ final class CameraModel: ObservableObject {
         self?.state = .ready
       }
       try captureService.stopRecording()
+      interactor?.reactionVideoSetPlaying(false)
     } catch {
       handleCaptureError(error)
     }
   }
 
+  func deleteLastRecording() {
+    do {
+      objectWillChange.send()
+      try recordingsManager.deleteLastRecording()
+      let currentDuration = recordingsManager.recordedClipsTotalDuration.seconds
+      try interactor?.setReactionPlaybackTime(currentDuration)
+    } catch {
+      handleActionError(error)
+    }
+  }
+
   // MARK: - Error handling
 
-  func handleEngineError(_ error: Error) {
+  func handleEngineError(_ error: Swift.Error) {
     DispatchQueue.main.async { [weak self] in
       self?.state = .error(.imglyEngineError(error.localizedDescription))
     }
   }
 
-  func handleCaptureError(_ error: Error) {
+  func handleCaptureError(_ error: Swift.Error) {
     DispatchQueue.main.async { [weak self] in
       self?.state = .error(.captureError(error.localizedDescription))
     }
   }
 
-  func handleActionError(_ error: Error) {
+  func handleActionError(_ error: Swift.Error) {
     alertState = AlertState(
       title: "Error",
       message: error.localizedDescription,
@@ -446,5 +557,11 @@ extension CameraModel {
       guard let self else { return }
       startStreaming()
     })
+  }
+}
+
+extension CameraModel: CaptureServiceDelegate {
+  func captureServiceDidStopRecording(_: CaptureService) {
+    stopRecording()
   }
 }

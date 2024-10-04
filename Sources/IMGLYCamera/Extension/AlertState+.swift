@@ -37,4 +37,10 @@ extension AlertState {
       ]
     )
   }
+
+  static func failedToLoadAsset() -> Self {
+    AlertState(title: "Failed to load asset", buttons: [
+      .init(title: "Ok", action: {}),
+    ])
+  }
 }

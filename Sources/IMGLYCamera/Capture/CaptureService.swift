@@ -1,10 +1,12 @@
 import AVFoundation
 import Foundation
 import UIKit
+@_spi(Internal) import IMGLYCore
 
 /// Manages the camera and microphone device state and provides a stream of `CaptureStreamUpdate`s.
 final class CaptureService: NSObject, @unchecked Sendable {
   var videoOrientation: AVCaptureVideoOrientation = .portrait
+  weak var delegate: CaptureServiceDelegate?
 
   private(set) var isStreaming = false
   private(set) var isRecording = false
@@ -18,13 +20,15 @@ final class CaptureService: NSObject, @unchecked Sendable {
   private let videoFileExtension = "mp4"
   private let videoCodec = AVVideoCodecType.h264
 
+  static var isMultiCamSupported: Bool { AVCaptureMultiCamSession.isMultiCamSupported }
+
   // MARK: -
 
   private lazy var queue = DispatchQueue(label: "ly.img.camera", qos: .userInteractive)
 
   // This is either an AVCaptureSession or an AVCaptureMultiCamSession, depending on the device.
   let captureSession: AVCaptureSession
-  private var streamingContinuation: AsyncThrowingStream<CaptureStreamUpdate, Error>.Continuation?
+  private var streamingContinuation: AsyncThrowingStream<CaptureStreamUpdate, Swift.Error>.Continuation?
 
   private var camera1Input: AVCaptureDeviceInput?
   private var camera2Input: AVCaptureDeviceInput?
@@ -49,17 +53,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
     super.init()
 
-    // Don't let the capture session use the shared app audio session. Otherwise, miniaudio
-    // (the engine's audio backend) can't track the interruption and has an incorrect state.
-    // https://stackoverflow.com/a/21196673/10324858
-    // Another way to solve this would be to reconfigure the shared session for playback again
-    // after we're done with recording.
-
-    // This solution has a drawback:
-    // Not using the app’s default session prevents us from enabling haptic feedback while recording.
-    // See `HapticsHelper` for details.
-
-    captureSession.usesApplicationAudioSession = false
+    captureSession.automaticallyConfiguresApplicationAudioSession = false
 
     configure()
     rewireConnections(cameraMode: cameraMode, isFlipped: isFlipped)
@@ -196,10 +190,9 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
   // MARK: -
 
-  func resumeStreaming(with flashMode: FlashMode) -> AsyncThrowingStream<CaptureStreamUpdate, Error> {
+  func resumeStreaming(with flashMode: FlashMode) -> AsyncThrowingStream<CaptureStreamUpdate, Swift.Error> {
     startRunning()
     setFlash(mode: flashMode)
-    isStreaming = true
     return .init { continuation in
       streamingContinuation = continuation
 
@@ -210,22 +203,39 @@ final class CaptureService: NSObject, @unchecked Sendable {
     }
   }
 
-  func pauseStreaming() {
-    stopRunning()
-    isStreaming = false
+  func pauseStreaming(callback: (() -> Void)?) {
+    stopRunning(callback: callback)
   }
 
   private func startRunning() {
     queue.async { [weak self] in
       guard let self else { return }
+      do {
+        AVAudioSession.push()
+        try AVAudioSession.prepareForRecording()
+      } catch {
+        print("Couldn't prepare session for recording")
+      }
+
       captureSession.startRunning()
+      isStreaming = true
     }
   }
 
-  private func stopRunning() {
+  private func stopRunning(callback: (() -> Void)? = nil) {
+    guard isStreaming else { return }
+
+    isStreaming = false
+
     queue.async { [weak self] in
       guard let self else { return }
       captureSession.stopRunning()
+      callback?()
+      do {
+        try AVAudioSession.pop()
+      } catch {
+        print("Couldn't return session to previous mode \(error)")
+      }
     }
   }
 
@@ -238,6 +248,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
           let output1Settings = output1Settings() else { return }
     queue.async { [weak self] in
       guard let self else { return }
+      isRecording = true
 
       let fileURL1 = URL(fileURLWithPath: NSTemporaryDirectory() + UUID().uuidString + "." + videoFileExtension)
       recorder1 = VideoRecorder(
@@ -248,7 +259,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
       recorder1?.startRecording(to: fileURL1, fileType: videoFileType)
       recorder2 = nil
 
-      if cameraMode != .standard {
+      if case .dualCamera = cameraMode {
         guard let output2Settings = output2Settings() else { return }
         let fileURL2 = URL(fileURLWithPath: NSTemporaryDirectory() + UUID().uuidString + "." + videoFileExtension)
         recorder2 = VideoRecorder(
@@ -259,7 +270,6 @@ final class CaptureService: NSObject, @unchecked Sendable {
         recorder2?.startRecording(to: fileURL2, fileType: videoFileType)
       }
       self.remainingRecordingDuration = remainingRecordingDuration
-      isRecording = true
     }
   }
 
@@ -288,7 +298,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
         let recordedClip = try await Recording(
           videos: [
-            .init(url: firstVideoURL, rect: cameraMode.rect1),
+            .init(url: firstVideoURL, rect: cameraMode.firstRecordingRect),
           ],
           duration: recordedDuration
         )
@@ -296,6 +306,9 @@ final class CaptureService: NSObject, @unchecked Sendable {
         currentlyRecordedClipDuration = nil
       }
     }
+
+    recorder1 = nil
+    recorder2 = nil
   }
 
   private func audioSettings() -> [String: NSObject]? {
@@ -383,6 +396,7 @@ extension CaptureService: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptur
           if let duration = recorder.recordedDuration,
              duration > remainingRecordingDuration {
             try? stopRecording()
+            delegate?.captureServiceDidStopRecording(self)
           }
         }
       } else {
@@ -393,4 +407,8 @@ extension CaptureService: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptur
       recorder1?.recordAudioSample(sampleBuffer: sampleBuffer)
     }
   }
+}
+
+protocol CaptureServiceDelegate: AnyObject {
+  func captureServiceDidStopRecording(_ captureService: CaptureService)
 }

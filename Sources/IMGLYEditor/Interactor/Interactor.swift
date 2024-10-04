@@ -365,7 +365,11 @@ extension Interactor {
         }
         try changed.forEach {
           try engine.block.overrideAndRestore($0, scopes: overrideScopes) {
-            try engine.block.setFont($0, fontFileURL: font.uri, typeface: typeface)
+            if resetFontProperties {
+              try engine.block.setTypeface($0, fallbackFontFileURL: font.uri, typeface: typeface)
+            } else {
+              try engine.block.setFont($0, fontFileURL: font.uri, typeface: typeface)
+            }
           }
         }
         let didChange = !changed.isEmpty
@@ -835,6 +839,7 @@ extension Interactor: AssetLibraryInteractor {
             try engine.block.setMetadata(id, key: "name", value: label)
           }
 
+          var trimID = id
           if try engine.block.supportsFill(id) {
             let fillID = try engine.block.getFill(id)
             let fillType = try engine.block.getType(fillID)
@@ -843,10 +848,16 @@ extension Interactor: AssetLibraryInteractor {
               let newFootageDuration = try engine.block.getAVResourceTotalDuration(fillID)
               try engine.block.setDuration(id, duration: min(newFootageDuration, oldDuration))
             }
+            trimID = fillID
           } else if try engine.block.getType(id) == BlockType.audio.rawValue {
             try await engine.block.forceLoadAVResource(id)
             let newFootageDuration = try engine.block.getAVResourceTotalDuration(id)
             try engine.block.setDuration(id, duration: min(newFootageDuration, oldDuration))
+          }
+
+          // When replacing a block, we need to reset its trim offset.
+          if try engine.block.supportsTrim(trimID) {
+            try? engine.block.setTrimOffset(trimID, offset: .zero)
           }
         } else {
           let addToBackgroundTrack = sheet.type == .clip

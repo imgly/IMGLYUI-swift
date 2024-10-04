@@ -2,7 +2,8 @@ import CoreMedia
 import SwiftUI
 
 class RecordingsManager: ObservableObject {
-  let configuration: CameraConfiguration
+  var maxTotalDuration: CMTime
+  var allowExceedingMaxDuration: Bool
 
   @Published var currentlyRecordedClipDuration: CMTime?
 
@@ -24,19 +25,23 @@ class RecordingsManager: ObservableObject {
   }
 
   var hasReachedMaxDuration: Bool {
-    !configuration.allowExceedingMaxDuration && recordedClipsTotalDuration >= configuration.maxTotalDuration
+    !allowExceedingMaxDuration && recordedClipsTotalDuration >= maxTotalDuration
   }
 
   var remainingRecordingDuration: CMTime {
-    configuration.allowExceedingMaxDuration
+    allowExceedingMaxDuration
       ? .positiveInfinity
-      : configuration.maxTotalDuration - recordedClipsTotalDuration
+      : maxTotalDuration - recordedClipsTotalDuration
   }
 
   // MARK: -
 
-  init(configuration: CameraConfiguration) {
-    self.configuration = configuration
+  init(
+    maxTotalDuration: CMTime,
+    allowExceedingMaxDuration: Bool
+  ) {
+    self.maxTotalDuration = maxTotalDuration
+    self.allowExceedingMaxDuration = allowExceedingMaxDuration
   }
 
   // MARK: - File management

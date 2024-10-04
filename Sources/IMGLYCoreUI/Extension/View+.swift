@@ -29,6 +29,7 @@ public extension IMGLY where Wrapped: View {
     wrapped.environmentObject(AnyAssetLibraryInteractor(erasing: interactor))
   }
 
+  @MainActor
   func assetLibraryDismissButton(_ content: () -> some View) -> some View {
     wrapped.environment(\.imglyDismissButtonView, DismissButton(content: AnyView(erasing: content())))
   }

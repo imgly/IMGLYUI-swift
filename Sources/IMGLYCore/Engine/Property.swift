@@ -15,6 +15,8 @@ import Foundation
 
   case fillImageImageFileURI = "fill/image/imageFileURI"
 
+  case fillVideoFileURI = "fill/video/fileURI"
+
   case strokeEnabled = "stroke/enabled"
   case strokeColor = "stroke/color"
   case strokeWidth = "stroke/width"

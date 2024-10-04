@@ -68,7 +68,7 @@ private extension URL {
 
 private extension UTType {
   func blockType() throws -> DesignBlockType {
-    if conforms(to: .video) || conforms(to: .image) {
+    if conforms(to: .movie) || conforms(to: .image) {
       return .graphic
     } else if conforms(to: .audio) {
       return .audio
@@ -77,7 +77,7 @@ private extension UTType {
   }
 
   func blockKind() throws -> BlockKind {
-    if conforms(to: .video) {
+    if conforms(to: .movie) {
       return .key(.video)
     } else if conforms(to: .audio) {
       return .key(.audio)
@@ -88,7 +88,7 @@ private extension UTType {
   }
 
   func fillType() -> FillType? {
-    if conforms(to: .video) {
+    if conforms(to: .movie) {
       return .video
     } else if conforms(to: .image) {
       return .image

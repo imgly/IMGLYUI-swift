@@ -18,7 +18,12 @@ public struct Camera: View {
   }
 
   var showsCameraUI: Bool {
-    [.ready, .countingDown, .recording].contains(camera.state)
+    [.ready, .countingDown, .recording].contains(camera.state) && !camera.isLoadingAsset
+  }
+
+  var recordedDuration: CMTime {
+    camera.recordingsManager.recordedClipsTotalDuration
+      + (camera.recordingsManager.currentlyRecordedClipDuration ?? .zero)
   }
 
   var showsFlashButton: Bool {
@@ -30,7 +35,15 @@ public struct Camera: View {
   }
 
   var maxDuration: String {
-    camera.configuration.maxTotalDuration.imgly.formattedDurationStringForClip()
+    camera.recordingsManager.maxTotalDuration.imgly.formattedDurationStringForClip()
+  }
+
+  var isRecordButtonDisabled: Bool {
+    camera.recordingsManager.hasReachedMaxDuration || !showsCameraUI || camera.isLoadingAsset
+  }
+
+  var canSwapPositions: Bool {
+    !camera.hasRecordings && !camera.isRecording
   }
 
   /// Creates a camera.
@@ -40,6 +53,8 @@ public struct Camera: View {
   ///   - onDismiss: When the camera is dismissed, it calls the `onDismiss` and passes a `Result`.
   ///     - If the user has recorded videos, you’ll receive a `.success` result and an array of `Recording`s.
   ///     - If the user exits the camera without recording a video, you’ll get a `.failure` of `CameraError.cancelled`.
+  @available(*, deprecated, message: "Use inititalizer with `Result<CameraResult, CameraError>` callback instead.")
+  @_disfavoredOverload
   public init(
     _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
@@ -48,8 +63,8 @@ public struct Camera: View {
     let camera = CameraModel(
       settings,
       config: config,
-      cameraMode: .standard,
-      onDismiss: onDismiss
+      mode: .standard,
+      onDismiss: .legacy(onDismiss)
     )
 
     _camera = StateObject(wrappedValue: camera)
@@ -59,32 +74,58 @@ public struct Camera: View {
   /// - Parameters:
   ///   - settings: The settings to initialize the underlying engine.
   ///   - config: Customize the camera experience and behavior.
-  ///   - mode: The mode to launch the camera in.
+  ///   - mode: The mode to launch the camera in. You can use `Camera.isModeSupported(_:)` to check before initializing
+  /// the camera. Devices that don't support `.dualCamera` mode will fallback to `.standard` mode.
   ///   - onDismiss: When the camera is dismissed, it calls the `onDismiss` and passes a `Result`.
-  ///     - If the user has recorded videos, you’ll receive a `.success` result and an array of `Recording`s.
+  ///     - If the user has recorded videos, you’ll receive a `.success` of `CameraResult`.
   ///     - If the user exits the camera without recording a video, you’ll get a `.failure` of `CameraError.cancelled`.
-  @_spi(Internal) public init(
+  public init(
     _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
     mode: CameraMode = .standard,
-    onDismiss: @escaping (Result<[Recording], CameraError>) -> Void
+    onDismiss: @escaping (Result<CameraResult, CameraError>) -> Void
   ) {
+    var mode = mode
+    if !Camera.isModeSupported(mode) {
+      print("""
+      Camera mode \(mode) is not supported on this device. \
+      Falling back to `.standard` mode. \
+      You can use `Camera.isModeSupported(_:)` to check before initializing the camera.
+      """)
+      mode = .standard
+    }
     let camera = CameraModel(
       settings,
       config: config,
-      cameraMode: mode,
-      onDismiss: onDismiss
+      mode: mode,
+      onDismiss: .modern(onDismiss)
     )
 
     _camera = StateObject(wrappedValue: camera)
+  }
+
+  /// Checks if the given camera mode is supported.
+  ///
+  /// - Parameter mode: The camera mode to check for support.
+  /// - Returns: `true` if the given `mode` is supported, otherwise `false`.
+  public static func isModeSupported(_ mode: CameraMode) -> Bool {
+    switch mode {
+    case .dualCamera: CaptureService.isMultiCamSupported
+    default: true
+    }
   }
 
   public var body: some View {
     VStack(spacing: 0) {
       VStack {
         CenteredLeadingTrailing {
-          TimecodeView()
-            .padding(.top)
+          TimecodeView(
+            isRecording: camera.isRecording,
+            recordedDuration: recordedDuration,
+            maxDuration: camera.reactionVideoDuration ?? camera.configuration.maxTotalDuration,
+            recordingColor: camera.configuration.recordingColor
+          )
+          .padding(.top)
         } leading: {
           cancelButton
             .padding(.top)
@@ -93,9 +134,10 @@ public struct Camera: View {
         } trailing: {}
 
         Spacer()
+        Spacer()
 
         HStack {
-          if camera.state == .ready {
+          if camera.state == .ready, !camera.isLoadingAsset {
             FeaturesMenuView()
               .transition(.offset(x: -20).combined(with: .opacity))
           }
@@ -118,7 +160,7 @@ public struct Camera: View {
               }
               .animation(.spring(), value: camera.recordingsManager.hasReachedMaxDuration)
             }
-            .disabled(camera.recordingsManager.hasReachedMaxDuration || !showsCameraUI)
+            .disabled(isRecordButtonDisabled)
         } leading: {
           Spacer()
           if didRecord {
@@ -191,6 +233,12 @@ public struct Camera: View {
         CameraCanvasView(interactor: interactor)
           .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
           .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
+          .opacity(camera.isLoadingAsset ? 0 : 1)
+          .overlay {
+            if camera.isLoadingAsset {
+              ProgressView()
+            }
+          }
       }
     }
   }
@@ -198,8 +246,13 @@ public struct Camera: View {
   @ViewBuilder private func bottomButtons() -> some View {
     if showsCameraUI {
       HStack {
-        if showsFlashButton {
-          flashButton
+        flashButton
+          .opacity(showsFlashButton ? 1 : 0)
+        Spacer()
+        if case .reaction = camera.cameraMode, canSwapPositions {
+          swapPlaceButton
+            .disabled(isRecordButtonDisabled)
+            .opacity(camera.isLoadingAsset ? 0.8 : 1)
         }
         Spacer()
         flipButton
@@ -270,11 +323,7 @@ extension Camera {
       titleVisibility: .visible
     ) {
       Button("Delete Last Recording", role: .destructive) {
-        do {
-          try camera.recordingsManager.deleteLastRecording()
-        } catch {
-          camera.handleActionError(error)
-        }
+        camera.deleteLastRecording()
       }
       Button("Cancel", role: .cancel) {
         isShowingDeleteDialog = false
@@ -301,6 +350,17 @@ extension Camera {
         .rotationEffect(camera.isFrontBackFlipped ? .degrees(180) : .zero)
         .animation(.imgly.flip.delay(0.1), value: camera.isFrontBackFlipped)
         .accessibilityLabel(camera.isFrontBackFlipped ? "Flip to back camera" : "Flip to front camera")
+    }
+    .buttonStyle(CameraToolButtonStyle())
+  }
+
+  @ViewBuilder var swapPlaceButton: some View {
+    Button {
+      HapticsHelper.shared.cameraSelectFeature()
+      camera.swapReactionVideoPosition()
+    } label: {
+      Image(systemName: "rectangle.2.swap")
+        .accessibilityLabel("Swap video and camera position")
     }
     .buttonStyle(CameraToolButtonStyle())
   }

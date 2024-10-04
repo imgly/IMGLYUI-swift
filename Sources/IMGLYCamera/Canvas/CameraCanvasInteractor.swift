@@ -19,6 +19,8 @@ class CameraCanvasInteractor: ObservableObject {
 
   private var backgroundRect: DesignBlockID
 
+  private var reactionVideo: ReactionVideo?
+
   let canvasWidth: Float
   let canvasHeight: Float
 
@@ -125,20 +127,66 @@ class CameraCanvasInteractor: ObservableObject {
     guard currentCameraLayout.0 != rect1 || currentCameraLayout.1 != rect2 else { return }
     currentCameraLayout = (rect1, rect2)
 
-    try engine.block.setFrame(streamRect1, value: rect1)
-
-    if let rect2 {
+    switch (rect2, reactionVideo) {
+    case let (.some(rect2), .none):
+      try engine.block.setFrame(streamRect1, value: rect1)
       try engine.block.setVisible(streamRect2, visible: true)
       try engine.block.setFrame(streamRect2, value: rect2)
-    } else {
+
+    case let (.some(rect2), .some(reactionVideo)):
+      try engine.block.setFrame(streamRect1, value: rect2)
+      try engine.block.setFrame(reactionVideo.graphic, value: rect1)
+
+    default:
+      try engine.block.setFrame(streamRect1, value: rect1)
       try engine.block.setVisible(streamRect2, visible: false)
     }
+  }
+
+  func loadVideo(url: URL) async throws -> ReactionVideo {
+    guard let engine else { throw Error(errorDescription: "Engine missing.") }
+    if let video = reactionVideo, video.url == url {
+      return video
+    } else {
+      let frame = currentCameraLayout.0
+      let video = try await engine.addVideo(
+        url: url,
+        frame: frame,
+        page: page
+      )
+      try engine.block.setFrame(streamRect1, value: currentCameraLayout.1 ?? .zero)
+      reactionVideo = video
+      return video
+    }
+  }
+
+  func clearVideo() throws {
+    guard let reactionVideo else { return }
+    guard let engine else { throw Error(errorDescription: "Engine missing.") }
+    try engine.block.destroy(reactionVideo.fill)
+    try engine.block.destroy(reactionVideo.graphic)
+  }
+
+  var reactionVideoDuration: Double? {
+    guard let engine, let reactionVideo else { return nil }
+    return try? engine.block.getAVResourceTotalDuration(reactionVideo.fill)
+  }
+
+  func reactionVideoSetPlaying(_ playing: Bool) {
+    guard let engine, let reactionVideo else { return }
+    try? engine.block.setPlaying(reactionVideo.fill, enabled: playing)
+  }
+
+  func setReactionPlaybackTime(_ time: Double) throws {
+    guard let engine, let reactionVideo else { return }
+    try engine.block.setPlaybackTime(reactionVideo.fill, time: time)
   }
 
   /// Clear both camera image buffers by filling them with a transparent pixel.
   func purgeBuffers() throws {
     guard let engine else { throw Error(errorDescription: "Engine missing.") }
     var pixelBuffer: CVPixelBuffer?
+
     CVPixelBufferCreate(kCFAllocatorDefault, 1, 1, kCVPixelFormatType_32BGRA, nil, &pixelBuffer)
     guard let pixelBuffer else { throw Error(errorDescription: "Could not create pixel buffer.") }
     try engine.block.setNativePixelBuffer(pixelStreamFill1, buffer: pixelBuffer)
@@ -147,5 +195,33 @@ class CameraCanvasInteractor: ObservableObject {
 
   func destroyEngine() {
     engine = nil
+  }
+}
+
+struct ReactionVideo {
+  var graphic: DesignBlockID
+  var fill: DesignBlockID
+  var url: URL
+  var duration: Double
+}
+
+extension Engine {
+  func addVideo(
+    url: URL,
+    frame: CGRect,
+    page: DesignBlockID
+  ) async throws -> ReactionVideo {
+    let video = try block.create(.graphic)
+    try block.setShape(video, shape: block.createShape(.rect))
+    let videoFill = try block.createFill(.video)
+    try block.set(videoFill, property: .key(.fillVideoFileURI), value: url)
+    try block.setFill(video, fill: videoFill)
+    try block.setFrame(video, value: frame)
+    try block.setSoloPlaybackEnabled(videoFill, enabled: true)
+    try block.appendChild(to: page, child: video)
+    try await block.forceLoadAVResource(videoFill)
+    let duration = try block.getAVResourceTotalDuration(videoFill)
+    try block.setDuration(video, duration: duration)
+    return ReactionVideo(graphic: video, fill: videoFill, url: url, duration: duration)
   }
 }
