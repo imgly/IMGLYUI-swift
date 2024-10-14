@@ -21,11 +21,6 @@ public struct Camera: View {
     [.ready, .countingDown, .recording].contains(camera.state) && !camera.isLoadingAsset
   }
 
-  var recordedDuration: CMTime {
-    camera.recordingsManager.recordedClipsTotalDuration
-      + (camera.recordingsManager.currentlyRecordedClipDuration ?? .zero)
-  }
-
   var showsFlashButton: Bool {
     !camera.isFrontBackFlipped && camera.cameraMode.supportsFlash
   }
@@ -119,13 +114,8 @@ public struct Camera: View {
     VStack(spacing: 0) {
       VStack {
         CenteredLeadingTrailing {
-          TimecodeView(
-            isRecording: camera.isRecording,
-            recordedDuration: recordedDuration,
-            maxDuration: camera.reactionVideoDuration ?? camera.configuration.maxTotalDuration,
-            recordingColor: camera.configuration.recordingColor
-          )
-          .padding(.top)
+          TimecodeView()
+            .padding(.top)
         } leading: {
           cancelButton
             .padding(.top)

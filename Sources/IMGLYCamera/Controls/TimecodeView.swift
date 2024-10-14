@@ -3,16 +3,22 @@ import SwiftUI
 @_spi(Internal) import IMGLYCore
 
 struct TimecodeView: View {
-  var isRecording: Bool
-  var recordedDuration: CMTime
-  var maxDuration: CMTime
-  var recordingColor: Color
+  @EnvironmentObject var camera: CameraModel
+  @EnvironmentObject var recordingsManager: RecordingsManager
+
+  var maxDuration: CMTime {
+    camera.reactionVideoDuration ?? camera.configuration.maxTotalDuration
+  }
 
   var body: some View {
+    let isRecording = camera.state == .recording
+    let recordedDuration = recordingsManager
+      .recordedClipsTotalDuration + (recordingsManager.currentlyRecordedClipDuration ?? .zero)
+
     HStack(spacing: 3) {
       if isRecording {
         Image(systemName: "circle.fill")
-          .foregroundColor(recordingColor)
+          .foregroundColor(camera.configuration.recordingColor)
           .transition(.scale)
       }
 
@@ -43,30 +49,9 @@ struct TimecodeView: View {
   }
 }
 
-#Preview("Recording") {
-  ZStack {
-    TimecodeView(
-      isRecording: true,
-      recordedDuration: CMTime(seconds: 10),
-      maxDuration: CMTime(seconds: 30),
-      recordingColor: .red
-    )
+struct TimecodeView_Previews: PreviewProvider {
+  static var previews: some View {
+    TimecodeView()
+      .environmentObject(CameraModel(.init(license: ""), onDismiss: .modern { _ in }))
   }
-  .frame(maxWidth: .infinity, maxHeight: .infinity)
-  .background(LinearGradient(colors: [.yellow, .green], startPoint: .top, endPoint: .bottom))
-  .environment(\.colorScheme, .dark)
-}
-
-#Preview("Not Recording") {
-  ZStack {
-    TimecodeView(
-      isRecording: false,
-      recordedDuration: CMTime(seconds: 10),
-      maxDuration: CMTime(seconds: 30),
-      recordingColor: .red
-    )
-  }
-  .frame(maxWidth: .infinity, maxHeight: .infinity)
-  .background(LinearGradient(colors: [.yellow, .green], startPoint: .top, endPoint: .bottom))
-  .environment(\.colorScheme, .dark)
 }
