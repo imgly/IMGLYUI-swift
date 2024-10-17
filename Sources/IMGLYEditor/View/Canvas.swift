@@ -77,6 +77,7 @@ struct Canvas: View {
   @State private var bottomSafeAreaInset: CGFloat = 0
   @State private var keyboardToolbarHeight: CGFloat = 0
   @State private var isTimelineMinimized = false
+  @State private var isTimelineAnimating = false
 
   @ViewBuilder func bottomBar(type: SheetType?) -> some View {
     BottomBar(type: type, id: id, height: bottomBarHeight, bottomSafeAreaInset: bottomSafeAreaInset)
@@ -90,7 +91,8 @@ struct Canvas: View {
       interactor.canvas
         .imgly.canvasAction(anchor: .top,
                             topSafeAreaInset: topSafeAreaInset,
-                            bottomSafeAreaInset: safeAreaInsetHeight) {
+                            bottomSafeAreaInset: safeAreaInsetHeight,
+                            isVisible: !isTimelineAnimating) {
           CanvasMenu()
         }
     }
@@ -98,7 +100,8 @@ struct Canvas: View {
 
   @ViewBuilder func playerBar() -> some View {
     if let timeline = interactor.timelineProperties.timeline {
-      PlayerBarView(isTimelineMinimized: $isTimelineMinimized)
+      PlayerBarView(isTimelineMinimized: $isTimelineMinimized,
+                    isTimelineAnimating: $isTimelineAnimating)
         .environmentObject(AnyTimelineInteractor(erasing: interactor))
         .environmentObject(interactor.timelineProperties.player)
         .environmentObject(timeline)

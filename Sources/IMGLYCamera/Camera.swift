@@ -12,11 +12,6 @@ public struct Camera: View {
 
   @ScaledMetric private var recordButtonSize: Double = 82
 
-  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
-  var assetLibrary: some AssetLibrary {
-    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
-  }
-
   var showsCameraUI: Bool {
     [.ready, .countingDown, .recording].contains(camera.state) && !camera.isLoadingAsset
   }

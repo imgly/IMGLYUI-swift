@@ -108,22 +108,12 @@ extension FeaturesMenuView {
     switch camera.cameraMode {
     case let .reaction(layout, _, _):
       Menu {
-        if camera.hasRecordings, allowModeSwitching {
-          // Options can not be individually disabled in a Picker. And a Menu does not support the selected checkmark.
-          // So when the user can't change mode we just hide all the other options.
-          Button {
-            camera.cameraMode = .standard
-          } label: {
-            camera.offItem.labelView
-          }
-        } else if !camera.hasRecordings {
-          Picker("Reactions", selection: camera.reactionsCameraModeBinding) {
-            ForEach(camera.layoutModeMenuOptions) { mode in
-              if mode.tag == nil, allowModeSwitching {
-                Divider()
-              }
-              mode.labelView
+        Picker("Reactions", selection: camera.reactionsCameraModeBinding) {
+          ForEach(camera.layoutModeMenuOptions) { mode in
+            if mode.tag == nil, allowModeSwitching {
+              Divider()
             }
+            mode.labelView
           }
         }
       } label: {
@@ -134,6 +124,8 @@ extension FeaturesMenuView {
           hasLabel: hasTransientLabel
         )
       }
+      .disabled(camera.hasRecordings)
+      .opacity(camera.hasRecordings ? 0.6 : 1)
     default:
       Button {
         camera.pickReactionVideo()
@@ -199,7 +191,7 @@ extension CameraModel {
     var options: [PickerOption<CameraLayoutMode?>] = CameraLayoutMode.allCases.map {
       PickerOption(label: $0.name, icon: $0.image, tag: $0)
     }
-    if configuration.allowModeSwitching {
+    if configuration.allowModeSwitching, isDualCameraActive {
       options.append(offItem)
     }
     return options

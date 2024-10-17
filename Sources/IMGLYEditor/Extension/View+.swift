@@ -74,12 +74,16 @@ extension IMGLY where Wrapped: View {
   }
 
   @MainActor
-  func canvasAction(anchor: UnitPoint = .top, topSafeAreaInset: CGFloat, bottomSafeAreaInset: CGFloat,
+  func canvasAction(anchor: UnitPoint = .top,
+                    topSafeAreaInset: CGFloat,
+                    bottomSafeAreaInset: CGFloat,
+                    isVisible: Bool = true,
                     @ViewBuilder action: @escaping () -> some View) -> some View {
     wrapped.modifier(CanvasAction(
       anchor: anchor,
       topSafeAreaInset: topSafeAreaInset,
       bottomSafeAreaInset: bottomSafeAreaInset,
+      isVisible: isVisible,
       action: action
     ))
   }

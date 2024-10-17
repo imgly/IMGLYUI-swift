@@ -6,6 +6,7 @@ struct CanvasAction<Action>: ViewModifier where Action: View {
   let anchor: UnitPoint
   let topSafeAreaInset: CGFloat
   let bottomSafeAreaInset: CGFloat
+  let isVisible: Bool
 
   @ViewBuilder let action: Action
 
@@ -14,7 +15,7 @@ struct CanvasAction<Action>: ViewModifier where Action: View {
   @GestureState private var isRotating = false
 
   private var showAction: Bool {
-    interactor.isCanvasActionEnabled && !isInteracting
+    interactor.isCanvasActionEnabled && !isInteracting && isVisible
   }
 
   private var isInteracting: Bool {
