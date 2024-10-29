@@ -92,7 +92,7 @@
           controller.sourceType = source
           controller.mediaTypes = media.map(\.identifier)
           controller.imageExportPreset = .compatible
-          controller.videoExportPreset = AVAssetExportPresetPassthrough
+          controller.videoExportPreset = AVAssetExportPresetHighestQuality
 
           controller.delegate = self
           controller.presentationController?.delegate = self
