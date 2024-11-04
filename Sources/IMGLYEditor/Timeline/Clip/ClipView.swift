@@ -133,6 +133,7 @@ struct ClipView: View {
       trimHandleWidth: configuration.trimHandleWidth,
       icon: clip.configuration.icon
     )
+    .id(ObjectIdentifier(clip))
   }
 
   private var selectedView: some View {

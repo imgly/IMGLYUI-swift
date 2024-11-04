@@ -3,8 +3,9 @@
   import Photos
   import SwiftUI
   import UniformTypeIdentifiers
+  @_spi(Internal) import IMGLYCore
 
-  @_spi(Internal) public typealias MediaCompletion = (Result<(URL, MediaType), Error>) -> Void
+  @_spi(Internal) public typealias MediaCompletion = (Result<(URL, MediaType), Swift.Error>) -> Void
 
   @_spi(Internal) public enum MediaError: LocalizedError {
     case imageNotAvailable
@@ -24,12 +25,14 @@
     case image
     case movie
 
-    var identifier: String {
+    var contentType: UTType {
       switch self {
-      case .image: UTType.image.identifier
-      case .movie: UTType.movie.identifier
+      case .image: .image
+      case .movie: .movie
       }
     }
+
+    var identifier: String { contentType.identifier }
   }
 
   struct MediaView: UIViewControllerRepresentable {
@@ -91,9 +94,13 @@
 
           controller.sourceType = source
           controller.mediaTypes = media.map(\.identifier)
-          controller.imageExportPreset = .compatible
-          controller.videoExportPreset = AVAssetExportPresetHighestQuality
-
+          if FeatureFlags.isEnabled(.transcodePickerImports) {
+            controller.imageExportPreset = .compatible
+            controller.videoExportPreset = AVAssetExportPresetHighestQuality
+          } else {
+            controller.imageExportPreset = .current
+            controller.videoExportPreset = AVAssetExportPresetPassthrough
+          }
           controller.delegate = self
           controller.presentationController?.delegate = self
           controller.modalPresentationStyle = .automatic
@@ -123,20 +130,11 @@
 
         DispatchQueue.global().async { [weak self] in
           do {
-            let url = try FileManager.default.url(
-              for: .cachesDirectory,
-              in: .userDomainMask,
-              appropriateFor: nil,
-              create: false
-            )
-            .appendingPathComponent(UUID().uuidString)
-            .appendingPathExtension(videoURL.pathExtension)
+            let url = try FileManager.default.getUniqueCacheURL()
+              .appendingPathExtension(videoURL.pathExtension)
 
-            do {
-              try FileManager.default.moveItem(at: videoURL, to: url)
-            } catch {
-              try FileManager.default.copyItem(at: videoURL, to: url)
-            }
+            try FileManager.default.moveOrCopyItem(at: videoURL, to: url)
+
             self?.complete(with: .success((url, MediaType.movie)), picker: picker)
           } catch {
             self?.complete(with: .failure(error), picker: picker)
@@ -148,14 +146,8 @@
 
       DispatchQueue.global().async { [weak self] in
         do {
-          let url = try FileManager.default.url(
-            for: .cachesDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: false
-          )
-          .appendingPathComponent(UUID().uuidString)
-          .appendingPathExtension(imageURL?.pathExtension ?? "jpg")
+          let url = try FileManager.default.getUniqueCacheURL()
+            .appendingPathExtension(imageURL?.pathExtension ?? "jpg")
 
           if let imageURL {
             try FileManager.default.moveItem(at: imageURL, to: url)
@@ -171,7 +163,10 @@
       }
     }
 
-    private nonisolated func complete(with result: Result<(URL, MediaType), Error>, picker: UIImagePickerController) {
+    private nonisolated func complete(
+      with result: Result<(URL, MediaType), Swift.Error>,
+      picker: UIImagePickerController
+    ) {
       DispatchQueue.main.async {
         self.isPresented.wrappedValue = false
         picker.presentingViewController?.dismiss(animated: true) {

@@ -65,14 +65,9 @@ import SwiftUI
     } label: {
       label()
     }
-    .imgly.imagePicker(isPresented: $showImagePicker, media: media, onComplete: mediaCompletion)
+    .imgly.photoRoll(isPresented: $showImagePicker, media: media, onComplete: mediaCompletion)
     .imgly.camera(isPresented: $showCamera, media: media, onComplete: mediaCompletion)
-    .imgly.assetFileUploader(isPresented: $showFileImporter, allowedContentTypes: media.map {
-      switch $0 {
-      case .image: .image
-      case .movie: .movie
-      }
-    })
+    .imgly.assetFileUploader(isPresented: $showFileImporter, allowedContentTypes: media.map(\.contentType))
   }
 }
 

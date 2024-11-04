@@ -276,7 +276,7 @@ struct Canvas: View {
       }
     }
     .imgly.camera(isPresented: $interactor.isSystemCameraShown, media: media, onComplete: mediaCompletion)
-    .imgly.imagePicker(isPresented: $interactor.isImagePickerShown, media: media, onComplete: mediaCompletion)
+    .imgly.photoRoll(isPresented: $interactor.isImagePickerShown, media: media, onComplete: mediaCompletion)
   }
 
   private var media: [MediaType] {
@@ -285,11 +285,11 @@ struct Canvas: View {
 
   private var mediaCompletion: MediaCompletion {
     { result in
-      switch result {
-      case let .success((url, mediaType)):
+      do {
+        let (url, mediaType) = try result.get()
         interactor.addAssetFromImagePicker(url: url, mediaType: mediaType)
-      case let .failure(error):
-        print(error)
+      } catch {
+        interactor.handleError(error)
       }
     }
   }

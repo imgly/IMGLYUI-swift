@@ -14,7 +14,6 @@ import Foundation
   case fillGradientLinearEndY = "fill/gradient/linear/endPointY"
 
   case fillImageImageFileURI = "fill/image/imageFileURI"
-
   case fillVideoFileURI = "fill/video/fileURI"
 
   case strokeEnabled = "stroke/enabled"

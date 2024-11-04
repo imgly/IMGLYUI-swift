@@ -320,85 +320,38 @@ extension Interactor: TimelineInteractor {
     guard let engine else { return }
 
     // Check if the block still exists or whether it has been deleted already.
-    guard engine.block.isValid(id) else {
-      return
-    }
+    guard engine.block.isValid(id) else { return }
 
     do {
-      let blockType = try engine.block.getType(id)
-
-      let clip: Clip = if let existingClip {
-        // Modify the existing clip representation
-        existingClip
-      } else {
-        // Create a new clip representation
-        Clip(id: id)
-      }
+      let clip = existingClip ?? Clip(id: id)
 
       let fillID = try engine.block.supportsFill(id) ? try engine.block.getFill(id) : nil
-      let fillType = fillID != nil ? try engine.block.getType(fillID!) : nil
-
       clip.fillID = fillID
 
-      if let fillID,
-         fillType == FillType.video.rawValue {
+      let fillType = fillID != nil ? try engine.block.getType(fillID!) : nil
+
+      if let fillID, fillType == FillType.video.rawValue {
         clip.trimmableID = fillID
       } else {
         clip.trimmableID = id
       }
 
-      let shapeID = try engine.block.supportsShape(id) ? try engine.block.getShape(id) : nil
-      clip.shapeID = shapeID
+      clip.allowsSelecting = try engine.block.isAllowedByScope(id, scope: .init(.editorSelect))
 
-      let effectIDs = try engine.block.supportsEffects(id) ? try engine.block.getEffects(id) : nil
-      clip.effectIDs = effectIDs ?? []
+      clip.shapeID = try engine.block.supportsShape(id) ? try engine.block.getShape(id) : nil
+      clip.effectIDs = try engine.block.supportsEffects(id) ? try engine.block.getEffects(id) : []
+      clip.blurID = try engine.block.supportsBlur(id) ? try engine.block.getBlur(id) : nil
 
-      let blurID = try engine.block.supportsBlur(id) ? try engine.block.getBlur(id) : nil
-      clip.blurID = blurID
+      // Configure clip type
+      let blockType = try engine.block.getType(id)
+      let blockKind: BlockKind? = try? engine.block.getKind(id)
 
       switch blockType {
       case DesignBlockType.audio.rawValue:
-        let kind: BlockKind? = try? engine.block.getKind(id)
-        switch kind {
-        case .key(.voiceover):
-          clip.clipType = .voiceOver
-          clip.configuration = timelineProperties.configuration.voiceOverClipConfiguration
-        default:
-          clip.clipType = .audio
-          clip.configuration = timelineProperties.configuration.audioClipConfiguration
-        }
-        if let name = try? engine.block.getMetadata(id, key: "name"),
-           !name.isEmpty {
-          clip.title = name
-        }
+        try configureAudioClip(clip, id: id, kind: blockKind)
       case DesignBlockType.graphic.rawValue:
         // Important: Don’t throw here!
-        let kind: BlockKind? = try? engine.block.getKind(id)
-        switch fillType {
-        case FillType.image.rawValue:
-          guard let fillID else { throw Error(errorDescription: "Image has no fill") }
-          switch kind {
-          case .key(.sticker):
-            clip.clipType = .sticker
-            clip.configuration = timelineProperties.configuration.stickerClipConfiguration
-            clip.title = ""
-          default:
-            clip.clipType = .image
-            clip.configuration = timelineProperties.configuration.imageClipConfiguration
-            clip.title = ""
-          }
-          clip.footageURLString = try engine.block.get(fillID, property: .key(.fillImageImageFileURI))
-        case FillType.video.rawValue:
-          guard let fillID else { throw Error(errorDescription: "Video block has no fill") }
-          clip.clipType = .video
-          clip.configuration = timelineProperties.configuration.videoClipConfiguration
-          clip.footageURLString = try engine.block.get(fillID, property: .key(.fillVideoFileURI))
-          clip.title = ""
-        default:
-          clip.clipType = .shape
-          clip.configuration = timelineProperties.configuration.shapeClipConfiguration
-          clip.title = ""
-        }
+        try configureGraphicClip(clip, fillType: fillType, kind: blockKind, fillID: fillID)
       case DesignBlockType.text.rawValue:
         clip.clipType = .text
         clip.configuration = timelineProperties.configuration.textClipConfiguration
@@ -410,72 +363,16 @@ extension Interactor: TimelineInteractor {
         return
       }
 
+      // Check if clip should be in the backgroundTrack
       if let backgroundTrack = timelineProperties.backgroundTrack {
-        if let trackBlocks = try? engine.block.getChildren(backgroundTrack),
-           trackBlocks.contains(id) {
-          clip.isInBackgroundTrack = true
-        } else {
-          clip.isInBackgroundTrack = false
-        }
+        clip.isInBackgroundTrack = (try? engine.block.getChildren(backgroundTrack).contains(id)) ?? false
       }
 
-      let durationSeconds = try engine.block.getDuration(id)
-      if durationSeconds > Double(Int.max) {
-        // The block’s duration is infinity, but with nil it’s is easier to handle this special case in the timeline.
-        if clip.clipType == .voiceOver {
-          // In the case of the voiceover it will always infinity, so we match the total duration
-          clip.duration = timelineProperties.timeline?.totalDuration
-        } else {
-          clip.duration = nil
-        }
-      } else {
-        clip.duration = CMTime(seconds: durationSeconds)
-      }
+      try setClipTimingProperties(clip)
+      try setClipTrimOffsetProperties(clip)
 
-      let timeOffsetSeconds = try engine.block.getTimeOffset(id)
-      clip.timeOffset = CMTime(seconds: timeOffsetSeconds)
-
-      clip.allowsSelecting = try engine.block.isAllowedByScope(id, scope: .init(.editorSelect))
-
-      clip.allowsTrimming = try engine.block.supportsTrim(clip.trimmableID)
-
-      if clip.allowsTrimming {
-        // Create the clip even if the trimOffset is not available yet
-        // Important: Don't throw here; we want to create the clip even if we don’t know if it has a trim.
-        let trimOffsetSeconds = (try? engine.block.getTrimOffset(clip.trimmableID)) ?? 0
-        clip.trimOffset = CMTime(seconds: trimOffsetSeconds)
-      }
-
-      if clip.clipType == .audio || clip.clipType == .video {
-        clip.isLoading = !(try engine.block.unstable_isAVResourceLoaded(clip.trimmableID))
-        // Important: Don't throw here; we want to create the clip even if we don’t know how long it is.
-        if let footageDurationSeconds = try? engine.block.getAVResourceTotalDuration(clip.trimmableID) {
-          clip.footageDuration = CMTime(seconds: footageDurationSeconds)
-          clip.allowsTrimming = true
-        } else {
-          // Create the clip even if the duration is not available yet.
-          clip.footageDuration = clip.duration
-          clip.allowsTrimming = false
-          clip.isLoading = true
-
-          blockTasks[clip.trimmableID]?.cancel()
-          blockTasks[clip.trimmableID] = Task {
-            try? await self.engine?.block.forceLoadAVResource(clip.trimmableID)
-            clip.isLoading = false
-            self.blockTasks[id] = nil
-          }
-        }
-      } else {
-        clip.footageDuration = nil
-      }
-
-      if clip.clipType == .audio || clip.clipType == .video {
-        clip.isMuted = try engine.block.isMuted(clip.trimmableID)
-        clip.audioVolume = Double(try engine.block.getVolume(clip.trimmableID))
-      } else {
-        clip.isMuted = false
-        clip.audioVolume = 1.0
-      }
+      try setClipAVResourceProperties(clip)
+      try setClipAudioProperties(clip)
 
       // If this is a freshly created clip, we need to add it to the timeline
       if existingClip == nil {
@@ -485,10 +382,8 @@ extension Interactor: TimelineInteractor {
         if !clip.isInBackgroundTrack {
           timelineProperties.dataSource.tracks.append(track)
         }
-      }
-
-      // Every clip change could affect the page’s total duration, so update durations and snap detents
-      if existingClip != nil {
+      } else {
+        // Every clip change could affect the page’s total duration, so update durations and snap detents
         updateDurations()
       }
 
@@ -496,6 +391,134 @@ extension Interactor: TimelineInteractor {
     } catch {
       handleError(error)
     }
+  }
+
+  // MARK: Clip's Configure
+
+  private func configureGraphicClip(_ clip: Clip, fillType: String?, kind: BlockKind?, fillID: DesignBlockID?) throws {
+    switch fillType {
+    case FillType.image.rawValue:
+      try configureImageClip(clip, kind: kind, fillID: fillID)
+    case FillType.video.rawValue:
+      try configureVideoClip(clip, fillID: fillID)
+    default:
+      clip.clipType = .shape
+      clip.configuration = timelineProperties.configuration.shapeClipConfiguration
+      clip.title = ""
+    }
+  }
+
+  private func configureImageClip(_ clip: Clip, kind: BlockKind?, fillID: DesignBlockID?) throws {
+    guard let fillID else { throw Error(errorDescription: "Image has no fill") }
+
+    switch kind {
+    case .key(.sticker):
+      clip.clipType = .sticker
+      clip.configuration = timelineProperties.configuration.stickerClipConfiguration
+    default:
+      clip.clipType = .image
+      clip.configuration = timelineProperties.configuration.imageClipConfiguration
+    }
+    clip.title = ""
+    clip.footageURLString = try engine?.block.get(fillID, property: .key(.fillImageImageFileURI))
+  }
+
+  private func configureVideoClip(_ clip: Clip, fillID: DesignBlockID?) throws {
+    guard let fillID else { throw Error(errorDescription: "Video block has no fill") }
+
+    clip.clipType = .video
+    clip.configuration = timelineProperties.configuration.videoClipConfiguration
+    clip.title = ""
+    clip.footageURLString = try engine?.block.get(fillID, property: .key(.fillVideoFileURI))
+  }
+
+  private func configureAudioClip(_ clip: Clip, id: DesignBlockID, kind: BlockKind?) throws {
+    switch kind {
+    case .key(.voiceover):
+      clip.clipType = .voiceOver
+      clip.configuration = timelineProperties.configuration.voiceOverClipConfiguration
+    default:
+      clip.clipType = .audio
+      clip.configuration = timelineProperties.configuration.audioClipConfiguration
+    }
+    if let name = try? engine?.block.getMetadata(id, key: "name"), !name.isEmpty {
+      clip.title = name
+    } else {
+      clip.title = ""
+    }
+  }
+
+  // MARK: Clip's Set Properties
+
+  private func setClipTimingProperties(_ clip: Clip) throws {
+    guard let engine else { return }
+
+    let durationSeconds = try engine.block.getDuration(clip.id)
+    if durationSeconds > Double(Int.max) {
+      clip.duration = (clip.clipType == .voiceOver) ? timelineProperties.timeline?.totalDuration : nil
+    } else {
+      clip.duration = CMTime(seconds: durationSeconds)
+    }
+
+    let timeOffsetSeconds = try engine.block.getTimeOffset(clip.id)
+    clip.timeOffset = CMTime(seconds: timeOffsetSeconds)
+  }
+
+  private func setClipTrimOffsetProperties(_ clip: Clip) throws {
+    guard let engine else { return }
+
+    clip.allowsTrimming = try engine.block.supportsTrim(clip.trimmableID)
+    if clip.allowsTrimming {
+      // Create the clip even if the trimOffset is not available yet
+      // Important: Don't throw here; we want to create the clip even if we don’t know if it has a trim.
+      let trimOffsetSeconds = (try? engine.block.getTrimOffset(clip.trimmableID)) ?? 0
+      clip.trimOffset = CMTime(seconds: trimOffsetSeconds)
+    }
+  }
+
+  private func setClipAVResourceProperties(_ clip: Clip) throws {
+    guard let engine else { return }
+
+    guard clip.clipType == .audio || clip.clipType == .video else {
+      clip.footageDuration = nil
+      return
+    }
+
+    clip.isLoading = !(try engine.block.unstable_isAVResourceLoaded(clip.trimmableID))
+
+    if let footageDurationSeconds = try? engine.block.getAVResourceTotalDuration(clip.trimmableID) {
+      clip.footageDuration = CMTime(seconds: footageDurationSeconds)
+      clip.allowsTrimming = true
+    } else {
+      clip.footageDuration = clip.duration
+      clip.allowsTrimming = false
+      clip.isLoading = true
+
+      blockTasks[clip.trimmableID]?.cancel()
+      let task = Task {
+        do {
+          try await engine.block.forceLoadAVResource(clip.trimmableID)
+          clip.isLoading = false
+        } catch {
+          // Handle error appropriately
+        }
+        self.blockTasks[clip.trimmableID] = nil
+      }
+      blockTasks[clip.trimmableID] = task
+    }
+  }
+
+  private func setClipAudioProperties(_ clip: Clip) throws {
+    guard let engine else { return }
+
+    guard clip.clipType == .audio || clip.clipType == .video else {
+      clip.isMuted = false
+      clip.audioVolume = 1.0
+      return
+    }
+
+    clip.isMuted = try engine.block.isMuted(clip.trimmableID)
+    clip.audioVolume = Double(try engine.block.getVolume(clip.trimmableID))
   }
 
   // swiftlint:enable cyclomatic_complexity

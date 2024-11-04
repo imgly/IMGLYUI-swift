@@ -55,7 +55,7 @@ public struct UploadGrid: View {
     } first: {
       firstAddButton
     }
-    .imgly.imagePicker(isPresented: $showImagePicker, media: media, onComplete: mediaCompletion)
+    .imgly.photoRoll(isPresented: $showImagePicker, media: media, onComplete: mediaCompletion)
   }
 }
 

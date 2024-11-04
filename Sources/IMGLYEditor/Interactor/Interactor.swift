@@ -366,7 +366,7 @@ extension Interactor {
         try changed.forEach {
           try engine.block.overrideAndRestore($0, scopes: overrideScopes) {
             if resetFontProperties {
-              try engine.block.setTypeface($0, fallbackFontFileURL: font.uri, typeface: typeface)
+              try engine.block.setTypeface($0, typeface: typeface)
             } else {
               try engine.block.setFont($0, fontFileURL: font.uri, typeface: typeface)
             }
@@ -1342,6 +1342,10 @@ extension Interactor {
     case .sheetGeometryChanged:
       updateZoom(with: zoom.insets, canvasHeight: zoom.canvasHeight)
     case .sheetClosed:
+      // Reset zoom insets because they could have been overwritten by canvas geometry changes
+      // (e.g. triggered by device orientation changes or keyboard) while sheet was open and
+      // potentially floating (without affecting zoom).
+      zoomModel.defaultInsets = zoom.insets ?? EdgeInsets()
       updateZoom(
         with: zoom.insets,
         canvasHeight: zoom.canvasHeight,
