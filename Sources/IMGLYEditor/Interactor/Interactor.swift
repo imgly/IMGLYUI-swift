@@ -366,7 +366,7 @@ extension Interactor {
         try changed.forEach {
           try engine.block.overrideAndRestore($0, scopes: overrideScopes) {
             if resetFontProperties {
-              try engine.block.setTypeface($0, typeface: typeface)
+              try engine.block.setTypeface($0, fallbackFontFileURL: font.uri, typeface: typeface)
             } else {
               try engine.block.setFont($0, fontFileURL: font.uri, typeface: typeface)
             }
