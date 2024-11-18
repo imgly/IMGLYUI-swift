@@ -24,7 +24,7 @@ struct BuildInfo: View {
   static var version: String? { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String }
   static var build: String? { Bundle.main.infoDictionary?[kCFBundleVersionKey as String] as? String }
   static var target: String? {
-    ProcessInfo.isSwiftUIPreview ? "showcases-app" : Bundle.main.infoDictionary?[kCFBundleNameKey as String] as? String
+    ProcessInfo.isSwiftUIPreview ? "smoketests-app" : Bundle.main.infoDictionary?[kCFBundleNameKey as String] as? String
   }
 
   static var branch: String? {

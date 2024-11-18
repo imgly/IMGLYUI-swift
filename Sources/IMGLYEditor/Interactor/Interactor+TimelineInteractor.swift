@@ -22,6 +22,16 @@ extension Interactor: TimelineInteractor {
 
     refreshTimeline()
     updateDurations()
+    observeAppLifecycle()
+  }
+
+  private func observeAppLifecycle() {
+    NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
+      .receive(on: DispatchQueue.main)
+      .sink { [weak self] _ in
+        self?.pauseIfNeeded()
+      }
+      .store(in: &cancellables)
   }
 
   func createBackgroundTrackIfNeeded() {
@@ -881,6 +891,13 @@ extension Interactor: TimelineInteractor {
       try engine.block.setPlaying(pageID, enabled: true)
     } catch {
       handleError(error)
+    }
+  }
+
+  /// Pause playback if needed.
+  private func pauseIfNeeded() {
+    if timelineProperties.player.isPlaying {
+      pause()
     }
   }
 

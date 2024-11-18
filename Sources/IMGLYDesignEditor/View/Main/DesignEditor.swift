@@ -1,3 +1,4 @@
+@_spi(Internal) import IMGLYCore
 @_spi(Internal) import IMGLYEditor
 import SwiftUI
 
@@ -7,6 +8,7 @@ public struct DesignEditor: View {
   public static let defaultScene = Bundle.module.url(forResource: "design-ui-empty", withExtension: "scene")!
 
   @Environment(\.imglyOnCreate) private var onCreate
+  @Environment(\.imglyOnExport) private var onExport
   private let settings: EngineSettings
 
   /// Creates a design editor with settings.
@@ -35,6 +37,16 @@ public struct DesignEditor: View {
           return
         }
         try await onCreate(engine)
+      }
+      .imgly.onExport { engine, eventHandler in
+        guard let onExport else {
+          try await OnExport.default(mimeType: FeatureFlags.isEnabled(.exportPNGInDesignEditor) ? .png : nil)(
+            engine,
+            eventHandler
+          )
+          return
+        }
+        try await onExport(engine, eventHandler)
       }
   }
 }

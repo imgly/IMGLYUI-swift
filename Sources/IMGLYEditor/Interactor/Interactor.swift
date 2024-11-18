@@ -1,3 +1,4 @@
+import Combine
 import CoreMedia
 @_spi(Internal) import IMGLYCore
 @_spi(Internal) import IMGLYCoreUI
@@ -208,6 +209,9 @@ import SwiftUI
     timelineProperties.dataSource.backgroundTrack.clips.count
   }
 
+  /// Stores Combine subscriptions
+  var cancellables = Set<AnyCancellable>()
+
   // MARK: - Life cycle
 
   init(config: EngineConfiguration, behavior: InteractorBehavior) {
@@ -366,7 +370,7 @@ extension Interactor {
         try changed.forEach {
           try engine.block.overrideAndRestore($0, scopes: overrideScopes) {
             if resetFontProperties {
-              try engine.block.setTypeface($0, fallbackFontFileURL: font.uri, typeface: typeface)
+              try engine.block.setTypeface($0, typeface: typeface)
             } else {
               try engine.block.setFont($0, fontFileURL: font.uri, typeface: typeface)
             }
