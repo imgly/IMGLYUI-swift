@@ -25,8 +25,14 @@ struct FillColorIcon: View {
   let backgroundColorGetter: Interactor.PropertyGetter<[CGColor]> = { engine, id, _, _ in
     let fillType: ColorFillType = try engine.block.get(id, .fill, property: .key(.type))
     if fillType == .solid {
-      let color: CGColor = try engine.block.get(id, property: .key(.fillSolidColor))
-      return [color]
+      let blockType = try engine.block.getType(id)
+      if blockType == Interactor.BlockType.text.rawValue,
+         let textColor = try engine.block.getTextColors(id).first?.cgColor {
+        return [textColor]
+      } else {
+        let color: CGColor = try engine.block.get(id, property: .key(.fillSolidColor))
+        return [color]
+      }
     } else if fillType == .gradient {
       let colorStops: [Interactor.GradientColorStop] = try engine.block
         .get(id, .fill, property: .key(.fillGradientColors))

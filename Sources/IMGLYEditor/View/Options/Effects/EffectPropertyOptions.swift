@@ -41,14 +41,12 @@ struct EffectPropertyOptions: View {
         Button {
           Task {
             sheetState = .selection
-            var detents: Set<PresentationDetent> = [.adaptiveTiny]
+            var detents: Set<PresentationDetent> = [.imgly.tiny]
             if properties.count > 1 {
-              detents.insert(.adaptiveMedium)
+              detents.insert(.imgly.medium)
             }
             interactor.sheet.commit { model in
-              model = .init(model.mode, model.type)
-              model.detents = [.adaptiveTiny]
-              model.detent = .adaptiveTiny
+              model = .init(model.mode, model.type, style: .only(detent: .imgly.tiny))
             }
           }
         } label: {

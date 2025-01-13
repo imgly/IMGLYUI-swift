@@ -19,65 +19,14 @@ import SwiftUI
   case font(_ id: DesignBlockID, fontFamilies: [String]? = nil)
   case fontSize(_ id: DesignBlockID)
   case color(_ id: DesignBlockID, colorPalette: [NamedColor]? = nil)
-  case reorder
-
-  case adjustments(_ id: DesignBlockID)
-  case filter(_ id: DesignBlockID)
-  case effect(_ id: DesignBlockID)
-  case blur(_ id: DesignBlockID)
-
-  @_spi(Internal) public struct Action: Hashable {
-    @_spi(Internal) public static func == (_: Self, _: Self) -> Bool {
-      true
-    }
-
-    @_spi(Internal) public func hash(into _: inout Hasher) {}
-
-    let action: () throws -> Void
-
-    @_spi(Internal) public init(action: @escaping () throws -> Void = {}) {
-      self.action = action
-    }
-  }
-
-  case crop(_ id: DesignBlockID, enter: Action, exit: Action)
-
-  case addElements
-  case addFromPhotoRoll
-  case addFromCamera(systemCamera: Bool)
-  case addOverlay
-  case addImage
-  case addText
-  case addShape
-  case addSticker
-  case addStickerOrShape
-  case addAudio
-  case addVoiceOver
 
   var sheetMode: SheetMode {
     switch self {
     case .fab: .add
     case .selectionColors: .selectionColors
-    case .reorder: .reorder
     case let .font(id, families): .font(id, families)
     case let .fontSize(id): .fontSize(id)
     case let .color(id, palette): .color(id, palette)
-    case let .adjustments(id): .adjustments(id)
-    case let .filter(id): .filter(id)
-    case let .effect(id): .effect(id)
-    case let .blur(id): .blur(id)
-    case let .crop(id, enter, exit): .crop(id, enter, exit)
-    case .addElements: .addElements
-    case .addFromPhotoRoll: .addFromPhotoRoll
-    case let .addFromCamera(systemCamera): .addFromCamera(systemCamera)
-    case .addOverlay: .addOverlay
-    case .addImage: .addImage
-    case .addText: .addText
-    case .addShape: .addShape
-    case .addSticker: .addSticker
-    case .addStickerOrShape: .addStickerOrShape
-    case .addAudio: .addAudio
-    case .addVoiceOver: .addVoiceOver
     }
   }
 }

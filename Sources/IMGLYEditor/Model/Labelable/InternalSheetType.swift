@@ -1,11 +1,11 @@
 import Foundation
 @_spi(Internal) import IMGLYCoreUI
 
-enum SheetType: Labelable, IdentifiableByHash {
+enum InternalSheetType: Labelable, IdentifiableByHash {
   case image, text, shape, sticker, group, page, video, audio, voiceover
   case selectionColors, font, fontSize, color
   case reorder
-  case asset, elements, clip, overlay, stickerOrShape
+  case asset, clip
   case pageOverview
 
   var description: String {
@@ -25,10 +25,7 @@ enum SheetType: Labelable, IdentifiableByHash {
     case .voiceover: "Voiceover"
     case .reorder: "Reorder"
     case .asset: "Asset"
-    case .elements: "Elements"
     case .clip: "Clip"
-    case .overlay: "Overlay"
-    case .stickerOrShape: "Sticker"
     case .pageOverview: "Page Overview"
     }
   }

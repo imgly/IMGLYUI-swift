@@ -53,7 +53,7 @@ struct Canvas: View {
       var height = bottomBarHeight + pageNavigationHeight
       if interactor.sceneMode == .video {
         if isTimelineMinimized || (interactor.sheet.isPresented
-          && interactor.sheet.mode != .add
+          && !interactor.sheet.isFloating
           && interactor.sheet.mode != .addVoiceOver
           && interactor.sheet.mode != .replace) {
           height += timelinePlayerBarHeight
@@ -79,7 +79,7 @@ struct Canvas: View {
   @State private var isTimelineMinimized = false
   @State private var isTimelineAnimating = false
 
-  @ViewBuilder func bottomBar(type: SheetType?) -> some View {
+  @ViewBuilder func bottomBar(type: InternalSheetType?) -> some View {
     BottomBar(type: type, id: id, height: bottomBarHeight, bottomSafeAreaInset: bottomSafeAreaInset)
   }
 
@@ -169,8 +169,7 @@ struct Canvas: View {
             playerBar()
               .frame(height: timelinePlayerBarHeight)
             if !isTimelineMinimized,
-               // Maybe the sheet mode should know whether it wants to adjust the canvas.
-               !interactor.sheet.isPresented || interactor.sheet.mode == .add || interactor.sheet.mode == .replace {
+               !interactor.sheet.isPresented || interactor.sheet.isFloating || interactor.sheet.mode == .replace {
               timeline()
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
@@ -182,7 +181,7 @@ struct Canvas: View {
                 : Color(uiColor: .secondarySystemBackground))
           }
           .frame(maxHeight: isTimelineMinimized || (interactor.sheet.isPresented
-              && interactor.sheet.mode != .add
+              && !interactor.sheet.isFloating
               && interactor.sheet.mode != .replace)
             ? timelinePlayerBarHeight
             : dynamicTimelineHeight)
@@ -280,7 +279,10 @@ struct Canvas: View {
   }
 
   private var media: [MediaType] {
-    interactor.sceneMode == .video ? [.image, .movie] : [.image]
+    let media: [MediaType] = interactor.sceneMode == .video ? [.image, .movie] : [.image]
+    return media.filter {
+      interactor.uploadAssetSourceIDs[$0] != nil
+    }
   }
 
   private var mediaCompletion: MediaCompletion {

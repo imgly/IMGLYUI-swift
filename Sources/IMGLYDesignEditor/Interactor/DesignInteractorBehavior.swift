@@ -33,17 +33,7 @@ final class DesignInteractorBehavior: InteractorBehavior {
   func enableEditMode(_: InteractorContext) throws {}
   func enablePreviewMode(_: InteractorContext, _: EdgeInsets?) async throws {}
 
-  func rootBottomBarItems(_: InteractorContext) throws -> [RootBottomBarItem] {
-    [
-      .addElements,
-      .addFromPhotoRoll,
-      .addFromCamera(systemCamera: true),
-      .addImage,
-      .addText,
-      .addShape,
-      .addSticker,
-    ]
-  }
+  func rootBottomBarItems(_: InteractorContext) throws -> [RootBottomBarItem] { [] }
 
   func pageChanged(_: InteractorContext) throws {}
   func updateState(_: InteractorContext) throws {}

@@ -1,6 +1,19 @@
 import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
 
+struct PseudoHashable<T>: Hashable {
+  static func == (_: Self, _: Self) -> Bool {
+    true
+  }
+
+  func hash(into _: inout Hasher) {}
+
+  let value: T
+}
+
+typealias PseudoHashableAction = PseudoHashable < () throws -> Void>
+typealias PseudoHashableViewBuilder = PseudoHashable<() -> AnyView>
+
 enum SheetMode: Labelable, IdentifiableByHash {
   case add, replace, edit, format, shape, fillAndStroke, layer, enterGroup, selectGroup
 
@@ -10,14 +23,11 @@ enum SheetMode: Labelable, IdentifiableByHash {
   case blur(_ id: Interactor.BlockID? = nil)
   case crop(
     _ id: Interactor.BlockID? = nil,
-    _ enter: RootBottomBarItem.Action? = nil,
-    _ exit: RootBottomBarItem.Action? = nil
+    enter: PseudoHashableAction? = nil,
+    exit: PseudoHashableAction? = nil
   )
 
-  case addElements
-  case addFromPhotoRoll
-  case addFromCamera(_ systemCamera: Bool)
-  case addClip, addOverlay, addImage, addText, addShape, addSticker, addStickerOrShape, addAudio
+  case sheet(_ view: PseudoHashableViewBuilder)
 
   case editPage
   case addPage
@@ -62,6 +72,7 @@ enum SheetMode: Labelable, IdentifiableByHash {
 
   var description: String {
     switch self {
+    case .sheet: "Sheet"
     case .add: "Add"
     case .replace: "Replace"
     case .edit: "Edit"
@@ -91,16 +102,6 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .addPage: "Add Page"
     case .moveUp: "Move Up"
     case .moveDown: "Move Down"
-    case .addElements: "Elements"
-    case .addFromPhotoRoll: "Photo Roll"
-    case .addFromCamera: "Camera"
-    case .addClip: "Clip"
-    case .addOverlay: "Overlay"
-    case .addImage: "Image"
-    case .addText: "Text"
-    case .addShape: "Shape"
-    case .addSticker, .addStickerOrShape: "Sticker"
-    case .addAudio: "Audio"
     case .addVoiceOver: "Voiceover"
     case .editVoiceOver: "Edit"
     }
@@ -108,6 +109,7 @@ enum SheetMode: Labelable, IdentifiableByHash {
 
   var imageName: String? {
     switch self {
+    case .sheet: "document"
     case .add: "plus"
     case .replace: "arrow.left.arrow.right.square"
     case .edit: "keyboard"
@@ -134,16 +136,7 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .addPage: "custom.doc.badge.plus"
     case .moveUp: "arrow.up.doc"
     case .moveDown: "arrow.down.doc"
-    case .addElements: "custom.books.vertical.badge.plus"
-    case .addFromPhotoRoll, .addFromCamera: nil
-    case .addClip: "custom.add.clip"
-    case .addOverlay: "custom.film.stack.badge.plus"
-    case .addImage: "custom.photo.badge.plus"
-    case .addText: "custom.textformat.alt.badge.plus"
-    case .addShape: "custom.square.on.circle.badge.plus"
-    case .addSticker, .addStickerOrShape: "custom.face.smiling.badge.plus"
-    case .addAudio: "custom.audio.badge.plus"
-    case .addVoiceOver: "custom.mic.badge.plus"
+    case .addVoiceOver: nil
     case .editVoiceOver: "custom.waveform.badge.mic"
     }
   }
@@ -171,7 +164,6 @@ enum SheetMode: Labelable, IdentifiableByHash {
     }
   }
 
-  // swiftlint:disable:next cyclomatic_complexity
   @MainActor @ViewBuilder func label(_ id: Interactor.BlockID?, _ interactor: Interactor) -> some View {
     switch self {
     case .fillAndStroke:
@@ -216,26 +208,6 @@ enum SheetMode: Labelable, IdentifiableByHash {
         Text(localizedStringKey)
       } icon: {
         FillColorIcon()
-      }
-    case .addFromCamera:
-      Label {
-        Text(localizedStringKey)
-      } icon: {
-        Image(
-          interactor.sceneMode == .video ? "custom.camera.fill.badge.plus" :
-            "custom.camera.badge.plus",
-          bundle: .module
-        )
-      }
-    case .addFromPhotoRoll:
-      Label {
-        Text(localizedStringKey)
-      } icon: {
-        Image(
-          interactor.sceneMode == .video ? "custom.photo.fill.on.rectangle.fill.badge.plus" :
-            "custom.photo.on.rectangle.badge.plus",
-          bundle: .module
-        )
       }
     default: label
     }

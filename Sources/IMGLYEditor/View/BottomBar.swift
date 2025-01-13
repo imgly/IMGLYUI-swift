@@ -2,7 +2,7 @@ import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
 
 struct BottomBar: View {
-  let type: SheetType?
+  let type: InternalSheetType?
   let id: Interactor.BlockID?
   let height: CGFloat
   let bottomSafeAreaInset: CGFloat
@@ -47,7 +47,7 @@ struct BottomBar: View {
   }
 
   // swiftlint:disable:next cyclomatic_complexity
-  func modes(for type: SheetType?) -> [SheetMode] {
+  func modes(for type: InternalSheetType?) -> [SheetMode] {
     guard let type else {
       return []
     }

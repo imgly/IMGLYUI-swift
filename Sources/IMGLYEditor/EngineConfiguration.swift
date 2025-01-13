@@ -2,33 +2,6 @@ import Foundation
 import UniformTypeIdentifiers
 @_spi(Internal) import struct IMGLYCore.Error
 import IMGLYEngine
-import struct SwiftUI.LocalizedStringKey
-
-/// An export progress visualization.
-public enum ExportProgress {
-  /// Show spinner.
-  case spinner
-  /// Show relative progress for given percentage value.
-  case relative(_ percentage: Float)
-}
-
-/// An editor event that can be sent via `EditorEventHandler`.
-public enum EditorEvent {
-  /// Show share sheet for given URL.
-  case shareFile(URL)
-  /// Show export progress sheet for given state.
-  case exportProgress(ExportProgress = .spinner)
-  /// Show export completed sheet and perform given action after dismissal.
-  case exportCompleted(action: () -> Void = {})
-}
-
-/// An interface for sending editor events.
-@MainActor
-public protocol EditorEventHandler {
-  /// A function for sending `EditorEvent`s.
-  /// - Parameter event: The event to send.
-  func send(_ event: EditorEvent)
-}
 
 // MARK: - Callbacks
 

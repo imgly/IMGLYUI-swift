@@ -130,16 +130,16 @@ class AnyTimelineInteractor: TimelineInteractor {
     interactor.addAudioAsset()
   }
 
-  func openVoiceOver() {
-    interactor.openVoiceOver()
+  func openVoiceOver(style: SheetStyle) {
+    interactor.openVoiceOver(style: style)
   }
 
-  func openCamera() {
-    interactor.openCamera()
+  func openCamera(_ assetSourceIDs: [MediaType: String]) {
+    interactor.openCamera(assetSourceIDs)
   }
 
-  func openImagePicker() {
-    interactor.openImagePicker()
+  func openImagePicker(_ assetSourceIDs: [MediaType: String]) {
+    interactor.openImagePicker(assetSourceIDs)
   }
 
   private let interactor: any TimelineInteractor

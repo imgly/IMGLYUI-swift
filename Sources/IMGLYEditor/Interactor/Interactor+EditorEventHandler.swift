@@ -1,24 +1,68 @@
 import Foundation
 @_spi(Internal) import IMGLYCoreUI
+import SwiftUI
 
 extension Interactor: EditorEventHandler {
+  // swiftlint:disable:next cyclomatic_complexity
   @_spi(Internal) public func send(_ event: EditorEvent) {
     switch event {
-    case let .shareFile(url):
+    case let event as EditorEvents.ShareFile:
       // Fix `.tintAdjustmentMode` to stay `.normal` when export sheet was presented.
       delayIfNecessary(hideExportSheet() || hideSheet()) { [weak self] in
-        self?.shareItem = .url([url])
+        self?.shareItem = .url([event.url])
       }
-    case let .exportProgress(value):
-      showExportSheet(.exporting(value) { [weak self] in
+    case let event as EditorEvents.Export.Progress:
+      showExportSheet(.exporting(event.progress) { [weak self] in
         self?.cancelExport()
         self?.hideExportSheet()
       })
-    case let .exportCompleted(action):
+    case let event as EditorEvents.Export.Completed:
       showExportSheet(.completed { [weak self] in
-        action()
+        event.action()
         self?.hideExportSheet() // Must be run after `action()` in case action contains `.shareFile` event!
       })
+    case let event as EditorEvents.Sheet.Open:
+      switch event.type {
+      case let sheet as SheetTypes.Custom:
+        bottomBarButtonTapped(for: .sheet(.init {
+          AnyView(erasing: sheet.content())
+        }), style: sheet.style)
+      case let sheet as SheetTypes.LibraryAdd:
+        bottomBarButtonTapped(for: .sheet(.init {
+          AnyView(erasing: sheet.content())
+        }), style: sheet.style)
+      case let sheet as SheetTypes.Voiceover:
+        openVoiceOver(style: sheet.style)
+      case let sheet as SheetTypes.Reorder:
+        bottomBarButtonTapped(for: .reorder, style: sheet.style)
+      case let sheet as SheetTypes.Adjustments:
+        bottomBarButtonTapped(for: .adjustments(sheet.id), style: sheet.style)
+      case let sheet as SheetTypes.Filter:
+        bottomBarButtonTapped(for: .filter(sheet.id), style: sheet.style)
+      case let sheet as SheetTypes.Effect:
+        bottomBarButtonTapped(for: .effect(sheet.id), style: sheet.style)
+      case let sheet as SheetTypes.Blur:
+        bottomBarButtonTapped(for: .blur(sheet.id), style: sheet.style)
+      case let sheet as SheetTypes.Crop:
+        bottomBarButtonTapped(for: .crop(sheet.id, enter: .init { [weak self] in
+          self?.zoomToPage(withAdditionalPadding: 24)
+        }, exit: .init { [weak self] in
+          self?.zoomToPage(withAdditionalPadding: 0)
+          try self?.engine?.block.setSelected(sheet.id, selected: false)
+        }), style: sheet.style)
+      default:
+        print("Unhandled sheet type \(event.type)")
+      }
+    case is EditorEvents.Sheet.Close:
+      hideSheet()
+    case let event as EditorEvents.AddFrom.PhotoRoll:
+      openImagePicker(event.assetSourceIDs)
+    case let event as EditorEvents.AddFrom.SystemCamera:
+      openSystemCamera(event.assetSourceIDs)
+    case let event as EditorEvents.AddFrom.IMGLYCamera:
+      openCamera(event.assetSourceIDs)
+    default:
+      print("Unhandled event \(event)")
     }
   }
 

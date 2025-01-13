@@ -1,4 +1,4 @@
-@_spi(Internal) import IMGLYEditor
+@_spi(Unstable) @_spi(Internal) import IMGLYEditor // use of unstable .imgly.dock
 @_spi(Internal) import struct IMGLYCore.Error
 import SwiftUI
 
@@ -9,6 +9,7 @@ public struct PhotoEditor: View {
 
   @Environment(\.imglyOnCreate) private var onCreate
   @Environment(\.imglyOnExport) private var onExport
+  @Environment(\.imglyDock) private var dock
   private let settings: EngineSettings
 
   /// Creates a photo editor with settings.
@@ -45,7 +46,20 @@ public struct PhotoEditor: View {
         }
         try await onExport(engine, eventHandler)
       }
-      .imgly.pageNavigation(true)
+      .imgly.dock { context in
+        if let dock {
+          try dock(context)
+        } else {
+          Dock.Buttons.adjustments()
+          Dock.Buttons.filter()
+          Dock.Buttons.effect()
+          Dock.Buttons.blur()
+          Dock.Buttons.crop()
+          Dock.Buttons.textLibrary()
+          Dock.Buttons.shapesLibrary()
+          Dock.Buttons.stickersLibrary()
+        }
+      }
   }
 }
 

@@ -30,13 +30,6 @@ extension MappedType {
 }
 
 @_spi(Internal) public extension BlockAPI {
-  private func unwrap<T>(_ value: T?) throws -> T {
-    guard let value else {
-      throw Error(errorDescription: "Unwrap failed.")
-    }
-    return value
-  }
-
   private func resolve(_ propertyBlock: PropertyBlock?, parent: DesignBlockID) throws -> DesignBlockID {
     switch propertyBlock {
     case .none: parent
@@ -61,7 +54,7 @@ extension MappedType {
     if type == .enum, let type = T.self as? any MappedEnum.Type {
       let rawValue = try getEnum(id, property: property)
       if let value = type.init(rawValue: rawValue) {
-        return try unwrap(value as? T)
+        return try nonNil(value as? T)
       } else {
         throw Error(
           // swiftlint:disable:next line_length
@@ -72,50 +65,50 @@ extension MappedType {
     // Map regular types
     switch (T.objectIdentifier, type) {
     case (Bool.objectIdentifier, .bool):
-      return try unwrap(getBool(id, property: property) as? T)
+      return try nonNil(getBool(id, property: property) as? T)
     // .int mappings
     case (Int.objectIdentifier, .int):
-      return try unwrap(getInt(id, property: property) as? T)
+      return try nonNil(getInt(id, property: property) as? T)
     case (Float.objectIdentifier, .int):
-      return try unwrap(Float(getInt(id, property: property)) as? T)
+      return try nonNil(Float(getInt(id, property: property)) as? T)
     case (Double.objectIdentifier, .int):
-      return try unwrap(Double(getInt(id, property: property)) as? T)
+      return try nonNil(Double(getInt(id, property: property)) as? T)
     // .float mappings
     case (Float.objectIdentifier, .float):
-      return try unwrap(getFloat(id, property: property) as? T)
+      return try nonNil(getFloat(id, property: property) as? T)
     case (Double.objectIdentifier, .float):
-      return try unwrap(Double(getFloat(id, property: property)) as? T)
+      return try nonNil(Double(getFloat(id, property: property)) as? T)
     // .double mappings
     case (Double.objectIdentifier, .double):
-      return try unwrap(getDouble(id, property: property) as? T)
+      return try nonNil(getDouble(id, property: property) as? T)
     // .string mappings
     case (String.objectIdentifier, .string):
-      return try unwrap(getString(id, property: property) as? T)
+      return try nonNil(getString(id, property: property) as? T)
     case (URL.objectIdentifier, .string):
-      return try unwrap(URL(string: getString(id, property: property)) as? T)
+      return try nonNil(URL(string: getString(id, property: property)) as? T)
     case (String.objectIdentifier, .enum):
-      return try unwrap(getEnum(id, property: property) as? T)
+      return try nonNil(getEnum(id, property: property) as? T)
     case (ColorFillType.objectIdentifier, .string):
-      return try unwrap(ColorFillType(rawValue: getString(id, property: property)) as? T)
+      return try nonNil(ColorFillType(rawValue: getString(id, property: property)) as? T)
     // .color mappings
     case (IMGLYEngine.Color.objectIdentifier, .color):
       let color: IMGLYEngine.Color = try getColor(id, property: property)
-      return try unwrap(color as? T)
+      return try nonNil(color as? T)
     case (CGColor.objectIdentifier, .color):
       let color: IMGLYEngine.Color = try getColor(id, property: property)
       guard let cgColor = color.cgColor else {
         throw Error(errorDescription: "Could not convert IMGLYEngine.Color to CGColor.")
       }
-      return try unwrap(cgColor as? T)
+      return try nonNil(cgColor as? T)
     case (SwiftUI.Color.objectIdentifier, .color):
       let color: IMGLYEngine.Color = try getColor(id, property: property)
       guard let cgColor = color.cgColor else {
         throw Error(errorDescription: "Could not convert IMGLYEngine.Color to CGColor.")
       }
-      return try unwrap(SwiftUI.Color(cgColor: cgColor) as? T)
+      return try nonNil(SwiftUI.Color(cgColor: cgColor) as? T)
     // .struct mappings
     case ([GradientColorStop].objectIdentifier, .struct):
-      return try unwrap(getGradientColorStops(id, property: property) as? T)
+      return try nonNil(getGradientColorStops(id, property: property) as? T)
     default:
       throw Error(
         // swiftlint:disable:next line_length
@@ -144,31 +137,31 @@ extension MappedType {
     // Map regular types
     switch (T.objectIdentifier, type) {
     case (Bool.objectIdentifier, .bool):
-      try setBool(id, property: property, value: unwrap(value as? Bool))
+      try setBool(id, property: property, value: nonNil(value as? Bool))
     // .int mappings
     case (Int.objectIdentifier, .int):
-      try setInt(id, property: property, value: unwrap(value as? Int))
+      try setInt(id, property: property, value: nonNil(value as? Int))
     case (Float.objectIdentifier, .int):
-      try setInt(id, property: property, value: Int(unwrap(value as? Float)))
+      try setInt(id, property: property, value: Int(nonNil(value as? Float)))
     case (Double.objectIdentifier, .int):
-      try setInt(id, property: property, value: Int(unwrap(value as? Double)))
+      try setInt(id, property: property, value: Int(nonNil(value as? Double)))
     // .float mappings
     case (Float.objectIdentifier, .float):
-      try setFloat(id, property: property, value: unwrap(value as? Float))
+      try setFloat(id, property: property, value: nonNil(value as? Float))
     case (Double.objectIdentifier, .float):
-      try setFloat(id, property: property, value: Float(unwrap(value as? Double)))
+      try setFloat(id, property: property, value: Float(nonNil(value as? Double)))
     // .double mappings
     case (Double.objectIdentifier, .double):
-      try setDouble(id, property: property, value: unwrap(value as? Double))
+      try setDouble(id, property: property, value: nonNil(value as? Double))
     // .string mappings
     case (String.objectIdentifier, .string):
-      try setString(id, property: property, value: unwrap(value as? String))
+      try setString(id, property: property, value: nonNil(value as? String))
     case (URL.objectIdentifier, .string):
-      try setString(id, property: property, value: unwrap(value as? URL).absoluteString)
+      try setString(id, property: property, value: nonNil(value as? URL).absoluteString)
     case (String.objectIdentifier, .enum):
-      try setEnum(id, property: property, value: unwrap(value as? String))
+      try setEnum(id, property: property, value: nonNil(value as? String))
     case (ColorFillType.objectIdentifier, .string):
-      let colorFillType = try unwrap(value as? ColorFillType)
+      let colorFillType = try nonNil(value as? ColorFillType)
       if colorFillType == .none {
         try setFillEnabled(parentId, enabled: false)
       } else {
@@ -180,7 +173,7 @@ extension MappedType {
       }
     // .color mappings
     case (IMGLYEngine.Color.objectIdentifier, .color):
-      try setColor(id, property: property, color: unwrap(value as? IMGLYEngine.Color))
+      try setColor(id, property: property, color: nonNil(value as? IMGLYEngine.Color))
     case (CGColor.objectIdentifier, .color):
       // swiftlint:disable:next force_cast
       let cgColor = value as! CGColor
@@ -189,14 +182,14 @@ extension MappedType {
       }
       try setColor(id, property: property, color: color)
     case (SwiftUI.Color.objectIdentifier, .color):
-      let cgColor = try unwrap(value as? SwiftUI.Color).asCGColor
+      let cgColor = try nonNil(value as? SwiftUI.Color).asCGColor
       guard let color = IMGLYEngine.Color(cgColor: cgColor) else {
         throw Error(errorDescription: "Could not convert CGColor to IMGLYEngine.Color.")
       }
       try setColor(id, property: property, color: color)
     // .struct mappings
     case ([GradientColorStop].objectIdentifier, .struct):
-      let colorStops = try unwrap(value as? [GradientColorStop])
+      let colorStops = try nonNil(value as? [GradientColorStop])
       try setGradientColorStops(id, property: property, colors: colorStops)
     default:
       throw Error(

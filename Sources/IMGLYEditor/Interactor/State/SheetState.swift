@@ -3,21 +3,7 @@ import SwiftUI
 struct SheetState: BatchMutable {
   var isPresented: Bool
   var model: SheetModel
-  var detent: PresentationDetent = .adaptiveMedium
-  var detents: Set<PresentationDetent> = [.adaptiveMedium, .adaptiveLarge]
-  var largestUndimmedDetent: PresentationDetent? {
-    if detents.contains(.medium) {
-      .medium
-    } else if detents.contains(.adaptiveMedium) {
-      .adaptiveMedium
-    } else if detents.contains(.adaptiveSmall) {
-      .adaptiveSmall
-    } else if detents.contains(.adaptiveTiny) {
-      .adaptiveTiny
-    } else {
-      nil
-    }
-  }
+  var style: SheetStyle
 
   /// Forwarded `model.mode`.
   var mode: SheetMode {
@@ -26,20 +12,28 @@ struct SheetState: BatchMutable {
   }
 
   /// Forwarded `model.type`.
-  var type: SheetType { model.type }
+  var type: InternalSheetType { model.type }
 
   /// Combined `model` and `isPresented`.
   var state: SheetModel? { isPresented ? model : nil }
 
-  /// Hide sheet.
-  init() {
-    isPresented = false
-    model = .init(.add, .image)
+  var isFloating: Bool {
+    switch mode {
+    case .add: true
+    default: style.isFloating
+    }
   }
 
-  /// Show sheet with `mode` and `type`.
-  init(_ mode: SheetMode, _ type: SheetType) {
+  /// Hide sheet.
+  init() {
+    self.init(.add, .image, style: .default())
+    isPresented = false
+  }
+
+  /// Show sheet with `mode`, `type`, and `style`.
+  init(_ mode: SheetMode, _ type: InternalSheetType, style: SheetStyle = .default()) {
     isPresented = true
     model = .init(mode, type)
+    self.style = style
   }
 }

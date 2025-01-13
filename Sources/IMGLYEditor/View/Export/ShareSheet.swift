@@ -20,7 +20,7 @@ struct ShareSheet: ViewModifier {
     wrapped.sheet(item: item, onDismiss: onDismiss) { item in
       ShareView(item: item)
         .ignoresSafeArea()
-        .imgly.presentationConfiguration(.adaptiveTiny)
+        .imgly.presentationConfiguration(.imgly.tiny)
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
     }

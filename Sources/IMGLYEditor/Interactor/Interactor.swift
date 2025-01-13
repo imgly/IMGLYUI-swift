@@ -88,9 +88,9 @@ import SwiftUI
   @Published var isLoopingPlaybackEnabled = true
   @Published var isSelectionVisible = true
 
-  // Upload asset source IDs should be configurable or pulled from asset library.
-  let imageUploadAssetSourceID = Engine.DemoAssetSource.imageUpload.rawValue
-  let videoUploadAssetSourceID = Engine.DemoAssetSource.videoUpload.rawValue
+  var uploadAssetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
+  var imageUploadAssetSourceID: String { uploadAssetSourceIDs[.image] ?? Engine.DemoAssetSource.imageUpload.rawValue }
+  var videoUploadAssetSourceID: String { uploadAssetSourceIDs[.movie] ?? Engine.DemoAssetSource.videoUpload.rawValue }
 
   var isAddingCameraRecording = false
 
@@ -127,11 +127,11 @@ import SwiftUI
       timelineProperties.selectedClip?.clipType != .voiceOver
   }
 
-  var sheetTypeForSelection: SheetType? {
+  var sheetTypeForSelection: InternalSheetType? {
     isLoading ? nil : sheetType(for: selection)
   }
 
-  var sheetTypeForBottomBar: SheetType? {
+  var sheetTypeForBottomBar: InternalSheetType? {
     guard isBottomBarEnabled else {
       return nil
     }
@@ -150,7 +150,7 @@ import SwiftUI
     }
   }
 
-  func sheetType(_ id: BlockID?) -> SheetType? {
+  func sheetType(_ id: BlockID?) -> InternalSheetType? {
     guard let id, let engine, let type = try? engine.block.getType(id) else {
       return nil
     }
@@ -282,7 +282,8 @@ import SwiftUI
   private var _engine: Engine?
 
   private var previousEditMode: EditMode?
-  private var exitCropModeAction: RootBottomBarItem.Action?
+  private var cropModeStyle: SheetStyle?
+  private var exitCropModeAction: PseudoHashableAction?
 
   private var stateTask: Task<Void, Never>?
   private var eventTask: Task<Void, Never>?
@@ -662,7 +663,7 @@ extension Interactor {
   // swiftlint:disable:next cyclomatic_complexity
   func isAllowed(_ id: BlockID?, _ mode: SheetMode) -> Bool {
     switch mode {
-    case .add:
+    case .sheet, .add:
       return true
     case .replace:
       return isAllowed(id, scope: .fillChange)
@@ -731,8 +732,7 @@ extension Interactor {
       return isAllowed(id, Action.up)
     case .moveDown:
       return isAllowed(id, Action.down)
-    case .addElements, .addFromCamera, .addFromPhotoRoll, .addClip, .addOverlay, .addImage, .addText,
-         .addShape, .addSticker, .addStickerOrShape, .addAudio, .addVoiceOver, .editVoiceOver:
+    case .addVoiceOver, .editVoiceOver:
       return true
     }
   }
@@ -1029,7 +1029,7 @@ extension Interactor {
   }
 
   // swiftlint:disable:next cyclomatic_complexity
-  func bottomBarButtonTapped(for mode: SheetMode) {
+  func bottomBarButtonTapped(for mode: SheetMode, style: SheetStyle? = nil) {
     pause()
 
     // For certain sheets we want to guarantee that the selected clip is visible at the current playback time.
@@ -1047,67 +1047,14 @@ extension Interactor {
 
     do {
       switch mode {
+      case .sheet:
+        sheet.commit { model in
+          model = .init(mode, .asset, style: style ?? .addAsset())
+        }
       case .add:
         try engine?.block.deselectAll()
         sheet.commit { model in
-          model = .init(mode, .asset)
-          model.detent = .adaptiveLarge
-        }
-      case .addElements:
-        sheet.commit { model in
-          model = .init(.add, .elements)
-          model.detent = .adaptiveLarge
-        }
-      case let .addFromCamera(systemCamera):
-        try engine?.block.deselectAll()
-        if systemCamera {
-          openSystemCamera()
-        } else {
-          isCameraSheetShown = true
-        }
-      case .addFromPhotoRoll:
-        try engine?.block.deselectAll()
-        openImagePicker()
-      case .addClip:
-        try engine?.block.deselectAll()
-        sheet.commit { model in
-          model = .init(.add, .clip)
-          model.detent = .adaptiveLarge
-        }
-      case .addOverlay:
-        try engine?.block.deselectAll()
-        sheet.commit { model in
-          model = .init(.add, .overlay)
-          model.detent = .adaptiveLarge
-        }
-      case .addImage:
-        sheet.commit { model in
-          model = .init(.add, .image)
-          model.detent = .adaptiveLarge
-        }
-      case .addText:
-        sheet.commit { model in
-          model = .init(.add, .text)
-        }
-      case .addShape:
-        sheet.commit { model in
-          model = .init(.add, .shape)
-          model.detent = .adaptiveLarge
-        }
-      case .addSticker:
-        sheet.commit { model in
-          model = .init(.add, .sticker)
-          model.detent = .adaptiveLarge
-        }
-      case .addStickerOrShape:
-        sheet.commit { model in
-          model = .init(.add, .stickerOrShape)
-          model.detent = .adaptiveLarge
-        }
-      case .addAudio:
-        sheet.commit { model in
-          model = .init(.add, .audio)
-          model.detent = .adaptiveLarge
+          model = .init(mode, .asset, style: style ?? .addAsset())
         }
       case .edit:
         setEditMode(.text)
@@ -1116,7 +1063,8 @@ extension Interactor {
           try engine.block.overrideAndRestore(id, scope: .key(.editorSelect)) {
             try engine.block.select($0)
           }
-          try enter?.action()
+          try enter?.value()
+          cropModeStyle = style
           exitCropModeAction = exit
           Task {
             try await Task.sleep(for: .milliseconds(50))
@@ -1143,49 +1091,35 @@ extension Interactor {
         }
       case .fontSize:
         sheet.commit { model in
-          model = .init(mode, .fontSize)
-          model.detent = .adaptiveTiny
-          model.detents = [.adaptiveTiny]
+          model = .init(mode, .fontSize, style: style ?? .only(detent: .imgly.tiny))
         }
       case .color:
         sheet.commit { model in
-          model = .init(mode, .color)
-          model.detent = .adaptiveTiny
-          model.detents = [.adaptiveTiny]
+          model = .init(mode, .color, style: style ?? .only(detent: .imgly.tiny))
         }
       case .filter, .effect, .blur:
         guard let type = sheetType(mode.pinnedBlockID) ?? sheetTypeForSelection else {
           return
         }
         sheet.commit { model in
-          model = .init(mode, type)
-          model.detent = .adaptiveTiny
-          model.detents = [.adaptiveTiny]
+          model = .init(mode, type, style: style ?? .only(detent: .imgly.tiny))
         }
       case .reorder:
-        let type = SheetType.reorder
+        let type = InternalSheetType.reorder
         sheet.commit { model in
-          model = .init(mode, type)
-          model.detent = .adaptiveMedium
-          model.detents = [.adaptiveMedium]
+          model = .init(mode, type, style: style ?? .only(detent: .imgly.medium))
         }
       case .layer, .adjustments:
         guard let type = sheetType(mode.pinnedBlockID) ?? sheetTypeForSelection else {
           return
         }
         sheet.commit { model in
-          model = .init(mode, type)
-          model.detent = .adaptiveMedium
-          model.detents = [.adaptiveMedium]
+          model = .init(mode, type, style: style ?? .only(detent: .imgly.medium))
         }
       case .volume:
         sheet.commit { model in
-          model = .init(mode, .video)
-          model.detent = .adaptiveTiny
-          model.detents = [.adaptiveTiny]
+          model = .init(mode, .video, style: style ?? .only(detent: .imgly.tiny))
         }
-      case .addVoiceOver:
-        openVoiceOver()
       case .editVoiceOver:
         editVoiceOver()
       case .format:
@@ -1193,8 +1127,7 @@ extension Interactor {
           return
         }
         sheet.commit { model in
-          model = .init(mode, type)
-          model.detents = [.adaptiveMedium]
+          model = .init(mode, type, style: style ?? .only(detent: .imgly.medium))
         }
       case .split:
         splitSelectedClipAtPlayheadPosition()
@@ -1241,9 +1174,8 @@ extension Interactor {
           return
         }
         sheet.commit { model in
-          model = .init(mode, type)
-          model.detent = .adaptiveSmall
-          model.detents = [.adaptiveTiny, .adaptiveSmall]
+          model = .init(mode, type, style: style ?? .default(detent: .imgly.small,
+                                                             detents: [.imgly.tiny, .imgly.small]))
         }
       default:
         guard let type = sheetTypeForSelection else {
@@ -1353,7 +1285,7 @@ extension Interactor {
       updateZoom(
         with: zoom.insets,
         canvasHeight: zoom.canvasHeight,
-        clampOnly: sheet.mode == .add
+        clampOnly: sheet.isFloating
       )
     case let .textCursorChanged(value):
       zoomToText(with: zoom.insets, canvasHeight: zoom.canvasHeight, cursorPosition: value)
@@ -1383,7 +1315,7 @@ extension Interactor {
       }
       do {
         if isEditing {
-          if sheet.mode == .add, sheet.isPresented { return }
+          if sheet.isFloating, sheet.isPresented { return }
           let zoomLevel: Float? = if zoomToPage {
             try await engine?.zoomToPage(page, insets, zoomModel: zoomModel)
           } else {
@@ -1591,7 +1523,7 @@ extension Interactor {
 
   // swiftlint:disable:next cyclomatic_complexity
   func sheetType(for designBlockType: String, with fillType: String? = nil,
-                 and kind: BlockKind? = nil) -> SheetType? {
+                 and kind: BlockKind? = nil) -> InternalSheetType? {
     switch designBlockType {
     case BlockType.text.rawValue: return .text
     case BlockType.group.rawValue: return .group
@@ -1626,7 +1558,7 @@ extension Interactor {
     }
   }
 
-  func sheetType(for selection: Selection?) -> SheetType? {
+  func sheetType(for selection: Selection?) -> InternalSheetType? {
     if let selection, selection.blocks.count == 1,
        let block = selection.blocks.first,
        let type = sheetType(block) {
@@ -1635,7 +1567,7 @@ extension Interactor {
     return nil
   }
 
-  func placeholderType(for selection: Selection?) -> SheetType? {
+  func placeholderType(for selection: Selection?) -> InternalSheetType? {
     guard let engine,
           let selection, selection.blocks.count == 1,
           let block = selection.blocks.first,
@@ -1920,9 +1852,11 @@ extension Interactor {
     if editMode == .crop, sheet.state != .init(.crop(), .image) {
       func showCropSheet() {
         sheet.commit { model in
-          model = .init(.crop(), .image)
-          model.detent = .adaptiveSmall
-          model.detents = [.adaptiveSmall, .adaptiveLarge]
+          model = .init(
+            .crop(),
+            .image,
+            style: cropModeStyle ?? .default(detent: .imgly.small, detents: [.imgly.small, .imgly.large])
+          )
         }
       }
 
@@ -1938,11 +1872,12 @@ extension Interactor {
     }
     if let exitCropModeAction, oldValue == .crop {
       do {
-        try exitCropModeAction.action()
+        try exitCropModeAction.value()
       } catch {
         handleError(error)
       }
       self.exitCropModeAction = nil
+      cropModeStyle = nil
     }
   }
 

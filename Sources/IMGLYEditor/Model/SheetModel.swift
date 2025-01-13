@@ -3,9 +3,9 @@ import Foundation
 
 struct SheetModel: IdentifiableByHash, Localizable {
   var mode: SheetMode
-  var type: SheetType
+  var type: InternalSheetType
 
-  init(_ mode: SheetMode, _ type: SheetType) {
+  init(_ mode: SheetMode, _ type: InternalSheetType) {
     self.mode = mode
     self.type = type
   }

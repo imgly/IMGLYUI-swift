@@ -992,7 +992,14 @@ extension Interactor: TimelineInteractor {
   // MARK: - Adding Assets
 
   func addAssetToBackgroundTrack() {
-    bottomBarButtonTapped(for: .addClip)
+    do {
+      try engine?.block.deselectAll()
+      sheet.commit { model in
+        model = .init(.add, .clip, style: .addAsset())
+      }
+    } catch {
+      handleError(error)
+    }
   }
 
   func addAudioAsset() {
@@ -1003,8 +1010,7 @@ extension Interactor: TimelineInteractor {
         // Ensure that the deselect event comes before opening the sheet, otherwise the sheet closes immediately.
         try await Task.sleep(for: .milliseconds(100))
         sheet.commit { model in
-          model = .init(.replace, .audio)
-          model.detents = [.adaptiveMedium]
+          model = .init(.replace, .audio, style: .only(detent: .imgly.medium))
         }
       } catch {
         handleError(error)
@@ -1012,15 +1018,13 @@ extension Interactor: TimelineInteractor {
     }
   }
 
-  private func showVoiceOverSheet() {
+  private func showVoiceOverSheet(style: SheetStyle) {
     sheet.commit { model in
-      model = .init(.addVoiceOver, .voiceover)
-      model.detent = .adaptiveMedium
-      model.detents = [.adaptiveMedium]
+      model = .init(.addVoiceOver, .voiceover, style: style)
     }
   }
 
-  func openVoiceOver() {
+  func openVoiceOver(style: SheetStyle) {
     guard let duration = timelineProperties.timeline?.totalDuration.seconds, duration > 0 else {
       error = .init("Unable to Record Voiceover",
                     message: "Please add content to your timeline to start recording audio.",
@@ -1042,15 +1046,16 @@ extension Interactor: TimelineInteractor {
     }
 
     pause()
-    showVoiceOverSheet()
+    showVoiceOverSheet(style: style)
   }
 
   func editVoiceOver() {
-    showVoiceOverSheet()
+    showVoiceOverSheet(style: .only(detent: .imgly.medium))
   }
 
-  func openCamera() {
+  func openCamera(_ assetSourceIDs: [MediaType: String]) {
     pause()
+    uploadAssetSourceIDs = assetSourceIDs
     isCameraSheetShown = true
   }
 
@@ -1127,12 +1132,16 @@ extension Interactor: TimelineInteractor {
 
   // MARK: - Photo Roll
 
-  func openSystemCamera() {
+  func openSystemCamera(_ assetSourceIDs: [MediaType: String]) {
+    pause()
+    uploadAssetSourceIDs = assetSourceIDs
     isSystemCameraShown = true
     sheet.model.type = .clip // Set to clip to add to background track
   }
 
-  func openImagePicker() {
+  func openImagePicker(_ assetSourceIDs: [MediaType: String]) {
+    pause()
+    uploadAssetSourceIDs = assetSourceIDs
     isImagePickerShown = true
     sheet.model.type = .clip // Set to clip to add to background track
   }

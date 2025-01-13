@@ -9,7 +9,7 @@ struct Sheet: View {
   @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
 
   // swiftlint:disable:next cyclomatic_complexity
-  @ViewBuilder func sheet(_ type: SheetType) -> some View {
+  @ViewBuilder func sheet(_ type: InternalSheetType) -> some View {
     switch type {
     case .image: ImageSheet()
     case .text: TextSheet()
@@ -25,7 +25,7 @@ struct Sheet: View {
     case .audio: AudioSheet()
     case .voiceover: VoiceOverSheet()
     case .reorder: ReorderSheet()
-    case .asset, .elements, .clip, .overlay, .stickerOrShape, .pageOverview: EmptyView()
+    case .asset, .clip, .pageOverview: EmptyView()
     }
   }
 
@@ -48,17 +48,17 @@ struct Sheet: View {
   var body: some View {
     Group {
       switch sheet.mode {
+      case let .sheet(viewBuilder):
+        viewBuilder.value()
+
       case .add:
         switch sheet.type {
         case .asset: assetLibrary
-        case .elements: assetLibrary.elementsTab
         case .image: assetLibrary.imagesTab
         case .text: assetLibrary.textTab
         case .shape: assetLibrary.shapesTab
         case .sticker: assetLibrary.stickersTab
         case .clip: assetLibrary.clipsTab
-        case .overlay: assetLibrary.overlaysTab
-        case .stickerOrShape: assetLibrary.stickersAndShapesTab
         case .audio: assetLibrary.audioTab
         default: EmptyView()
         }
@@ -96,8 +96,8 @@ struct Sheet: View {
       hidePresentationDragIndicator = newValue
     }
     .pickerStyle(.menu)
-    .imgly.presentationConfiguration(sheet.largestUndimmedDetent)
-    .presentationDetents(sheet.detents, selection: $interactor.sheet.detent)
+    .imgly.presentationConfiguration(sheet.style.largestUndimmedDetent)
+    .presentationDetents(sheet.style.detents, selection: $interactor.sheet.style.detent)
     .presentationDragIndicator(dragIndicatorVisibility)
   }
 }

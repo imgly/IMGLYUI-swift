@@ -30,42 +30,7 @@ final class PhotoInteractorBehavior: InteractorBehavior {
     return try context.engine.block.getType(block) != DesignBlockType.page.rawValue
   }
 
-  func rootBottomBarItems(_ context: InteractorContext) throws -> [RootBottomBarItem] {
-    let page = try context.engine.getSinglePage()
-    func isAllowed(_ scope: ScopeKey) throws -> Bool {
-      try context.engine.block.isAllowedByScope(page, scope: .key(scope))
-    }
-    var items = [RootBottomBarItem]()
-
-    if try isAllowed(.appearanceAdjustments) {
-      items += [.adjustments(page)]
-    }
-    if try isAllowed(.appearanceFilter) {
-      items += [.filter(page)]
-    }
-    if try isAllowed(.appearanceEffect) {
-      items += [.effect(page)]
-    }
-    if try isAllowed(.appearanceBlur) {
-      items += [.blur(page)]
-    }
-    if try isAllowed(.layerCrop) {
-      items += [
-        .crop(page, enter: .init {
-          context.interactor.zoomToPage(withAdditionalPadding: 24)
-        }, exit: .init {
-          context.interactor.zoomToPage(withAdditionalPadding: 0)
-          try context.engine.block.setSelected(page, selected: false)
-        }),
-      ]
-    }
-    items += [
-      .addText,
-      .addShape,
-      .addSticker,
-    ]
-    return items
-  }
+  func rootBottomBarItems(_: InteractorContext) throws -> [RootBottomBarItem] { [] }
 
   func historyChanged(_ context: InteractorContext) throws {
     let page = try context.engine.getSinglePage(withImageFill: false)

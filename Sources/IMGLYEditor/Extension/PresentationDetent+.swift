@@ -1,18 +1,20 @@
 import SwiftUI
+@_spi(Internal) import IMGLYCore
 
-extension PresentationDetent {
-  static let adaptiveTiny = Self.custom(AdaptiveTinyPresentationDetent.self)
-  static let adaptiveSmall = Self.custom(AdaptiveSmallPresentationDetent.self)
-  static let adaptiveMedium = Self.custom(AdaptiveMediumPresentationDetent.self)
-  static let adaptiveLarge = Self.custom(AdaptiveLargePresentationDetent.self)
+extension PresentationDetent: IMGLYCompatible {}
 
-  @MainActor
-  var identifier: UISheetPresentationController.Detent.Identifier? {
-    switch self {
-    case .adaptiveTiny: AdaptiveTinyPresentationDetent.identifier
-    case .adaptiveSmall: AdaptiveSmallPresentationDetent.identifier
-    case .adaptiveMedium: AdaptiveMediumPresentationDetent.identifier
-    case .adaptiveLarge: AdaptiveLargePresentationDetent.identifier
+@_spi(Unstable) public extension IMGLY where Wrapped == PresentationDetent {
+  static let tiny = Wrapped.custom(AdaptiveTinyPresentationDetent.self)
+  static let small = Wrapped.custom(AdaptiveSmallPresentationDetent.self)
+  static let medium = Wrapped.custom(AdaptiveMediumPresentationDetent.self)
+  static let large = Wrapped.custom(AdaptiveLargePresentationDetent.self)
+
+  internal var identifier: UISheetPresentationController.Detent.Identifier? {
+    switch wrapped {
+    case .imgly.tiny: AdaptiveTinyPresentationDetent.identifier
+    case .imgly.small: AdaptiveSmallPresentationDetent.identifier
+    case .imgly.medium: AdaptiveMediumPresentationDetent.identifier
+    case .imgly.large: AdaptiveLargePresentationDetent.identifier
     case .medium: UISheetPresentationController.Detent.medium().identifier
     case .large: UISheetPresentationController.Detent.large().identifier
     default:
@@ -56,6 +58,11 @@ private struct AdaptiveMediumPresentationDetent: CustomPresentationDetent {
 
 private struct AdaptiveLargePresentationDetent: CustomPresentationDetent {
   static func height(in context: Context) -> CGFloat? {
-    context.maxDetentValue * 0.99977
+    // Underlying content should not slide to the background.
+    if #available(iOS 17.0, *) {
+      context.maxDetentValue * 0.99960
+    } else {
+      context.maxDetentValue * 0.99977
+    }
   }
 }

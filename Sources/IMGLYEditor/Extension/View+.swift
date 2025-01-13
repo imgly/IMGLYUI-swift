@@ -46,6 +46,14 @@ public extension IMGLY where Wrapped: View {
   }
 }
 
+// MARK: - Unstable interface
+
+@_spi(Unstable) public extension IMGLY where Wrapped: View {
+  func dock(@Dock.Builder _ dock: @escaping Dock.Items) -> some View {
+    wrapped.environment(\.imglyDock, dock)
+  }
+}
+
 // MARK: - Internal interface
 
 @_spi(Internal) public extension IMGLY where Wrapped: View {
@@ -116,7 +124,7 @@ extension IMGLY where Wrapped: View {
         return
       }
       controller.presentingViewController.view?.tintAdjustmentMode = .normal
-      controller.largestUndimmedDetentIdentifier = largestUndimmedDetent?.identifier
+      controller.largestUndimmedDetentIdentifier = largestUndimmedDetent?.imgly.identifier
       controller.prefersScrollingExpandsWhenScrolledToEdge = false
       controller.prefersEdgeAttachedInCompactHeight = true
     }

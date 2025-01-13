@@ -41,7 +41,7 @@ struct RootBottomBar: View {
   }
 
   var showFAB: Bool {
-    interactor.rootBottomBarItems.contains { $0 == .fab }
+    dock == nil && interactor.rootBottomBarItems.contains { $0 == .fab }
   }
 
   var items: [RootBottomBarItem] {
@@ -54,6 +54,20 @@ struct RootBottomBar: View {
     }
   }
 
+  @Environment(\.imglyDock) private var dock
+  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
+
+  private var assetLibrary: some AssetLibrary {
+    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
+  }
+
+  private var editorContext: EditorContext? {
+    guard let engine = interactor.engine else {
+      return nil
+    }
+    return EditorContext(engine, interactor, assetLibrary)
+  }
+
   @ViewBuilder var content: some View {
     HStack(spacing: 0) {
       if showFAB {
@@ -64,8 +78,16 @@ struct RootBottomBar: View {
       }
       ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: -2) {
-          ForEach(items) {
-            button($0)
+          Group {
+            if let dock, let editorContext {
+              DockView(dock: dock, context: editorContext)
+                .symbolRenderingMode(.monochrome)
+                .labelStyle(.bottomBar)
+            } else {
+              ForEach(items) {
+                button($0)
+              }
+            }
           }
           .fixedSize()
         }
@@ -115,10 +137,15 @@ struct RootBottomBar: View {
     }
   }
 
+  @State private var isDockHidden = true
+
   var body: some View {
     content
+      .onPreferenceChange(DockHiddenKey.self) { newValue in
+        isDockHidden = newValue
+      }
       .background(alignment: .top) {
-        if !items.isEmpty {
+        if !items.isEmpty || !isDockHidden {
           Rectangle()
             .fill(colorScheme == .dark
               ? Color(uiColor: .systemBackground)
