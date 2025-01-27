@@ -10,9 +10,6 @@ import SwiftUI
   /// By default, the `DesignEditor` will export PDFs.
   /// If this flag is set, it will export PNGs instead.
   case exportPNGInDesignEditor
-  /// By default, the engine works in an 8-bit sRGB color space and exports 8bit images which lose P3 color information.
-  /// If this flag is enabled, the engine works in 16-bit extended sRGB and exports 16bit images in the P3 color space.
-  case exportP3Images
 
   fileprivate var isInitiallyEnabled: Bool {
     switch self {

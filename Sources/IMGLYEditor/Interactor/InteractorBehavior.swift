@@ -68,7 +68,6 @@ import SwiftUI
     let color: IMGLYEngine.Color = try context.engine.editor.getSettingColor("highlightColor")
     try context.engine.editor.setSettingColor("placeholderHighlightColor", color: color)
 
-    try context.engine.editor.setSettingBool("features/exportP3Images", value: FeatureFlags.isEnabled(.exportP3Images))
     try context.engine.editor.setSettingBool("features/removeForegroundTracksOnSceneLoad", value: true)
 
     try context.engine.editor.setSettingString(
