@@ -2,7 +2,6 @@
 import SwiftUI
 
 struct BottomToolbar<Content: View>: View {
-  let title: Text
   @ViewBuilder let content: Content
 
   var body: some View {
@@ -19,6 +18,8 @@ struct BottomToolbar<Content: View>: View {
 
 struct BottomToolbar_Previews: PreviewProvider {
   static var previews: some View {
-    defaultPreviews(sheet: .init(.add, .image))
+    defaultPreviews(sheet: .init(.libraryAdd {
+      AssetLibrarySheet(content: .image)
+    }, .image))
   }
 }

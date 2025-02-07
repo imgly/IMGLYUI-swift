@@ -12,9 +12,11 @@ struct RootBottomBar: View {
 
   @ViewBuilder var fab: some View {
     Button {
-      interactor.bottomBarButtonTapped(for: .add)
+      interactor.send(.openSheet(.libraryAdd {
+        AssetLibrarySheet(content: nil)
+      }))
     } label: {
-      SheetMode.add.label
+      Label("Add", systemImage: "plus")
         .font(.title2)
         .fontWeight(.bold)
         .labelStyle(.iconOnly)
@@ -30,14 +32,17 @@ struct RootBottomBar: View {
   }
 
   @ViewBuilder func button(_ item: RootBottomBarItem) -> some View {
-    let mode = item.sheetMode
-    Button {
-      interactor.bottomBarButtonTapped(for: mode)
-    } label: {
-      mode.label(mode.pinnedBlockID, interactor)
+    if let mode = item.sheetMode {
+      Button {
+        interactor.bottomBarButtonTapped(for: mode)
+      } label: {
+        mode.label(mode.pinnedBlockID, interactor)
+      }
+      .labelStyle(.bottomBar(alignment: mode == .selectionColors ? .leading : .center))
+      .imgly.selection(mode.pinnedBlockID)
+    } else {
+      EmptyView()
     }
-    .labelStyle(.bottomBar(alignment: mode == .selectionColors ? .leading : .center))
-    .imgly.selection(mode.pinnedBlockID)
   }
 
   var showFAB: Bool {
@@ -61,11 +66,11 @@ struct RootBottomBar: View {
     anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
   }
 
-  private var editorContext: EditorContext? {
+  private var dockContext: Dock.Context? {
     guard let engine = interactor.engine else {
       return nil
     }
-    return EditorContext(engine, interactor, assetLibrary)
+    return .init(engine: engine, eventHandler: interactor, assetLibrary: assetLibrary)
   }
 
   @ViewBuilder var content: some View {
@@ -79,8 +84,8 @@ struct RootBottomBar: View {
       ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: -2) {
           Group {
-            if let dock, let editorContext {
-              DockView(dock: dock, context: editorContext)
+            if let dock, let dockContext {
+              DockView(dock: dock, context: dockContext)
                 .symbolRenderingMode(.monochrome)
                 .labelStyle(.bottomBar)
             } else {

@@ -21,7 +21,7 @@ struct StrokeOptions: View {
         }
         PropertyPicker<StrokeStyle>("Style", property: .key(.strokeStyle))
         PropertyPicker<StrokePosition>("Position", property: .key(.strokePosition))
-          .disabled(interactor.sheet.type == .text)
+          .disabled(interactor.sheet.content == .text)
         PropertyPicker<StrokeJoin>("Join", property: .key(.strokeCornerGeometry))
       }
     }
@@ -30,6 +30,6 @@ struct StrokeOptions: View {
 
 struct StrokeOptions_Previews: PreviewProvider {
   static var previews: some View {
-    defaultPreviews(sheet: .init(.fillAndStroke, .shape))
+    defaultPreviews(sheet: .init(.fillStroke(), .shape))
   }
 }

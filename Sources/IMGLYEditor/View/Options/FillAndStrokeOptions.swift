@@ -10,14 +10,14 @@ struct FillAndStrokeOptions: View {
   @Environment(\.imglySelection) private var id
 
   @ViewBuilder var fillAndStrokeOptions: some View {
-    if interactor.isColorFill(id) {
+    if interactor.isColorFill(id), interactor.supportsFill(id), interactor.isAllowed(id, scope: .fillChange) {
       Section("Fill") {
         let fillType: Binding<ColorFillType?> = interactor
           .bind(id, .fill, property: .key(.type), getter: fillTypeGetter, setter: fillTypeSetter)
         FillColorOptions(fillType: fillType)
       }
     }
-    if interactor.supportsStroke(id) {
+    if interactor.supportsStroke(id), interactor.isAllowed(id, scope: .strokeChange) {
       Section("Stroke") {
         StrokeOptions(isEnabled: interactor.bind(id, property: .key(.strokeEnabled), default: false))
       }

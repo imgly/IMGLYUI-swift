@@ -81,6 +81,7 @@ struct StrokeColorImage: View {
       } else {
         Image(systemName: "circle.slash")
           .foregroundStyle(.black, .clear)
+          .symbolRenderingMode(nil)
       }
     }
   }

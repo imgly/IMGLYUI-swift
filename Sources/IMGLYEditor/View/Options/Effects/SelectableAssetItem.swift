@@ -40,7 +40,7 @@ struct SelectableAssetItem<Content: View>: View {
         detents.insert(.imgly.medium)
       }
       interactor.sheet.commit { model in
-        model = .init(model.mode, model.type, style: .default(detent: detent, detents: detents))
+        model.style = .default(detent: detent, detents: detents)
       }
     }
   }

@@ -62,6 +62,7 @@ public extension EditorEvent where Self == EditorEvents.Export.Completed {
 
 @_spi(Unstable) public extension EditorEvents {
   enum Sheet {}
+  enum Selection {}
   enum AddFrom {}
 }
 
@@ -71,6 +72,17 @@ public extension EditorEvent where Self == EditorEvents.Export.Completed {
   }
 
   struct Close: EditorEvent {}
+}
+
+@_spi(Unstable) public extension EditorEvents.Selection {
+  struct EnterTextEditMode: EditorEvent {}
+  struct Duplicate: EditorEvent {}
+  struct Split: EditorEvent {}
+  struct MoveAsClip: EditorEvent {}
+  struct MoveAsOverlay: EditorEvent {}
+  struct EnterGroup: EditorEvent {}
+  struct SelectGroup: EditorEvent {}
+  struct Delete: EditorEvent {}
 }
 
 @_spi(Unstable) public extension EditorEvents.AddFrom {
@@ -103,6 +115,38 @@ public extension EditorEvent where Self == EditorEvents.Export.Completed {
 
 @_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Sheet.Close {
   static var closeSheet: Self { Self() }
+}
+
+@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.EnterTextEditMode {
+  static var enterTextEditMode: Self { Self() }
+}
+
+@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.Duplicate {
+  static var duplicate: Self { Self() }
+}
+
+@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.Split {
+  static var split: Self { Self() }
+}
+
+@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.MoveAsClip {
+  static var moveAsClip: Self { Self() }
+}
+
+@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.MoveAsOverlay {
+  static var moveAsOverlay: Self { Self() }
+}
+
+@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.EnterGroup {
+  static var enterGroup: Self { Self() }
+}
+
+@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.SelectGroup {
+  static var selectGroup: Self { Self() }
+}
+
+@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.Delete {
+  static var delete: Self { Self() }
 }
 
 @_spi(Unstable) public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {

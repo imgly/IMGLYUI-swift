@@ -54,8 +54,8 @@ struct Canvas: View {
       if interactor.sceneMode == .video {
         if isTimelineMinimized || (interactor.sheet.isPresented
           && !interactor.sheet.isFloating
-          && interactor.sheet.mode != .addVoiceOver
-          && interactor.sheet.mode != .replace) {
+          && interactor.sheet.content != .voiceover
+          && !interactor.sheet.isReplacing) {
           height += timelinePlayerBarHeight
         } else {
           height += dynamicTimelineHeight
@@ -79,8 +79,8 @@ struct Canvas: View {
   @State private var isTimelineMinimized = false
   @State private var isTimelineAnimating = false
 
-  @ViewBuilder func bottomBar(type: InternalSheetType?) -> some View {
-    BottomBar(type: type, id: id, height: bottomBarHeight, bottomSafeAreaInset: bottomSafeAreaInset)
+  @ViewBuilder func bottomBar(content: SheetContent?) -> some View {
+    BottomBar(content: content, id: id, height: bottomBarHeight, bottomSafeAreaInset: bottomSafeAreaInset)
   }
 
   @ViewBuilder var canvas: some View {
@@ -169,7 +169,7 @@ struct Canvas: View {
             playerBar()
               .frame(height: timelinePlayerBarHeight)
             if !isTimelineMinimized,
-               !interactor.sheet.isPresented || interactor.sheet.isFloating || interactor.sheet.mode == .replace {
+               !interactor.sheet.isPresented || interactor.sheet.isFloating || interactor.sheet.isReplacing {
               timeline()
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
@@ -182,7 +182,7 @@ struct Canvas: View {
           }
           .frame(maxHeight: isTimelineMinimized || (interactor.sheet.isPresented
               && !interactor.sheet.isFloating
-              && interactor.sheet.mode != .replace)
+              && !interactor.sheet.isReplacing)
             ? timelinePlayerBarHeight
             : dynamicTimelineHeight)
           .animation(.imgly.timelineMinimizeMaximize, value: interactor.sheet.isPresented)
@@ -205,19 +205,19 @@ struct Canvas: View {
         Spacer()
         if !interactor.isLoading, interactor.isEditing {
           ZStack {
-            bottomBar(type: nil)
+            bottomBar(content: nil)
               .disabled(interactor.sheet.isPresented)
               .onPreferenceChange(BottomBarContentGeometryKey.self) { newValue in
                 barContentGeometry = newValue
               }
             Group {
-              if let type = interactor.sheetTypeForBottomBar {
-                bottomBar(type: type)
+              if let content = interactor.sheetContentForBottomBar {
+                bottomBar(content: content)
                   .zIndex(1)
                   .transition(.move(edge: .bottom))
               }
             }
-            .animation(.easeInOut(duration: 0.2), value: interactor.sheetTypeForBottomBar)
+            .animation(.easeInOut(duration: 0.2), value: interactor.sheetContentForBottomBar)
           }
           .transition(.move(edge: .bottom))
         }

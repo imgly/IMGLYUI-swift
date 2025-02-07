@@ -30,7 +30,7 @@ struct FontSizeSheet: View {
   }
 
   var body: some View {
-    DismissableBottomSheet {
+    DismissableTitledSheet("Size") {
       List {
         PropertyStack("Message") {
           propertyButton(property: .small)
@@ -44,6 +44,6 @@ struct FontSizeSheet: View {
 
 struct FontSizeSheet_Previews: PreviewProvider {
   static var previews: some View {
-    defaultPreviews(sheet: .init(.fontSize(nil), .fontSize))
+    defaultPreviews(sheet: .init(.fontSize(nil)))
   }
 }

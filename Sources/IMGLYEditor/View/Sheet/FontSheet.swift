@@ -21,7 +21,7 @@ struct FontSheet: View {
   var body: some View {
     let text = interactor.bindTextState(id, resetFontProperties: true, overrideScopes: [.key(.textCharacter)])
 
-    DismissableBottomSheet {
+    DismissableTitledSheet("Font") {
       ListPicker(data: [assets], selection: text.assetID) { asset, isSelected in
         Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
           .labelStyle(.icon(hidden: !isSelected,
@@ -33,6 +33,6 @@ struct FontSheet: View {
 
 struct FontSheet_Previews: PreviewProvider {
   static var previews: some View {
-    defaultPreviews(sheet: .init(.font(nil, nil), .font))
+    defaultPreviews(sheet: .init(.font(nil, nil)))
   }
 }

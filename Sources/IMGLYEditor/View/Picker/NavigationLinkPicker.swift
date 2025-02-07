@@ -48,6 +48,6 @@ struct NavigationLinkPicker<Data, ElementLabel: View, LinkLabel: View>: View whe
 
 struct NavigationLinkPicker_Previews: PreviewProvider {
   static var previews: some View {
-    defaultPreviews(sheet: .init(.layer, .text))
+    defaultPreviews(sheet: .init(.layer(), .text))
   }
 }

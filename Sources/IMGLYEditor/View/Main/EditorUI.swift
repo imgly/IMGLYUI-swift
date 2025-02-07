@@ -6,6 +6,7 @@ import SwiftUI
   @EnvironmentObject private var interactor: Interactor
 
   @Environment(\.layoutDirection) private var layoutDirection
+  @Environment(\.imglyInspectorBar) private var inspectorBar
 
   @_spi(Internal) public init(zoomPadding: CGFloat = 16) {
     self.zoomPadding = zoomPadding
@@ -123,6 +124,37 @@ import SwiftUI
       .onDisappear {
         interactor.onDisappear()
         interactivePopGestureRecognizer?.isEnabled = true
+      }
+      .imgly.inspectorBar { context in
+        if let inspectorBar {
+          try inspectorBar(context)
+        } else {
+          InspectorBar.Buttons.replace() // Video, Image, Sticker, Audio
+
+          InspectorBar.Buttons.editText() // Text
+          InspectorBar.Buttons.formatText() // Text
+          InspectorBar.Buttons.fillStroke() // Page, Video, Image, Shape, Text
+          InspectorBar.Buttons.editVoiceover() // Voiceover (video scenes only)
+          InspectorBar.Buttons.volume() // Video, Audio, Voiceover (video scenes only)
+          InspectorBar.Buttons.crop() // Video, Image
+
+          InspectorBar.Buttons.adjustments() // Video, Image
+          InspectorBar.Buttons.filter() // Video, Image
+          InspectorBar.Buttons.effect() // Video, Image
+          InspectorBar.Buttons.blur() // Video, Image
+          InspectorBar.Buttons.shape() // Video, Image, Shape
+
+          InspectorBar.Buttons.selectGroup() // Video, Image, Sticker, Shape, Text
+          InspectorBar.Buttons.enterGroup() // Group
+
+          InspectorBar.Buttons.layer() // Video, Image, Sticker, Shape, Text
+          InspectorBar.Buttons.split() // Video, Image, Sticker, Shape, Text, Audio (video scenes only)
+          InspectorBar.Buttons.moveAsClip() // Video, Image, Sticker, Shape, Text (video scenes only)
+          InspectorBar.Buttons.moveAsOverlay() // Video, Image, Sticker, Shape, Text (video scenes only)
+          InspectorBar.Buttons.reorder() // Video, Image, Sticker, Shape, Text (video scenes only)
+          InspectorBar.Buttons.duplicate() // Video, Image, Sticker, Shape, Text, Audio
+          InspectorBar.Buttons.delete() // Video, Image, Sticker, Shape, Text, Audio, Voiceover
+        }
       }
   }
 }

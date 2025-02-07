@@ -37,13 +37,13 @@ import SwiftUI
 @MainActor
 @_spi(Unstable) public extension Dock.Buttons {
   static func elementsLibrary(
-    action: @escaping EditorContext.To<Void> = { context in
+    action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(.libraryAdd { context.assetLibrary.elementsTab }))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Elements") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.addElement },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Elements") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addElement },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.elementsLibrary, action: action, label: { context in
       let title = try title(context)
@@ -53,13 +53,13 @@ import SwiftUI
   }
 
   static func audioLibrary(
-    action: @escaping EditorContext.To<Void> = { context in
+    action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(.libraryAdd { context.assetLibrary.audioTab }))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Audio") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.addAudio },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Audio") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addAudio },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.audioLibrary, action: action, label: { context in
       let title = try title(context)
@@ -69,13 +69,13 @@ import SwiftUI
   }
 
   static func imagesLibrary(
-    action: @escaping EditorContext.To<Void> = { context in
+    action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(.libraryAdd { context.assetLibrary.imagesTab }))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Image") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.addImage },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Image") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addImage },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.imagesLibrary, action: action, label: { context in
       let title = try title(context)
@@ -85,15 +85,15 @@ import SwiftUI
   }
 
   static func textLibrary(
-    action: @escaping EditorContext.To<Void> = { context in
+    action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(.libraryAdd(style: .addAsset(detent: .imgly.medium)) {
         context.assetLibrary.textTab
       }))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Text") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.addText },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Text") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addText },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.textLibrary, action: action, label: { context in
       let title = try title(context)
@@ -103,13 +103,13 @@ import SwiftUI
   }
 
   static func shapesLibrary(
-    action: @escaping EditorContext.To<Void> = { context in
+    action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(.libraryAdd { context.assetLibrary.shapesTab }))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Shape") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.addShape },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Shape") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addShape },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.shapesLibrary, action: action, label: { context in
       let title = try title(context)
@@ -119,13 +119,13 @@ import SwiftUI
   }
 
   static func stickersLibrary(
-    action: @escaping EditorContext.To<Void> = { context in
+    action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(.libraryAdd { context.assetLibrary.stickersTab }))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Sticker") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.addSticker },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Sticker") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addSticker },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.stickersLibrary, action: action, label: { context in
       let title = try title(context)
@@ -135,13 +135,13 @@ import SwiftUI
   }
 
   static func overlaysLibrary(
-    action: @escaping EditorContext.To<Void> = { context in
+    action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(.libraryAdd { context.assetLibrary.overlaysTab }))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Overlay") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.addVideo },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Overlay") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addVideo },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.overlaysLibrary, action: action, label: { context in
       let title = try title(context)
@@ -151,13 +151,13 @@ import SwiftUI
   }
 
   static func stickersAndShapesLibrary(
-    action: @escaping EditorContext.To<Void> = { context in
+    action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(.libraryAdd { context.assetLibrary.stickersAndShapesTab }))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Sticker") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.addSticker },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Sticker") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addSticker },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.stickersAndShapesLibrary, action: action, label: { context in
       let title = try title(context)
@@ -167,14 +167,14 @@ import SwiftUI
   }
 
   static func photoRoll(
-    action: @escaping EditorContext.To<Void> = { $0.eventHandler.send(.addFromPhotoRoll()) },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Photo Roll") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { context in
+    action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.addFromPhotoRoll()) },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Photo Roll") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
       let isVideoScene = try context.engine.scene.getMode() == .video
       return isVideoScene ? Image.imgly.addPhotoRollBackground : Image.imgly.addPhotoRollForeground
     },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.photoRoll, action: action, label: { context in
       let title = try title(context)
@@ -184,14 +184,14 @@ import SwiftUI
   }
 
   static func systemCamera(
-    action: @escaping EditorContext.To<Void> = { $0.eventHandler.send(.addFromSystemCamera()) },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Camera") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { context in
+    action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.addFromSystemCamera()) },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Camera") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
       let isVideoScene = try context.engine.scene.getMode() == .video
       return isVideoScene ? Image.imgly.addCameraBackground : Image.imgly.addCameraForeground
     },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.systemCamera, action: action, label: { context in
       let title = try title(context)
@@ -201,14 +201,14 @@ import SwiftUI
   }
 
   static func imglyCamera(
-    action: @escaping EditorContext.To<Void> = { $0.eventHandler.send(.addFromIMGLYCamera()) },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Camera") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { context in
+    action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.addFromIMGLYCamera()) },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Camera") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
       let isVideoScene = try context.engine.scene.getMode() == .video
       return isVideoScene ? Image.imgly.addCameraBackground : Image.imgly.addCameraForeground
     },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.imglyCamera, action: action, label: { context in
       let title = try title(context)
@@ -218,11 +218,11 @@ import SwiftUI
   }
 
   static func voiceover(
-    action: @escaping EditorContext.To<Void> = { $0.eventHandler.send(.openSheet(.voiceover())) },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Voiceover") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.addVoiceover },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { _ in true }
+    action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.openSheet(.voiceover())) },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Voiceover") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addVoiceover },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
   ) -> some Dock.Item {
     Dock.Button(id: ID.voiceover, action: action, label: { context in
       let title = try title(context)
@@ -232,11 +232,11 @@ import SwiftUI
   }
 
   static func reorder(
-    action: @escaping EditorContext.To<Void> = { $0.eventHandler.send(.openSheet(.reorder())) },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Reorder") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.reorder },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = { context in
+    action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.openSheet(.reorder())) },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Reorder") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.reorder },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { context in
       let backgroundTrack = try context.engine.block.find(byType: .track).filter {
         try context.engine.block.isAlwaysOnBottom($0)
       }.first
@@ -254,13 +254,13 @@ import SwiftUI
   }
 
   static func adjustments(
-    action: @escaping EditorContext.To<Void> = {
+    action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(.adjustments(id: nonNil($0.engine.scene.getCurrentPage()))))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Adjustments") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.adjustments },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = {
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Adjustments") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.adjustments },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope(nonNil($0.engine.scene.getCurrentPage()), key: "appearance/adjustments")
     }
   ) -> some Dock.Item {
@@ -272,13 +272,13 @@ import SwiftUI
   }
 
   static func filter(
-    action: @escaping EditorContext.To<Void> = {
+    action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(.filter(id: nonNil($0.engine.scene.getCurrentPage()))))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Filter") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.filter },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = {
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Filter") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.filter },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope(nonNil($0.engine.scene.getCurrentPage()), key: "appearance/filter")
     }
   ) -> some Dock.Item {
@@ -290,13 +290,13 @@ import SwiftUI
   }
 
   static func effect(
-    action: @escaping EditorContext.To<Void> = {
+    action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(.effect(id: nonNil($0.engine.scene.getCurrentPage()))))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Effect") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.effect },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = {
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Effect") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.effect },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope(nonNil($0.engine.scene.getCurrentPage()), key: "appearance/effect")
     }
   ) -> some Dock.Item {
@@ -308,13 +308,13 @@ import SwiftUI
   }
 
   static func blur(
-    action: @escaping EditorContext.To<Void> = {
+    action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(.blur(id: nonNil($0.engine.scene.getCurrentPage()))))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Blur") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.blur },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = {
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Blur") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.blur },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope(nonNil($0.engine.scene.getCurrentPage()), key: "appearance/blur")
     }
   ) -> some Dock.Item {
@@ -326,13 +326,13 @@ import SwiftUI
   }
 
   static func crop(
-    action: @escaping EditorContext.To<Void> = {
+    action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(.crop(id: nonNil($0.engine.scene.getCurrentPage()))))
     },
-    @ViewBuilder title: @escaping EditorContext.To<some View> = { _ in Text("Crop") },
-    @ViewBuilder icon: @escaping EditorContext.To<some View> = { _ in Image.imgly.crop },
-    isEnabled: @escaping EditorContext.To<Bool> = { _ in true },
-    isVisible: @escaping EditorContext.To<Bool> = {
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Crop") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.crop },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope(nonNil($0.engine.scene.getCurrentPage()), key: "layer/crop")
     }
   ) -> some Dock.Item {

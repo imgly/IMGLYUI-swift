@@ -1,8 +1,8 @@
 import SwiftUI
 
-struct ReorderSheet: View {
+struct ReorderOptionsSheet: View {
   var body: some View {
-    DismissableBottomSheet {
+    DismissableTitledSheet("Reorder") {
       ReorderOptions()
     }
   }

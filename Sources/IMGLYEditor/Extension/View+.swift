@@ -52,6 +52,10 @@ public extension IMGLY where Wrapped: View {
   func dock(@Dock.Builder _ dock: @escaping Dock.Items) -> some View {
     wrapped.environment(\.imglyDock, dock)
   }
+
+  func inspectorBar(@InspectorBar.Builder _ inspectorBar: @escaping InspectorBar.Items) -> some View {
+    wrapped.environment(\.imglyInspectorBar, inspectorBar)
+  }
 }
 
 // MARK: - Internal interface

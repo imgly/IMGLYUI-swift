@@ -1,39 +1,58 @@
 import SwiftUI
 
-struct SheetState: BatchMutable {
+private extension SheetType {
+  var objectIdentifier: ObjectIdentifier { .init(Self.self) }
+}
+
+struct EquatableSheetType: Equatable {
+  let value: SheetType
+
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.value.objectIdentifier == rhs.value.objectIdentifier
+  }
+}
+
+struct SheetState: BatchMutable, Equatable {
   var isPresented: Bool
-  var model: SheetModel
+  var mode: SheetMode?
+  var content: SheetContent?
   var style: SheetStyle
 
-  /// Forwarded `model.mode`.
-  var mode: SheetMode {
-    get { model.mode }
-    set { model.mode = newValue }
-  }
-
-  /// Forwarded `model.type`.
-  var type: InternalSheetType { model.type }
-
-  /// Combined `model` and `isPresented`.
-  var state: SheetModel? { isPresented ? model : nil }
+  private let equatableType: EquatableSheetType?
+  var type: SheetType? { equatableType?.value }
 
   var isFloating: Bool {
-    switch mode {
-    case .add: true
-    default: style.isFloating
-    }
+    style.isFloating
+  }
+
+  var isReplacing: Bool {
+    type is SheetTypes.LibraryReplace
   }
 
   /// Hide sheet.
   init() {
-    self.init(.add, .image, style: .default())
     isPresented = false
+    mode = nil
+    content = nil
+    style = .default()
+    equatableType = nil
   }
 
-  /// Show sheet with `mode`, `type`, and `style`.
-  init(_ mode: SheetMode, _ type: InternalSheetType, style: SheetStyle = .default()) {
+  /// Show sheet with `mode` and `style`.
+  init(_ mode: SheetMode, style: SheetStyle = .default()) {
     isPresented = true
-    model = .init(mode, type)
+    self.mode = mode
+    content = nil
     self.style = style
+    equatableType = nil
+  }
+
+  /// Show sheet with `type` and optional `content`.
+  init(_ type: SheetType, _ content: SheetContent? = nil) {
+    isPresented = true
+    mode = nil
+    self.content = content
+    style = type.style
+    equatableType = .init(value: type)
   }
 }

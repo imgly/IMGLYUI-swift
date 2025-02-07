@@ -1,7 +1,7 @@
 import Combine
 import CoreMedia
 @_spi(Internal) import IMGLYCore
-@_spi(Internal) import IMGLYCoreUI
+@_spi(Internal) @_spi(Unstable) import IMGLYCoreUI
 import IMGLYEngine
 import SwiftUI
 
@@ -123,19 +123,19 @@ import SwiftUI
   var isCanvasActionEnabled: Bool {
     let isGrouped = isGrouped(selection?.blocks.first)
     return !isLoading && !sheet
-      .isPresented && editMode == .transform && !isGrouped && isSelectionVisible && sheetTypeForSelection != .page &&
+      .isPresented && editMode == .transform && !isGrouped && isSelectionVisible && sheetContentForSelection != .page &&
       timelineProperties.selectedClip?.clipType != .voiceOver
   }
 
-  var sheetTypeForSelection: InternalSheetType? {
-    isLoading ? nil : sheetType(for: selection)
+  var sheetContentForSelection: SheetContent? {
+    isLoading ? nil : sheetContent(for: selection)
   }
 
-  var sheetTypeForBottomBar: InternalSheetType? {
+  var sheetContentForBottomBar: SheetContent? {
     guard isBottomBarEnabled else {
       return nil
     }
-    return isPageOverviewShown ? .pageOverview : sheetTypeForSelection
+    return isPageOverviewShown ? .pageOverview : sheetContentForSelection
   }
 
   var isBottomBarEnabled: Bool {
@@ -150,7 +150,7 @@ import SwiftUI
     }
   }
 
-  func sheetType(_ id: BlockID?) -> InternalSheetType? {
+  func sheetContent(_ id: BlockID?) -> SheetContent? {
     guard let id, let engine, let type = try? engine.block.getType(id) else {
       return nil
     }
@@ -160,7 +160,7 @@ import SwiftUI
     if let fill {
       fillType = try? engine.block.getType(fill)
     }
-    return sheetType(for: type, with: fillType, and: kind)
+    return sheetContent(for: type, with: fillType, and: kind)
   }
 
   func shapeType(_ id: BlockID?) -> ShapeType? {
@@ -276,14 +276,14 @@ import SwiftUI
 
   // MARK: - Private properties
 
-  private let behavior: InteractorBehavior
+  let behavior: InteractorBehavior
 
   // The optional _engine instance allows to control the deinitialization.
   private var _engine: Engine?
 
   private var previousEditMode: EditMode?
-  private var cropModeStyle: SheetStyle?
-  private var exitCropModeAction: PseudoHashableAction?
+  var cropSheetTypeEvent: SheetTypes.Crop?
+  var exitCropModeAction: (() throws -> Void)?
 
   private var stateTask: Task<Void, Never>?
   private var eventTask: Task<Void, Never>?
@@ -660,80 +660,20 @@ extension Interactor {
     }
   }
 
-  // swiftlint:disable:next cyclomatic_complexity
   func isAllowed(_ id: BlockID?, _ mode: SheetMode) -> Bool {
     switch mode {
-    case .sheet, .add:
-      return true
-    case .replace:
-      return isAllowed(id, scope: .fillChange)
-    case .edit:
-      return isAllowed(id, scope: .textEdit)
-    case .crop:
-      return isAllowed(id, scope: .layerCrop) || isAllowed(id, scope: .layerClipping)
-    case .format:
-      return isAllowed(id, scope: .textCharacter)
-    case .shape:
-      return isAllowed(id, scope: .shapeChange)
-    case .fillAndStroke:
-      return isAllowed(id, scope: .fillChange) && isAllowed(id, scope: .strokeChange)
-    case .layer:
-      let opacity = isAllowed(id, scope: .layerOpacity)
-      let blend = isAllowed(id, scope: .layerBlendMode)
-      let layer = isAllowed(id, .toTop)
-      let duplicate = isAllowed(id, Action.duplicate)
-      let delete = isAllowed(id, Action.delete)
-      return opacity || blend || layer || duplicate || delete
-    case .enterGroup:
-      return true
-    case .selectGroup:
-      return isGrouped(id)
     case .selectionColors, .font, .fontSize, .color:
-      return true
-    case .filter:
-      return isAllowed(id, scope: .appearanceFilter)
-    case .adjustments:
-      return isAllowed(id, scope: .appearanceAdjustments)
-    case .effect:
-      return isAllowed(id, scope: .appearanceEffect)
-    case .blur:
-      return isAllowed(id, scope: .appearanceBlur)
-    case .reorder:
-      if timelineProperties.dataSource.backgroundTrack.clips.count < 2 {
-        return false
-      } else if let id,
-                let clip = timelineProperties.dataSource.findClip(id: id) {
-        return clip.isInBackgroundTrack
-      }
-      return false
-    case .split:
-      return isAllowed(id, scope: .lifecycleDuplicate)
-    case .volume:
-      return true
-    case .attachToBackground:
-      if let id,
-         let clip = timelineProperties.dataSource.findClip(id: id) {
-        return !clip.isInBackgroundTrack
-      }
-      return false
-    case .detachFromBackground:
-      if let id,
-         let clip = timelineProperties.dataSource.findClip(id: id) {
-        return clip.isInBackgroundTrack
-      }
-      return false
+      true
     case .delete:
-      return isAllowed(id, Action.delete)
+      isAllowed(id, Action.delete)
     case .duplicate:
-      return isAllowed(id, Action.duplicate)
+      isAllowed(id, Action.duplicate)
     case .editPage, .addPage:
-      return true
+      true
     case .moveUp:
-      return isAllowed(id, Action.up)
+      isAllowed(id, Action.up)
     case .moveDown:
-      return isAllowed(id, Action.down)
-    case .addVoiceOver, .editVoiceOver:
-      return true
+      isAllowed(id, Action.down)
     }
   }
 
@@ -759,7 +699,7 @@ extension Interactor {
       return isAllowed(id, scope: .lifecycleDestroy) && !isGrouped(id)
     case .previousPage, .nextPage, .page, .addPage: return true
     case .resetCrop, .flipCrop:
-      return isAllowed(id, .crop()) && !isGrouped(id)
+      return (isAllowed(id, scope: .layerCrop) || isAllowed(id, scope: .layerClipping)) && !isGrouped(id)
     }
   }
 }
@@ -821,11 +761,11 @@ extension Interactor: AssetLibraryInteractor {
 
     Task(priority: .userInitiated) {
       do {
-        if sheet.mode == .replace, let id = selection?.blocks.first {
+        if sheet.isReplacing, let id = selection?.blocks.first {
           let oldDuration = try engine.block.getDuration(id)
 
           try await engine.asset.applyToBlock(sourceID: sourceID, assetResult: asset, block: id)
-          if sheet.type == .sticker {
+          if sheet.content == .sticker {
             try engine.block.overrideAndRestore(id, scope: .key(.layerCrop)) {
               try engine.block.setContentFillMode($0, mode: .contain)
             }
@@ -864,7 +804,7 @@ extension Interactor: AssetLibraryInteractor {
             try? engine.block.setTrimOffset(trimID, offset: .zero)
           }
         } else {
-          let addToBackgroundTrack = sheet.type == .clip
+          let addToBackgroundTrack = sheet.content == .clip
 
           if let id = try await engine.asset.apply(sourceID: sourceID, assetResult: asset) {
             let pageID = try engine.getPage(page)
@@ -1029,108 +969,34 @@ extension Interactor {
   }
 
   // swiftlint:disable:next cyclomatic_complexity
-  func bottomBarButtonTapped(for mode: SheetMode, style: SheetStyle? = nil) {
+  func bottomBarButtonTapped(for mode: SheetMode) {
     pause()
 
     // For certain sheets we want to guarantee that the selected clip is visible at the current playback time.
-    if sceneMode == .video, ![
-      .add,
-      .enterGroup,
-      .split,
-      .reorder,
+    if ![
       .delete,
-      .attachToBackground,
-      .detachFromBackground
     ].contains(mode) {
       clampPlayheadPositionToSelectedClip()
     }
 
     do {
       switch mode {
-      case .sheet:
-        sheet.commit { model in
-          model = .init(mode, .asset, style: style ?? .addAsset())
-        }
-      case .add:
-        try engine?.block.deselectAll()
-        sheet.commit { model in
-          model = .init(mode, .asset, style: style ?? .addAsset())
-        }
-      case .edit:
-        setEditMode(.text)
-      case let .crop(id, enter, exit):
-        if let engine, let id {
-          try engine.block.overrideAndRestore(id, scope: .key(.editorSelect)) {
-            try engine.block.select($0)
-          }
-          try enter?.value()
-          cropModeStyle = style
-          exitCropModeAction = exit
-          Task {
-            try await Task.sleep(for: .milliseconds(50))
-            setEditMode(.crop)
-          }
-        } else {
-          setEditMode(.crop)
-        }
-      case .enterGroup:
-        if let group = selection?.blocks.first {
-          try engine?.block.enterGroup(group)
-        }
-      case .selectGroup:
-        if let child = selection?.blocks.first {
-          try engine?.block.exitGroup(child)
-        }
       case .selectionColors:
         sheet.commit { model in
-          model = .init(mode, .selectionColors)
+          model = .init(mode)
         }
       case .font:
         sheet.commit { model in
-          model = .init(mode, .font)
+          model = .init(mode)
         }
       case .fontSize:
         sheet.commit { model in
-          model = .init(mode, .fontSize, style: style ?? .only(detent: .imgly.tiny))
+          model = .init(mode, style: .only(detent: .imgly.tiny))
         }
       case .color:
         sheet.commit { model in
-          model = .init(mode, .color, style: style ?? .only(detent: .imgly.tiny))
+          model = .init(mode, style: .only(detent: .imgly.tiny))
         }
-      case .filter, .effect, .blur:
-        guard let type = sheetType(mode.pinnedBlockID) ?? sheetTypeForSelection else {
-          return
-        }
-        sheet.commit { model in
-          model = .init(mode, type, style: style ?? .only(detent: .imgly.tiny))
-        }
-      case .reorder:
-        let type = InternalSheetType.reorder
-        sheet.commit { model in
-          model = .init(mode, type, style: style ?? .only(detent: .imgly.medium))
-        }
-      case .layer, .adjustments:
-        guard let type = sheetType(mode.pinnedBlockID) ?? sheetTypeForSelection else {
-          return
-        }
-        sheet.commit { model in
-          model = .init(mode, type, style: style ?? .only(detent: .imgly.medium))
-        }
-      case .volume:
-        sheet.commit { model in
-          model = .init(mode, .video, style: style ?? .only(detent: .imgly.tiny))
-        }
-      case .editVoiceOver:
-        editVoiceOver()
-      case .format:
-        guard let type = sheetTypeForSelection else {
-          return
-        }
-        sheet.commit { model in
-          model = .init(mode, type, style: style ?? .only(detent: .imgly.medium))
-        }
-      case .split:
-        splitSelectedClipAtPlayheadPosition()
       case .delete:
         if isPageOverviewShown {
           if let currentPage = pageOverview.currentPage {
@@ -1147,8 +1013,6 @@ extension Interactor {
         } else {
           try engine?.duplicateSelectedElement()
         }
-      case .attachToBackground, .detachFromBackground:
-        toggleSelectedClipIsInBackgroundTrack()
       case .editPage:
         isPageOverviewShown = false
       case .addPage:
@@ -1168,21 +1032,6 @@ extension Interactor {
           }
         } else {
           try engine?.sendBackwardSelectedElement()
-        }
-      case .shape:
-        guard let type = sheetTypeForSelection else {
-          return
-        }
-        sheet.commit { model in
-          model = .init(mode, type, style: style ?? .default(detent: .imgly.small,
-                                                             detents: [.imgly.tiny, .imgly.small]))
-        }
-      default:
-        guard let type = sheetTypeForSelection else {
-          return
-        }
-        sheet.commit { model in
-          model = .init(mode, type)
         }
       }
     } catch {
@@ -1522,8 +1371,8 @@ extension Interactor {
   }
 
   // swiftlint:disable:next cyclomatic_complexity
-  func sheetType(for designBlockType: String, with fillType: String? = nil,
-                 and kind: BlockKind? = nil) -> InternalSheetType? {
+  func sheetContent(for designBlockType: String, with fillType: String? = nil,
+                    and kind: BlockKind? = nil) -> SheetContent? {
     switch designBlockType {
     case BlockType.text.rawValue: return .text
     case BlockType.group.rawValue: return .group
@@ -1558,20 +1407,20 @@ extension Interactor {
     }
   }
 
-  func sheetType(for selection: Selection?) -> InternalSheetType? {
+  func sheetContent(for selection: Selection?) -> SheetContent? {
     if let selection, selection.blocks.count == 1,
        let block = selection.blocks.first,
-       let type = sheetType(block) {
-      return type
+       let content = sheetContent(block) {
+      return content
     }
     return nil
   }
 
-  func placeholderType(for selection: Selection?) -> InternalSheetType? {
+  func placeholderContent(for selection: Selection?) -> SheetContent? {
     guard let engine,
           let selection, selection.blocks.count == 1,
           let block = selection.blocks.first,
-          let type = sheetType(block) else {
+          let content = sheetContent(block) else {
       return nil
     }
     do {
@@ -1584,7 +1433,7 @@ extension Interactor {
       let showsPlaceholderOverlay = try engine.block.isPlaceholderControlsOverlayEnabled(block)
 
       if isPlaceholder, showsPlaceholderButton || showsPlaceholderOverlay {
-        return type
+        return content
       } else {
         return nil
       }
@@ -1784,7 +1633,7 @@ extension Interactor {
     guard oldValue != sheet else {
       return
     }
-    if !sheet.isPresented, oldValue.state == .init(.crop(), .image) {
+    if !sheet.isPresented, oldValue.type is SheetTypes.Crop {
       setEditMode(.transform)
     }
   }
@@ -1800,21 +1649,23 @@ extension Interactor {
     let wasPresented = sheet.isPresented
 
     if sheet.isPresented {
-      if sheet.mode != .add,
+      if !(sheet.type is SheetTypes.LibraryAdd),
          oldValue?.blocks != selection?.blocks {
         sheet.isPresented = false
       }
-      if sheet.mode == .add, selection != nil {
+      if sheet.type is SheetTypes.LibraryAdd, selection != nil {
         sheet.isPresented = false
       }
     }
     if oldValue?.blocks != selection?.blocks,
-       let type = placeholderType(for: selection) {
+       let content = placeholderContent(for: selection) {
       func showReplaceSheet() {
-        sheet = .init(.replace, type)
+        sheet = .init(.libraryReplace {
+          AssetLibrarySheet(content: content)
+        }, content)
       }
 
-      if wasPresented, sheet.mode != .replace, sheet.type != type {
+      if wasPresented, !sheet.isReplacing, sheet.content != content {
         if sheet.isPresented {
           sheet.isPresented = false
         }
@@ -1849,14 +1700,13 @@ extension Interactor {
         sheet.isPresented = false
       }
     }
-    if editMode == .crop, sheet.state != .init(.crop(), .image) {
+    if editMode == .crop, !(sheet.type is SheetTypes.Crop) {
       func showCropSheet() {
-        sheet.commit { model in
-          model = .init(
-            .crop(),
-            .image,
-            style: cropModeStyle ?? .default(detent: .imgly.small, detents: [.imgly.small, .imgly.large])
-          )
+        do {
+          let sheetType = try cropSheetTypeEvent ?? .crop(id: nonNil(selection?.blocks.first))
+          sheet = .init(sheetType, .image)
+        } catch {
+          handleError(error)
         }
       }
 
@@ -1870,14 +1720,16 @@ extension Interactor {
         showCropSheet()
       }
     }
-    if let exitCropModeAction, oldValue == .crop {
-      do {
-        try exitCropModeAction.value()
-      } catch {
-        handleError(error)
+    if oldValue == .crop {
+      if let exitCropModeAction {
+        do {
+          try exitCropModeAction()
+        } catch {
+          handleError(error)
+        }
+        self.exitCropModeAction = nil
       }
-      self.exitCropModeAction = nil
-      cropModeStyle = nil
+      cropSheetTypeEvent = nil
     }
   }
 

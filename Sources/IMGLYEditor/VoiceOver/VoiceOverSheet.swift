@@ -39,12 +39,10 @@ struct VoiceOverSheetContent: View {
   // MARK: - Body
 
   var body: some View {
-    BottomSheet {
-      VoiceOverView(viewModel: viewModel)
-        .modifier(InteractableVoiceOver())
-    }
-    .preference(key: PresentationDragIndicatorHiddenKey.self, value: true)
-    .interactiveDismissDisabled()
+    VoiceOverView(viewModel: viewModel)
+      .modifier(InteractableVoiceOver())
+      .preference(key: PresentationDragIndicatorHiddenKey.self, value: true)
+      .interactiveDismissDisabled()
   }
 }
 

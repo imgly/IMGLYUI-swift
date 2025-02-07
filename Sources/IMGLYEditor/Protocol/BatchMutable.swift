@@ -1,6 +1,6 @@
 import Foundation
 
-protocol BatchMutable: Equatable {}
+protocol BatchMutable {}
 
 extension BatchMutable {
   /// Commit multiple changes in a batch.

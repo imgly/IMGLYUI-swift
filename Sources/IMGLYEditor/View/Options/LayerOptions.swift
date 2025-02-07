@@ -65,6 +65,6 @@ struct LayerOptions: View {
 
 struct ArrangeOptions_Previews: PreviewProvider {
   static var previews: some View {
-    defaultPreviews(sheet: .init(.layer, .image))
+    defaultPreviews(sheet: .init(.layer(), .image))
   }
 }

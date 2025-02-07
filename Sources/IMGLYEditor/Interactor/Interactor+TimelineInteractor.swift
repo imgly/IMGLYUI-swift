@@ -949,7 +949,8 @@ extension Interactor: TimelineInteractor {
   }
 
   func clampPlayheadPositionToSelectedClip() {
-    guard let engine,
+    guard sceneMode == .video,
+          let engine,
           let pageID = timelineProperties.currentPage,
           let totalDuration = timelineProperties.timeline?.totalDuration,
           let clip = timelineProperties.selectedClip else { return }
@@ -994,9 +995,10 @@ extension Interactor: TimelineInteractor {
   func addAssetToBackgroundTrack() {
     do {
       try engine?.block.deselectAll()
-      sheet.commit { model in
-        model = .init(.add, .clip, style: .addAsset())
-      }
+      let content = SheetContent.clip
+      sheet = .init(.libraryAdd {
+        AssetLibrarySheet(content: content)
+      }, content)
     } catch {
       handleError(error)
     }
@@ -1009,9 +1011,10 @@ extension Interactor: TimelineInteractor {
         try engine?.block.deselectAll()
         // Ensure that the deselect event comes before opening the sheet, otherwise the sheet closes immediately.
         try await Task.sleep(for: .milliseconds(100))
-        sheet.commit { model in
-          model = .init(.replace, .audio, style: .only(detent: .imgly.medium))
-        }
+        let content = SheetContent.audio
+        sheet = .init(.libraryReplace(style: .only(detent: .imgly.medium), content: {
+          AssetLibrarySheet(content: content)
+        }), content)
       } catch {
         handleError(error)
       }
@@ -1019,9 +1022,7 @@ extension Interactor: TimelineInteractor {
   }
 
   private func showVoiceOverSheet(style: SheetStyle) {
-    sheet.commit { model in
-      model = .init(.addVoiceOver, .voiceover, style: style)
-    }
+    sheet = .init(.voiceover(style: style), .voiceover)
   }
 
   func openVoiceOver(style: SheetStyle) {
@@ -1040,7 +1041,7 @@ extension Interactor: TimelineInteractor {
                     confirmTitle: "Edit",
                     confirmCallback: { [weak self] in
                       self?.error.isPresented = false
-                      self?.editVoiceOver()
+                      self?.editVoiceOver(style: style)
                     })
       return
     }
@@ -1049,8 +1050,8 @@ extension Interactor: TimelineInteractor {
     showVoiceOverSheet(style: style)
   }
 
-  func editVoiceOver() {
-    showVoiceOverSheet(style: .only(detent: .imgly.medium))
+  func editVoiceOver(style: SheetStyle) {
+    showVoiceOverSheet(style: style)
   }
 
   func openCamera(_ assetSourceIDs: [MediaType: String]) {
@@ -1136,14 +1137,14 @@ extension Interactor: TimelineInteractor {
     pause()
     uploadAssetSourceIDs = assetSourceIDs
     isSystemCameraShown = true
-    sheet.model.type = .clip // Set to clip to add to background track
+    sheet.content = .clip // Set to clip to add to background track
   }
 
   func openImagePicker(_ assetSourceIDs: [MediaType: String]) {
     pause()
     uploadAssetSourceIDs = assetSourceIDs
     isImagePickerShown = true
-    sheet.model.type = .clip // Set to clip to add to background track
+    sheet.content = .clip // Set to clip to add to background track
   }
 
   func addAssetFromImagePicker(url: URL, mediaType: MediaType) {

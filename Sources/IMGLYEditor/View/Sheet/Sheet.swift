@@ -6,26 +6,40 @@ struct Sheet: View {
   private var sheet: SheetState { interactor.sheet }
 
   @Environment(\.verticalSizeClass) private var verticalSizeClass
-  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
 
-  // swiftlint:disable:next cyclomatic_complexity
-  @ViewBuilder func sheet(_ type: InternalSheetType) -> some View {
-    switch type {
-    case .image: ImageSheet()
-    case .text: TextSheet()
-    case .shape: ShapeSheet()
-    case .sticker: StickerSheet()
-    case .group: GroupSheet()
+  @ViewBuilder func sheet(_ mode: SheetMode) -> some View {
+    switch mode {
     case .selectionColors: SelectionColorsSheet()
     case .font: FontSheet()
     case .fontSize: FontSizeSheet()
     case .color: ColorSheet()
-    case .page: PageSheet()
-    case .video: VideoSheet()
-    case .audio: AudioSheet()
-    case .voiceover: VoiceOverSheet()
-    case .reorder: ReorderSheet()
-    case .asset, .clip, .pageOverview: EmptyView()
+    default: EmptyView()
+    }
+  }
+
+  // swiftlint:disable:next cyclomatic_complexity
+  @ViewBuilder func sheet(_ type: SheetType) -> some View {
+    switch type {
+    case let sheet as SheetTypes.Custom:
+      AnyView(erasing: sheet.content())
+    case let sheet as SheetTypes.LibraryAdd:
+      AnyView(erasing: sheet.content())
+    case let sheet as SheetTypes.LibraryReplace:
+      AnyView(erasing: sheet.content())
+        .imgly.assetLibrary(titleDisplayMode: .inline)
+    case is SheetTypes.Voiceover: VoiceoverSheet()
+    case is SheetTypes.Reorder: ReorderOptionsSheet()
+    case is SheetTypes.Adjustments: AdjustmentsOptionsSheet()
+    case is SheetTypes.Filter: FilterOptionsSheet()
+    case is SheetTypes.Effect: EffectOptionsSheet()
+    case is SheetTypes.Blur: BlurOptionsSheet()
+    case is SheetTypes.Crop: CropOptionsSheet()
+    case is SheetTypes.Layer: LayerOptionsSheet()
+    case is SheetTypes.FormatText: FormatTextOptionsSheet()
+    case is SheetTypes.Shape: ShapeOptionsSheet()
+    case is SheetTypes.FillStroke: FillStrokeOptionsSheet()
+    case is SheetTypes.Volume: VolumeOptionsSheet()
+    default: EmptyView()
     }
   }
 
@@ -41,48 +55,22 @@ struct Sheet: View {
     return .visible
   }
 
-  var assetLibrary: some AssetLibrary {
-    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
-  }
-
   var body: some View {
     Group {
-      switch sheet.mode {
-      case let .sheet(viewBuilder):
-        viewBuilder.value()
-
-      case .add:
-        switch sheet.type {
-        case .asset: assetLibrary
-        case .image: assetLibrary.imagesTab
-        case .text: assetLibrary.textTab
-        case .shape: assetLibrary.shapesTab
-        case .sticker: assetLibrary.stickersTab
-        case .clip: assetLibrary.clipsTab
-        case .audio: assetLibrary.audioTab
-        default: EmptyView()
-        }
-
-      case .replace:
-        Group {
-          switch sheet.type {
-          case .video: assetLibrary.videosTab
-          case .audio: assetLibrary.audioTab
-          case .image: assetLibrary.imagesTab
-          case .sticker: assetLibrary.stickersTab
-          default: EmptyView()
-          }
-        }
-        .imgly.assetLibrary(titleDisplayMode: .inline)
-
-      default:
-        if let id = sheet.mode.pinnedBlockID {
-          sheet(sheet.type)
-            .imgly.selection(id)
-            .imgly.colorPalette(sheet.mode.colorPalette)
-            .imgly.fontFamilies(sheet.mode.fontFamilies)
+      if let type = sheet.type {
+        if let type = type as? SheetTypeForDesignBlock {
+          sheet(type).imgly.selection(type.id)
         } else {
-          sheet(sheet.type)
+          sheet(type)
+        }
+      } else if let mode = sheet.mode {
+        if let id = mode.pinnedBlockID {
+          sheet(mode)
+            .imgly.selection(id)
+            .imgly.colorPalette(mode.colorPalette)
+            .imgly.fontFamilies(mode.fontFamilies)
+        } else {
+          sheet(mode)
         }
       }
     }
@@ -104,6 +92,8 @@ struct Sheet: View {
 
 struct Sheet_Previews: PreviewProvider {
   static var previews: some View {
-    defaultPreviews(sheet: .init(.add, .image))
+    defaultPreviews(sheet: .init(.libraryAdd {
+      AssetLibrarySheet(content: .image)
+    }, .image))
   }
 }

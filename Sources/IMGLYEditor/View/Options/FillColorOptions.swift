@@ -11,7 +11,7 @@ struct FillColorOptions: View {
   var body: some View {
     if interactor.supportsFill(id) {
       MenuPicker<ColorFillType.AllCases>(title: "Type", data: ColorFillType.allCases, selection: $fillType)
-        .disabled(interactor.sheet.type == .text)
+        .disabled(interactor.sheet.content == .text)
         .accessibilityLabel("Fill Type")
 
       if interactor.isGradientFill(id), fillType == .gradient {

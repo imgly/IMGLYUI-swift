@@ -20,9 +20,9 @@ import SwiftUI
   case fontSize(_ id: DesignBlockID)
   case color(_ id: DesignBlockID, colorPalette: [NamedColor]? = nil)
 
-  var sheetMode: SheetMode {
+  var sheetMode: SheetMode? {
     switch self {
-    case .fab: .add
+    case .fab: nil
     case .selectionColors: .selectionColors
     case let .font(id, families): .font(id, families)
     case let .fontSize(id): .fontSize(id)
@@ -41,6 +41,7 @@ import SwiftUI
   var historyResetOnPageChange: HistoryResetBehavior { get }
   var deselectOnPageChange: Bool { get }
   var previewMode: PreviewMode { get }
+  var unselectedPageCrop: Bool { get }
 
   func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws
   func exportScene(_ context: InteractorContext) async throws
@@ -58,6 +59,7 @@ import SwiftUI
   var historyResetOnPageChange: HistoryResetBehavior { .ifNeeded }
   var deselectOnPageChange: Bool { false }
   var previewMode: PreviewMode { .scrollable }
+  var unselectedPageCrop: Bool { false }
 
   func loadSettings(_ context: InteractorContext) throws {
     // Set role first as it affects other settings
