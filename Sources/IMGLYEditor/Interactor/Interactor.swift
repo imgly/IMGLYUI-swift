@@ -1633,7 +1633,7 @@ extension Interactor {
     guard oldValue != sheet else {
       return
     }
-    if !sheet.isPresented, oldValue.type is SheetTypes.Crop {
+    if !sheet.isPresented, oldValue.isPresented, oldValue.type is SheetTypes.Crop {
       setEditMode(.transform)
     }
   }
@@ -1700,7 +1700,7 @@ extension Interactor {
         sheet.isPresented = false
       }
     }
-    if editMode == .crop, !(sheet.type is SheetTypes.Crop) {
+    if editMode == .crop, !(sheet.isPresented && sheet.type is SheetTypes.Crop) {
       func showCropSheet() {
         do {
           let sheetType = try cropSheetTypeEvent ?? .crop(id: nonNil(selection?.blocks.first))
