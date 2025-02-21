@@ -12,7 +12,7 @@ import SwiftUI
   }
 }
 
-/// The leaf nodes of hierarchical asset library content. It is used within an `AssetLibraryBuilder` context.
+/// The leaf nodes of hierarchical asset library content. It is used within an ``AssetLibraryBuilder`` context.
 public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: View>: AssetLibraryContent, View {
   public var id: Int {
     var hasher = Hasher()

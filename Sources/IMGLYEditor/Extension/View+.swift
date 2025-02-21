@@ -44,17 +44,21 @@ public extension IMGLY where Wrapped: View {
   func colorPalette(_ colors: [NamedColor]?) -> some View {
     wrapped.environment(\.imglyColorPalette, colors ?? ColorPaletteKey.defaultValue)
   }
-}
 
-// MARK: - Unstable interface
-
-@_spi(Unstable) public extension IMGLY where Wrapped: View {
-  func dock(@Dock.Builder _ dock: @escaping Dock.Items) -> some View {
-    wrapped.environment(\.imglyDock, dock)
+  func dockItems(@Dock.Builder _ items: @escaping Dock.Items) -> some View {
+    wrapped.environment(\.imglyDockItems, items)
   }
 
-  func inspectorBar(@InspectorBar.Builder _ inspectorBar: @escaping InspectorBar.Items) -> some View {
-    wrapped.environment(\.imglyInspectorBar, inspectorBar)
+  func modifyDockItems(_ modifications: @escaping Dock.Modifications) -> some View {
+    wrapped.environment(\.imglyDockModifications, modifications)
+  }
+
+  func inspectorBarItems(@InspectorBar.Builder _ items: @escaping InspectorBar.Items) -> some View {
+    wrapped.environment(\.imglyInspectorBarItems, items)
+  }
+
+  func modifyInspectorBarItems(_ modifications: @escaping InspectorBar.Modifications) -> some View {
+    wrapped.environment(\.imglyInspectorBarModifications, modifications)
   }
 }
 

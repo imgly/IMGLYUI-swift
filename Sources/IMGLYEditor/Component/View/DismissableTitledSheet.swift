@@ -1,16 +1,16 @@
 import SwiftUI
 @_spi(Advanced) import SwiftUIIntrospect
 
-@_spi(Unstable) public struct DismissableTitledSheet<Content: View>: View {
+@_spi(Internal) public struct DismissableTitledSheet<Content: View>: View {
   let title: LocalizedStringKey
   let content: () -> Content
 
-  @_spi(Unstable) public init(_ title: LocalizedStringKey, @ViewBuilder content: @escaping () -> Content) {
+  @_spi(Internal) public init(_ title: LocalizedStringKey, @ViewBuilder content: @escaping () -> Content) {
     self.title = title
     self.content = content
   }
 
-  @_spi(Unstable) public var body: some View {
+  @_spi(Internal) public var body: some View {
     TitledSheet(title) {
       content()
         .toolbar {
@@ -23,16 +23,16 @@ import SwiftUI
   }
 }
 
-@_spi(Unstable) public struct TitledSheet<Content: View>: View {
+@_spi(Internal) public struct TitledSheet<Content: View>: View {
   let title: LocalizedStringKey
   let content: () -> Content
 
-  @_spi(Unstable) public init(_ title: LocalizedStringKey, @ViewBuilder content: @escaping () -> Content) {
+  @_spi(Internal) public init(_ title: LocalizedStringKey, @ViewBuilder content: @escaping () -> Content) {
     self.title = title
     self.content = content
   }
 
-  @_spi(Unstable) public var body: some View {
+  @_spi(Internal) public var body: some View {
     NavigationView {
       content()
         .navigationBarTitleDisplayMode(.inline)

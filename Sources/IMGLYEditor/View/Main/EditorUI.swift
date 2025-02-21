@@ -6,7 +6,7 @@ import SwiftUI
   @EnvironmentObject private var interactor: Interactor
 
   @Environment(\.layoutDirection) private var layoutDirection
-  @Environment(\.imglyInspectorBar) private var inspectorBar
+  @Environment(\.imglyInspectorBarItems) private var inspectorBarItems
 
   @_spi(Internal) public init(zoomPadding: CGFloat = 16) {
     self.zoomPadding = zoomPadding
@@ -125,9 +125,9 @@ import SwiftUI
         interactor.onDisappear()
         interactivePopGestureRecognizer?.isEnabled = true
       }
-      .imgly.inspectorBar { context in
-        if let inspectorBar {
-          try inspectorBar(context)
+      .imgly.inspectorBarItems { context in
+        if let inspectorBarItems {
+          try inspectorBarItems(context)
         } else {
           InspectorBar.Buttons.replace() // Video, Image, Sticker, Audio
 

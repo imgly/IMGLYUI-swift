@@ -1,7 +1,7 @@
 import IMGLYCore
 import SwiftUI
 
-/// A tab used in an `AssetLibrary` to display `AssetLibraryContent`.
+/// A tab used in an ``AssetLibrary`` to display ``AssetLibraryContent``.
 public struct AssetLibraryTab<Label: View>: View {
   private let title: String
   @AssetLibraryBuilder private let content: () -> AssetLibraryContent

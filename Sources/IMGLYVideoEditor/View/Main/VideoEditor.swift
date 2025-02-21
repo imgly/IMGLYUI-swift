@@ -1,4 +1,4 @@
-@_spi(Unstable) @_spi(Internal) import IMGLYEditor // use of unstable .imgly.dock
+@_spi(Internal) import IMGLYEditor
 import SwiftUI
 
 /// Built to support versatile video editing capabilities for a broad range of video applications.
@@ -7,7 +7,7 @@ public struct VideoEditor: View {
   public static let defaultScene = Bundle.module.url(forResource: "video-empty", withExtension: "scene")!
 
   @Environment(\.imglyOnCreate) private var onCreate
-  @Environment(\.imglyDock) private var dock
+  @Environment(\.imglyDockItems) private var dockItems
   private let settings: EngineSettings
 
   /// Creates a video editor with settings.
@@ -36,9 +36,9 @@ public struct VideoEditor: View {
         }
         try await onCreate(engine)
       }
-      .imgly.dock { context in
-        if let dock {
-          try dock(context)
+      .imgly.dockItems { context in
+        if let dockItems {
+          try dockItems(context)
         } else {
           Dock.Buttons.photoRoll()
           Dock.Buttons.imglyCamera()

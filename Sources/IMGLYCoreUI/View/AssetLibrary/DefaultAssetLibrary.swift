@@ -20,8 +20,8 @@ public extension AssetLoader.SourceData {
   }
 }
 
-/// This is a predefined `AssetLibrary` intended to quickly customize some parts of the default asset library without
-/// implementing a complete `AssetLibrary` from scratch.
+/// This is a predefined ``AssetLibrary`` intended to quickly customize some parts of the default asset library without
+/// implementing a complete ``AssetLibrary`` from scratch.
 @MainActor
 public struct DefaultAssetLibrary: AssetLibrary {
   @Environment(\.imglyAssetLibrarySceneMode) var sceneMode
@@ -61,7 +61,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
 
   /// Modify the video asset library content.
   /// - Parameter videos: The video asset library content.
-  /// - Returns: The modified `DefaultAssetLibrary`.
+  /// - Returns: The modified ``DefaultAssetLibrary``.
   public func videos(@AssetLibraryBuilder videos: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,
@@ -75,7 +75,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
 
   /// Modify the audio asset library content.
   /// - Parameter audio: The audio asset library content.
-  /// - Returns: The modified `DefaultAssetLibrary`.
+  /// - Returns: The modified ``DefaultAssetLibrary``.
   public func audio(@AssetLibraryBuilder audio: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,
@@ -89,7 +89,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
 
   /// Modify the image asset library content.
   /// - Parameter images: The image asset library content.
-  /// - Returns: The modified `DefaultAssetLibrary`.
+  /// - Returns: The modified ``DefaultAssetLibrary``.
   public func images(@AssetLibraryBuilder images: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,
@@ -103,7 +103,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
 
   /// Modify the shape asset library content.
   /// - Parameter shapes: The shape asset library content.
-  /// - Returns: The modified `DefaultAssetLibrary`.
+  /// - Returns: The modified ``DefaultAssetLibrary``.
   public func shapes(@AssetLibraryBuilder shapes: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,
@@ -117,7 +117,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
 
   /// Modify the sticker asset library content.
   /// - Parameter stickers: The sticker asset library content.
-  /// - Returns: The modified `DefaultAssetLibrary`.
+  /// - Returns: The modified ``DefaultAssetLibrary``.
   public func stickers(@AssetLibraryBuilder stickers: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,

@@ -1,18 +1,18 @@
 import SwiftUI
 @_spi(Internal) import struct IMGLYCore.Error
 
-@_spi(Unstable) public enum EditorComponents {}
+public enum EditorComponents {}
 
-@_spi(Unstable) public extension EditorComponents {
+public extension EditorComponents {
   struct Button<Label: View, Context: EditorContext>: EditorComponent {
-    @_spi(Unstable) public let id: EditorComponentID
+    public let id: EditorComponentID
 
     let action: Context.To<Void>
     @ViewBuilder let label: Context.To<Label>
     let isEnabled: Context.To<Bool>
     let isVisible: Context.To<Bool>
 
-    @_spi(Unstable) public init(
+    public init(
       id: EditorComponentID,
       action: @escaping Context.To<Void>,
       @ViewBuilder label: @escaping Context.To<Label>,
@@ -26,11 +26,11 @@ import SwiftUI
       self.isVisible = isVisible
     }
 
-    @_spi(Unstable) public func isVisible(_ context: Context) throws -> Bool {
+    public func isVisible(_ context: Context) throws -> Bool {
       try isVisible(context)
     }
 
-    @_spi(Unstable) public func body(_ context: Context) throws -> some View {
+    public func body(_ context: Context) throws -> some View {
       let label = try label(context)
       let isDisabled = try !isEnabled(context)
       SwiftUI.Button {

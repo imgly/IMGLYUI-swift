@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A message view used in the `AssetLibrary`.
+/// A message view used in the ``AssetLibrary``.
 public struct Message: View {
   /// No elements message.
   public static let noElements = Message("No Elements")

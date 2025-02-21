@@ -1,7 +1,7 @@
 import Combine
 import CoreMedia
 @_spi(Internal) import IMGLYCore
-@_spi(Internal) @_spi(Unstable) import IMGLYCoreUI
+@_spi(Internal) import IMGLYCoreUI
 import IMGLYEngine
 import SwiftUI
 

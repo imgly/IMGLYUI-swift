@@ -1,7 +1,7 @@
 @_spi(Internal) import IMGLYCore
 import SwiftUI
 
-/// Use this view if you have more than five `AssetLibraryTab`s to workaround various SwiftUI `TabView` shortcomings.
+/// Use this view if you have more than five ``AssetLibraryTab``s to workaround various SwiftUI `TabView` shortcomings.
 public struct AssetLibraryMoreTab<Content: View>: View {
   @ViewBuilder private let content: () -> Content
 

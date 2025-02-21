@@ -1,6 +1,6 @@
 import SwiftUI
 
-@_spi(Unstable) public struct SheetStyle: Hashable {
+public struct SheetStyle: Hashable {
   let isFloating: Bool
   var detent: PresentationDetent
   let detents: Set<PresentationDetent>
@@ -18,7 +18,7 @@ import SwiftUI
 
   /// Creates a sheet style with arbitrary detents where the underlying content can be undimmed.
   @available(iOS 16.4, *)
-  @_spi(Unstable) public init(
+  public init(
     isFloating: Bool,
     detent: PresentationDetent,
     detents: Set<PresentationDetent>,
@@ -28,7 +28,7 @@ import SwiftUI
   }
 
   /// Creates a sheet style with arbitrary detents where the underlying content is always dimmed.
-  @_spi(Unstable) public init(
+  public init(
     isFloating: Bool,
     detent: PresentationDetent,
     detents: Set<PresentationDetent>
@@ -39,7 +39,7 @@ import SwiftUI
   /// Creates a sheet style where the underlying content can be undimmed when exclusively predefined detents are used.
   /// - Attention: If `largestUndimmedDetent` is not nil `PresentationDetent.medium`, `.large`, `.imgly.tiny`,
   /// `.imgly.small`, `.imgly.medium`, or `.imgly.large` must be used. An assert is triggered on violations.
-  @_spi(Unstable) public static
+  public static
   func withPredefinedDetents(
     isFloating: Bool,
     detent: PresentationDetent,
@@ -82,7 +82,7 @@ extension Set<PresentationDetent> {
   }
 }
 
-@_spi(Unstable) public extension SheetStyle {
+public extension SheetStyle {
   static func `default`(isFloating: Bool = false,
                         detent: PresentationDetent = .imgly.medium,
                         detents: Set<PresentationDetent> = [.imgly.medium, .imgly.large]) -> Self {

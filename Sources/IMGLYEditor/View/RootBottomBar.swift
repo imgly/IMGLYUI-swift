@@ -46,7 +46,7 @@ struct RootBottomBar: View {
   }
 
   var showFAB: Bool {
-    dock == nil && interactor.rootBottomBarItems.contains { $0 == .fab }
+    dockItems == nil && interactor.rootBottomBarItems.contains { $0 == .fab }
   }
 
   var items: [RootBottomBarItem] {
@@ -59,7 +59,7 @@ struct RootBottomBar: View {
     }
   }
 
-  @Environment(\.imglyDock) private var dock
+  @Environment(\.imglyDockItems) private var dockItems
   @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
 
   private var assetLibrary: some AssetLibrary {
@@ -82,10 +82,10 @@ struct RootBottomBar: View {
         divider
       }
       ScrollView(.horizontal, showsIndicators: false) {
-        HStack(spacing: -2) {
+        HStack(spacing: 0) {
           Group {
-            if let dock, let dockContext {
-              DockView(dock: dock, context: dockContext)
+            if let dockItems, let dockContext {
+              DockView(items: dockItems, context: dockContext)
                 .symbolRenderingMode(.monochrome)
                 .labelStyle(.bottomBar)
             } else {

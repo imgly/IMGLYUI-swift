@@ -58,7 +58,7 @@ struct BottomBar: View {
     return modes.filter { interactor.isAllowed(interactor.pageOverview.currentPage, $0) }
   }
 
-  @Environment(\.imglyInspectorBar) private var inspectorBar
+  @Environment(\.imglyInspectorBarItems) private var inspectorBarItems
   @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
 
   private var assetLibrary: some AssetLibrary {
@@ -87,8 +87,8 @@ struct BottomBar: View {
     ScrollView(.horizontal, showsIndicators: false) {
       HStack(spacing: 0) {
         Group {
-          if content != .pageOverview, let inspectorBar, let inspectorBarContext {
-            InspectorBarView(inspectorBar: inspectorBar, context: inspectorBarContext)
+          if content != .pageOverview, let inspectorBarItems, let inspectorBarContext {
+            InspectorBarView(items: inspectorBarItems, context: inspectorBarContext)
               .symbolRenderingMode(.monochrome)
           } else {
             ForEach(modes(for: content)) {

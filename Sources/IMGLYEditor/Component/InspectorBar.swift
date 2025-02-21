@@ -1,43 +1,77 @@
 import IMGLYEngine
 import SwiftUI
 
-struct InspectorBarKey: EnvironmentKey {
+struct InspectorBarItemsKey: EnvironmentKey {
   static let defaultValue: InspectorBar.Items? = nil
 }
 
+struct InspectorBarModificationsKey: EnvironmentKey {
+  static let defaultValue: InspectorBar.Modifications? = nil
+}
+
 @_spi(Internal) public extension EnvironmentValues {
-  var imglyInspectorBar: InspectorBar.Items? {
-    get { self[InspectorBarKey.self] }
-    set { self[InspectorBarKey.self] = newValue }
+  var imglyInspectorBarItems: InspectorBar.Items? {
+    get { self[InspectorBarItemsKey.self] }
+    set { self[InspectorBarItemsKey.self] = newValue }
+  }
+
+  var imglyInspectorBarModifications: InspectorBar.Modifications? {
+    get { self[InspectorBarModificationsKey.self] }
+    set { self[InspectorBarModificationsKey.self] = newValue }
   }
 }
 
-@_spi(Unstable) public enum InspectorBar {}
+/// A namespace for the inspector bar component.
+public enum InspectorBar {}
 
-@_spi(Unstable) public extension InspectorBar {
+public extension InspectorBar {
+  /// An interface for inspector bar item components.
   protocol Item: EditorComponent where Context == InspectorBar.Context {}
+  /// A builder for building arrays of inspector bar Items.
   typealias Builder = ArrayBuilder<any Item>
+  /// A modifier for modifying arrays of inspector bar items.
+  typealias Modifier = ArrayModifier<any Item>
 
+  /// The context of inspector bar components.
   struct Context: EditorContext {
-    @_spi(Unstable) public let engine: Engine
-    @_spi(Unstable) public let eventHandler: EditorEventHandler
-    @_spi(Unstable) public let assetLibrary: any AssetLibrary
-    @_spi(Unstable) public let selection: Selection
+    /// The engine of the current editor.
+    /// - Note: Prefer using the `selection` property for accessing the current selection instead of querying the same
+    /// data from engine because the engine values will update immediately on changes whereas this provided `selection`
+    /// is cached for the presentation time of the navigation bar including its appear and disappear animations.
+    public let engine: Engine
+    public let eventHandler: EditorEventHandler
+    /// The asset library configured with `.imgly.assetLibrary` view modifier.
+    public let assetLibrary: any AssetLibrary
+    /// The current selection.
+    /// - Note: Prefer using this provided selection property instead of querying the same data from engine because the
+    /// engine values will update immediately on changes whereas this provided `selection` is cached for the
+    /// presentation time of the navigation bar including its appear and disappear animations.
+    public let selection: Selection
   }
 
+  /// A closure to build an array of inspector bar items.
   typealias Items = Context.SendableTo<[any Item]>
+  /// A closure to modify an array of inspector bar items.
+  typealias Modifications = @Sendable @MainActor (_ context: Context, _ items: Modifier) throws -> Void
+  /// A button inspector bar item component.
   typealias Button = EditorComponents.Button
 }
 
 extension InspectorBar.Button: InspectorBar.Item where Context == InspectorBar.Context {}
 
-@_spi(Unstable) public extension InspectorBar.Context {
+public extension InspectorBar.Context {
+  /// Cached properties of the current selection.
   struct Selection {
-    @_spi(Unstable) public let id: DesignBlockID
-    @_spi(Unstable) public let parent: DesignBlockID?
-    @_spi(Unstable) public let type: DesignBlockType?
-    @_spi(Unstable) public let fillType: FillType?
-    @_spi(Unstable) public let kind: String?
+    /// The id of the current selected design block.
+    public let id: DesignBlockID
+    /// The id of the parent design block of the current selected design block.
+    public let parent: DesignBlockID?
+    /// The type of the current selected design block.
+    public let type: DesignBlockType?
+    /// The fill type of the current selected design block.
+    public let fillType: FillType?
+    /// The kind of the current selected design block.
+    public let kind: String?
 
     @MainActor
     init(id: DesignBlockID, engine: Engine) throws {

@@ -1,41 +1,61 @@
+import IMGLYCoreUI
 import IMGLYEngine
 import SwiftUI
-@_spi(Unstable) import IMGLYCoreUI
 
-@_spi(Unstable) public extension Dock {
+public extension Dock {
+  /// A namespace for dock buttons.
   enum Buttons {}
 }
 
-@_spi(Unstable) public extension Dock.Buttons {
+public extension Dock.Buttons {
+  /// A namespace for dock buttons IDs.
   enum ID {}
 }
 
-@_spi(Unstable) public extension Dock.Buttons.ID {
+public extension Dock.Buttons.ID {
+  /// The id of the elements library button.
   static var elementsLibrary: EditorComponentID { "ly.img.component.dock.button.elementsLibrary" }
+  /// The id of the audio library button.
   static var audioLibrary: EditorComponentID { "ly.img.component.dock.button.audioLibrary" }
+  /// The id of the images library button.
   static var imagesLibrary: EditorComponentID { "ly.img.component.dock.button.imagesLibrary" }
+  /// The id of the text library button.
   static var textLibrary: EditorComponentID { "ly.img.component.dock.button.textLibrary" }
+  /// The id of the shapes library button.
   static var shapesLibrary: EditorComponentID { "ly.img.component.dock.button.shapesLibrary" }
+  /// The id of the stickers library button.
   static var stickersLibrary: EditorComponentID { "ly.img.component.dock.button.stickersLibrary" }
 
+  /// The id of the overlays library button
   static var overlaysLibrary: EditorComponentID { "ly.img.component.dock.button.overlaysLibrary" }
+  /// The id of the stickers and shapes library button.
   static var stickersAndShapesLibrary: EditorComponentID { "ly.img.component.dock.button.stickersAndShapesLibrary" }
 
+  /// The id of the photo roll button.
   static var photoRoll: EditorComponentID { "ly.img.component.dock.button.photoRoll" }
+  /// The id of the system camera button.
   static var systemCamera: EditorComponentID { "ly.img.component.dock.button.systemCamera" }
+  /// The id of the imgly camera button.
   static var imglyCamera: EditorComponentID { "ly.img.component.dock.button.imglyCamera" }
+  /// The id of the voiceover button.
   static var voiceover: EditorComponentID { "ly.img.component.dock.button.voiceover" }
 
+  /// The id of the reorder button.
   static var reorder: EditorComponentID { "ly.img.component.dock.button.reorder" }
+  /// The id of the adjustments button.
   static var adjustments: EditorComponentID { "ly.img.component.dock.button.adjustments" }
+  /// The id of the filter button.
   static var filter: EditorComponentID { "ly.img.component.dock.button.filter" }
+  /// The id of the effect button.
   static var effect: EditorComponentID { "ly.img.component.dock.button.effect" }
+  /// The id of the blur button.
   static var blur: EditorComponentID { "ly.img.component.dock.button.blur" }
+  /// The id of the crop button.
   static var crop: EditorComponentID { "ly.img.component.dock.button.crop" }
 }
 
 @MainActor
-@_spi(Unstable) public extension Dock.Buttons {
+public extension Dock.Buttons {
   static func elementsLibrary(
     action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(.libraryAdd { context.assetLibrary.elementsTab }))

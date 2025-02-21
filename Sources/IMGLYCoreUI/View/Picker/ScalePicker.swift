@@ -3,7 +3,7 @@ import SwiftUI
 @_spi(Advanced) import SwiftUIIntrospect
 
 /// A scale picker a.k.a. sliding ruler that picks values at its center position. A cursor view is not part of it for
-/// best versatility. A cursor can be added with a centered overlay. See `MeasurementScalePicker` or
+/// best versatility. A cursor can be added with a centered overlay. See ``MeasurementScalePicker`` or
 /// `ScalePicker_Previews` for examples.
 @_spi(Internal) public struct ScalePicker<V>: View where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
   @_spi(Internal) public init(value: Binding<V>,

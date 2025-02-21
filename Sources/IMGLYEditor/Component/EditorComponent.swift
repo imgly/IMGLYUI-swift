@@ -4,44 +4,46 @@ import SwiftUI
 
 // MARK: - EditorComponentID
 
-@_spi(Unstable) public struct EditorComponentID: Hashable, Sendable {
+public struct EditorComponentID: Hashable, Sendable {
   let value: String
 
-  @_spi(Unstable) public init(_ value: String) {
+  public init(_ value: String) {
     self.value = value
   }
 }
 
 extension EditorComponentID: ExpressibleByStringInterpolation {
-  @_spi(Unstable) public init(stringLiteral value: StringLiteralType) {
+  public init(stringLiteral value: StringLiteralType) {
     self.init(value)
   }
 }
 
 // MARK: - EditorContext
 
-@_spi(Unstable) public protocol EditorContext {
+/// An interface for the  context of ``EditorComponent``s.
+public protocol EditorContext {
+  /// The event handler of the current editor.
   var eventHandler: EditorEventHandler { get }
 }
 
-@_spi(Unstable) public extension EditorContext {
+public extension EditorContext {
   typealias To<T> = @MainActor (_ context: Self) throws -> T
   typealias SendableTo<T> = @Sendable @MainActor (_ context: Self) throws -> T
 }
 
 // MARK: - EditorError
 
-@_spi(Unstable) public struct EditorError: LocalizedError {
-  @_spi(Unstable) public let errorDescription: String?
+public struct EditorError: LocalizedError {
+  public let errorDescription: String?
 
-  @_spi(Unstable) public init(_ errorDescription: String?) {
+  public init(_ errorDescription: String) {
     self.errorDescription = errorDescription
   }
 }
 
 // MARK: - EditorComponent
 
-@_spi(Unstable) public protocol EditorComponent {
+public protocol EditorComponent {
   var id: EditorComponentID { get }
 
   associatedtype Context: EditorContext
@@ -55,7 +57,7 @@ extension EditorComponentID: ExpressibleByStringInterpolation {
   func body(_ context: Context) throws -> Body
 }
 
-@_spi(Unstable) public extension EditorComponent {
+public extension EditorComponent {
   func isVisible(_: Context) throws -> Bool {
     true
   }

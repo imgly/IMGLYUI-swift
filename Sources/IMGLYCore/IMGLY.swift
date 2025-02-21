@@ -9,15 +9,15 @@ public struct IMGLY<Wrapped> {
   }
 }
 
-/// Represents an object type that is compatible with `IMGLY`. You can use `imgly` property to get a
+/// Represents an object type that is compatible with ``IMGLY``. You can use ``imgly`` property to get a
 /// value in the namespace of `IMGLY*` modules.
 public protocol IMGLYCompatible {
   /// Type that is being wrapped.
   associatedtype CompatibleType
 
-  /// Gets a namespace holder for `IMGLY` compatible types.
+  /// Gets a namespace holder for ``IMGLY`` compatible types.
   static var imgly: IMGLY<CompatibleType>.Type { get set }
-  /// Gets a namespace holder for `IMGLY` compatible types.
+  /// Gets a namespace holder for ``IMGLY`` compatible types.
   var imgly: IMGLY<CompatibleType> { get set }
 }
 
@@ -28,7 +28,7 @@ public extension IMGLYCompatible {
     set {} // swiftlint:disable:this unused_setter_value
   }
 
-  /// Gets a namespace holder for `IMGLY` compatible types.
+  /// Gets a namespace holder for ``IMGLY`` compatible types.
   var imgly: IMGLY<Self> {
     get { IMGLY(self) }
     set {} // swiftlint:disable:this unused_setter_value

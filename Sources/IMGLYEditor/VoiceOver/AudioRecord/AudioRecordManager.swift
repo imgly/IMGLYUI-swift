@@ -43,7 +43,7 @@ protocol AudioRecordManagerProvider {
 
 /// Manager class for handling audio recording.
 @MainActor
-public final class AudioRecordManager {
+final class AudioRecordManager {
   // MARK: - Properties
 
   private var audioEngine: AVAudioEngine

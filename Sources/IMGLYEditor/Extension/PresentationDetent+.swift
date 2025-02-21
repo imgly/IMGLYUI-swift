@@ -3,7 +3,7 @@ import SwiftUI
 
 extension PresentationDetent: IMGLYCompatible {}
 
-@_spi(Unstable) public extension IMGLY where Wrapped == PresentationDetent {
+public extension IMGLY where Wrapped == PresentationDetent {
   static let tiny = Wrapped.custom(AdaptiveTinyPresentationDetent.self)
   static let small = Wrapped.custom(AdaptiveSmallPresentationDetent.self)
   static let medium = Wrapped.custom(AdaptiveMediumPresentationDetent.self)

@@ -1,19 +1,26 @@
 import SwiftUI
 
 struct InspectorBarView: View {
-  // Interactor is not used directly (except error alert) but keep it to receive all updates to refresh dock on various
-  // conditions.
+  // Interactor is not used directly (except error alert) but keep it to receive all updates to refresh inspector bar on
+  // various conditions.
   @EnvironmentObject private var interactor: Interactor
+  @Environment(\.imglyInspectorBarModifications) private var modifications
 
-  let inspectorBar: InspectorBar.Context.To<[any InspectorBar.Item]>
+  let items: InspectorBar.Context.To<[any InspectorBar.Item]>
   let context: InspectorBar.Context
 
-  var items: [any InspectorBar.Item] {
+  private var _items: [any InspectorBar.Item] {
     guard context.engine.block.isValid(context.selection.id) else {
       return []
     }
     do {
-      return try inspectorBar(context).filter {
+      var items = try items(context)
+      if let modifications {
+        let modifier = InspectorBar.Modifier()
+        try modifications(context, modifier)
+        try modifier.apply(to: &items)
+      }
+      return try items.filter {
         try $0.isVisible(context)
       }
     } catch {
@@ -26,7 +33,7 @@ struct InspectorBarView: View {
   }
 
   var body: some View {
-    let items = items
+    let items = _items
     ForEach(items, id: \.id) { item in
       AnyView(item.nonThrowingBody(context))
     }

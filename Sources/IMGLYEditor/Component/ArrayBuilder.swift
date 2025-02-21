@@ -1,33 +1,36 @@
+/// A result builder for building arrays.
 @resultBuilder
-@_spi(Unstable) public enum ArrayBuilder<Element> {
-  @_spi(Unstable) public typealias Expression = Element
-  @_spi(Unstable) public typealias Component = [Element]
+public enum ArrayBuilder<Element> {
+  /// The type of expressions.
+  public typealias Expression = Element
+  /// The type of  components.
+  public typealias Component = [Element]
 
-  @_spi(Unstable) public static func buildBlock(_ components: Component...) -> Component {
+  public static func buildBlock(_ components: Component...) -> Component {
     components.flatMap { $0 }
   }
 
-  @_spi(Unstable) public static func buildExpression(_ expression: Expression) -> Component {
+  public static func buildExpression(_ expression: Expression) -> Component {
     [expression]
   }
 
-  @_spi(Unstable) public static func buildExpression(_ expression: [Expression]) -> Component {
+  public static func buildExpression(_ expression: [Expression]) -> Component {
     expression
   }
 
-  @_spi(Unstable) public static func buildOptional(_ component: Component?) -> Component {
+  public static func buildOptional(_ component: Component?) -> Component {
     component ?? []
   }
 
-  @_spi(Unstable) public static func buildEither(first component: Component) -> Component {
+  public static func buildEither(first component: Component) -> Component {
     component
   }
 
-  @_spi(Unstable) public static func buildEither(second component: Component) -> Component {
+  public static func buildEither(second component: Component) -> Component {
     component
   }
 
-  @_spi(Unstable) public static func buildArray(_ components: [Component]) -> Component {
+  public static func buildArray(_ components: [Component]) -> Component {
     components.flatMap { $0 }
   }
 }

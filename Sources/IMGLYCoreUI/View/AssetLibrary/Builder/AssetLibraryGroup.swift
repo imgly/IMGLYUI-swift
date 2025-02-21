@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A group of hierarchical asset library content. It is used within an `AssetLibraryBuilder` context.
+/// A group of hierarchical asset library content. It is used within an ``AssetLibraryBuilder`` context.
 public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
   public var id: Int {
     var hasher = Hasher()

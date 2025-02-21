@@ -4,7 +4,7 @@ import SwiftUI
 /// An interface for sending editor events.
 @MainActor
 public protocol EditorEventHandler {
-  /// A function for sending `EditorEvent`s.
+  /// A function for sending ``EditorEvent``s.
   /// - Parameter event: The event to send.
   func send(_ event: EditorEvent)
 }
@@ -21,7 +21,7 @@ public extension EditorEvents {
     let url: URL
   }
 
-  /// A namespace for export-related `EditorEvent`s.
+  /// A namespace for export-related ``EditorEvent``s.
   enum Export {}
 }
 
@@ -60,13 +60,13 @@ public extension EditorEvent where Self == EditorEvents.Export.Completed {
   static func exportCompleted(action: @escaping () -> Void = {}) -> Self { Self(action: action) }
 }
 
-@_spi(Unstable) public extension EditorEvents {
+public extension EditorEvents {
   enum Sheet {}
   enum Selection {}
   enum AddFrom {}
 }
 
-@_spi(Unstable) public extension EditorEvents.Sheet {
+public extension EditorEvents.Sheet {
   struct Open: EditorEvent {
     let type: SheetType
   }
@@ -74,7 +74,7 @@ public extension EditorEvent where Self == EditorEvents.Export.Completed {
   struct Close: EditorEvent {}
 }
 
-@_spi(Unstable) public extension EditorEvents.Selection {
+public extension EditorEvents.Selection {
   struct EnterTextEditMode: EditorEvent {}
   struct Duplicate: EditorEvent {}
   struct Split: EditorEvent {}
@@ -85,7 +85,7 @@ public extension EditorEvent where Self == EditorEvents.Export.Completed {
   struct Delete: EditorEvent {}
 }
 
-@_spi(Unstable) public extension EditorEvents.AddFrom {
+public extension EditorEvents.AddFrom {
   static var defaultAssetSourceIDs: [MediaType: String] { [
     .image: Engine.DemoAssetSource.imageUpload.rawValue,
     .movie: Engine.DemoAssetSource.videoUpload.rawValue,
@@ -104,7 +104,7 @@ public extension EditorEvent where Self == EditorEvents.Export.Completed {
   }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Sheet.Open {
+public extension EditorEvent where Self == EditorEvents.Sheet.Open {
   static func openSheet(_ type: SheetType) -> Self { Self(type: type) }
   /// Open sheet with any content.
   /// - Attention: `List` or `NavigationView` must be used as `content` for non-floating sheet `style`s.
@@ -113,43 +113,43 @@ public extension EditorEvent where Self == EditorEvents.Export.Completed {
   }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Sheet.Close {
+public extension EditorEvent where Self == EditorEvents.Sheet.Close {
   static var closeSheet: Self { Self() }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.EnterTextEditMode {
-  static var enterTextEditMode: Self { Self() }
+public extension EditorEvent where Self == EditorEvents.Selection.EnterTextEditMode {
+  static var enterTextEditModeForSelection: Self { Self() }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.Duplicate {
-  static var duplicate: Self { Self() }
+public extension EditorEvent where Self == EditorEvents.Selection.Duplicate {
+  static var duplicateSelection: Self { Self() }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.Split {
-  static var split: Self { Self() }
+public extension EditorEvent where Self == EditorEvents.Selection.Split {
+  static var splitSelection: Self { Self() }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.MoveAsClip {
-  static var moveAsClip: Self { Self() }
+public extension EditorEvent where Self == EditorEvents.Selection.MoveAsClip {
+  static var moveSelectionAsClip: Self { Self() }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.MoveAsOverlay {
-  static var moveAsOverlay: Self { Self() }
+public extension EditorEvent where Self == EditorEvents.Selection.MoveAsOverlay {
+  static var moveSelectionAsOverlay: Self { Self() }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.EnterGroup {
-  static var enterGroup: Self { Self() }
+public extension EditorEvent where Self == EditorEvents.Selection.EnterGroup {
+  static var enterGroupForSelection: Self { Self() }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.SelectGroup {
-  static var selectGroup: Self { Self() }
+public extension EditorEvent where Self == EditorEvents.Selection.SelectGroup {
+  static var selectGroupForSelection: Self { Self() }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.Selection.Delete {
-  static var delete: Self { Self() }
+public extension EditorEvent where Self == EditorEvents.Selection.Delete {
+  static var deleteSelection: Self { Self() }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {
+public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {
   static func addFromPhotoRoll(
     to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
   ) -> Self {
@@ -157,7 +157,7 @@ public extension EditorEvent where Self == EditorEvents.Export.Completed {
   }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.AddFrom.SystemCamera {
+public extension EditorEvent where Self == EditorEvents.AddFrom.SystemCamera {
   static func addFromSystemCamera(
     to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
   ) -> Self {
@@ -165,7 +165,7 @@ public extension EditorEvent where Self == EditorEvents.Export.Completed {
   }
 }
 
-@_spi(Unstable) public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYCamera {
+public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYCamera {
   static func addFromIMGLYCamera(
     to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
   ) -> Self {

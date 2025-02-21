@@ -1,8 +1,8 @@
 import Combine
 import SwiftUI
 
-/// Wrapper class for any ThumbnailsProvider conforming object.
-/// This class allows for type-erased handling of different ThumbnailsProvider implementations.
+/// Wrapper class for any `ThumbnailsProvider` conforming object.
+/// This class allows for type-erased handling of different `ThumbnailsProvider` implementations.
 final class AnyThumbnailsProvider {
   // Publishes changes to subscribers
   let objectWillChange: AnyPublisher<Void, Never>

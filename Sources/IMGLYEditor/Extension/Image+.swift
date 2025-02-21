@@ -3,7 +3,7 @@ import SwiftUI
 
 extension Image: IMGLYCompatible {}
 
-@_spi(Unstable) public extension IMGLY where Wrapped == Image {
+public extension IMGLY where Wrapped == Image {
   static let addElement = Wrapped("custom.books.vertical.badge.plus", bundle: .module)
   static let addVideo = Wrapped("custom.film.stack.badge.plus", bundle: .module)
   static let addAudio = Wrapped("custom.audio.badge.plus", bundle: .module)

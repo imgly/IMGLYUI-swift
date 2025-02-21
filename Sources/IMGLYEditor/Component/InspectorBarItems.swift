@@ -1,16 +1,16 @@
+import IMGLYCoreUI
 import IMGLYEngine
 import SwiftUI
-@_spi(Unstable) import IMGLYCoreUI
 
-@_spi(Unstable) public extension InspectorBar {
+public extension InspectorBar {
   enum Buttons {}
 }
 
-@_spi(Unstable) public extension InspectorBar.Buttons {
+public extension InspectorBar.Buttons {
   enum ID {}
 }
 
-@_spi(Unstable) public extension InspectorBar.Buttons.ID {
+public extension InspectorBar.Buttons.ID {
   static var editVoiceover: EditorComponentID { "ly.img.component.inspectorBar.button.editVoiceover" }
   static var reorder: EditorComponentID { "ly.img.component.inspectorBar.button.reorder" }
   static var adjustments: EditorComponentID { "ly.img.component.inspectorBar.button.adjustments" }
@@ -35,7 +35,7 @@ import SwiftUI
 }
 
 @MainActor
-@_spi(Unstable) public extension InspectorBar.Buttons {
+public extension InspectorBar.Buttons {
   static func editVoiceover(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(.voiceover())) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Edit") },
@@ -202,7 +202,7 @@ import SwiftUI
   }
 
   static func duplicate(
-    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.duplicate) },
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.duplicateSelection) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Duplicate") },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.duplicate },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
@@ -279,7 +279,7 @@ import SwiftUI
   }
 
   static func split(
-    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.split) },
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.splitSelection) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Split") },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.split },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
@@ -334,7 +334,7 @@ import SwiftUI
   }
 
   static func moveAsClip(
-    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.moveAsClip) },
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.moveSelectionAsClip) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("As Clip") },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.moveAsClip },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
@@ -360,7 +360,7 @@ import SwiftUI
   }
 
   static func moveAsOverlay(
-    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.moveAsOverlay) },
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.moveSelectionAsOverlay) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("As Overlay") },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.moveAsOverlay },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
@@ -432,7 +432,7 @@ import SwiftUI
   }
 
   static func enterGroup(
-    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.enterGroup) },
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.enterGroupForSelection) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Enter Group") },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.enterGroup },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
@@ -448,7 +448,7 @@ import SwiftUI
   }
 
   static func selectGroup(
-    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.selectGroup) },
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.selectGroupForSelection) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Select Group") },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.selectGroup },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
@@ -471,7 +471,7 @@ import SwiftUI
   }
 
   static func delete(
-    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.delete) },
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.deleteSelection) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Delete").foregroundColor(.red) },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.delete.foregroundColor(.red) },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
@@ -499,7 +499,7 @@ import SwiftUI
   }
 
   static func editText(
-    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.enterTextEditMode) },
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.enterTextEditModeForSelection) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Edit") },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.editText },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },

@@ -4,7 +4,7 @@ import SwiftUI
 /// An alias for `IMGLYEngine.SceneMode`.
 public typealias AssetLibrarySceneMode = SceneMode
 
-/// An `EnvironmentKey` for `AssetLibrarySceneMode`.
+/// An `EnvironmentKey` for ``AssetLibrarySceneMode``.
 public struct AssetLibrarySceneModeKey: EnvironmentKey {
   @_spi(Internal) public static let defaultValue: AssetLibrarySceneMode? = nil
 }
@@ -56,7 +56,7 @@ public protocol AssetLibrary: View {
 }
 
 public extension AssetLibrarySource<UploadGrid, AssetPreview, UploadButton> {
-  /// Creates an `AssetLibrarySource` for image assets that supports uploads.
+  /// Creates an ``AssetLibrarySource`` for image assets that supports uploads.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
   ///   - source: The asset source definition.
@@ -71,7 +71,7 @@ public extension AssetLibrarySource<UploadGrid, AssetPreview, UploadButton> {
     }
   }
 
-  /// Creates an `AssetLibrarySource` for video assets that supports uploads.
+  /// Creates an ``AssetLibrarySource`` for video assets that supports uploads.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
   ///   - source: The asset source definition.
@@ -88,7 +88,7 @@ public extension AssetLibrarySource<UploadGrid, AssetPreview, UploadButton> {
 }
 
 public extension AssetLibrarySource<AudioUploadGrid, AudioPreview, AudioUploadButton> {
-  /// Creates an `AssetLibrarySource` for audio assets that supports uploads.
+  /// Creates an ``AssetLibrarySource`` for audio assets that supports uploads.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
   ///   - source: The asset source definition.
@@ -105,7 +105,7 @@ public extension AssetLibrarySource<AudioUploadGrid, AudioPreview, AudioUploadBu
 }
 
 public extension AssetLibrarySource<ImageGrid<Message, EmptyView>, AssetPreview, EmptyView> {
-  /// Creates an `AssetLibrarySource` for image assets.
+  /// Creates an ``AssetLibrarySource`` for image assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
   ///   - source: The asset source definition.
@@ -114,7 +114,7 @@ public extension AssetLibrarySource<ImageGrid<Message, EmptyView>, AssetPreview,
     self.init(mode, source: source) { Destination() } preview: { Preview.imageOrVideo }
   }
 
-  /// Creates an `AssetLibrarySource` for video assets.
+  /// Creates an ``AssetLibrarySource`` for video assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
   ///   - source: The asset source definition.
@@ -125,7 +125,7 @@ public extension AssetLibrarySource<ImageGrid<Message, EmptyView>, AssetPreview,
 }
 
 public extension AssetLibrarySource<AudioGrid<Message, EmptyView>, AudioPreview, EmptyView> {
-  /// Creates an `AssetLibrarySource` for audio assets.
+  /// Creates an ``AssetLibrarySource`` for audio assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
   ///   - source: The asset source definition.
@@ -136,7 +136,7 @@ public extension AssetLibrarySource<AudioGrid<Message, EmptyView>, AudioPreview,
 }
 
 public extension AssetLibrarySource<TextGrid, TextPreview, EmptyView> {
-  /// Creates an `AssetLibrarySource` for text assets.
+  /// Creates an ``AssetLibrarySource`` for text assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
   ///   - source: The asset source definition.
@@ -147,7 +147,7 @@ public extension AssetLibrarySource<TextGrid, TextPreview, EmptyView> {
 }
 
 public extension AssetLibrarySource<ShapeGrid, AssetPreview, EmptyView> {
-  /// Creates an `AssetLibrarySource` for shape assets.
+  /// Creates an ``AssetLibrarySource`` for shape assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
   ///   - source: The asset source definition.
@@ -158,7 +158,7 @@ public extension AssetLibrarySource<ShapeGrid, AssetPreview, EmptyView> {
 }
 
 public extension AssetLibrarySource<StickerGrid, AssetPreview, EmptyView> {
-  /// Creates an `AssetLibrarySource` for sticker assets.
+  /// Creates an ``AssetLibrarySource`` for sticker assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
   ///   - source: The asset source definition.
@@ -169,7 +169,7 @@ public extension AssetLibrarySource<StickerGrid, AssetPreview, EmptyView> {
 }
 
 public extension AssetLibraryGroup<AssetPreview> {
-  /// Creates an `AssetLibraryGroup` for asset sources that support uploads.
+  /// Creates an ``AssetLibraryGroup`` for asset sources that support uploads.
   /// - Parameters:
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
@@ -178,7 +178,7 @@ public extension AssetLibraryGroup<AssetPreview> {
     self.init(title, content: content) { Preview.imageOrVideo }
   }
 
-  /// Creates an `AssetLibraryGroup` for image assets.
+  /// Creates an ``AssetLibraryGroup`` for image assets.
   /// - Parameters:
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
@@ -187,7 +187,7 @@ public extension AssetLibraryGroup<AssetPreview> {
     self.init(title, content: content) { Preview.imageOrVideo }
   }
 
-  /// Creates an `AssetLibraryGroup` for video assets.
+  /// Creates an ``AssetLibraryGroup`` for video assets.
   /// - Parameters:
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
@@ -196,7 +196,7 @@ public extension AssetLibraryGroup<AssetPreview> {
     self.init(title, content: content) { Preview.imageOrVideo }
   }
 
-  /// Creates an `AssetLibraryGroup` for shape assets.
+  /// Creates an ``AssetLibraryGroup`` for shape assets.
   /// - Parameters:
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
@@ -205,7 +205,7 @@ public extension AssetLibraryGroup<AssetPreview> {
     self.init(title, content: content) { Preview.shapeOrSticker }
   }
 
-  /// Creates an `AssetLibraryGroup` for sticker assets.
+  /// Creates an ``AssetLibraryGroup`` for sticker assets.
   /// - Parameters:
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
@@ -216,7 +216,7 @@ public extension AssetLibraryGroup<AssetPreview> {
 }
 
 public extension AssetLibraryGroup<AudioPreview> {
-  /// Creates an `AssetLibraryGroup` for audio assets.
+  /// Creates an ``AssetLibraryGroup`` for audio assets.
   /// - Parameters:
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
@@ -227,7 +227,7 @@ public extension AssetLibraryGroup<AudioPreview> {
 }
 
 public extension AssetLibraryGroup<TextPreview> {
-  /// Creates an `AssetLibraryGroup` for text assets.
+  /// Creates an ``AssetLibraryGroup`` for text assets.
   /// - Parameters:
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
@@ -238,7 +238,7 @@ public extension AssetLibraryGroup<TextPreview> {
 }
 
 public extension AssetLibraryGroup<EmptyView> {
-  /// An empty `AssetLibraryGroup`.
+  /// An empty ``AssetLibraryGroup``.
   static var empty: Self {
     self.init(components: [])
   }
@@ -246,9 +246,9 @@ public extension AssetLibraryGroup<EmptyView> {
 
 @MainActor
 public extension AssetPreview {
-  /// An `AssetPreview` for image or video assets.
+  /// An ``AssetPreview`` for image or video assets.
   static let imageOrVideo = Self(height: 96)
-  /// An `AssetPreview` for shape or sticker assets.
+  /// An ``AssetPreview`` for shape or sticker assets.
   static let shapeOrSticker = Self(height: 80)
 }
 
