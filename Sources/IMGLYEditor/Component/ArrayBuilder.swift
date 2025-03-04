@@ -3,7 +3,7 @@
 public enum ArrayBuilder<Element> {
   /// The type of expressions.
   public typealias Expression = Element
-  /// The type of  components.
+  /// The type of components.
   public typealias Component = [Element]
 
   public static func buildBlock(_ components: Component...) -> Component {

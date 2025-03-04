@@ -9,18 +9,6 @@ public extension View {
   var imgly: IMGLY<Self> { .init(self) }
 }
 
-public extension IMGLY where Wrapped: View {
-  /// Sets the asset library UI definition used by the editor. By default, the predefined `DefaultAssetLibrary` is used.
-  /// To use custom asset sources in the asset library UI, the custom asset source must be first added to the engine. In
-  /// addition to creating or loading a scene, registering the asset sources should be done in the `onCreate` callback.
-  /// - Parameter assetLibrary: The asset library.
-  /// - Returns: A view that has the given asset library set.
-  @MainActor
-  func assetLibrary(_ assetLibrary: () -> some AssetLibrary) -> some View {
-    wrapped.environment(\.imglyAssetLibrary, AnyAssetLibrary(erasing: assetLibrary()))
-  }
-}
-
 // MARK: - Internal interface
 
 @_spi(Internal) public extension IMGLY where Wrapped: View {
@@ -46,7 +34,7 @@ public extension IMGLY where Wrapped: View {
     wrapped.environment(\.imglyAssetLibrarySources, sources)
   }
 
-  /// Automatically passes the sources and search query to the `AssetLoader` from the environment.
+  /// Automatically passes the sources and search query to the ``AssetLoader`` from the environment.
   @MainActor
   func assetLoader() -> some View {
     wrapped.modifier(SearchedAssetLoader())

@@ -25,11 +25,11 @@ struct DockModificationsKey: EnvironmentKey {
 public enum Dock {}
 
 public extension Dock {
-  /// An interface for dock item components.
+  /// A type for dock item components.
   protocol Item: EditorComponent where Context == Dock.Context {}
-  /// A builder for building arrays of dock Items.
+  /// A builder for building arrays of dock ``Item``s.
   typealias Builder = ArrayBuilder<any Item>
-  /// A modifier for modifying arrays of dock items.
+  /// A modifier for modifying arrays of dock ``Item``s.
   typealias Modifier = ArrayModifier<any Item>
 
   /// The context of dock components.
@@ -37,15 +37,15 @@ public extension Dock {
     /// The engine of the current editor.
     public let engine: Engine
     public let eventHandler: EditorEventHandler
-    /// The asset library configured with `.imgly.assetLibrary` view modifier.
+    /// The asset library configured with the ``IMGLY/assetLibrary(_:)`` view modifier.
     public let assetLibrary: any AssetLibrary
   }
 
-  /// A closure to build an array of dock items.
+  /// A closure to build an array of dock ``Item``s.
   typealias Items = Context.SendableTo<[any Item]>
-  /// A closure to modify an array of dock items.
+  /// A closure to modify an array of dock ``Item``s.
   typealias Modifications = @Sendable @MainActor (_ context: Context, _ items: Modifier) throws -> Void
-  /// A button dock item component.
+  /// A button dock ``Item`` component.
   typealias Button = EditorComponents.Button
 }
 

@@ -71,7 +71,7 @@ struct BottomBar: View {
     }
     do {
       return try .init(engine: engine, eventHandler: interactor, assetLibrary: assetLibrary,
-                       selection: .init(id: id, engine: engine))
+                       selection: .init(block: id, engine: engine))
     } catch {
       let error = EditorError(
         "Could not create InspectorBar.Context.\nReason:\n\(error.localizedDescription)"

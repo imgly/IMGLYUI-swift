@@ -25,22 +25,23 @@ struct InspectorBarModificationsKey: EnvironmentKey {
 public enum InspectorBar {}
 
 public extension InspectorBar {
-  /// An interface for inspector bar item components.
+  /// A type for inspector bar item components.
   protocol Item: EditorComponent where Context == InspectorBar.Context {}
-  /// A builder for building arrays of inspector bar Items.
+  /// A builder for building arrays of inspector bar ``Item``s.
   typealias Builder = ArrayBuilder<any Item>
-  /// A modifier for modifying arrays of inspector bar items.
+  /// A modifier for modifying arrays of inspector bar ``Item``s.
   typealias Modifier = ArrayModifier<any Item>
 
   /// The context of inspector bar components.
   struct Context: EditorContext {
     /// The engine of the current editor.
-    /// - Note: Prefer using the `selection` property for accessing the current selection instead of querying the same
-    /// data from engine because the engine values will update immediately on changes whereas this provided `selection`
+    /// - Note: Prefer using the ``selection`` property for accessing the current selection instead of querying the same
+    /// data from engine because the engine values will update immediately on changes whereas this provided
+    /// ``selection``
     /// is cached for the presentation time of the navigation bar including its appear and disappear animations.
     public let engine: Engine
     public let eventHandler: EditorEventHandler
-    /// The asset library configured with `.imgly.assetLibrary` view modifier.
+    /// The asset library configured with the ``IMGLY/assetLibrary(_:)`` view modifier.
     public let assetLibrary: any AssetLibrary
     /// The current selection.
     /// - Note: Prefer using this provided selection property instead of querying the same data from engine because the
@@ -49,11 +50,11 @@ public extension InspectorBar {
     public let selection: Selection
   }
 
-  /// A closure to build an array of inspector bar items.
+  /// A closure to build an array of inspector bar ``Item``s.
   typealias Items = Context.SendableTo<[any Item]>
-  /// A closure to modify an array of inspector bar items.
+  /// A closure to modify an array of inspector bar ``Item``s.
   typealias Modifications = @Sendable @MainActor (_ context: Context, _ items: Modifier) throws -> Void
-  /// A button inspector bar item component.
+  /// A button inspector bar ``Item`` component.
   typealias Button = EditorComponents.Button
 }
 
@@ -63,24 +64,24 @@ public extension InspectorBar.Context {
   /// Cached properties of the current selection.
   struct Selection {
     /// The id of the current selected design block.
-    public let id: DesignBlockID
-    /// The id of the parent design block of the current selected design block.
-    public let parent: DesignBlockID?
-    /// The type of the current selected design block.
+    public let block: DesignBlockID
+    /// The id of the parent design block of the current selected design ``block``.
+    public let parentBlock: DesignBlockID?
+    /// The type of the current selected design ``block``.
     public let type: DesignBlockType?
-    /// The fill type of the current selected design block.
+    /// The fill type of the current selected design ``block``.
     public let fillType: FillType?
-    /// The kind of the current selected design block.
+    /// The kind of the current selected design ``block``.
     public let kind: String?
 
     @MainActor
-    init(id: DesignBlockID, engine: Engine) throws {
-      self.id = id
-      parent = try engine.block.getParent(id)
-      type = try .init(rawValue: engine.block.getType(id))
+    init(block: DesignBlockID, engine: Engine) throws {
+      self.block = block
+      parentBlock = try engine.block.getParent(block)
+      type = try .init(rawValue: engine.block.getType(block))
       fillType = try engine.block
-        .supportsFill(id) ? .init(rawValue: engine.block.getType(engine.block.getFill(id))) : nil
-      kind = try engine.block.getKind(id)
+        .supportsFill(block) ? .init(rawValue: engine.block.getType(engine.block.getFill(block))) : nil
+      kind = try engine.block.getKind(block)
     }
   }
 }

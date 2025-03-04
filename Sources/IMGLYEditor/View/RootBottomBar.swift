@@ -12,7 +12,7 @@ struct RootBottomBar: View {
 
   @ViewBuilder var fab: some View {
     Button {
-      interactor.send(.openSheet(.libraryAdd {
+      interactor.send(.openSheet(type: .libraryAdd {
         AssetLibrarySheet(content: nil)
       }))
     } label: {

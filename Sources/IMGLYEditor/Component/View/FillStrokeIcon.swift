@@ -2,10 +2,13 @@ import IMGLYEngine
 import SwiftUI
 @_spi(Internal) import IMGLYCore
 
+/// A view that displays a fill and/or stroke color icon.
 public struct FillStrokeIcon: View {
   @EnvironmentObject private var interactor: Interactor
   private let id: DesignBlockID
 
+  /// Creates a fill and/or stroke color icon for a design block.
+  /// - Parameter id: The id of the design block.
   public init(id: DesignBlockID) {
     self.id = id
   }

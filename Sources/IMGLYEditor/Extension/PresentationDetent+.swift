@@ -4,9 +4,13 @@ import SwiftUI
 extension PresentationDetent: IMGLYCompatible {}
 
 public extension IMGLY where Wrapped == PresentationDetent {
+  /// A tiny presentation detent.
   static let tiny = Wrapped.custom(AdaptiveTinyPresentationDetent.self)
+  /// A small presentation detent.
   static let small = Wrapped.custom(AdaptiveSmallPresentationDetent.self)
+  /// A medium presentation detent.
   static let medium = Wrapped.custom(AdaptiveMediumPresentationDetent.self)
+  /// A large presentation detent.
   static let large = Wrapped.custom(AdaptiveLargePresentationDetent.self)
 
   internal var identifier: UISheetPresentationController.Detent.Identifier? {

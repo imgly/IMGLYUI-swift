@@ -10,7 +10,7 @@ struct InspectorBarView: View {
   let context: InspectorBar.Context
 
   private var _items: [any InspectorBar.Item] {
-    guard context.engine.block.isValid(context.selection.id) else {
+    guard context.engine.block.isValid(context.selection.block) else {
       return []
     }
     do {
