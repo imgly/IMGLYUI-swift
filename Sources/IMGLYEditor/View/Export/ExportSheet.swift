@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ExportSheet: ViewModifier {
   @EnvironmentObject private var interactor: Interactor
+  @Environment(\.colorScheme) private var colorScheme
 
   func body(content: Content) -> some View {
     content
@@ -20,6 +21,7 @@ struct ExportSheet: ViewModifier {
         if let state = interactor.export.state {
           ExportView(state: state)
             .presentationDetents([.medium])
+            .preferredColorScheme(colorScheme)
         }
       }
   }

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct Sheet: View {
   @EnvironmentObject private var interactor: Interactor
+  @Environment(\.colorScheme) private var colorScheme
   private var sheet: SheetState { interactor.sheet }
 
   @Environment(\.verticalSizeClass) private var verticalSizeClass
@@ -87,6 +88,7 @@ struct Sheet: View {
     .imgly.presentationConfiguration(sheet.style.largestUndimmedDetent)
     .presentationDetents(sheet.style.detents, selection: $interactor.sheet.style.detent)
     .presentationDragIndicator(dragIndicatorVisibility)
+    .preferredColorScheme(colorScheme)
   }
 }
 

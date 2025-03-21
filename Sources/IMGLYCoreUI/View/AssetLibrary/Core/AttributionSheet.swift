@@ -30,6 +30,7 @@ struct AttributionSheet: ViewModifier {
 
 private struct Attribution: View {
   @Environment(\.dismiss) var dismiss
+  @Environment(\.colorScheme) private var colorScheme
 
   let asset: AssetLoader.Asset
   let assetCredits, assetLicense, sourceCredits, sourceLicense: AttributedString?
@@ -100,6 +101,7 @@ private struct Attribution: View {
     }
     .navigationViewStyle(.stack)
     .presentationDetents([.custom(AttributionPresentationDetent.self)])
+    .preferredColorScheme(colorScheme)
   }
 }
 

@@ -799,9 +799,12 @@ extension Interactor: AssetLibraryInteractor {
             try engine.block.setDuration(id, duration: min(newFootageDuration, oldDuration))
           }
 
-          // When replacing a block, we need to reset its trim offset.
+          // When replacing a block, we need to reset its trim properties.
           if try engine.block.supportsTrim(trimID) {
             try? engine.block.setTrimOffset(trimID, offset: .zero)
+            if let newDuration = try? engine.block.getDuration(id) {
+              try? engine.block.setTrimLength(trimID, length: newDuration)
+            }
           }
         } else {
           let addToBackgroundTrack = sheet.content == .clip
