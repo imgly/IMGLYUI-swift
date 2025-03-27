@@ -2,9 +2,9 @@ import Foundation
 import struct SwiftUI.LocalizedStringKey
 @_spi(Internal) import IMGLYCoreUI
 
-struct ExportSheetState {
-  var isPresented: Bool
-  var state: ExportView.State?
+final class ExportSheetState: ObservableObject {
+  @Published var isPresented: Bool
+  @Published var state: ExportView.State?
 
   /// Hide sheet.
   init() {
@@ -12,9 +12,13 @@ struct ExportSheetState {
     state = nil
   }
 
-  /// Show sheet with `state`.
-  init(_ state: ExportView.State) {
-    isPresented = true
+  func show(_ state: ExportView.State) {
     self.state = state
+    isPresented = true
+  }
+
+  func hide() {
+    state = nil
+    isPresented = false
   }
 }

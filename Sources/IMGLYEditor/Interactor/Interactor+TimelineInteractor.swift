@@ -1026,28 +1026,39 @@ extension Interactor: TimelineInteractor {
   }
 
   func openVoiceOver(style: SheetStyle) {
-    guard let duration = timelineProperties.timeline?.totalDuration.seconds, duration > 0 else {
-      error = .init("Unable to Record Voiceover",
-                    message: "Please add content to your timeline to start recording audio.",
-                    dismiss: false)
-      return
-    }
-
-    guard timelineProperties.dataSource.foregroundClips().allSatisfy({ $0.clipType != .voiceOver }) else {
-      error = .init("Only One Voiceover Recording Possible",
-                    message: "Please edit the existing voiceover.",
-                    dismiss: false,
-                    dismissTitle: "Cancel",
-                    confirmTitle: "Edit",
-                    confirmCallback: { [weak self] in
-                      self?.error.isPresented = false
-                      self?.editVoiceOver(style: style)
-                    })
-      return
-    }
-
     pause()
-    showVoiceOverSheet(style: style)
+
+    Task {
+      do {
+        try engine?.block.deselectAll()
+        // Ensure that the deselect event comes before opening the sheet, otherwise the sheet closes immediately.
+        try await Task.sleep(for: .milliseconds(100))
+
+        guard let duration = timelineProperties.timeline?.totalDuration.seconds, duration > 0 else {
+          error = .init("Unable to Record Voiceover",
+                        message: "Please add content to your timeline to start recording audio.",
+                        dismiss: false)
+          return
+        }
+
+        guard timelineProperties.dataSource.foregroundClips().allSatisfy({ $0.clipType != .voiceOver }) else {
+          error = .init("Only One Voiceover Recording Possible",
+                        message: "Please edit the existing voiceover.",
+                        dismiss: false,
+                        dismissTitle: "Cancel",
+                        confirmTitle: "Edit",
+                        confirmCallback: { [weak self] in
+                          self?.error.isPresented = false
+                          self?.editVoiceOver(style: style)
+                        })
+          return
+        }
+
+        showVoiceOverSheet(style: style)
+      } catch {
+        handleError(error)
+      }
+    }
   }
 
   func editVoiceOver(style: SheetStyle) {

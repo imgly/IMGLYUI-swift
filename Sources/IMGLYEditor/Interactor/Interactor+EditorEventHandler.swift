@@ -189,14 +189,14 @@ extension Interactor: EditorEventHandler {
 
   func showExportSheet(_ state: ExportView.State) {
     delayIfNecessary(hideSheet()) { [weak self] in
-      self?.export = .init(state)
+      self?.export.show(state)
     }
   }
 
   @discardableResult func hideExportSheet() -> Bool {
     let wasPresented = export.isPresented
     if export.isPresented {
-      export = .init()
+      export.hide()
     }
     return wasPresented
   }
@@ -204,7 +204,7 @@ extension Interactor: EditorEventHandler {
   @discardableResult func hideSheet() -> Bool {
     let wasPresented = sheet.isPresented
     if sheet.isPresented {
-      sheet = .init()
+      export.hide()
     }
     return wasPresented
   }

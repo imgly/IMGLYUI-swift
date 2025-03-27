@@ -606,10 +606,8 @@ public extension InspectorBar.Buttons {
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try (
-        $0.selection.type == .audio || (
-          $0.selection.type == .graphic &&
-            [.image, .video].contains($0.selection.fillType)
-        )
+        ($0.selection.type == .audio && $0.selection.kind != "voiceover") ||
+          ($0.selection.type == .graphic && [.image, .video].contains($0.selection.fillType))
       ) && $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change")
     }
   ) -> some InspectorBar.Item {

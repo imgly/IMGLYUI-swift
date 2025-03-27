@@ -109,12 +109,19 @@ public enum OnExport {
     eventHandler.send(.exportProgress(.relative(0)))
     let mimeType = mimeType ?? .mp4
     let stream = try await engine.block.exportVideo(page, mimeType: mimeType) { _ in }
+
+    var lastReportedProgress = 0
     for try await export in stream {
       try Task.checkCancellation()
       switch export {
       case let .progress(_, encodedFrames, totalFrames):
         let percentage = Float(encodedFrames) / Float(totalFrames)
-        eventHandler.send(.exportProgress(.relative(percentage)))
+        let progress = Int((Float(encodedFrames) / Float(totalFrames)) * 100)
+        // Only send event if we've moved beyond the last integer value.
+        if progress > lastReportedProgress {
+          lastReportedProgress = progress
+          eventHandler.send(.exportProgress(.relative(Float(progress) / 100)))
+        }
       case let .finished(video: videoData):
         return (videoData, mimeType.uniformType)
       }
