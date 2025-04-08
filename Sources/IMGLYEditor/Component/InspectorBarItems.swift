@@ -55,6 +55,8 @@ public extension InspectorBar.Buttons.ID {
   static var formatText: EditorComponentID { "ly.img.component.inspectorBar.button.formatText" }
   /// The id of the ``InspectorBar/Buttons/shape(action:title:icon:isEnabled:isVisible:)`` button.
   static var shape: EditorComponentID { "ly.img.component.inspectorBar.button.shape" }
+  /// The id of the ``InspectorBar/Buttons/textBackground(action:title:icon:isEnabled:isVisible:)`` button.
+  static var textBackground: EditorComponentID { "ly.img.component.inspectorBar.button.textBackground" }
 }
 
 @MainActor
@@ -796,6 +798,37 @@ public extension InspectorBar.Buttons {
     }
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.shape, action: action, label: { context in
+      let title = try title(context)
+      let icon = try icon(context)
+      Label { title } icon: { icon }
+    }, isEnabled: isEnabled, isVisible: isVisible)
+  }
+
+  /// Creates an ``InspectorBar/Button`` that opens the text background settings sheet.
+  /// - Parameters:
+  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  /// event is invoked with sheet type ``SheetType/textBackground(style:)``.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Background" is used.
+  ///   - icon: The icon view which is used to label the button. By default, a `BackgroundColorIcon` showing the actual
+  /// background color of the text block is used.
+  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
+  /// `DesignBlockType.text` and its engine scope `"text/character"` is allowed.
+  /// - Returns: The created button.
+  static func textBackground(
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .textBackground())) },
+    @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Background") },
+    @ViewBuilder icon: @escaping InspectorBar.Context
+      .To<some View> = { context in BackgroundColorIcon(id: context.selection.block) },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
+      // Check if the selected block is of type text
+      try context.selection.type == .text &&
+        // Check if the engine supports text background operations
+        context.engine.block.isAllowedByScope(context.selection.block, key: "text/character")
+    }
+  ) -> some InspectorBar.Item {
+    InspectorBar.Button(id: ID.textBackground, action: action, label: { context in
       let title = try title(context)
       let icon = try icon(context)
       Label { title } icon: { icon }

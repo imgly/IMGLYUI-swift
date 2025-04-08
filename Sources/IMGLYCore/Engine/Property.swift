@@ -23,6 +23,14 @@ import Foundation
   case strokePosition = "stroke/position"
   case strokeCornerGeometry = "stroke/cornerGeometry"
 
+  case backgroundColorEnabled = "backgroundColor/enabled"
+  case backgroundColorColor = "backgroundColor/color"
+  case backgroundColorPaddingTop = "backgroundColor/paddingTop"
+  case backgroundColorPaddingBottom = "backgroundColor/paddingBottom"
+  case backgroundColorPaddingLeft = "backgroundColor/paddingLeft"
+  case backgroundColorPaddingRight = "backgroundColor/paddingRight"
+  case backgroundColorCornerRadius = "backgroundColor/cornerRadius"
+
   case opacity
 
   case blendMode = "blend/mode"

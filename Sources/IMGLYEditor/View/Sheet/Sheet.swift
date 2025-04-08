@@ -39,6 +39,7 @@ struct Sheet: View {
     case is SheetTypes.FormatText: FormatTextOptionsSheet()
     case is SheetTypes.Shape: ShapeOptionsSheet()
     case is SheetTypes.FillStroke: FillStrokeOptionsSheet()
+    case is SheetTypes.TextBackground: BackgroundOptionsSheet()
     case is SheetTypes.Volume: VolumeOptionsSheet()
     default: EmptyView()
     }
