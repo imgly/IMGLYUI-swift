@@ -137,7 +137,7 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/adjustments``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block has a
-  /// fill type `FillType.video` or `.image`, its kind is not `"sticker"`, and its engine scope
+  /// fill type `FillType.video` or `.image`, its kind is not `"sticker"` or `"animatedSticker"`, and its engine scope
   /// `"appearance/adjustments"` is allowed.
   /// - Returns: The created button.
   static func adjustments(
@@ -150,6 +150,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try [.video, .image].contains($0.selection.fillType) &&
         $0.selection.kind != "sticker" &&
+        $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "appearance/adjustments")
     }
   ) -> some InspectorBar.Item {
@@ -168,8 +169,8 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/filter``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block has a
-  /// fill type `FillType.video` or `.image`, its kind is not `"sticker"`, and its engine scope `"appearance/filter"` is
-  /// allowed.
+  /// fill type `FillType.video` or `.image`, its kind is not `"sticker"` or `"animatedSticker"`, and its engine
+  /// scope `"appearance/filter"` is allowed.
   /// - Returns: The created button.
   static func filter(
     action: @escaping InspectorBar.Context.To<Void> = {
@@ -181,6 +182,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try [.video, .image].contains($0.selection.fillType) &&
         $0.selection.kind != "sticker" &&
+        $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "appearance/filter")
     }
   ) -> some InspectorBar.Item {
@@ -199,8 +201,8 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/effect``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block has a
-  /// fill type `FillType.video` or `.image`, its kind is not `"sticker"`, and its engine scope `"appearance/effect"` is
-  /// allowed.
+  /// fill type `FillType.video` or `.image`, its kind is not `"sticker"` or `"animatedSticker"`, and its engine
+  /// scope `"appearance/effect"` is allowed.
   /// - Returns: The created button.
   static func effect(
     action: @escaping InspectorBar.Context.To<Void> = {
@@ -212,6 +214,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try [.video, .image].contains($0.selection.fillType) &&
         $0.selection.kind != "sticker" &&
+        $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "appearance/effect")
     }
   ) -> some InspectorBar.Item {
@@ -230,8 +233,8 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/blur``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block has a
-  /// fill type `FillType.video` or `.image`, its kind is not `"sticker"`, and its engine scope `"appearance/blur"` is
-  /// allowed.
+  /// fill type `FillType.video` or `.image`, its kind is not `"sticker"` or `"animatedSticker"`, and its engine
+  /// scope `"appearance/blur"` is allowed.
   /// - Returns: The created button.
   static func blur(
     action: @escaping InspectorBar.Context.To<Void> = {
@@ -243,6 +246,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try [.video, .image].contains($0.selection.fillType) &&
         $0.selection.kind != "sticker" &&
+        $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "appearance/blur")
     }
   ) -> some InspectorBar.Item {
@@ -288,8 +292,8 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/crop``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block has a
-  /// fill type `FillType.video` or `.image`, its kind is not `"sticker"`, and its engine scope `"layer/crop"` is
-  /// allowed.
+  /// fill type `FillType.video` or `.image`, its kind is not `"sticker"` or `"animatedSticker"`, and its engine
+  /// scope `"layer/crop"` is allowed.
   /// - Returns: The created button.
   static func crop(
     action: @escaping InspectorBar.Context.To<Void> = {
@@ -301,6 +305,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try [.video, .image].contains($0.selection.fillType) &&
         $0.selection.kind != "sticker" &&
+        $0.selection.kind != "animatedSticker" &&
         $0.engine.block.supportsCrop($0.selection.block) &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "layer/crop")
     }
@@ -449,8 +454,8 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `FillStrokeIcon` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block kind is
-  /// not `"sticker"`, its fill type is `FillType.color`, `.linearGradient`, or `.none`, and its engine scope
-  /// `"fill/change"` or `"stroke/change"` is allowed.
+  /// not `"sticker"` or `"animatedSticker"`, its fill type is `FillType.color`, `.linearGradient`,
+  /// or `.none`, and its engine scope `"fill/change"` or `"stroke/change"` is allowed.
   /// - Returns: The created button.
   static func fillStroke(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .fillStroke())) },
@@ -479,7 +484,8 @@ public extension InspectorBar.Buttons {
         $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change")
       let showStroke = try $0.engine.block.supportsStroke($0.selection.block) &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "stroke/change")
-      return $0.selection.kind != "sticker" && (showFill || showStroke)
+      return $0.selection.kind != "sticker" && $0.selection.kind != "animatedSticker" &&
+        (showFill || showStroke)
     }
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.fillStroke, action: action, label: { context in
@@ -573,8 +579,8 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/replace``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// `DesignBlockType.audio` or `.graphic`, its fill type is `FillType.video` or `.image`, and its engine scope
-  /// `"fill/change"` is allowed.
+  /// `DesignBlockType.audio` or `.graphic`, its fill type is `FillType.video` or `.image`, its engine scope
+  /// `"fill/change"` is allowed and its kind is not `"voiceover"`, `"sticker"` or `"animatedSticker"`.
   /// - Returns: The created button.
   static func replace(
     action: @escaping InspectorBar.Context.To<Void> = { context in
@@ -583,7 +589,8 @@ public extension InspectorBar.Buttons {
         case .audio: context.assetLibrary.audioTab
         case .graphic:
           switch context.selection.fillType {
-          case .video: context.assetLibrary.videosTab
+          case .video:
+            context.assetLibrary.videosTab
           case .image:
             if context.selection.kind == "sticker" {
               context.assetLibrary.stickersTab
@@ -610,7 +617,8 @@ public extension InspectorBar.Buttons {
       try (
         ($0.selection.type == .audio && $0.selection.kind != "voiceover") ||
           ($0.selection.type == .graphic && [.image, .video].contains($0.selection.fillType))
-      ) && $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change")
+      ) && $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change") &&
+        $0.selection.kind != "sticker" && $0.selection.kind != "animatedSticker"
     }
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.replace, action: action, label: { context in
@@ -780,8 +788,8 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/shape``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block fill type
-  /// is not `FillType.image` or its kind is not `"sticker"`, its engine scope `"shape/change"` is allowed, and its
-  /// shape type is `ShapeType.line`, `.star`, `.polygon`, or `.rect`.
+  /// is not `FillType.image` or its kind is not `"sticker"` and its kind is not `"animatedSticker"`, its engine
+  /// scope `"shape/change"` is allowed, and its shape type is `ShapeType.line`, `.star`, `.polygon`, or `.rect`.
   /// - Returns: The created button.
   static func shape(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .shape())) },
@@ -790,6 +798,7 @@ public extension InspectorBar.Buttons {
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try ($0.selection.fillType != .image || $0.selection.kind != "sticker") &&
+        $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "shape/change") &&
         $0.engine.block.supportsShape($0.selection.block) &&
         [.line, .star, .polygon, .rect].contains(

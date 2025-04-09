@@ -72,4 +72,11 @@ import IMGLYEngine
   var filename: String? {
     meta(.filename)
   }
+
+  var looping: Bool? {
+    guard let string = meta(.looping) else {
+      return nil
+    }
+    return Bool(string)
+  }
 }

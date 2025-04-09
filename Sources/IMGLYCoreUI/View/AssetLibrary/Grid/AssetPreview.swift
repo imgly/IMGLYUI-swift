@@ -24,7 +24,11 @@ public struct AssetPreview: View {
 
         switch fillType {
         case FillType.video.rawValue:
-          ImageItem(asset: assetItem)
+          if designBlockKind == BlockKind.key(.animatedSticker).rawValue {
+            StickerItem(asset: assetItem)
+          } else {
+            ImageItem(asset: assetItem)
+          }
         case FillType.image.rawValue:
           if designBlockKind == BlockKind.key(.sticker).rawValue {
             StickerItem(asset: assetItem)
