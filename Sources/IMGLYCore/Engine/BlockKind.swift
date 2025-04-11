@@ -15,6 +15,4 @@ import Foundation
   case shape
   case group
   case voiceover
-  case gif
-  case animatedSticker
 }

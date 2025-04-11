@@ -18,5 +18,4 @@ import Foundation
   case blurType
   case effectType
   case previewUri
-  case looping
 }

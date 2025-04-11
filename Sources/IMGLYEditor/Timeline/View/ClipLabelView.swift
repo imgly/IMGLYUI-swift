@@ -10,7 +10,6 @@ struct ClipLabelView: View {
   let isMuted: Bool
   let isSelectable: Bool
   let cornerRadius: CGFloat
-  let isLooping: Bool
 
   // The height thresholds between which the opacity interpolates from hidden to visible
   @ScaledMetric private var minThreshold = 16
@@ -26,10 +25,6 @@ struct ClipLabelView: View {
           }
           if isMuted {
             Image(systemName: "speaker.slash.fill")
-              .font(.caption)
-          }
-          if isLooping {
-            Image(systemName: "infinity.circle")
               .font(.caption)
           }
           if !isSelectable {
@@ -64,15 +59,13 @@ struct ClipLabelView_Previews: PreviewProvider {
                     title: "Video",
                     isMuted: true,
                     isSelectable: true,
-                    cornerRadius: 8,
-                    isLooping: true)
+                    cornerRadius: 8)
       ClipLabelView(duration: CMTime(seconds: 1.5),
                     icon: Image(systemName: "music.note"),
                     title: "Audio",
                     isMuted: false,
                     isSelectable: false,
-                    cornerRadius: 8,
-                    isLooping: false)
+                    cornerRadius: 8)
     }
   }
 }

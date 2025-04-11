@@ -231,10 +231,10 @@ extension Interactor: TimelineInteractor {
         let firstClipTimeOffset = try engine.block.getTimeOffset(clip.id)
         try engine.block.setTimeOffset(secondClipID, offset: firstClipTimeOffset + firstClipDuration.seconds)
 
-        if clip.allowsTrimming, !clip.isLooping {
-          // We need to set the trim to the fill on videos but to the block itself for everything else.
-          let secondClipTrimmableID = clip.clipType == .video ? try engine.block.getFill(secondClipID) : secondClipID
+        // We need to set the trim to the fill on videos but to the block itself for everything else.
+        let secondClipTrimmableID = clip.clipType == .video ? try engine.block.getFill(secondClipID) : secondClipID
 
+        if clip.allowsTrimming {
           // Get the existing trim offset and add the duration of the first clip, then assign it to the second clip.
           let oldTrimOffset = try engine.block.getTrimOffset(secondClipTrimmableID)
           try engine.block.setTrimOffset(secondClipTrimmableID, offset: oldTrimOffset + firstClipDuration.seconds)
@@ -410,7 +410,7 @@ extension Interactor: TimelineInteractor {
     case FillType.image.rawValue:
       try configureImageClip(clip, kind: kind, fillID: fillID)
     case FillType.video.rawValue:
-      try configureVideoClip(clip, kind: kind, fillID: fillID)
+      try configureVideoClip(clip, fillID: fillID)
     default:
       clip.clipType = .shape
       clip.configuration = timelineProperties.configuration.shapeClipConfiguration
@@ -433,16 +433,11 @@ extension Interactor: TimelineInteractor {
     clip.footageURLString = try engine?.block.get(fillID, property: .key(.fillImageImageFileURI))
   }
 
-  private func configureVideoClip(_ clip: Clip, kind: BlockKind?, fillID: DesignBlockID?) throws {
+  private func configureVideoClip(_ clip: Clip, fillID: DesignBlockID?) throws {
     guard let fillID else { throw Error(errorDescription: "Video block has no fill") }
 
-    switch kind {
-    case .key(.animatedSticker):
-      clip.configuration = timelineProperties.configuration.stickerClipConfiguration
-    default:
-      clip.configuration = timelineProperties.configuration.videoClipConfiguration
-    }
     clip.clipType = .video
+    clip.configuration = timelineProperties.configuration.videoClipConfiguration
     clip.title = ""
     clip.footageURLString = try engine?.block.get(fillID, property: .key(.fillVideoFileURI))
   }
@@ -477,13 +472,6 @@ extension Interactor: TimelineInteractor {
 
     let timeOffsetSeconds = try engine.block.getTimeOffset(clip.id)
     clip.timeOffset = CMTime(seconds: timeOffsetSeconds)
-
-    if let fill = clip.fillID,
-       let type = try? engine.block.getType(fill),
-       type == FillType.video.rawValue {
-      let isLooping = try engine.block.isLooping(fill)
-      clip.isLooping = isLooping
-    }
   }
 
   private func setClipTrimOffsetProperties(_ clip: Clip) throws {

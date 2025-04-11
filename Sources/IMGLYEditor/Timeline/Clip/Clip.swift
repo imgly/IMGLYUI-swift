@@ -92,9 +92,6 @@ final class Clip: Identifiable, Hashable, ObservableObject, @unchecked Sendable 
 
   @Published var isLoading: Bool = false
 
-  /// Whether the clip has looping enabled.
-  @Published var isLooping: Bool = false
-
   // MARK: -
 
   init(id: DesignBlockID) {

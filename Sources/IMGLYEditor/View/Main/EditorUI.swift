@@ -134,7 +134,6 @@ import SwiftUI
           InspectorBar.Buttons.editText() // Text
           InspectorBar.Buttons.formatText() // Text
           InspectorBar.Buttons.fillStroke() // Page, Video, Image, Shape, Text
-          InspectorBar.Buttons.textBackground() // Text
           InspectorBar.Buttons.editVoiceover() // Voiceover (video scenes only)
           InspectorBar.Buttons.volume() // Video, Audio, Voiceover (video scenes only)
           InspectorBar.Buttons.crop() // Video, Image

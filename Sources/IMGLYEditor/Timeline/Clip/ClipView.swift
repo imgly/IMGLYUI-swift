@@ -65,8 +65,7 @@ struct ClipView: View {
             title: clip.title,
             isMuted: clip.audioVolume == 0 || clip.isMuted,
             isSelectable: clip.allowsSelecting,
-            cornerRadius: cornerRadius - 2,
-            isLooping: clip.isLooping
+            cornerRadius: cornerRadius - 2
           )
         }
       }
@@ -152,8 +151,7 @@ struct ClipView: View {
           title: clip.title.isEmpty ? clip.clipType.description : clip.title,
           isMuted: clip.audioVolume == 0 || clip.isMuted,
           isSelectable: clip.allowsSelecting,
-          cornerRadius: configuration.cornerRadius,
-          isLooping: clip.isLooping
+          cornerRadius: configuration.cornerRadius
         )
       }
   }
