@@ -325,6 +325,7 @@ extension Interactor {
   func canBringBackward(_ id: BlockID?) -> Bool { block(id, engine?.block.canBringBackward) ?? false }
   func supportsFill(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsFill) ?? false }
   func supportsStroke(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsStroke) ?? false }
+  func supportsBackground(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBackgroundColor) ?? false }
   func supportsOpacity(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsOpacity) ?? false }
   func supportsBlendMode(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlendMode) ?? false }
   func supportsBlur(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlur) ?? false }
@@ -764,6 +765,23 @@ extension Interactor: AssetLibraryInteractor {
         if sheet.isReplacing, let id = selection?.blocks.first {
           let oldDuration = try engine.block.getDuration(id)
 
+          // If replacing GIFs/looping videos with non-looping videos
+          // we need to set the properties for the fill based on the new\
+          // asset. This will be part of the engine later.
+          if sceneMode == .video, try engine.block.supportsFill(id) {
+            let fillID = try engine.block.getFill(id)
+            if try engine.block.supportsPlaybackControl(fillID) {
+              if let looping = asset.looping {
+                try engine.block.setLooping(fillID, looping: looping)
+              } else {
+                try engine.block.setLooping(fillID, looping: false)
+              }
+            }
+          }
+          if let kind = asset.blockKind {
+            try engine.block.setKind(id, kind: kind)
+          }
+
           try await engine.asset.applyToBlock(sourceID: sourceID, assetResult: asset, block: id)
           if sheet.content == .sticker {
             try engine.block.overrideAndRestore(id, scope: .key(.layerCrop)) {
@@ -889,7 +907,6 @@ extension Interactor: AssetLibraryInteractor {
                   } else {
                     try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
                   }
-                  try engine.block.setLooping(fillID, looping: false)
                 }
               } else if try engine.block.getType(id) == BlockType.audio.rawValue {
                 // Prevent audio blocks from being considered in the z-index reordering
@@ -1394,6 +1411,9 @@ extension Interactor {
         }
         return .image
       case FillType.video.rawValue:
+        if kind == .key(.animatedSticker) {
+          return .sticker
+        }
         return .video
       case FillType.color.rawValue,
            FillType.linearGradient.rawValue,

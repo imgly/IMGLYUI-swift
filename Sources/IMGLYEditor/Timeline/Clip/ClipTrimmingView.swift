@@ -17,9 +17,16 @@ struct ClipTrimmingView: View {
   @StateObject var movePanDelegate = ClipTrimmingPanGestureRecognizerDelegate()
 
   enum DraggingType {
+    /// No dragging.
     case none
+
+    /// Dragging the left handle.
     case trimStart
+
+    /// Dragging the right handle.
     case trimEnd
+
+    /// Moving the clip.
     case move
   }
 
@@ -108,7 +115,7 @@ struct ClipTrimmingView: View {
 
       // Marching Ants placeholder
       .background {
-        if isDragging, draggingType != .move, let footageDuration = clip.footageDuration {
+        if isDragging, draggingType != .move, let footageDuration = clip.footageDuration, !clip.isLooping {
           ZStack {
             ClipSelectionShape(cornerRadius: cornerRadius, trimHandleWidth: trimHandleWidth)
               .fill(configuration.clipSelectionActiveColor.opacity(0.2))
@@ -137,7 +144,8 @@ struct ClipTrimmingView: View {
           title: clip.title,
           isMuted: clip.audioVolume == 0 || clip.isMuted,
           isSelectable: clip.allowsSelecting,
-          cornerRadius: cornerRadius - 2
+          cornerRadius: cornerRadius - 2,
+          isLooping: clip.isLooping
         )
         .padding(
           .leading,
@@ -147,14 +155,16 @@ struct ClipTrimmingView: View {
       }
       // Left and right handle icons
       .overlay(alignment: .leading) {
-        let hasLeadingOvershoot = (clip.trimOffset + startTrimDurationDelta).seconds > 0 || !clip.allowsTrimming
+        let hasLeadingOvershoot = !clip
+          .isLooping && ((clip.trimOffset + startTrimDurationDelta).seconds > 0 || !clip.allowsTrimming)
         ClipTrimHandleIconView(style: hasLeadingOvershoot ? .left : .neutral,
                                color: .white)
           .offset(x: -11)
       }
       .overlay(alignment: .trailing) {
         let footageDuration = clip.footageDuration ?? CMTime(seconds: 0)
-        let hasTrailingOvershoot = (footageDuration - clip.trimOffset - duration - endTrimDurationDelta).seconds > 0
+        let hasTrailingOvershoot = clip
+          .isLooping || (footageDuration - clip.trimOffset - duration - endTrimDurationDelta).seconds > 0
         ClipTrimHandleIconView(style: hasTrailingOvershoot || !clip.allowsTrimming ? .right : .neutral,
                                color: .white)
           .offset(x: 11)
@@ -277,7 +287,7 @@ struct ClipTrimmingView: View {
       let maxPositiveDelta: CMTime
 
       if clip.footageDuration != nil {
-        maxNegativeDelta = clip.trimOffset.imgly.makeNegative()
+        maxNegativeDelta = clip.isLooping ? .negativeInfinity : clip.trimOffset.imgly.makeNegative()
       } else {
         maxNegativeDelta = clip.isInBackgroundTrack ? .negativeInfinity : clip.timeOffset.imgly.makeNegative()
       }
@@ -330,7 +340,7 @@ struct ClipTrimmingView: View {
       let maxNegativeDelta: CMTime
       let maxPositiveDelta: CMTime
 
-      if let footageDuration = clip.footageDuration {
+      if let footageDuration = clip.footageDuration, !clip.isLooping {
         maxNegativeDelta = (duration - configuration.minClipDuration).imgly.makeNegative()
         maxPositiveDelta = footageDuration - clip.trimOffset - duration
       } else {

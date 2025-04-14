@@ -37,12 +37,17 @@
 
   struct MediaView: UIViewControllerRepresentable {
     @Binding var isPresented: Bool
+    @Environment(\.colorScheme) private var colorScheme
     let source: UIImagePickerController.SourceType
     let media: [MediaType]
     let completion: MediaCompletion
 
     func makeUIViewController(context _: Context) -> CameraWrapper {
-      CameraWrapper(isPresented: $isPresented, source: source, media: media, completion: completion)
+      CameraWrapper(isPresented: $isPresented,
+                    source: source,
+                    media: media,
+                    colorScheme: colorScheme,
+                    completion: completion)
     }
 
     func updateUIViewController(_ controller: CameraWrapper, context _: Context) {
@@ -51,6 +56,7 @@
       controller.media = media
       controller.completion = completion
       controller.updateState()
+      controller.colorScheme = colorScheme
     }
   }
 
@@ -59,17 +65,20 @@
     fileprivate var isPresented: Binding<Bool>
     fileprivate var source: UIImagePickerController.SourceType
     fileprivate var media: [MediaType]
+    fileprivate var colorScheme: ColorScheme
     fileprivate var completion: MediaCompletion
 
     init(
       isPresented: Binding<Bool>,
       source: UIImagePickerController.SourceType,
       media: [MediaType],
+      colorScheme: ColorScheme,
       completion: @escaping MediaCompletion
     ) {
       self.isPresented = isPresented
       self.source = source
       self.media = media
+      self.colorScheme = colorScheme
       self.completion = completion
 
       super.init(nibName: nil, bundle: nil)
@@ -104,6 +113,7 @@
           controller.delegate = self
           controller.presentationController?.delegate = self
           controller.modalPresentationStyle = .automatic
+          controller.overrideUserInterfaceStyle = (colorScheme == .dark) ? .dark : .light
           present(controller, animated: true, completion: nil)
         }
       }

@@ -7,6 +7,7 @@ import SwiftUI
 
   @Environment(\.layoutDirection) private var layoutDirection
   @Environment(\.imglyInspectorBarItems) private var inspectorBarItems
+  @Environment(\.colorScheme) private var colorScheme
 
   @_spi(Internal) public init(zoomPadding: CGFloat = 16) {
     self.zoomPadding = zoomPadding
@@ -110,6 +111,9 @@ import SwiftUI
             interactor.updateZoom(for: .sheetGeometryChanged, with: zoom)
           }
           .imgly.errorAlert(isSheet: true)
+          // We're setting the color scheme here because .preferredColorScheme inside 'Sheet'
+          // is sometimes ignored on iOS 18
+          .preferredColorScheme(colorScheme)
       }
       .imgly.errorAlert(isSheet: false)
       .modifier(ExportSheet(exportState: interactor.export))
@@ -134,6 +138,7 @@ import SwiftUI
           InspectorBar.Buttons.editText() // Text
           InspectorBar.Buttons.formatText() // Text
           InspectorBar.Buttons.fillStroke() // Page, Video, Image, Shape, Text
+          InspectorBar.Buttons.textBackground() // Text
           InspectorBar.Buttons.editVoiceover() // Voiceover (video scenes only)
           InspectorBar.Buttons.volume() // Video, Audio, Voiceover (video scenes only)
           InspectorBar.Buttons.crop() // Video, Image
