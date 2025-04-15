@@ -813,7 +813,7 @@ public extension InspectorBar.Buttons {
     }, isEnabled: isEnabled, isVisible: isVisible)
   }
 
-  /// Creates an ``InspectorBar/Button`` that opens the text background settings sheet.
+  /// Creates an ``InspectorBar/Button`` that opens the text background sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/textBackground(style:)``.
@@ -831,9 +831,7 @@ public extension InspectorBar.Buttons {
       .To<some View> = { context in BackgroundColorIcon(id: context.selection.block) },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
-      // Check if the selected block is of type text
       try context.selection.type == .text &&
-        // Check if the engine supports text background operations
         context.engine.block.isAllowedByScope(context.selection.block, key: "text/character")
     }
   ) -> some InspectorBar.Item {
