@@ -168,6 +168,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
         camera1Connection = connection
         connection.isVideoMirrored = input.device.position == .front
         connection.videoOrientation = videoOrientation
+        connection.preferredVideoStabilizationMode = .standard
         captureSession.addConnection(connection)
       }
 
@@ -180,6 +181,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
           camera2Connection = connection
           connection.isVideoMirrored = input.device.position == .front
           connection.videoOrientation = videoOrientation
+          connection.preferredVideoStabilizationMode = .standard
           captureSession.addConnection(connection)
         }
       }
