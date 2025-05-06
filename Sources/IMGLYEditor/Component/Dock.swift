@@ -30,7 +30,7 @@ public extension Dock {
   /// A builder for building arrays of dock ``Item``s.
   typealias Builder = ArrayBuilder<any Item>
   /// A modifier for modifying arrays of dock ``Item``s.
-  typealias Modifier = ArrayModifier<any Item>
+  typealias Modifier = ArrayModifier<any Item, None>
 
   /// The context of dock components.
   struct Context: EditorContext {

@@ -1,21 +1,5 @@
 @_spi(Internal) import IMGLYEditor
-@_spi(Internal) import IMGLYCoreUI
 import SwiftUI
-
-enum Page: Int, Localizable {
-  case design, write
-
-  var description: String {
-    switch self {
-    case .design: "Design"
-    case .write: "Write"
-    }
-  }
-
-  var previous: Page? { Self(rawValue: index - 1) }
-  var next: Page? { Self(rawValue: index + 1) }
-  var index: Int { rawValue }
-}
 
 /// Built to facilitate optimal post- & greeting- card design, from changing accent colors and selecting fonts to custom
 /// messages and pictures.
@@ -24,6 +8,7 @@ public struct PostcardEditor: View {
   public static let defaultScene = Bundle.module.url(forResource: "postcard-empty", withExtension: "scene")!
 
   @Environment(\.imglyOnCreate) private var onCreate
+  @Environment(\.imglyNavigationBarItems) private var navigationBarItems
   private let settings: EngineSettings
 
   /// Creates a postcard editor with settings.
@@ -33,7 +18,8 @@ public struct PostcardEditor: View {
   }
 
   public var body: some View {
-    ContentView()
+    EditorUI()
+      .navigationTitle("")
       .imgly.editor(settings, behavior: .postcard)
       .imgly.onCreate { engine in
         guard let onCreate else {
@@ -42,40 +28,26 @@ public struct PostcardEditor: View {
         }
         try await onCreate(engine)
       }
-  }
-}
-
-private struct ContentView: View {
-  @EnvironmentObject private var interactor: Interactor
-
-  var page: Page? { Page(rawValue: interactor.page) }
-
-  var isBackButtonHidden: Bool { !interactor.isEditing || page?.previous != nil }
-
-  var body: some View {
-    EditorUI()
-      .navigationBarBackButtonHidden(isBackButtonHidden)
-      .preference(key: BackButtonHiddenKey.self, value: isBackButtonHidden)
-      .toolbar {
-        ToolbarItem(placement: .navigationBarLeading) {
-          if interactor.isEditing, let previousPage = page?.previous {
-            PageNavigationButton(to: previousPage, direction: .backward)
+      .imgly.navigationBarItems { context in
+        if let navigationBarItems {
+          try navigationBarItems(context)
+        } else {
+          NavigationBar.ItemGroup(placement: .topBarLeading) {
+            NavigationBar.Buttons.closeEditor()
+            NavigationBar.Buttons.previousPage(
+              label: { _ in NavigationLabel("Design", direction: .backward) }
+            )
           }
-        }
-        ToolbarItemGroup(placement: .principal) {
-          HStack {
-            UndoRedoButtons()
-            Spacer().frame(maxWidth: 42)
-            PreviewButton()
+          NavigationBar.ItemGroup(placement: .principal) {
+            NavigationBar.Buttons.undo()
+            NavigationBar.Buttons.redo()
+            NavigationBar.Buttons.togglePreviewMode()
           }
-          .labelStyle(.adaptiveIconOnly)
-        }
-        ToolbarItem(placement: .navigationBarTrailing) {
-          if let nextPage = page?.next, interactor.isEditing {
-            PageNavigationButton(to: nextPage, direction: .forward)
-          } else {
-            ExportButton()
-              .labelStyle(.adaptiveIconOnly)
+          NavigationBar.ItemGroup(placement: .topBarTrailing) {
+            NavigationBar.Buttons.nextPage(
+              label: { _ in NavigationLabel("Write", direction: .forward) }
+            )
+            NavigationBar.Buttons.export()
           }
         }
       }

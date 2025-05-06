@@ -41,14 +41,12 @@ private struct EditorPreview: View {
 
   var body: some View {
     EditorUI()
-      .toolbar {
-        ToolbarItemGroup(placement: .navigationBarTrailing) {
-          Group {
-            UndoRedoButtons()
-            PreviewButton()
-            ExportButton()
-          }
-          .labelStyle(.adaptiveIconOnly)
+      .imgly.navigationBarItems { _ in
+        NavigationBar.ItemGroup(placement: .topBarTrailing) {
+          NavigationBar.Buttons.undo()
+          NavigationBar.Buttons.redo()
+          NavigationBar.Buttons.togglePreviewMode()
+          NavigationBar.Buttons.export()
         }
       }
       .imgly.interactor(interactor)

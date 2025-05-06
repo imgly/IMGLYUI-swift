@@ -6,14 +6,16 @@ import SwiftUI
   case sceneUpload
   case photosPicker
   case photosPickerEncodingOptions
-  case transcodePickerImports
+  case photosPickerMultiSelect
+  case transcodePickerImageImports
+  case transcodePickerVideoImports
   /// By default, the `DesignEditor` will export PDFs.
   /// If this flag is set, it will export PNGs instead.
   case exportPNGInDesignEditor
 
   fileprivate var isInitiallyEnabled: Bool {
     switch self {
-    case .designEditor, .transcodePickerImports: true
+    case .designEditor, .transcodePickerImageImports, .transcodePickerVideoImports: true
     default:
       ProcessInfo.processInfo.arguments.contains(launchArgument)
     }

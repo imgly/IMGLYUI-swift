@@ -20,11 +20,12 @@ public struct UploadGrid: View {
         return
       }
       Task {
-        try await interactor.uploadAsset(to: source.id) {
-          let (url, media) = try result.get()
-          switch media {
-          case .image: return .init(url: url, blockType: .graphic, blockKind: .key(.image), fillType: .image)
-          case .movie: return .init(url: url, blockType: .graphic, blockKind: .key(.video), fillType: .video)
+        for (url, media) in try result.get() {
+          _ = try await interactor.uploadAsset(to: source.id) {
+            switch media {
+            case .image: .init(url: url, blockType: .graphic, blockKind: .key(.image), fillType: .image)
+            case .movie: .init(url: url, blockType: .graphic, blockKind: .key(.video), fillType: .video)
+            }
           }
         }
       }
@@ -55,7 +56,7 @@ public struct UploadGrid: View {
     } first: {
       firstAddButton
     }
-    .imgly.photoRoll(isPresented: $showImagePicker, media: media, onComplete: mediaCompletion)
+    .imgly.photoRoll(isPresented: $showImagePicker, media: media, maxSelectionCount: 1, onComplete: mediaCompletion)
   }
 }
 

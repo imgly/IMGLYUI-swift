@@ -1,3 +1,4 @@
+@_spi(Internal) import IMGLYCore
 import SwiftUI
 
 /// A custom view modifier that applies a loading overlay with blur and disable effects.
@@ -16,11 +17,11 @@ struct LoadingModifier: ViewModifier {
   }
 }
 
-public extension View {
+@_spi(Internal) public extension IMGLY where Wrapped: View {
   /// Applies the loading overlay modifier to the view.
   /// - Parameter isLoading: A Boolean value that indicates whether the loading overlay should be displayed.
   /// - Returns: The view with the loading overlay applied.
   func loadingOverlay(isLoading: Bool) -> some View {
-    modifier(LoadingModifier(isLoading: isLoading))
+    wrapped.modifier(LoadingModifier(isLoading: isLoading))
   }
 }
