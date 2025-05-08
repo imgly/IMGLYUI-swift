@@ -55,6 +55,10 @@ struct AssetGridOnAppearKey: EnvironmentKey {
   static let defaultValue: AssetGridOnAppear = { _ in }
 }
 
+struct AssetGridExcludedSourcesKey: EnvironmentKey {
+  static let defaultValue = Set<String>()
+}
+
 extension EnvironmentValues {
   var imglyAssetGridAxis: AssetGridAxisKey.Value {
     get { self[AssetGridAxisKey.self] }
@@ -110,6 +114,11 @@ extension EnvironmentValues {
     get { self[AssetGridOnAppearKey.self] }
     set { self[AssetGridOnAppearKey.self] = newValue }
   }
+
+  var imglyAssetGridExcludedSources: AssetGridExcludedSourcesKey.Value {
+    get { self[AssetGridExcludedSourcesKey.self] }
+    set { self[AssetGridExcludedSourcesKey.self] = newValue }
+  }
 }
 
 @_spi(Internal) public struct AssetGrid<Item: View, Empty: View, First: View, More: View>: View {
@@ -126,6 +135,7 @@ extension EnvironmentValues {
   @Environment(\.imglyAssetGridSourcePadding) private var sourcePadding
   @Environment(\.imglyAssetGridItemIndex) private var itemIndex
   @Environment(\.imglyAssetGridOnAppear) private var onAppear
+  @Environment(\.imglyAssetGridExcludedSources) private var excludedSources
 
   @ViewBuilder private let item: (AssetItem) -> Item
   @ViewBuilder private let empty: (_ search: String) -> Empty
@@ -148,6 +158,7 @@ extension EnvironmentValues {
     guard data.model.assets.count <= maxItemCount else {
       return
     }
+    // Revise if this still works with 20 `excludedSources`... !
     let threshold = data.model.assets.dropLast(20).last ?? data.model.assets.last
     if asset.id == threshold?.id {
       data.model.loadNextPage()
@@ -234,7 +245,11 @@ extension EnvironmentValues {
   @ViewBuilder private var contentView: some View {
     grid {
       first()
-      ForEach(Array(data.model.assets.prefix(maxItemCount).enumerated()), id: \.element) { index, asset in
+      let items = Array(data.model.assets
+        .filter { !excludedSources.contains($0.sourceID) }
+        .prefix(maxItemCount)
+        .enumerated())
+      ForEach(items, id: \.element) { index, asset in
         let padding: CGFloat = {
           if index > 0 {
             return asset.sourceID != data.model.assets[index - 1].sourceID ? sourcePadding : 0
