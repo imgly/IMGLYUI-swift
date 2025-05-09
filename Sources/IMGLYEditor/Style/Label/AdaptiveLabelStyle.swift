@@ -32,9 +32,7 @@ struct AdaptiveTileLabelStyle: LabelStyle {
   }
 }
 
-/// An adaptive label style that displays the title and icon if the vertical size class is compact and only the icon
-/// otherwise.
-public struct AdaptiveIconOnlyLabelStyle: LabelStyle {
+@_spi(Internal) public struct AdaptiveIconOnlyLabelStyle: LabelStyle {
   @_spi(Internal) public func makeBody(configuration: Configuration) -> some View {
     Label(configuration)
       .labelStyle(AdaptiveLabelStyle(compactStyle: .titleAndIcon, normalStyle: .iconOnly))

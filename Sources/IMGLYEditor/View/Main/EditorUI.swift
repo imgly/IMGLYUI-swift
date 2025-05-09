@@ -47,6 +47,8 @@ import SwiftUI
 
   @State private var interactivePopGestureRecognizer: UIGestureRecognizer?
 
+  var isBackButtonHidden: Bool { !interactor.isEditing || interactor.isPageOverviewShown }
+
   @_spi(Internal) public var body: some View {
     Canvas(zoomPadding: zoomPadding)
       .background {
@@ -55,7 +57,8 @@ import SwiftUI
       }
       .allowsHitTesting(interactor.isCanvasHitTestingEnabled)
       .navigationBarTitleDisplayMode(.inline)
-      .navigationBarBackButtonHidden(true)
+      .navigationBarBackButtonHidden(isBackButtonHidden)
+      .preference(key: BackButtonHiddenKey.self, value: isBackButtonHidden)
       .introspect(.navigationStack, on: .iOS(.v16...), scope: .ancestor) { navigationController in
         // Delay mutation until the next runloop.
         // https://github.com/siteline/SwiftUI-Introspect/issues/212#issuecomment-1590130815
@@ -77,7 +80,7 @@ import SwiftUI
         let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
         interactor.updateZoom(for: .pageChanged, with: zoom)
       }
-      .onChange(of: interactor.isPagesMode) { newValue in
+      .onChange(of: interactor.isPageOverviewShown) { newValue in
         if !newValue {
           // Force zoom to page when the page overview is closed to be sure that the right page is always shown.
           let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
@@ -158,25 +161,6 @@ import SwiftUI
           InspectorBar.Buttons.delete() // Video, Image, Sticker, Shape, Text, Audio, Voiceover
         }
       }
-      .modifier(NavigationBarView(items: navigationBarItems ?? { _ in [] }, context: navigationBarContext))
-  }
-
-  @Environment(\.imglyNavigationBarItems) private var navigationBarItems
-  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
-
-  private var assetLibrary: some AssetLibrary {
-    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
-  }
-
-  private var navigationBarContext: NavigationBar.Context {
-    .init(engine: interactor.engine,
-          eventHandler: interactor,
-          state: NavigationBar.State(
-            isCreating: interactor.isCreating,
-            isExporting: interactor.isExporting,
-            viewMode: interactor.viewMode
-          ),
-          assetLibrary: assetLibrary)
   }
 }
 

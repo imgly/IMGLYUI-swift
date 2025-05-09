@@ -11,37 +11,22 @@ import SwiftUI
   /// error
   @MainActor
   func photoRoll(isPresented: Binding<Bool>, media: [MediaType] = [.image],
-                 maxSelectionCount: Int?, onComplete: @escaping MediaCompletion) -> some View {
-    wrapped.modifier(PhotoRoll(isPresented: isPresented, media: media,
-                               maxSelectionCount: maxSelectionCount, completion: onComplete))
+                 onComplete: @escaping MediaCompletion) -> some View {
+    wrapped.modifier(PhotoRoll(isPresented: isPresented, media: media, completion: onComplete))
   }
 }
 
 private struct PhotoRoll: ViewModifier {
   @Binding var isPresented: Bool
   let media: [MediaType]
-  let maxSelectionCount: Int?
   let completion: MediaCompletion
 
   @Feature(.photosPicker) private var isPhotosPickerEnabled
 
   func body(content: Content) -> some View {
     if isPhotosPickerEnabled {
-      content.imgly.photosPicker(
-        isPresented: $isPresented,
-        media: media,
-        maxSelectionCount: maxSelectionCount,
-        onComplete: completion
-      )
+      content.imgly.photosPicker(isPresented: $isPresented, media: media, onComplete: completion)
     } else {
-      if maxSelectionCount != 1 {
-        // swiftlint:disable:next redundant_discardable_let
-        let _ =
-          print(
-            // swiftlint:disable:next line_length
-            "`UIImagePickerController` does not support `maxSelectionCount` other than 1, falling back to single selection mode."
-          )
-      }
       content.imgly.imagePicker(isPresented: $isPresented, media: media, onComplete: completion)
     }
   }

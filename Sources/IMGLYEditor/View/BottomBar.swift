@@ -186,7 +186,7 @@ struct BottomBar: View {
       bottomBar
         .frame(height: height)
     }
-    .disabled(interactor.isCreating || interactor.sheet.isPresented)
+    .disabled(interactor.isLoading || interactor.sheet.isPresented)
     .imgly.selection(id)
   }
 }

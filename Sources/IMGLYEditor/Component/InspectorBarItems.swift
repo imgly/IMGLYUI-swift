@@ -451,7 +451,7 @@ public extension InspectorBar.Buttons {
   /// event is invoked with sheet type ``SheetType/fillStroke(style:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` "Fill & Stroke", "Fill", or
   /// "Stroke"  is used depending on the fill type and allowed engine scopes for the selected design block.
-  ///   - icon: The icon view which is used to label the button. By default, the ``FillStrokeIcon`` is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `FillStrokeIcon` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block kind is
   /// not `"sticker"` or `"animatedSticker"`, its fill type is `FillType.color`, `.linearGradient`,
@@ -474,7 +474,9 @@ public extension InspectorBar.Buttons {
       }
       return Text(LocalizedStringKey(title.joined(separator: " & ")))
     },
-    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { FillStrokeIcon(id: $0.selection.block) },
+    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = {
+      FillStrokeIcon(id: $0.selection.block)
+    },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       let showFill = try [.none, .color, .linearGradient].contains($0.selection.fillType) &&
@@ -816,7 +818,8 @@ public extension InspectorBar.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/textBackground(style:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` "Background" is used.
-  ///   - icon: The icon view which is used to label the button. By default, the ``BackgroundColorIcon`` is used.
+  ///   - icon: The icon view which is used to label the button. By default, a `BackgroundColorIcon` showing the actual
+  /// background color of the text block is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
   /// `DesignBlockType.text` and its engine scope `"text/character"` is allowed.
@@ -824,7 +827,8 @@ public extension InspectorBar.Buttons {
   static func textBackground(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .textBackground())) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Background") },
-    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { BackgroundColorIcon(id: $0.selection.block) },
+    @ViewBuilder icon: @escaping InspectorBar.Context
+      .To<some View> = { context in BackgroundColorIcon(id: context.selection.block) },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
       try context.selection.type == .text &&

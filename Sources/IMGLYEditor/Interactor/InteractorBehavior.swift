@@ -71,8 +71,6 @@ import SwiftUI
     try context.engine.editor.setSettingColor("placeholderHighlightColor", color: color)
 
     try context.engine.editor.setSettingBool("features/removeForegroundTracksOnSceneLoad", value: true)
-    try context.engine.editor.setSettingBool("features/videoTranscodingEnabled",
-                                             value: !FeatureFlags.isEnabled(.transcodePickerVideoImports))
 
     try context.engine.editor.setSettingString(
       "basePath",
@@ -227,7 +225,7 @@ import SwiftUI
   func historyChanged(_: InteractorContext) throws {}
 
   func updateState(_ context: InteractorContext) throws {
-    guard !context.interactor.isCreating else {
+    guard !context.interactor.isLoading else {
       return
     }
     let selectionColors = try context.engine.selectionColors(forPage: context.interactor.page)

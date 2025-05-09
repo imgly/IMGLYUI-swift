@@ -19,7 +19,7 @@ struct TimelineContentView: View {
 
   @State private var shouldContinuePlayingAfterDraggingEnded = false
 
-  // We don't use Introspect's @Weak property wrapper here because it releases too quickly
+  // We don’t use Introspect’s @Weak property wrapper here because it releases too quickly
   @State private var horizontalScrollView: UIScrollView?
   @State private var verticalScrollView: UIScrollView?
   @State var pinchGestureRecognizer: UIPinchGestureRecognizer?
@@ -56,8 +56,6 @@ struct TimelineContentView: View {
             .padding(.trailing, -(overflowWidth - (timeline.totalWidth)))
           }
           .frame(width: timeline.totalWidth + viewportWidth)
-          .padding(.top, configuration.timelineRulerHeight + configuration.trackSpacing)
-          .padding(.bottom, configuration.backgroundTrackHeight + configuration.trackSpacing * 3)
           // Scroll clip into view on selection change.
           .onChange(of: timelineProperties.selectedClip) { newValue in
             guard let id = newValue?.id else { return }
@@ -67,15 +65,26 @@ struct TimelineContentView: View {
           }
         }
       }
+      .safeAreaInset(edge: .top, spacing: 0) {
+        Rectangle()
+          .fill(.clear)
+          .frame(height: configuration.timelineRulerHeight + configuration.trackSpacing)
+      }
+      .safeAreaInset(edge: .bottom, spacing: 0) {
+        Rectangle()
+          .fill(.clear)
+          .frame(height: configuration.backgroundTrackHeight + configuration.trackSpacing * 3)
+      }
       .introspect(.scrollView, on: .iOS(.v16...)) { verticalScrollView in
-        guard verticalScrollView !== self.verticalScrollView, needsRestoreVerticalOffset else { return }
+        guard verticalScrollView !== self.verticalScrollView else { return }
 
         // Delay mutation until the next runloop.
         // https://github.com/siteline/SwiftUI-Introspect/issues/212#issuecomment-1590130815
         DispatchQueue.main.async {
+          self.verticalScrollView = verticalScrollView
           verticalScrollView.delegate = verticalScrollViewDelegate
+          restoreVerticalOffset()
           verticalScrollView.scrollsToTop = false
-          restoreVerticalOffset(verticalScrollView)
         }
       }
 
@@ -165,16 +174,13 @@ struct TimelineContentView: View {
 
     .overlay(alignment: .topTrailing) {
       if let verticalScrollView {
-        let topPadding = configuration.timelineRulerHeight + configuration.trackSpacing
-        let bottomPadding = configuration.backgroundTrackHeight + configuration.trackSpacing * 3
         CustomScrollIndicatorView(
-          scrollViewFrameHeight: verticalScrollView.bounds.size.height - verticalScrollView.adjustedContentInset
-            .top - verticalScrollView.adjustedContentInset.bottom,
-          scrollViewContentSizeHeight: verticalScrollView.contentSize.height - topPadding - bottomPadding,
+          scrollViewFrameHeight: verticalScrollView.frame.height,
+          scrollViewContentSizeHeight: verticalScrollView.contentSize.height,
           scrollViewContentOffsetY: verticalScrollView.contentOffset.y,
           scrollViewDelegate: verticalScrollViewDelegate,
-          topPadding: configuration.timelineRulerHeight + 3,
-          bottomPadding: configuration.backgroundTrackHeight + configuration.trackSpacing * 2 + 3
+          topPadding: 3 + configuration.timelineRulerHeight,
+          bottomPadding: 3 + configuration.backgroundTrackHeight + configuration.trackSpacing * 2
         )
       }
     }
@@ -215,9 +221,9 @@ struct TimelineContentView: View {
       // After zooming, restore the playhead position on the zoomed scale.
       // This may create an imprecision due to rounding errors.
       // To reproduce, select a clip with a precise length (e.g. 20 seconds) and
-      // scroll the timeline to snap to the clip's end. Then zoom in and out and
+      // scroll the timeline to snap to the clip’s end. Then zoom in and out and
       // you will see rounding errors like 19.999333333333333 seconds.
-      // We should pin the time offset somehow, but this doesn't currently
+      // We should pin the time offset somehow, but this doesn’t currently
       // work due to how the values are propagated; the scrollOffset is always
       // converted back to a timecode when it changes, which will be imprecise
       // depending on the current zoom level.
@@ -276,32 +282,22 @@ struct TimelineContentView: View {
     horizontalScrollView.setContentOffset(contentOffset, animated: false)
   }
 
-  /// Restore vertical offset when timeline disappears and reappears in a session.
+  /// Restore vertical offset when timeline disappears and reappears ins a session.
   /// Set initial vertical position respecting the offsets.
-  private func restoreVerticalOffset(_ verticalScrollView: UIScrollView) {
+  private func restoreVerticalOffset() {
     guard needsRestoreVerticalOffset else { return }
     needsRestoreVerticalOffset = false
 
-    let topInset = configuration.timelineRulerHeight + configuration.trackSpacing
-    let bottomInset = configuration.backgroundTrackHeight + configuration.trackSpacing * 3
-
-    verticalScrollView.contentInset = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset, right: 0)
-    verticalScrollView.layoutIfNeeded()
-
+    guard let verticalScrollView else { return }
     let contentOffsetY: CGFloat
 
     if timeline.needsInitialScrollOffset {
       timeline.needsInitialScrollOffset = false
-      let totalContentHeight = verticalScrollView.contentSize.height
-      let visibleHeight = verticalScrollView.bounds.size.height
-
-      // iOS 16 seems to handle this differently than iOS 17 and iOS 18.
-      // For iOS 16 it is enough to set the correct contentInset.
-      if #available(iOS 17.0, *) {
-        contentOffsetY = totalContentHeight - visibleHeight + verticalScrollView.adjustedContentInset.bottom
-      } else {
-        contentOffsetY = totalContentHeight - visibleHeight
-      }
+      // Scroll to bottom
+      let bottomInset = configuration.backgroundTrackHeight + configuration.trackSpacing * 3
+      contentOffsetY = verticalScrollView.contentSize.height
+        - verticalScrollView.frame.height
+        + bottomInset
       timeline.verticalScrollOffset = contentOffsetY
     } else {
       contentOffsetY = timeline.verticalScrollOffset
@@ -309,11 +305,6 @@ struct TimelineContentView: View {
 
     let contentOffset = CGPoint(x: 0, y: contentOffsetY)
     verticalScrollView.setContentOffset(contentOffset, animated: false)
-
-    // Add some delay to "ensure" layouting is done.
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-      self.verticalScrollView = verticalScrollView
-    }
   }
 }
 

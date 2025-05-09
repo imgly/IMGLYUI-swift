@@ -8,7 +8,6 @@ public struct ApparelEditor: View {
   public static let defaultScene = Bundle.module.url(forResource: "apparel-ui-b-empty", withExtension: "scene")!
 
   @Environment(\.imglyOnCreate) private var onCreate
-  @Environment(\.imglyNavigationBarItems) private var navigationBarItems
   private let settings: EngineSettings
 
   /// Creates an apparel editor with settings.
@@ -20,6 +19,16 @@ public struct ApparelEditor: View {
   public var body: some View {
     EditorUI()
       .navigationTitle("")
+      .toolbar {
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+          HStack(spacing: 16) {
+            UndoRedoButtons()
+            PreviewButton()
+            ExportButton()
+          }
+          .labelStyle(.adaptiveIconOnly)
+        }
+      }
       .imgly.editor(settings, behavior: .apparel)
       .imgly.onCreate { engine in
         guard let onCreate else {
@@ -27,21 +36,6 @@ public struct ApparelEditor: View {
           return
         }
         try await onCreate(engine)
-      }
-      .imgly.navigationBarItems { context in
-        if let navigationBarItems {
-          try navigationBarItems(context)
-        } else {
-          NavigationBar.ItemGroup(placement: .topBarLeading) {
-            NavigationBar.Buttons.closeEditor()
-          }
-          NavigationBar.ItemGroup(placement: .topBarTrailing) {
-            NavigationBar.Buttons.undo()
-            NavigationBar.Buttons.redo()
-            NavigationBar.Buttons.togglePreviewMode()
-            NavigationBar.Buttons.export()
-          }
-        }
       }
   }
 }

@@ -1,9 +1,8 @@
 import SwiftUI
 
-/// A  label that looks like the original navigation back button.
-public struct NavigationLabel: View {
-  /// The direction of the navigation label.
-  public enum Direction: String {
+/// Label that looks like the original navigation back button.
+@_spi(Internal) public struct NavigationLabel: View {
+  @_spi(Internal) public enum Direction: String {
     case backward = "chevron.backward"
     case forward = "chevron.forward"
   }
@@ -11,16 +10,12 @@ public struct NavigationLabel: View {
   let title: LocalizedStringKey
   let direction: Direction
 
-  /// Creates a navigation label with a title and direction.
-  /// - Parameters:
-  ///   - title: The title of the label.
-  ///   - direction: The direction of the label.
-  public init(_ title: LocalizedStringKey, direction: Direction) {
+  @_spi(Internal) public init(_ title: LocalizedStringKey, direction: Direction) {
     self.title = title
     self.direction = direction
   }
 
-  public var body: some View {
+  @_spi(Internal) public var body: some View {
     HStack(spacing: 4.5) {
       switch direction {
       case .backward:

@@ -80,7 +80,7 @@ private struct PageGrid: View {
                     currentPage = page.block
                   }
                   .simultaneousGesture(TapGesture(count: 2).onEnded {
-                    try? interactor.enableEditMode()
+                    interactor.isPageOverviewShown = false
                   })
                   .accessibilityLabel(title)
               }

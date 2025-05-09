@@ -7,7 +7,6 @@ public struct VideoEditor: View {
   public static let defaultScene = Bundle.module.url(forResource: "video-empty", withExtension: "scene")!
 
   @Environment(\.imglyOnCreate) private var onCreate
-  @Environment(\.imglyNavigationBarItems) private var navigationBarItems
   @Environment(\.imglyDockItems) private var dockItems
   private let settings: EngineSettings
 
@@ -20,6 +19,15 @@ public struct VideoEditor: View {
   public var body: some View {
     EditorUI(zoomPadding: 1)
       .navigationTitle("")
+      .toolbar {
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+          HStack(spacing: 16) {
+            UndoRedoButtons()
+            ExportButton()
+          }
+          .labelStyle(.adaptiveIconOnly)
+        }
+      }
       .imgly.editor(settings, behavior: .video)
       .imgly.onCreate { engine in
         guard let onCreate else {
@@ -27,20 +35,6 @@ public struct VideoEditor: View {
           return
         }
         try await onCreate(engine)
-      }
-      .imgly.navigationBarItems { context in
-        if let navigationBarItems {
-          try navigationBarItems(context)
-        } else {
-          NavigationBar.ItemGroup(placement: .topBarLeading) {
-            NavigationBar.Buttons.closeEditor()
-          }
-          NavigationBar.ItemGroup(placement: .topBarTrailing) {
-            NavigationBar.Buttons.undo()
-            NavigationBar.Buttons.redo()
-            NavigationBar.Buttons.export()
-          }
-        }
       }
       .imgly.dockItems { context in
         if let dockItems {

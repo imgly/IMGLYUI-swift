@@ -10,6 +10,8 @@ struct CustomScrollIndicatorView: View {
   @State var topPadding: CGFloat = 3
   @State var bottomPadding: CGFloat = 3
 
+  @State var margin: CGFloat = 3
+
   @State private var transientLabelTimer: Timer?
   @State private var isScrollBarVisible = false
 
@@ -24,14 +26,14 @@ struct CustomScrollIndicatorView: View {
           .frame(width: 3)
           .frame(height: handleHeight)
           .offset(y: handleOffset)
-          .padding(.trailing, 3)
+          .padding(.trailing, margin)
           .transition(.opacity)
       }
     }
     .allowsHitTesting(false)
     .animation(isScrollBarVisible ? nil : .easeInOut(duration: 0.7), value: isScrollBarVisible)
     .onAppear {
-      refresh(contentOffsetY: scrollViewContentOffsetY)
+      refresh(contentOffsetY: scrollViewDelegate.contentOffset.y)
       Task {
         try await Task.sleep(for: .milliseconds(300))
         flashScrollBar()
@@ -44,16 +46,20 @@ struct CustomScrollIndicatorView: View {
   }
 
   private func refresh(contentOffsetY: CGFloat) {
-    let visibleHeight = scrollViewFrameHeight - topPadding - bottomPadding
+    let contentOffsetY = contentOffsetY + topPadding
+    let outerHeight = scrollViewFrameHeight - topPadding - bottomPadding
     let contentSizeHeight = scrollViewContentSizeHeight
-    let maxOffset = contentSizeHeight - visibleHeight
+    let maxOffset = contentSizeHeight - outerHeight
     let normalizedOffset = contentOffsetY / maxOffset
-    let handleHeight = visibleHeight * (visibleHeight / contentSizeHeight)
-    let bottomOvershoot = contentOffsetY - (contentSizeHeight - visibleHeight)
+
+    let netHeight = outerHeight
+    let handleHeight = netHeight * (outerHeight / contentSizeHeight)
+
+    let bottomOvershoot = contentOffsetY - (contentSizeHeight - outerHeight)
 
     let finalHandleHeight: CGFloat = if contentOffsetY < 0 {
       max(7, handleHeight + contentOffsetY)
-    } else if contentOffsetY + visibleHeight > contentSizeHeight {
+    } else if contentOffsetY + outerHeight > contentSizeHeight {
       max(7, handleHeight - bottomOvershoot)
     } else {
       handleHeight
@@ -62,8 +68,8 @@ struct CustomScrollIndicatorView: View {
     let handleOffset = max(
       topPadding,
       min(
-        visibleHeight - finalHandleHeight + topPadding,
-        topPadding + (visibleHeight - finalHandleHeight) * normalizedOffset
+        outerHeight - finalHandleHeight + topPadding,
+        topPadding + (netHeight - finalHandleHeight) * normalizedOffset
       )
     )
 

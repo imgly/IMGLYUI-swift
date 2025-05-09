@@ -72,15 +72,4 @@ public extension IMGLY where Wrapped == Image {
   static let formatText = Wrapped(systemName: "textformat.alt")
   /// An icon image for shape.
   static let shape = Wrapped(systemName: "square.on.circle")
-
-  /// An icon image for undo.
-  static let undo = Wrapped(systemName: "arrow.uturn.backward.circle")
-  /// An icon image for redo.
-  static let redo = Wrapped(systemName: "arrow.uturn.forward.circle")
-  /// An icon image for export.
-  static let export = Wrapped(systemName: "square.and.arrow.up")
-  /// An icon image for toggling preview mode.
-  static let preview = Wrapped(systemName: "eye")
-  /// An icon image for toggling pages mode.
-  static let pages = Wrapped(systemName: "doc.on.doc")
 }
