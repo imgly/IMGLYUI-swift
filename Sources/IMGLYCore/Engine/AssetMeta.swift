@@ -19,4 +19,5 @@ import Foundation
   case effectType
   case previewUri
   case looping
+  case mimeType
 }

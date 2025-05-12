@@ -33,6 +33,7 @@ struct ConfigureableEditor: ViewModifier {
   @Environment(\.imglyOnCreate) private var onCreate
   @Environment(\.imglyOnExport) private var onExport
   @Environment(\.imglyOnUpload) private var onUpload
+  @Environment(\.dismiss) private var dismiss
 
   let settings: EngineSettings
   let behavior: InteractorBehavior
@@ -45,15 +46,15 @@ struct ConfigureableEditor: ViewModifier {
     )
     let config = EngineConfiguration(settings: settings, callbacks: callbacks)
     content
-      .modifier(InteractableEditor(config: config, behavior: behavior))
+      .modifier(InteractableEditor(config: config, behavior: behavior, dismiss: dismiss))
   }
 }
 
 private struct InteractableEditor: ViewModifier {
   @StateObject private var interactor: Interactor
 
-  init(config: EngineConfiguration, behavior: InteractorBehavior) {
-    _interactor = .init(wrappedValue: .init(config: config, behavior: behavior))
+  init(config: EngineConfiguration, behavior: InteractorBehavior, dismiss: DismissAction) {
+    _interactor = .init(wrappedValue: .init(config: config, behavior: behavior, dismiss: dismiss))
   }
 
   func body(content: Content) -> some View {

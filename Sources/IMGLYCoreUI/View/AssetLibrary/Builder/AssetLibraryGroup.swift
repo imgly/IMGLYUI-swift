@@ -15,6 +15,7 @@ public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
   public var view: AnyView { AnyView(erasing: body) }
 
   private let title: String?
+  private let excludedPreviewSources: Set<String>
   let components: [AssetLibraryContent]
   @ViewBuilder private let preview: () -> Preview
 
@@ -23,17 +24,21 @@ public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
     self.components = components
     self.preview = preview
     title = nil
+    excludedPreviewSources = []
   }
 
   /// Creates a group of asset library `content`. It is displayed as a section with a `title` and a `preview`.
   /// - Parameters:
   ///   - title: The displayed name of the group.
+  ///   - excludedPreviewSources: Asset source IDs whose assets should not be displayed in the `preview`.
   ///   - content: The asset library content.
   ///   - preview: The preview view of the group.
-  public init(_ title: String, @AssetLibraryBuilder content: () -> AssetLibraryContent,
+  public init(_ title: String, excludedPreviewSources: Set<String> = [],
+              @AssetLibraryBuilder content: () -> AssetLibraryContent,
               @ViewBuilder preview: @MainActor @escaping () -> Preview = { AssetPreview.imageOrVideo }) {
     let content = content()
     self.title = title
+    self.excludedPreviewSources = excludedPreviewSources
     if let content = content as? AssetLibraryGroup<EmptyView> {
       components = content.components
     } else {
@@ -56,7 +61,9 @@ public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
       AssetLibrarySection(title) {
         scrollView
       } preview: {
-        preview().imgly.assetLibrary(sources: sources)
+        preview()
+          .imgly.assetLibrary(sources: sources)
+          .imgly.assetGrid(excludedSources: excludedPreviewSources)
       }
     } else {
       scrollView

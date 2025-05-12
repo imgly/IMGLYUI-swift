@@ -325,8 +325,8 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/duplicate``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// not `DesignBlockType.page`, its kind is not `"voiceover"`, it is not grouped, and its engine scope
-  /// `"lifecycle/duplicate"` is allowed.
+  /// not `DesignBlockType.page`, its kind is not `"voiceover"`, and its engine scope `"lifecycle/duplicate"` is
+  /// allowed.
   /// - Returns: The created button.
   static func duplicate(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.duplicateSelection) },
@@ -334,16 +334,8 @@ public extension InspectorBar.Buttons {
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.duplicate },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
-      @MainActor func isGrouped(_ id: DesignBlockID?) throws -> Bool {
-        if let id {
-          try context.engine.block.getType(id) == DesignBlockType.group.rawValue
-        } else {
-          false
-        }
-      }
-      return try context.selection.type != .page &&
+      try context.selection.type != .page &&
         context.selection.kind != "voiceover" &&
-        !isGrouped(context.selection.parentBlock) &&
         context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/duplicate")
     }
   ) -> some InspectorBar.Item {
@@ -379,25 +371,15 @@ public extension InspectorBar.Buttons {
           false
         }
       }
-      @MainActor func isGrouped(_ id: DesignBlockID?) throws -> Bool {
-        if let id {
-          try context.engine.block.getType(id) == DesignBlockType.group.rawValue
-        } else {
-          false
-        }
-      }
       @MainActor func isMoveAllowed() throws -> Bool {
         try context.engine.block.isAllowedByScope(context.selection.block, key: "editor/add") &&
-          !isGrouped(context.selection.parentBlock) &&
           !isBackgroundTrack(context.selection.parentBlock)
       }
       @MainActor func isDuplicateAllowed() throws -> Bool {
-        try context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/duplicate") &&
-          !isGrouped(context.selection.parentBlock)
+        try context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/duplicate")
       }
       @MainActor func isDeleteAllowed() throws -> Bool {
-        try context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/destroy") &&
-          !isGrouped(context.selection.parentBlock)
+        try context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/destroy")
       }
       return try ![.page, .audio].contains(context.selection.type) &&
         context.selection.kind != "voiceover" && (
@@ -451,7 +433,7 @@ public extension InspectorBar.Buttons {
   /// event is invoked with sheet type ``SheetType/fillStroke(style:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` "Fill & Stroke", "Fill", or
   /// "Stroke"  is used depending on the fill type and allowed engine scopes for the selected design block.
-  ///   - icon: The icon view which is used to label the button. By default, the `FillStrokeIcon` is used.
+  ///   - icon: The icon view which is used to label the button. By default, the ``FillStrokeIcon`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block kind is
   /// not `"sticker"` or `"animatedSticker"`, its fill type is `FillType.color`, `.linearGradient`,
@@ -474,9 +456,7 @@ public extension InspectorBar.Buttons {
       }
       return Text(LocalizedStringKey(title.joined(separator: " & ")))
     },
-    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = {
-      FillStrokeIcon(id: $0.selection.block)
-    },
+    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { FillStrokeIcon(id: $0.selection.block) },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       let showFill = try [.none, .color, .linearGradient].contains($0.selection.fillType) &&
@@ -696,7 +676,7 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/delete``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// not `DesignBlockType.page`, it is not grouped, and its engine scope `"lifecycle/destroy"` is allowed
+  /// not `DesignBlockType.page`, and its engine scope `"lifecycle/destroy"` is allowed
   /// - Returns: The created button.
   static func delete(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.deleteSelection) },
@@ -704,16 +684,8 @@ public extension InspectorBar.Buttons {
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.delete.foregroundColor(.red) },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
-      @MainActor func isGrouped(_ id: DesignBlockID?) throws -> Bool {
-        if let id {
-          try context.engine.block.getType(id) == DesignBlockType.group.rawValue
-        } else {
-          false
-        }
-      }
       @MainActor func isDeleteAllowed() throws -> Bool {
-        try context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/destroy") &&
-          !isGrouped(context.selection.parentBlock)
+        try context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/destroy")
       }
       return try context.selection.type != .page &&
         isDeleteAllowed()
@@ -818,8 +790,7 @@ public extension InspectorBar.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/textBackground(style:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` "Background" is used.
-  ///   - icon: The icon view which is used to label the button. By default, a `BackgroundColorIcon` showing the actual
-  /// background color of the text block is used.
+  ///   - icon: The icon view which is used to label the button. By default, the ``BackgroundColorIcon`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
   /// `DesignBlockType.text` and its engine scope `"text/character"` is allowed.
@@ -827,8 +798,7 @@ public extension InspectorBar.Buttons {
   static func textBackground(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .textBackground())) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Background") },
-    @ViewBuilder icon: @escaping InspectorBar.Context
-      .To<some View> = { context in BackgroundColorIcon(id: context.selection.block) },
+    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { BackgroundColorIcon(id: $0.selection.block) },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
       try context.selection.type == .text &&

@@ -115,7 +115,6 @@ public enum OnExport {
       try Task.checkCancellation()
       switch export {
       case let .progress(_, encodedFrames, totalFrames):
-        let percentage = Float(encodedFrames) / Float(totalFrames)
         let progress = Int((Float(encodedFrames) / Float(totalFrames)) * 100)
         // Only send event if we've moved beyond the last integer value.
         if progress > lastReportedProgress {

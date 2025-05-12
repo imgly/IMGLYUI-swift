@@ -21,6 +21,14 @@ public extension EditorEvents {
     let url: URL
   }
 
+  /// An event for closing the editor.
+  struct CloseEditor: EditorEvent {}
+
+  /// An event for setting the view mode of the editor.
+  struct SetViewMode: EditorEvent {
+    let viewMode: EditorViewMode
+  }
+
   /// A namespace for ``EditorEvent``s related to export.
   enum Export {}
 }
@@ -34,6 +42,12 @@ public enum ExportProgress {
 }
 
 public extension EditorEvents.Export {
+  /// An event for starting an export process.
+  struct Start: EditorEvent {}
+
+  /// An event for canceling the export process if it is running.
+  struct Cancel: EditorEvent {}
+
   /// An export progress event.
   struct Progress: EditorEvent {
     let progress: ExportProgress
@@ -50,6 +64,30 @@ public extension EditorEvent where Self == EditorEvents.ShareFile {
   /// - Parameter url: The URL to share.
   /// - Returns: The created ``EditorEvents/ShareFile`` event.
   static func shareFile(_ url: URL) -> Self { Self(url: url) }
+}
+
+public extension EditorEvent where Self == EditorEvents.CloseEditor {
+  /// Creates an ``EditorEvent`` to close the editor.
+  static var closeEditor: Self { Self() }
+}
+
+public extension EditorEvent where Self == EditorEvents.SetViewMode {
+  /// Creates an ``EditorEvent`` to set the view mode of the editor.
+  /// - Note: Some view modes may look weird or cause unexpected behaviors in some of the solutions. Please see the
+  /// ``EditorViewMode``s for recommendations.
+  /// - Parameter viewMode: The view mode to set.
+  /// - Returns: The created ``EditorEvents/SetViewMode`` event.
+  static func setViewMode(_ viewMode: EditorViewMode) -> Self { Self(viewMode: viewMode) }
+}
+
+public extension EditorEvent where Self == EditorEvents.Export.Start {
+  /// Creates an ``EditorEvent`` to start the export process. This event triggers the ``IMGLY/onExport(_:)`` callback.
+  static var startExport: Self { Self() }
+}
+
+public extension EditorEvent where Self == EditorEvents.Export.Cancel {
+  /// Creates an ``EditorEvent`` to cancel the export process if it is running.
+  static var cancelExport: Self { Self() }
 }
 
 public extension EditorEvent where Self == EditorEvents.Export.Progress {
@@ -73,6 +111,8 @@ public extension EditorEvents {
   enum Selection {}
   /// A namespace for ``EditorEvent``s related to adding assets.
   enum AddFrom {}
+  /// A namespace for ``EditorEvent``s related to navigation inside the editor .
+  enum Navigation {}
 }
 
 public extension EditorEvents.Sheet {
@@ -126,6 +166,14 @@ public extension EditorEvents.AddFrom {
   struct IMGLYCamera: EditorEvent {
     let assetSourceIDs: [MediaType: String]
   }
+}
+
+public extension EditorEvents.Navigation {
+  /// An event for navigating to the previous page.
+  struct ToPreviousPage: EditorEvent {}
+
+  /// An event for navigating to the next page.
+  struct ToNextPage: EditorEvent {}
 }
 
 public extension EditorEvent where Self == EditorEvents.Sheet.Open {
@@ -226,4 +274,14 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYCamera {
   ) -> Self {
     Self(assetSourceIDs: assetSourceIDs)
   }
+}
+
+public extension EditorEvent where Self == EditorEvents.Navigation.ToPreviousPage {
+  /// Creates an ``EditorEvent`` to navigate to the previous page.
+  static var navigateToPreviousPage: Self { Self() }
+}
+
+public extension EditorEvent where Self == EditorEvents.Navigation.ToNextPage {
+  /// Creates an ``EditorEvent`` to navigate to the next page.
+  static var navigateToNextPage: Self { Self() }
 }

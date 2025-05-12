@@ -186,7 +186,7 @@ public struct Camera: View {
       await camera.updatePermissions()
       camera.startStreaming()
     }
-    .alert($camera.alertState)
+    .imgly.alert($camera.alertState)
   }
 
   @ViewBuilder private func zoomGesture() -> some View {

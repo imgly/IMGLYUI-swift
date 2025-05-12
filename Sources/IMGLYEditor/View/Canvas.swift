@@ -1,5 +1,6 @@
 import IMGLYCamera
 @_spi(Internal) import IMGLYCoreUI
+@_spi(Internal) import IMGLYCore
 import SwiftUI
 
 struct Canvas: View {
@@ -14,6 +15,8 @@ struct Canvas: View {
   static let safeCoordinateSpace = CoordinateSpace.named(safeCoordinateSpaceName)
 
   @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+  @Feature(.photosPickerMultiSelect) private var isPhotosPickerMultiSelectEnabled: Bool
 
   private let viewDebugging = false
 
@@ -69,7 +72,7 @@ struct Canvas: View {
 
   private var isPageNavigationHidden: Bool {
     !isPageNavigationEnabled || interactor.selection?.blocks.isEmpty != nil || !interactor
-      .isDefaultZoomLevel || interactor.pageCount < 2 || !interactor.isEditing || interactor.isPageOverviewShown
+      .isDefaultZoomLevel || interactor.pageCount < 2 || interactor.isPreviewMode || interactor.isPagesMode
   }
 
   @State private var barContentGeometry: Geometry?
@@ -144,7 +147,7 @@ struct Canvas: View {
     .safeAreaInset(edge: .top, spacing: 0) { Color.clear.frame(height: zoomPadding) }
     .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: zoomPadding) }
     .safeAreaInset(edge: .bottom, spacing: 0) {
-      if interactor.isEditing {
+      if !interactor.isPreviewMode {
         ZStack {
           if viewDebugging {
             Color.green.opacity(0.2).border(.green).ignoresSafeArea()
@@ -157,13 +160,13 @@ struct Canvas: View {
       }
     }
     .overlay {
-      if !interactor.isLoading, interactor.isPageOverviewShown {
+      if !interactor.isCreating, interactor.isPagesMode {
         PageOverview()
           .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: bottomBarHeight) }
       }
     }
     .overlay(alignment: .bottom) {
-      if !interactor.isLoading, interactor.sceneMode == .video, interactor.editMode != .text {
+      if !interactor.isCreating, interactor.sceneMode == .video, interactor.editMode != .text {
         VStack(spacing: 0) {
           VStack(spacing: 0) {
             playerBar()
@@ -203,7 +206,7 @@ struct Canvas: View {
     .overlay(alignment: .bottom) {
       VStack {
         Spacer()
-        if !interactor.isLoading, interactor.isEditing {
+        if !interactor.isCreating, !interactor.isPreviewMode {
           ZStack {
             bottomBar(content: nil)
               .disabled(interactor.sheet.isPresented)
@@ -222,6 +225,7 @@ struct Canvas: View {
           .transition(.move(edge: .bottom))
         }
       }
+      .animation(.default, value: interactor.isPreviewMode)
       .ignoresSafeArea(.keyboard)
     }
     .overlay(alignment: .bottom) {
@@ -275,7 +279,8 @@ struct Canvas: View {
       }
     }
     .imgly.camera(isPresented: $interactor.isSystemCameraShown, media: media, onComplete: mediaCompletion)
-    .imgly.photoRoll(isPresented: $interactor.isImagePickerShown, media: media, onComplete: mediaCompletion)
+    .imgly.photoRoll(isPresented: $interactor.isImagePickerShown, media: media,
+                     maxSelectionCount: maxSelectionCount, onComplete: mediaCompletion)
   }
 
   private var media: [MediaType] {
@@ -285,11 +290,15 @@ struct Canvas: View {
     }
   }
 
+  private var maxSelectionCount: Int? {
+    isPhotosPickerMultiSelectEnabled ? nil : 1
+  }
+
   private var mediaCompletion: MediaCompletion {
     { result in
       do {
-        let (url, mediaType) = try result.get()
-        interactor.addAssetFromImagePicker(url: url, mediaType: mediaType)
+        let assets = try result.get()
+        interactor.addAssetsFromImagePicker(assets)
       } catch {
         interactor.handleError(error)
       }

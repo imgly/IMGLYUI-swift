@@ -9,6 +9,7 @@ public struct PhotoEditor: View {
 
   @Environment(\.imglyOnCreate) private var onCreate
   @Environment(\.imglyOnExport) private var onExport
+  @Environment(\.imglyNavigationBarItems) private var navigationBarItems
   @Environment(\.imglyDockItems) private var dockItems
   private let settings: EngineSettings
 
@@ -21,16 +22,6 @@ public struct PhotoEditor: View {
   public var body: some View {
     EditorUI(zoomPadding: 0)
       .navigationTitle("")
-      .toolbar {
-        ToolbarItemGroup(placement: .navigationBarTrailing) {
-          HStack(spacing: 16) {
-            UndoRedoButtons()
-            PreviewButton()
-            ExportButton()
-          }
-          .labelStyle(.adaptiveIconOnly)
-        }
-      }
       .imgly.editor(settings, behavior: .photo)
       .imgly.onCreate { engine in
         guard let onCreate else {
@@ -45,6 +36,21 @@ public struct PhotoEditor: View {
           return
         }
         try await onExport(engine, eventHandler)
+      }
+      .imgly.navigationBarItems { context in
+        if let navigationBarItems {
+          try navigationBarItems(context)
+        } else {
+          NavigationBar.ItemGroup(placement: .topBarLeading) {
+            NavigationBar.Buttons.closeEditor()
+          }
+          NavigationBar.ItemGroup(placement: .topBarTrailing) {
+            NavigationBar.Buttons.undo()
+            NavigationBar.Buttons.redo()
+            NavigationBar.Buttons.togglePreviewMode()
+            NavigationBar.Buttons.export()
+          }
+        }
       }
       .imgly.dockItems { context in
         if let dockItems {

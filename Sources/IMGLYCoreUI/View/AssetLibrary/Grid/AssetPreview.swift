@@ -21,6 +21,7 @@ public struct AssetPreview: View {
       if designBlockType == DesignBlockType.graphic.rawValue {
         let fillType = asset.result.fillType ?? ""
         let designBlockKind = asset.result.blockKind ?? ""
+        let mimeType = asset.result.mimeType ?? ""
 
         switch fillType {
         case FillType.video.rawValue:
@@ -41,6 +42,8 @@ public struct AssetPreview: View {
         default:
           if designBlockKind == BlockKind.key(.shape).rawValue {
             ShapeItem(asset: assetItem)
+          } else if mimeType.hasPrefix("application/ubq-blocks") {
+            TextComponentItem(asset: assetItem)
           } else {
             ImageItem(asset: assetItem)
           }

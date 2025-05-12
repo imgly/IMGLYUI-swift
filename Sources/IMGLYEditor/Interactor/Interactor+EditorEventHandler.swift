@@ -21,6 +21,23 @@ extension Interactor: EditorEventHandler {
       delayIfNecessary(hideExportSheet() || hideSheet()) { [weak self] in
         self?.shareItem = .url([event.url])
       }
+    case is EditorEvents.CloseEditor:
+      dismiss?()
+    case let event as EditorEvents.SetViewMode:
+      switch event.viewMode {
+      case .edit:
+        try enableEditMode()
+      case .preview:
+        try enablePreviewMode()
+      case .pages:
+        try enablePagesMode()
+      }
+
+    // MARK: - Export
+    case is EditorEvents.Export.Start:
+      exportScene()
+    case is EditorEvents.Export.Cancel:
+      cancelExport()
     case let event as EditorEvents.Export.Progress:
       showExportSheet(.exporting(event.progress) { [weak self] in
         self?.cancelExport()
@@ -76,6 +93,12 @@ extension Interactor: EditorEventHandler {
       openSystemCamera(event.assetSourceIDs)
     case let event as EditorEvents.AddFrom.IMGLYCamera:
       openCamera(event.assetSourceIDs)
+
+    // MARK: - Navigation
+    case is EditorEvents.Navigation.ToPreviousPage:
+      try setPage(page - 1)
+    case is EditorEvents.Navigation.ToNextPage:
+      try setPage(page + 1)
     default:
       print("Unhandled event \(event)")
     }

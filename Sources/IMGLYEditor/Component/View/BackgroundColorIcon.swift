@@ -2,12 +2,12 @@ import IMGLYEngine
 import SwiftUI
 @_spi(Internal) import IMGLYCore
 
-/// A view that displays a background color icon
+/// A view that displays a background color icon.
 public struct BackgroundColorIcon: View {
   @EnvironmentObject private var interactor: Interactor
   private let id: DesignBlockID
 
-  /// Creates a background color icon for a block.
+  /// Creates a background color icon for a design block.
   /// - Parameter id: The id of the design block.
   public init(id: DesignBlockID) {
     self.id = id
