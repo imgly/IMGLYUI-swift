@@ -20,8 +20,8 @@ import SwiftUI
     if let engine {
       ZStack {
         IMGLYEngine.Canvas(engine: engine)
-          .opacity(isCreating ? 0 : 1)
-        if isCreating {
+          .opacity(isLoading ? 0 : 1)
+        if isLoading {
           spinner
         }
       }
@@ -32,10 +32,8 @@ import SwiftUI
 
   let fontLibrary = FontLibrary()
 
-  @Published private(set) var isCreating = true
-  @Published private(set) var viewMode = EditorViewMode.edit
-  var isPreviewMode: Bool { viewMode == .preview }
-  var isPagesMode: Bool { viewMode == .pages }
+  @Published @_spi(Internal) public private(set) var isLoading = true
+  @Published @_spi(Internal) public private(set) var isEditing = true
   @Published private(set) var isExporting = false
   @Published @_spi(Internal) public private(set) var isAddingAsset = false
 
@@ -43,7 +41,6 @@ import SwiftUI
   @Published var sheet = SheetState() { didSet { sheetChanged(oldValue) } }
   @Published var shareItem: ShareItem?
   var export = ExportSheetState()
-  var dismiss: DismissAction?
 
   typealias BlockID = IMGLYEngine.DesignBlockID
   typealias BlockType = IMGLYEngine.DesignBlockType
@@ -76,6 +73,17 @@ import SwiftUI
   @Published var isCameraSheetShown = false
   @Published var isSystemCameraShown = false
   @Published var isImagePickerShown = false
+  @Published var isPageOverviewShown = false {
+    willSet {
+      if newValue {
+        do {
+          try engine?.block.deselectAll()
+        } catch {
+          handleError(error)
+        }
+      }
+    }
+  }
 
   @Published var isLoopingPlaybackEnabled = true
   @Published var isSelectionVisible = true
@@ -101,7 +109,7 @@ import SwiftUI
   }
 
   var isCanvasHitTestingEnabled: Bool {
-    behavior.previewMode == .scrollable || !isPreviewMode
+    behavior.previewMode == .scrollable || isEditing
   }
 
   var sceneMode: SceneMode? {
@@ -113,20 +121,21 @@ import SwiftUI
   }
 
   var isCanvasActionEnabled: Bool {
-    !isCreating && !sheet
-      .isPresented && editMode == .transform && isSelectionVisible && sheetContentForSelection != .page &&
+    let isGrouped = isGrouped(selection?.blocks.first)
+    return !isLoading && !sheet
+      .isPresented && editMode == .transform && !isGrouped && isSelectionVisible && sheetContentForSelection != .page &&
       timelineProperties.selectedClip?.clipType != .voiceOver
   }
 
   var sheetContentForSelection: SheetContent? {
-    isCreating ? nil : sheetContent(for: selection)
+    isLoading ? nil : sheetContent(for: selection)
   }
 
   var sheetContentForBottomBar: SheetContent? {
     guard isBottomBarEnabled else {
       return nil
     }
-    return isPagesMode ? .pageOverview : sheetContentForSelection
+    return isPageOverviewShown ? .pageOverview : sheetContentForSelection
   }
 
   var isBottomBarEnabled: Bool {
@@ -205,10 +214,9 @@ import SwiftUI
 
   // MARK: - Life cycle
 
-  init(config: EngineConfiguration, behavior: InteractorBehavior, dismiss: DismissAction) {
+  init(config: EngineConfiguration, behavior: InteractorBehavior) {
     self.config = config
     self.behavior = behavior
-    self.dismiss = dismiss
   }
 
   init(config: EngineConfiguration, behavior: InteractorBehavior, sheet: SheetState?) {
@@ -323,6 +331,7 @@ extension Interactor {
   func supportsBlur(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlur) ?? false }
   func supportsCrop(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsCrop) ?? false }
   func canResetCrop(_ id: BlockID?) -> Bool { block(id, engine?.block.canResetCrop) ?? false }
+  func isGrouped(_ id: BlockID?) -> Bool { block(id, engine?.block.isGrouped) ?? false }
   func isSolidFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .solid) }
   func isGradientFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .gradient) }
   func isColorFill(_ id: DesignBlockID?) -> Bool { isSolidFill(id) || isGradientFill(id) }
@@ -669,8 +678,14 @@ extension Interactor {
     }
   }
 
+  // swiftlint:disable:next cyclomatic_complexity
   func isAllowed(_ id: BlockID?, _ action: Action) -> Bool {
     switch action {
+    case .undo: return canUndo
+    case .redo: return canRedo
+    case .previewMode: return true
+    case .editMode: return true
+    case .export: return true
     case .toTop, .up, .down, .toBottom:
       let canReorderTrack = if let id, let clip = timelineProperties.dataSource.findClip(id: id),
                                clip.isInBackgroundTrack || Set([.audio, .voiceOver]).contains(clip.clipType) {
@@ -678,14 +693,14 @@ extension Interactor {
       } else {
         true
       }
-      return isAllowed(id, scope: .editorAdd) && canReorderTrack
+      return isAllowed(id, scope: .editorAdd) && !isGrouped(id) && canReorderTrack
     case .duplicate:
-      return isAllowed(id, scope: .lifecycleDuplicate)
+      return isAllowed(id, scope: .lifecycleDuplicate) && !isGrouped(id)
     case .delete:
-      return isAllowed(id, scope: .lifecycleDestroy)
-    case .page, .addPage: return true
+      return isAllowed(id, scope: .lifecycleDestroy) && !isGrouped(id)
+    case .previousPage, .nextPage, .page, .addPage: return true
     case .resetCrop, .flipCrop:
-      return isAllowed(id, scope: .layerCrop) || isAllowed(id, scope: .layerClipping)
+      return (isAllowed(id, scope: .layerCrop) || isAllowed(id, scope: .layerClipping)) && !isGrouped(id)
     }
   }
 }
@@ -1003,7 +1018,7 @@ extension Interactor {
           model = .init(mode, style: .only(detent: .imgly.tiny))
         }
       case .delete:
-        if isPagesMode {
+        if isPageOverviewShown {
           if let currentPage = pageOverview.currentPage {
             try engine?.delete([currentPage])
           }
@@ -1011,7 +1026,7 @@ extension Interactor {
           try engine?.deleteSelectedElement(delay: NSEC_PER_MSEC * 200)
         }
       case .duplicate:
-        if isPagesMode {
+        if isPageOverviewShown {
           if let currentPage = pageOverview.currentPage {
             try engine?.duplicate([currentPage])
           }
@@ -1019,11 +1034,11 @@ extension Interactor {
           try engine?.duplicateSelectedElement()
         }
       case .editPage:
-        viewMode = .edit
+        isPageOverviewShown = false
       case .addPage:
         try engine?.addPage(page + 1)
       case .moveUp:
-        if isPagesMode {
+        if isPageOverviewShown {
           if let currentPage = pageOverview.currentPage {
             try engine?.sendBackward([currentPage])
           }
@@ -1031,7 +1046,7 @@ extension Interactor {
           try engine?.bringForwardSelectedElement()
         }
       case .moveDown:
-        if isPagesMode {
+        if isPageOverviewShown {
           if let currentPage = pageOverview.currentPage {
             try engine?.bringForward([currentPage])
           }
@@ -1048,12 +1063,19 @@ extension Interactor {
   @_spi(Internal) public func actionButtonTapped(for action: Action) {
     do {
       switch action {
+      case .undo: try engine?.editor.undo()
+      case .redo: try engine?.editor.redo()
+      case .previewMode: try enablePreviewMode()
+      case .editMode: try enableEditMode()
+      case .export: exportScene()
       case .toTop: try engine?.bringToFrontSelectedElement()
       case .up: try engine?.bringForwardSelectedElement()
       case .down: try engine?.sendBackwardSelectedElement()
       case .toBottom: try engine?.sendToBackSelectedElement()
       case .duplicate: try engine?.duplicateSelectedElement()
       case .delete: try engine?.deleteSelectedElement(delay: NSEC_PER_MSEC * 200)
+      case .previousPage: try setPage(page - 1)
+      case .nextPage: try setPage(page + 1)
       case let .page(index): try setPage(index)
       case let .addPage(index): try engine?.addPage(index)
       case .resetCrop: try engine?.resetCropSelectedElement()
@@ -1161,7 +1183,7 @@ extension Interactor {
         return
       }
       do {
-        if !isPreviewMode {
+        if isEditing {
           if sheet.isFloating, sheet.isPresented { return }
           let zoomLevel: Float? = if zoomToPage {
             try await engine?.zoomToPage(page, insets, zoomModel: zoomModel)
@@ -1184,11 +1206,11 @@ extension Interactor {
           guard let engine else { return }
           try await behavior.enablePreviewMode(.init(engine, self), insets)
         }
-        if isCreating {
+        if isLoading {
           // Wait a moment to be sure that the engine rendered the first intended frame after initial zooming before
           // presenting the canvas even on low-end devices (iPhone X).
           try await Task.sleep(for: .milliseconds(100))
-          isCreating = false
+          isLoading = false
         }
       } catch {
         handleError(error)
@@ -1319,26 +1341,23 @@ extension Interactor {
     try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .deny)
     try engine?.editor.setRoleButPreserveGlobalScopes("Creator")
     // Call engine?.enablePreviewMode() in updateZoom to avoid page fill flickering.
-    viewMode = .preview
+    withAnimation(.default) {
+      isEditing = false
+    }
     sheet.isPresented = false
     setEditMode(.transform)
   }
 
   func enableEditMode() throws {
-    if viewMode == .preview {
-      // Workaround as long as roles are present:
-      // Currently, the global scopes only apply to the "Creator" role so we
-      // temporarly switch to the "Creator" role to prevent selection of blocks.
-      try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .defer)
-      try engine?.editor.setRoleButPreserveGlobalScopes("Adopter")
-      try getContext(behavior.enableEditMode)
+    // Workaround as long as roles are present:
+    // Currently, the global scopes only apply to the "Creator" role so we
+    // temporarly switch to the "Creator" role to prevent selection of blocks.
+    try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .defer)
+    try engine?.editor.setRoleButPreserveGlobalScopes("Adopter")
+    try getContext(behavior.enableEditMode)
+    withAnimation(.default) {
+      isEditing = true
     }
-    viewMode = .edit
-  }
-
-  func enablePagesMode() throws {
-    try engine?.block.deselectAll()
-    viewMode = .pages
   }
 
   func exportScene() {
@@ -1563,7 +1582,7 @@ extension Interactor {
       }
       for await page in engine.scene.onCarouselPageChanged {
         let pageIndex = try? engine.getPageIndex(page)
-        if !isCreating, !isPagesMode, let pageIndex, pageIndex != self.page {
+        if !isLoading, !isPageOverviewShown, let pageIndex, pageIndex != self.page {
           self.page = pageIndex
         }
       }
@@ -1607,7 +1626,7 @@ extension Interactor {
   }
 
   func pageOverviewChanged(_ oldValue: PageOverviewState) {
-    guard let engine, oldValue != pageOverview, isPagesMode else {
+    guard let engine, oldValue != pageOverview, isPageOverviewShown else {
       return
     }
     do {
@@ -1643,10 +1662,10 @@ extension Interactor {
   }
 
   func selectionChanged(_ oldValue: Selection?) {
-    guard !isCreating, oldValue != selection else {
+    guard !isLoading, oldValue != selection else {
       return
     }
-    if selection?.blocks.isEmpty ?? true, !isPreviewMode {
+    if selection?.blocks.isEmpty ?? true, isEditing {
       updateZoom(clampOnly: true)
     }
 
@@ -1738,7 +1757,7 @@ extension Interactor {
   }
 
   func zoomLevelChanged(_ zoom: Float? = nil, forceUpdate: Bool = false) {
-    guard !isCreating || forceUpdate else { return }
+    guard !isLoading || forceUpdate else { return }
     if let engine, let zoomLevel = try? engine.scene.getZoom() {
       let sceneZoom = (zoom ?? zoomModel.defaultZoomLevel)
       isDefaultZoomLevel = sceneZoom == nil || sceneZoom == zoomLevel
@@ -1748,7 +1767,7 @@ extension Interactor {
   func historyChanged() {
     guard let engine else { return }
     do {
-      if isPagesMode {
+      if isPageOverviewShown {
         try pageOverview.update(from: engine)
       } else {
         pageOverview = try .init(from: engine)
@@ -1756,8 +1775,8 @@ extension Interactor {
     } catch {
       handleError(error)
     }
-    guard !isCreating else { return }
-    if isPagesMode {
+    guard !isLoading else { return }
+    if isPageOverviewShown {
       if let currentPage = pageOverview.currentPage,
          let pageIndex = try? engine.getPageIndex(currentPage) {
         page = pageIndex
@@ -1769,9 +1788,9 @@ extension Interactor {
       }
     }
     let canUndo = (try? engine.editor.canUndo()) ?? false
-    self.canUndo = canUndo // Keep this as it is used to trigger UI updates
+    self.canUndo = canUndo
     let canRedo = (try? engine.editor.canRedo()) ?? false
-    self.canRedo = canRedo // Keep this as it is used to trigger UI updates
+    self.canRedo = canRedo
     do {
       try behavior.historyChanged(.init(engine, self))
     } catch {

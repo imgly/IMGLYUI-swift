@@ -1,20 +1,4 @@
-@_spi(Internal) import IMGLYCore
 import SwiftUI
-
-// MARK: - Public interface
-
-public extension LabelStyle where Self == AdaptiveIconOnlyLabelStyle {
-  /// Gets a namespace holder for `IMGLY` compatible types.
-  static var imgly: IMGLY<Self>.Type { IMGLY<Self>.self }
-}
-
-public extension IMGLY where Wrapped == AdaptiveIconOnlyLabelStyle {
-  /// An adaptive label style that displays the title and icon if the vertical size class is compact and only the icon
-  /// otherwise.
-  static var adaptiveIconOnly: Wrapped { Wrapped() }
-}
-
-// MARK: - Internal interface
 
 extension LabelStyle where Self == TileLabelStyle {
   static func tile(orientation: Self.Orientation) -> Self { Self(orientation: orientation) }
@@ -28,6 +12,10 @@ extension LabelStyle where Self == HiddenIconLabelStyle {
 
 extension LabelStyle where Self == AdaptiveTileLabelStyle {
   static var adaptiveTile: Self { Self() }
+}
+
+@_spi(Internal) public extension LabelStyle where Self == AdaptiveIconOnlyLabelStyle {
+  static var adaptiveIconOnly: Self { Self() }
 }
 
 extension LabelStyle where Self == AdaptiveTitleOnlyLabelStyle {

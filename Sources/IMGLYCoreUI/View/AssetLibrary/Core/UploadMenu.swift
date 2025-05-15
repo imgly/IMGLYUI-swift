@@ -24,12 +24,11 @@ import SwiftUI
         return
       }
       Task {
-        for (url, media) in try result.get() {
-          _ = try await interactor.uploadAsset(to: source.id) {
-            switch media {
-            case .image: .init(url: url, blockType: .graphic, blockKind: .key(.image), fillType: .image)
-            case .movie: .init(url: url, blockType: .graphic, blockKind: .key(.video), fillType: .video)
-            }
+        try await interactor.uploadAsset(to: source.id) {
+          let (url, media) = try result.get()
+          switch media {
+          case .image: return .init(url: url, blockType: .graphic, blockKind: .key(.image), fillType: .image)
+          case .movie: return .init(url: url, blockType: .graphic, blockKind: .key(.video), fillType: .video)
           }
         }
       }
@@ -66,7 +65,7 @@ import SwiftUI
     } label: {
       label()
     }
-    .imgly.photoRoll(isPresented: $showImagePicker, media: media, maxSelectionCount: 1, onComplete: mediaCompletion)
+    .imgly.photoRoll(isPresented: $showImagePicker, media: media, onComplete: mediaCompletion)
     .imgly.camera(isPresented: $showCamera, media: media, onComplete: mediaCompletion)
     .imgly.assetFileUploader(isPresented: $showFileImporter, allowedContentTypes: media.map(\.contentType))
   }

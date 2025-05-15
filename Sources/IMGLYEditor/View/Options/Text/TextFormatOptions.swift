@@ -15,8 +15,8 @@ struct TextFormatOptions: View {
         fontSelection
         fontWeightSelection
         fontSizeSelection
-        alignmentSelection
         if interactor.isAllowed(id, scope: .layerResize) {
+          alignmentSelection
           frameBehavior
           clipping
         }

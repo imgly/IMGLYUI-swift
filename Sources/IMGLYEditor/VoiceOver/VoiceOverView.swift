@@ -72,7 +72,7 @@ struct VoiceOverView<ViewModel: VoiceOverViewModelProtocol>: View {
       content
       controlButtons
     }
-    .imgly.loadingOverlay(isLoading: viewModel.state == .loading)
+    .loadingOverlay(isLoading: viewModel.state == .loading)
     .toolbar { toolbarContent }
     .alert(Text(verbatim: CamMicUsageDescriptionFromBundleHelper.shared.microphoneAlertHeadline),
            isPresented: $viewModel.isShowingPermissionsAlertForMicrophone) {
@@ -200,6 +200,9 @@ struct VoiceOverView<ViewModel: VoiceOverViewModelProtocol>: View {
       .introspect(.scrollView, on: .iOS(.v16...)) { horizontalScrollView in
         setupHorizontalScrollView(horizontalScrollView)
       }
+      .task {
+        updateHorizontalOffset()
+      }
       .onChange(of: player.playheadPosition) { _ in
         guard !horizontalScrollViewDelegate.isDraggingOrDecelerating else { return }
         updateHorizontalOffset()
@@ -277,7 +280,6 @@ struct VoiceOverView<ViewModel: VoiceOverViewModelProtocol>: View {
     DispatchQueue.main.async {
       scrollView.delegate = horizontalScrollViewDelegate
       horizontalScrollView = scrollView
-      updateHorizontalOffset()
     }
   }
 

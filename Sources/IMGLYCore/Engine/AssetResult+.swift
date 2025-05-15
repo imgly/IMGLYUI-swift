@@ -79,8 +79,4 @@ import IMGLYEngine
     }
     return Bool(string)
   }
-
-  var mimeType: String? {
-    meta(.mimeType)
-  }
 }

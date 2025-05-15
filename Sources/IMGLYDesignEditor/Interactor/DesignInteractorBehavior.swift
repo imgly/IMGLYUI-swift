@@ -17,11 +17,8 @@ final class DesignInteractorBehavior: InteractorBehavior {
     // Make sure to set all settings before calling `onCreate` callback so that the consumer can change them if needed!
     try await context.interactor.config.callbacks.onCreate(context.engine)
 
-    // features/pageCarouselEnabled needs horizontal stack if present.
-    if let stack = try? context.engine.getStack() {
-      try context.engine.block.set(stack, property: .key(.stackAxis), value: LayoutAxis.horizontal)
-    }
-
+    // features/pageCarouselEnabled needs horizontal stack
+    try context.engine.block.set(context.engine.getStack(), property: .key(.stackAxis), value: LayoutAxis.horizontal)
     try context.engine.block.deselectAll()
     let zoomLevel = try await context.engine.zoomToPage(
       context.interactor.page,

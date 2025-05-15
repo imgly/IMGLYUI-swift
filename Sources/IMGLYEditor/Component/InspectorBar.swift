@@ -30,7 +30,7 @@ public extension InspectorBar {
   /// A builder for building arrays of inspector bar ``Item``s.
   typealias Builder = ArrayBuilder<any Item>
   /// A modifier for modifying arrays of inspector bar ``Item``s.
-  typealias Modifier = ArrayModifier<any Item, None>
+  typealias Modifier = ArrayModifier<any Item>
 
   /// The context of inspector bar components.
   struct Context: EditorContext {

@@ -1,41 +1,36 @@
-/// A helper to modify groups of ``EditorComponent`` arrays.
-public class ArrayModifier<Element, Group: Hashable> {
-  var toAddLast = [Group: [Element]]()
-  var toAddFirst = [Group: [Element]]()
+/// A helper to modify an array of ``EditorComponent``s.
+public class ArrayModifier<Element> {
+  private var toAddLast = [Element]()
+  private var toAddFirst = [Element]()
   private var toAddAfter = [EditorComponentID: [Element]]()
   private var toAddBefore = [EditorComponentID: [Element]]()
   private var toReplace = [EditorComponentID: [Element]]()
   private var toRemove = Set<EditorComponentID>()
 
-  // swiftlint:disable:next cyclomatic_complexity
-  func apply(to groups: inout [Group: [Element]]) throws {
-    let keys = Set(groups.keys).union(toAddFirst.keys).union(toAddLast.keys)
-    for key in keys {
-      let elements = groups[key] ?? []
-      groups[key] = withArrayBuilder {
-        toAddFirst[key] ?? []
-        for item in elements {
-          if let component = item as? any EditorComponent {
-            let id = component.id
+  func apply(to elements: inout [Element]) throws {
+    elements = withArrayBuilder {
+      toAddFirst
+      for item in elements {
+        if let component = item as? any EditorComponent {
+          let id = component.id
 
-            // Try remove item first, then do other operations.
-            if toRemove.remove(id) == nil {
-              if let before = toAddBefore.removeValue(forKey: id) {
-                before
-              }
-              if let replacement = toReplace.removeValue(forKey: id) {
-                replacement
-              } else {
-                item
-              }
-              if let after = toAddAfter.removeValue(forKey: id) {
-                after
-              }
+          // Try remove item first, then do other operations.
+          if toRemove.remove(id) == nil {
+            if let before = toAddBefore.removeValue(forKey: id) {
+              before
+            }
+            if let replacement = toReplace.removeValue(forKey: id) {
+              replacement
+            } else {
+              item
+            }
+            if let after = toAddAfter.removeValue(forKey: id) {
+              after
             }
           }
         }
-        toAddLast[key] ?? []
       }
+      toAddLast
     }
 
     if let id = toRemove.first {
@@ -64,32 +59,19 @@ public class ArrayModifier<Element, Group: Hashable> {
   }
 }
 
-/// A helper that is used as a group type for the ``ArrayModifier`` when no grouping is needed.
-public struct None: Hashable {}
-
-extension ArrayModifier where Group == None {
-  func apply(to elements: inout [Element]) throws {
-    var groups = [None(): elements]
-    try apply(to: &groups)
-    elements = groups[None(), default: []]
-  }
-}
-
-public extension ArrayModifier where Group == None {
+public extension ArrayModifier {
   /// Appends an array of `elements`.
   /// - Parameter elements: A builder closure to evaluate the elements that should be appended.
   func addLast(@ArrayBuilder<Element> _ elements: () -> [Element]) {
-    toAddLast[None(), default: []].append(contentsOf: elements())
+    toAddLast.append(contentsOf: elements())
   }
 
   /// Prepends an array of `elements`.
   /// - Parameter elements: A builder closure to evaluate the elements that should be prepended.
   func addFirst(@ArrayBuilder<Element> _ elements: () -> [Element]) {
-    toAddFirst[None(), default: []].insert(contentsOf: elements(), at: 0)
+    toAddFirst.insert(contentsOf: elements(), at: 0)
   }
-}
 
-public extension ArrayModifier {
   /// Inserts an array of `elements` after the element with the specified `id`.
   /// - Parameters:
   ///   - id: The id of the element after which the `elements` should be inserted.

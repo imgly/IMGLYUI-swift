@@ -1,5 +1,4 @@
 @_spi(Internal) import IMGLYCore
-import IMGLYEngine
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -27,7 +26,7 @@ public extension View {
     wrapped.environment(\.imglyAssetLibraryTitleDisplayMode, titleDisplayMode)
   }
 
-  func assetLibrary(sceneMode: SceneMode?) -> some View {
+  func assetLibrary(sceneMode: AssetLibrarySceneMode?) -> some View {
     wrapped.environment(\.imglyAssetLibrarySceneMode, sceneMode)
   }
 
@@ -67,8 +66,6 @@ public extension View {
     -> some View { wrapped.environment(\.imglyAssetGridItemIndex, itemIndex) }
   func assetGridOnAppear(_ onAppear: @escaping AssetGridOnAppear)
     -> some View { wrapped.environment(\.imglyAssetGridOnAppear, onAppear) }
-  func assetGrid(excludedSources: Set<String>)
-    -> some View { wrapped.environment(\.imglyAssetGridExcludedSources, excludedSources) }
 
   @MainActor
   func buildInfo(ciBuildsHost: String, githubRepo: String) -> some View {

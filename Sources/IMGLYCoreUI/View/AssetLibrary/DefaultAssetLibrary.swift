@@ -24,6 +24,8 @@ public extension AssetLoader.SourceData {
 /// implementing a complete ``AssetLibrary`` from scratch.
 @MainActor
 public struct DefaultAssetLibrary: AssetLibrary {
+  @Environment(\.imglyAssetLibrarySceneMode) var sceneMode
+
   /// A tab for a specific asset type.
   public enum Tab: CaseIterable {
     case elements, uploads, videos, audio, images, text, shapes, stickers
@@ -127,7 +129,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
     )
   }
 
-  @AssetLibraryBuilder func uploads(_ sceneMode: SceneMode?) -> AssetLibraryContent {
+  @AssetLibraryBuilder var uploads: AssetLibraryContent {
     AssetLibrarySource.imageUpload(.title("Images"), source: .init(demoSource: .imageUpload))
     if sceneMode == .video {
       AssetLibrarySource.videoUpload(.title("Videos"), source: .init(demoSource: .videoUpload))
@@ -161,20 +163,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
     AssetLibrarySource.imageUpload(.title("Photo Roll"), source: .init(demoSource: .imageUpload))
   }
 
-  @AssetLibraryBuilder public func text(_ sceneMode: SceneMode?) -> AssetLibraryContent {
-    if sceneMode == .video {
-      plainText
-    } else {
-      textAndTextComponents
-    }
-  }
-
-  let plainText = AssetLibrarySource.text(.title("Text"), source: .init(id: TextAssetSource.id))
-
-  @AssetLibraryBuilder public var textAndTextComponents: AssetLibraryContent {
-    AssetLibrarySource.text(.title("Plain Text"), source: .init(id: TextAssetSource.id))
-    AssetLibrarySource.textComponent(.title("Font Combinations"), source: .init(demoSource: .textComponents))
-  }
+  let text = AssetLibrarySource.text(.title("Text"), source: .init(id: TextAssetSource.id))
 
   /// The default shape asset library content.
   @AssetLibraryBuilder public static var shapes: AssetLibraryContent {
@@ -195,34 +184,27 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }, source: .init(defaultSource: .sticker))
   }
 
-  func tabContent(_ sceneMode: SceneMode?, _ tab: Tab) -> AssetLibraryContent {
+  func tabContent(_ tab: Tab) -> AssetLibraryContent {
     switch tab {
     case .elements: AssetLibraryGroup.empty
-    case .uploads: uploads(sceneMode)
+    case .uploads: uploads
     case .videos: videos
     case .audio: audio
     case .images: images
-    case .text: text(sceneMode)
+    case .text: text
     case .shapes: shapes
     case .stickers: stickers
     }
   }
 
-  func elementsContent(_ sceneMode: SceneMode?, _ tab: Tab) -> AssetLibraryContent {
+  func elementsContent(_ tab: Tab) -> AssetLibraryContent {
     switch tab {
     case .elements: AssetLibraryGroup.empty
-    case .uploads: AssetLibraryGroup.upload("Photo Roll") { uploads(sceneMode) }
+    case .uploads: AssetLibraryGroup.upload("Photo Roll") { uploads }
     case .videos: AssetLibraryGroup.video("Videos") { videos }
     case .audio: AssetLibraryGroup.audio("Audio") { audio }
     case .images: AssetLibraryGroup.image("Images") { images }
-    case .text:
-      if sceneMode == .video {
-        plainText
-      } else {
-        AssetLibraryGroup.text("Text", excludedPreviewSources: [Engine.DemoAssetSource.textComponents.rawValue]) {
-          textAndTextComponents
-        }
-      }
+    case .text: text
     case .shapes: AssetLibraryGroup.shape("Shapes") { shapes }
     case .stickers: AssetLibraryGroup.sticker("Stickers") { stickers }
     }
@@ -241,9 +223,9 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
-  func activeTabs(_ sceneMode: SceneMode?) -> [Tab] {
+  var activeTabs: [Tab] {
     tabs.filter { tab in
-      let isNotEmpty = !tabContent(sceneMode, tab).isEmpty
+      let isNotEmpty = !tabContent(tab).isEmpty
       switch tab {
       case .elements:
         return true
@@ -255,13 +237,13 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
-  func activeElements(_ sceneMode: SceneMode?) -> [Tab] {
-    activeTabs(sceneMode).filter { $0 != .elements }
+  var activeElements: [Tab] {
+    activeTabs.filter { $0 != .elements }
   }
 
-  @AssetLibraryBuilder func elements(_ sceneMode: SceneMode?) -> AssetLibraryContent {
-    for tab in activeElements(sceneMode) {
-      elementsContent(sceneMode, tab)
+  @AssetLibraryBuilder var elements: AssetLibraryContent {
+    for tab in activeElements {
+      elementsContent(tab)
     }
   }
 
@@ -311,15 +293,11 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   @ViewBuilder var uploadsTab: some View {
-    AssetLibrarySceneModeReader { sceneMode in
-      AssetLibraryTab("Photo Roll") { uploads(sceneMode) } label: { Self.uploadsLabel($0) }
-    }
+    AssetLibraryTab("Photo Roll") { uploads } label: { Self.uploadsLabel($0) }
   }
 
   @ViewBuilder public var elementsTab: some View {
-    AssetLibrarySceneModeReader { sceneMode in
-      AssetLibraryTab("Elements") { elements(sceneMode) } label: { Self.elementsLabel($0) }
-    }
+    AssetLibraryTab("Elements") { elements } label: { Self.elementsLabel($0) }
   }
 
   @ViewBuilder public var videosTab: some View {
@@ -335,13 +313,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   @ViewBuilder public var textTab: some View {
-    AssetLibrarySceneModeReader { sceneMode in
-      if sceneMode == .video {
-        AssetLibraryTabView("Text") { plainText.content } label: { Self.textLabel($0) }
-      } else {
-        AssetLibraryTab("Text") { textAndTextComponents } label: { Self.textLabel($0) }
-      }
-    }
+    AssetLibraryTabView("Text") { text.content } label: { Self.textLabel($0) }
   }
 
   @ViewBuilder public var shapesTab: some View {
@@ -375,24 +347,22 @@ public struct DefaultAssetLibrary: AssetLibrary {
 
   public var body: some View {
     TabView {
-      AssetLibrarySceneModeReader { sceneMode in
-        let activeTabs = activeTabs(sceneMode)
-        if activeTabs.count > 5 {
-          if activeTabs.contains(.elements), activeTabs.contains(.uploads),
-             activeTabs.count == 6 {
-            let tabsWithoutUploads = activeTabs.filter { $0 != .uploads }
-            tabViews(tabsWithoutUploads)
-          } else {
-            let tabs = activeTabs.prefix(4)
-            let moreTabs = activeTabs.dropFirst(4)
-            tabViews(tabs)
-            AssetLibraryMoreTab {
-              tabViews(moreTabs)
-            }
-          }
+      let activeTabs = activeTabs
+      if activeTabs.count > 5 {
+        if activeTabs.contains(.elements), activeTabs.contains(.uploads),
+           activeTabs.count == 6 {
+          let tabsWithoutUploads = activeTabs.filter { $0 != .uploads }
+          tabViews(tabsWithoutUploads)
         } else {
-          tabViews(activeTabs)
+          let tabs = activeTabs.prefix(4)
+          let moreTabs = activeTabs.dropFirst(4)
+          tabViews(tabs)
+          AssetLibraryMoreTab {
+            tabViews(moreTabs)
+          }
         }
+      } else {
+        tabViews(activeTabs)
       }
     }
   }
