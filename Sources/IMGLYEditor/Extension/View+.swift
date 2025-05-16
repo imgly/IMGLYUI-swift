@@ -64,40 +64,40 @@ public extension IMGLY where Wrapped: View {
   ///
   /// The default implementations of this modifier are:
   /// ```swift
-  ///  DesignEditor(settings)
-  ///    .imgly.dockItems { context in
-  ///      Dock.Buttons.elementsLibrary()
-  ///      Dock.Buttons.photoRoll()
-  ///      Dock.Buttons.systemCamera()
-  ///      Dock.Buttons.imagesLibrary()
-  ///      Dock.Buttons.textLibrary()
-  ///      Dock.Buttons.shapesLibrary()
-  ///      Dock.Buttons.stickersLibrary()
-  ///    }
+  /// DesignEditor(settings)
+  ///   .imgly.dockItems { context in
+  ///     Dock.Buttons.elementsLibrary()
+  ///     Dock.Buttons.photoRoll()
+  ///     Dock.Buttons.systemCamera()
+  ///     Dock.Buttons.imagesLibrary()
+  ///     Dock.Buttons.textLibrary()
+  ///     Dock.Buttons.shapesLibrary()
+  ///     Dock.Buttons.stickersLibrary()
+  ///   }
   ///
-  ///  PhotoEditor(settings)
-  ///    .imgly.dockItems { context in
-  ///      Dock.Buttons.adjustments()
-  ///      Dock.Buttons.filter()
-  ///      Dock.Buttons.effect()
-  ///      Dock.Buttons.blur()
-  ///      Dock.Buttons.crop()
-  ///      Dock.Buttons.textLibrary()
-  ///      Dock.Buttons.shapesLibrary()
-  ///      Dock.Buttons.stickersLibrary()
-  ///    }
+  /// PhotoEditor(settings)
+  ///   .imgly.dockItems { context in
+  ///     Dock.Buttons.adjustments()
+  ///     Dock.Buttons.filter()
+  ///     Dock.Buttons.effect()
+  ///     Dock.Buttons.blur()
+  ///     Dock.Buttons.crop()
+  ///     Dock.Buttons.textLibrary()
+  ///     Dock.Buttons.shapesLibrary()
+  ///     Dock.Buttons.stickersLibrary()
+  ///   }
   ///
-  ///  VideoEditor(settings)
-  ///    .imgly.dockItems { context in
-  ///      Dock.Buttons.photoRoll()
-  ///      Dock.Buttons.imglyCamera()
-  ///      Dock.Buttons.overlaysLibrary()
-  ///      Dock.Buttons.textLibrary()
-  ///      Dock.Buttons.stickersAndShapesLibrary()
-  ///      Dock.Buttons.audioLibrary()
-  ///      Dock.Buttons.voiceover()
-  ///      Dock.Buttons.reorder()
-  ///    }
+  /// VideoEditor(settings)
+  ///   .imgly.dockItems { context in
+  ///     Dock.Buttons.photoRoll()
+  ///     Dock.Buttons.imglyCamera()
+  ///     Dock.Buttons.overlaysLibrary()
+  ///     Dock.Buttons.textLibrary()
+  ///     Dock.Buttons.stickersAndShapesLibrary()
+  ///     Dock.Buttons.audioLibrary()
+  ///     Dock.Buttons.voiceover()
+  ///     Dock.Buttons.reorder()
+  ///   }
   /// ```
   /// - Parameter items: A ``Dock/Builder`` closure that provides the ``Dock/Context`` and returns an array of
   /// ``Dock/Item``s.
@@ -131,6 +131,7 @@ public extension IMGLY where Wrapped: View {
   ///   InspectorBar.Buttons.editText() // Text
   ///   InspectorBar.Buttons.formatText() // Text
   ///   InspectorBar.Buttons.fillStroke() // Page, Video, Image, Shape, Text
+  ///   InspectorBar.Buttons.textBackground() // Text
   ///   InspectorBar.Buttons.editVoiceover() // Voiceover
   ///   InspectorBar.Buttons.volume() // Video, Audio, Voiceover
   ///   InspectorBar.Buttons.crop() // Video, Image
@@ -169,6 +170,109 @@ public extension IMGLY where Wrapped: View {
   /// - Returns: A view that has the given modifications set.
   func modifyInspectorBarItems(_ modifications: @escaping InspectorBar.Modifications) -> some View {
     wrapped.environment(\.imglyInspectorBarModifications, modifications)
+  }
+
+  /// Sets the registered ``NavigationBar/Item``s and defines their order for the ``NavigationBar`` UI component of the
+  /// editor. The default implementation of this modifier depends on the used editor solution.
+  /// - Note: Registering does not mean displaying. The `items` will be displayed if
+  /// ``EditorComponent/isVisible(_:)-hdb5`` returns `true` for them.
+  ///
+  /// Items must be contained in ``NavigationBar/ItemGroup``s with assigned ``NavigationBar/ItemPlacement``s similar to
+  /// regular SwiftUI `ToolbarItemGroup`s with corresponding `ToolbarItemPlacement`s.
+  ///
+  /// The default implementations of this modifier are:
+  /// ```swift
+  /// DesignEditor(settings)
+  ///   .imgly.navigationBarItems { context in
+  ///     NavigationBar.ItemGroup(placement: .topBarLeading) {
+  ///       NavigationBar.Buttons.closeEditor()
+  ///     }
+  ///     NavigationBar.ItemGroup(placement: .topBarTrailing) {
+  ///       NavigationBar.Buttons.undo()
+  ///       NavigationBar.Buttons.redo()
+  ///       NavigationBar.Buttons.togglePagesMode()
+  ///       NavigationBar.Buttons.export()
+  ///     }
+  ///   }
+  ///
+  /// PhotoEditor(settings)
+  ///   .imgly.navigationBarItems { context in
+  ///     NavigationBar.ItemGroup(placement: .topBarLeading) {
+  ///       NavigationBar.Buttons.closeEditor()
+  ///     }
+  ///     NavigationBar.ItemGroup(placement: .topBarTrailing) {
+  ///       NavigationBar.Buttons.undo()
+  ///       NavigationBar.Buttons.redo()
+  ///       NavigationBar.Buttons.togglePreviewMode()
+  ///       NavigationBar.Buttons.export()
+  ///     }
+  ///   }
+  ///
+  /// VideoEditor(settings)
+  ///   .imgly.navigationBarItems { context in
+  ///     NavigationBar.ItemGroup(placement: .topBarLeading) {
+  ///       NavigationBar.Buttons.closeEditor()
+  ///     }
+  ///     NavigationBar.ItemGroup(placement: .topBarTrailing) {
+  ///       NavigationBar.Buttons.undo()
+  ///       NavigationBar.Buttons.redo()
+  ///       NavigationBar.Buttons.export()
+  ///     }
+  ///   }
+  ///
+  /// ApparelEditor(settings)
+  ///   .imgly.navigationBarItems { context in
+  ///     NavigationBar.ItemGroup(placement: .topBarLeading) {
+  ///       NavigationBar.Buttons.closeEditor()
+  ///     }
+  ///     NavigationBar.ItemGroup(placement: .topBarTrailing) {
+  ///       NavigationBar.Buttons.undo()
+  ///       NavigationBar.Buttons.redo()
+  ///       NavigationBar.Buttons.togglePreviewMode()
+  ///       NavigationBar.Buttons.export()
+  ///     }
+  ///   }
+  ///
+  /// PostcardEditor(settings)
+  ///   .imgly.navigationBarItems { context in
+  ///     NavigationBar.ItemGroup(placement: .topBarLeading) {
+  ///       NavigationBar.Buttons.closeEditor()
+  ///       NavigationBar.Buttons.previousPage(
+  ///         label: { _ in NavigationLabel("Design", direction: .backward) }
+  ///       )
+  ///     }
+  ///     NavigationBar.ItemGroup(placement: .principal) {
+  ///       NavigationBar.Buttons.undo()
+  ///       NavigationBar.Buttons.redo()
+  ///       NavigationBar.Buttons.togglePreviewMode()
+  ///     }
+  ///     NavigationBar.ItemGroup(placement: .topBarTrailing) {
+  ///       NavigationBar.Buttons.nextPage(
+  ///         label: { _ in NavigationLabel("Write", direction: .forward) }
+  ///       )
+  ///       NavigationBar.Buttons.export()
+  ///     }
+  ///   }
+  /// ```
+  /// - Parameter items: A ``NavigationBar/Builder`` closure that provides the ``NavigationBar/Context`` and returns an
+  /// array of ``NavigationBar/ItemGroup``s.
+  /// - Returns: A view that has the given items set.
+  func navigationBarItems(@NavigationBar.Builder _ items: @escaping NavigationBar.Items) -> some View {
+    wrapped.environment(\.imglyNavigationBarItems, items)
+  }
+
+  /// Sets the modifications that should be applied to the order of ``NavigationBar/Items``s defined by
+  /// ``navigationBarItems(_:)``. This modifier can be used, when you do not want to touch the default general order of
+  /// the items, but rather add additional items and replace/hide some of the default items. By default, no
+  /// modifications are applied.
+  /// - Warning: Note that the order of items may change between editor versions, therefore
+  /// ``modifyNavigationBarItems(_:)`` must be used with care. Consider overwriting the default items instead with
+  /// ``navigationBarItems(_:)`` if you want to have strict ordering between different editor versions.
+  /// - Parameter modifications: A closure that provides the ``NavigationBar/Context`` as first and a
+  /// ``NavigationBar/Modifier`` as second argument. Use the modifier to change the items.
+  /// - Returns: A view that has the given modifications set.
+  func modifyNavigationBarItems(_ modifications: @escaping NavigationBar.Modifications) -> some View {
+    wrapped.environment(\.imglyNavigationBarModifications, modifications)
   }
 }
 

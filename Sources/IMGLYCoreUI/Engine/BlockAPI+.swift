@@ -428,14 +428,6 @@ extension MappedType {
     }
   }
 
-  func isGrouped(_ id: DesignBlockID) throws -> Bool {
-    guard let parent = try getParent(id) else {
-      return false
-    }
-    let type = try getType(parent)
-    return type == DesignBlockType.group.rawValue
-  }
-
   func addOutline(_ name: String? = nil, for id: DesignBlockID, to parent: DesignBlockID) throws -> DesignBlockID {
     let outline = try create(.graphic)
     let rect = try createShape(.rect)

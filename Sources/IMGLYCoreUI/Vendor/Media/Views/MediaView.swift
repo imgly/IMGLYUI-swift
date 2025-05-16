@@ -5,7 +5,7 @@
   import UniformTypeIdentifiers
   @_spi(Internal) import IMGLYCore
 
-  @_spi(Internal) public typealias MediaCompletion = (Result<(URL, MediaType), Swift.Error>) -> Void
+  @_spi(Internal) public typealias MediaCompletion = (Result<[(URL, MediaType)], Swift.Error>) -> Void
 
   @_spi(Internal) public enum MediaError: LocalizedError {
     case imageNotAvailable
@@ -103,11 +103,14 @@
 
           controller.sourceType = source
           controller.mediaTypes = media.map(\.identifier)
-          if FeatureFlags.isEnabled(.transcodePickerImports) {
+          if FeatureFlags.isEnabled(.transcodePickerImageImports) {
             controller.imageExportPreset = .compatible
-            controller.videoExportPreset = AVAssetExportPresetHighestQuality
           } else {
             controller.imageExportPreset = .current
+          }
+          if FeatureFlags.isEnabled(.transcodePickerVideoImports) {
+            controller.videoExportPreset = AVAssetExportPresetHighestQuality
+          } else {
             controller.videoExportPreset = AVAssetExportPresetPassthrough
           }
           controller.delegate = self
@@ -145,7 +148,7 @@
 
             try FileManager.default.moveOrCopyItem(at: videoURL, to: url)
 
-            self?.complete(with: .success((url, MediaType.movie)), picker: picker)
+            self?.complete(with: .success([(url, MediaType.movie)]), picker: picker)
           } catch {
             self?.complete(with: .failure(error), picker: picker)
           }
@@ -166,7 +169,7 @@
             try data?.write(to: url)
           }
 
-          self?.complete(with: .success((url, MediaType.image)), picker: picker)
+          self?.complete(with: .success([(url, MediaType.image)]), picker: picker)
         } catch {
           self?.complete(with: .failure(error), picker: picker)
         }
@@ -174,7 +177,7 @@
     }
 
     private nonisolated func complete(
-      with result: Result<(URL, MediaType), Swift.Error>,
+      with result: Result<[(URL, MediaType)], Swift.Error>,
       picker: UIImagePickerController
     ) {
       DispatchQueue.main.async {

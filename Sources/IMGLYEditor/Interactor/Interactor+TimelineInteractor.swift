@@ -1170,13 +1170,21 @@ extension Interactor: TimelineInteractor {
     sheet.content = .clip // Set to clip to add to background track
   }
 
-  func addAssetFromImagePicker(url: URL, mediaType: MediaType) {
+  func addAssetsFromImagePicker(_ assets: [(URL, MediaType)]) {
     Task {
-      switch mediaType {
-      case .image:
-        _ = try await uploadImage(to: imageUploadAssetSourceID) { url }
-      case .movie:
-        _ = try await uploadVideo(to: videoUploadAssetSourceID) { url }
+      for (index, (url, mediaType)) in assets.enumerated() {
+        if index == assets.count - 1 {
+          // This ensures the playhead is set to the last clip correctly.
+          // Going foward we should maybe move this operation to the upload
+          try await Task.sleep(for: .milliseconds(100))
+        }
+
+        _ = switch mediaType {
+        case .image:
+          try await uploadImage(to: imageUploadAssetSourceID) { url }
+        case .movie:
+          try await uploadVideo(to: videoUploadAssetSourceID) { url }
+        }
       }
     }
   }

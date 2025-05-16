@@ -2,18 +2,37 @@ import IMGLYEngine
 import SwiftUI
 
 /// An alias for `IMGLYEngine.SceneMode`.
+@available(*, deprecated, message: "Use `IMGLYEngine.SceneMode` instead.")
 public typealias AssetLibrarySceneMode = SceneMode
 
-/// An `EnvironmentKey` for ``AssetLibrarySceneMode``.
-public struct AssetLibrarySceneModeKey: EnvironmentKey {
-  @_spi(Internal) public static let defaultValue: AssetLibrarySceneMode? = nil
+/// An `EnvironmentKey` for `SceneMode` used by the ``AssetLibrary``.
+@_spi(Internal) public struct AssetLibrarySceneModeKey: EnvironmentKey {
+  @_spi(Internal) public static let defaultValue: SceneMode? = nil
 }
 
-public extension EnvironmentValues {
+@_spi(Internal) public extension EnvironmentValues {
   /// The asset library scene mode.
   var imglyAssetLibrarySceneMode: AssetLibrarySceneModeKey.Value {
     get { self[AssetLibrarySceneModeKey.self] }
     set { self[AssetLibrarySceneModeKey.self] = newValue }
+  }
+}
+
+/// A helper view that reads the `SceneMode` used by the ``AssetLibrary`` from the environment and provides access to
+/// it.
+public struct AssetLibrarySceneModeReader<Content: View>: View {
+  @Environment(\.imglyAssetLibrarySceneMode) var sceneMode
+  let content: (SceneMode?) -> Content
+
+  /// Creates a helper view that reads the `SceneMode` used by the ``AssetLibrary`` from the environment  and provides
+  /// access to it in a trailing `content` closure.
+  /// - Parameter content: The content view.
+  public init(@ViewBuilder content: @escaping (_ sceneMode: SceneMode?) -> Content) {
+    self.content = content
+  }
+
+  public var body: some View {
+    content(sceneMode)
   }
 }
 
@@ -146,6 +165,17 @@ public extension AssetLibrarySource<TextGrid, TextPreview, EmptyView> {
   }
 }
 
+public extension AssetLibrarySource<TextComponentGrid, AssetPreview, EmptyView> {
+  /// Creates an ``AssetLibrarySource`` for text component assets.
+  /// - Parameters:
+  ///   - mode: The display mode which defines the section title(s).
+  ///   - source: The asset source definition.
+  /// - Returns: The created `AssetLibrarySource`.
+  static func textComponent(_ mode: Mode, source: AssetLoader.SourceData) -> Self {
+    self.init(mode, source: source) { Destination() } preview: { Preview.imageOrVideo }
+  }
+}
+
 public extension AssetLibrarySource<ShapeGrid, AssetPreview, EmptyView> {
   /// Creates an ``AssetLibrarySource`` for shape assets.
   /// - Parameters:
@@ -230,10 +260,15 @@ public extension AssetLibraryGroup<TextPreview> {
   /// Creates an ``AssetLibraryGroup`` for text assets.
   /// - Parameters:
   ///   - title: The displayed name of the group.
+  ///   - excludedPreviewSources: Asset source IDs whose assets should not be displayed in the preview.
   ///   - content: The asset library content.
   /// - Returns: The created `AssetLibraryGroup`.
-  static func text(_ title: String, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
-    self.init(title, content: content) { Preview() }
+  static func text(
+    _ title: String,
+    excludedPreviewSources: Set<String> = [],
+    @AssetLibraryBuilder content: () -> AssetLibraryContent
+  ) -> Self {
+    self.init(title, excludedPreviewSources: excludedPreviewSources, content: content) { Preview() }
   }
 }
 
@@ -246,7 +281,7 @@ public extension AssetLibraryGroup<EmptyView> {
 
 @MainActor
 public extension AssetPreview {
-  /// An ``AssetPreview`` for image or video assets.
+  /// An ``AssetPreview`` for image, video, or text component assets.
   static let imageOrVideo = Self(height: 96)
   /// An ``AssetPreview`` for shape or sticker assets.
   static let shapeOrSticker = Self(height: 80)

@@ -1,4 +1,5 @@
 import Foundation
+@_spi(Internal) import IMGLYCore
 import SwiftUI
 
 @_spi(Internal) public struct AlertState: Equatable {
@@ -45,9 +46,9 @@ import SwiftUI
   }
 }
 
-@_spi(Internal) public extension View {
-  @_spi(Internal) func alert(_ alert: Binding<AlertState?>) -> some View {
-    self.alert(
+@_spi(Internal) public extension IMGLY where Wrapped: View {
+  func alert(_ alert: Binding<AlertState?>) -> some View {
+    wrapped.alert(
       alert.wrappedValue.map { Text($0.title) } ?? Text(verbatim: ""),
       isPresented: Binding(alert),
       presenting: alert.wrappedValue,
