@@ -120,8 +120,4 @@ extension IMGLY where Wrapped: View {
   ) -> some View {
     wrapped.onReceive(center.publisher(for: name, object: object), perform: action)
   }
-
-  func delayedGesture(_ gesture: some Gesture, with delay: TimeInterval = 0.2) -> some View {
-    wrapped.modifier(DelayedGesture(duration: delay, gesture: gesture))
-  }
 }

@@ -44,23 +44,25 @@ import SwiftUI
       }
 
       if state != .error {
-        Button {
-          onTap()
-        } label: {
-          content(
-            KFImage(asset.thumbURLorURL)
-              .retry(maxCount: 3)
-              .onSuccess { _ in
-                state = .loaded
-              }
-              .onFailure { _ in
-                state = .error
-              }
-              .fade(duration: 0.15)
-          )
-        }
+        content(
+          KFImage(asset.thumbURLorURL)
+            .retry(maxCount: 3)
+            .onSuccess { _ in
+              state = .loaded
+            }
+            .onFailure { _ in
+              state = .error
+            }
+            .fade(duration: 0.15)
+        )
+        // `contentShape` ensures the tappable area is correctly defined on the asset when using `onTapGesture`
+        .contentShape(Rectangle())
+        // `onTapGesture` instead of using **Button** fixes issues on iOS 18.1+ where scrolling the sheet accidentally
+        // triggered the **Button**
+        .onTapGesture(perform: onTap)
         .allowsHitTesting(state == .loaded)
         .accessibilityLabel(asset.result.label ?? "")
+        .accessibilityAddTraits(.isButton)
       }
     }
   }
