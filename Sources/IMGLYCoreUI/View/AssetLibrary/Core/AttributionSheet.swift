@@ -5,35 +5,32 @@ import SwiftUI
 struct AttributionSheet: ViewModifier {
   @EnvironmentObject private var interactor: AnyAssetLibraryInteractor
   let asset: AssetLoader.Asset
+  let onShowAttribution: () -> Void
 
-  var assetCredits: AttributedString? { asset.result.credits?.link }
   var assetLicense: AttributedString? { asset.result.license?.link }
-  var sourceCredits: AttributedString? { interactor.getCredits(sourceID: asset.sourceID)?.link }
   var sourceLicense: AttributedString? { interactor.getLicense(sourceID: asset.sourceID)?.link }
-
-  @State private var showAttribution = false
 
   func body(content: Content) -> some View {
     content
       .onLongPressGesture {
         if assetLicense != nil || sourceLicense != nil {
-          showAttribution = true
+          onShowAttribution()
         }
-      }
-      .sheet(isPresented: $showAttribution) {
-        Attribution(asset: asset,
-                    assetCredits: assetCredits, assetLicense: assetLicense,
-                    sourceCredits: sourceCredits, sourceLicense: sourceLicense)
       }
   }
 }
 
-private struct Attribution: View {
+struct Attribution: View {
+  @EnvironmentObject private var interactor: AnyAssetLibraryInteractor
   @Environment(\.dismiss) var dismiss
   @Environment(\.colorScheme) private var colorScheme
 
   let asset: AssetLoader.Asset
-  let assetCredits, assetLicense, sourceCredits, sourceLicense: AttributedString?
+
+  var assetCredits: AttributedString? { asset.result.credits?.link }
+  var assetLicense: AttributedString? { asset.result.license?.link }
+  var sourceCredits: AttributedString? { interactor.getCredits(sourceID: asset.sourceID)?.link }
+  var sourceLicense: AttributedString? { interactor.getLicense(sourceID: asset.sourceID)?.link }
 
   var label: String? {
     asset.result.label ?? asset.result.filename ?? asset.result.id

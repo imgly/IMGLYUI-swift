@@ -198,7 +198,8 @@ public extension NavigationBar.Buttons {
   ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title "Pages",
   /// icon ``IMGLY/pages`` and page count, and style ``IMGLY/adaptiveIconOnly`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created.
-  ///   - isVisible: Whether the button is visible.  By default, it is always `true`.
+  ///   - isVisible: Whether the button is visible.  By default, it is `true` if the scene contains a stack, `false`
+  /// otherwise.
   /// - Returns: The created button.
   static func togglePagesMode(
     action: @escaping NavigationBar.Context.To<Void> = {
@@ -223,7 +224,9 @@ public extension NavigationBar.Buttons {
       .accessibilityLabel(isPagesMode ? "Hide Pages" : "Show Pages")
     },
     isEnabled: @escaping NavigationBar.Context.To<Bool> = { !$0.state.isCreating },
-    isVisible: @escaping NavigationBar.Context.To<Bool> = { _ in true }
+    isVisible: @escaping NavigationBar.Context.To<Bool> = {
+      try $0.state.isCreating || $0.engine?.block.find(byType: .stack).first != nil
+    }
   ) -> some NavigationBar.Item {
     NavigationBar.Button(
       id: ID.togglePagesMode,

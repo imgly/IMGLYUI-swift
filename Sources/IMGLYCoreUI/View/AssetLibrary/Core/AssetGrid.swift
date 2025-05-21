@@ -142,6 +142,15 @@ extension EnvironmentValues {
   @ViewBuilder private let first: () -> First
   @ViewBuilder private let more: () -> More
 
+  @State private var selectedAsset: AssetLoader.Asset?
+
+  private var isAttributionPresented: Binding<Bool> {
+    Binding(
+      get: { selectedAsset != nil },
+      set: { if !$0 { selectedAsset = nil } }
+    )
+  }
+
   @_spi(Internal) public init(
     @ViewBuilder item: @escaping (AssetItem) -> Item,
     @ViewBuilder empty: @escaping (_ search: String) -> Empty = { _ in Message.noElements },
@@ -258,7 +267,9 @@ extension EnvironmentValues {
         }()
 
         item(.asset(asset))
-          .modifier(AttributionSheet(asset: asset))
+          .modifier(AttributionSheet(asset: asset) {
+            selectedAsset = asset
+          })
           .id(itemIndex(asset) ?? index as AnyHashable)
           .onAppear {
             loadMoreContentIfNeeded(currentItem: asset)
@@ -273,6 +284,11 @@ extension EnvironmentValues {
         more()
           .frame(maxWidth: .infinity, maxHeight: .infinity)
           .aspectRatio(1, contentMode: .fit)
+      }
+    }
+    .sheet(isPresented: isAttributionPresented) {
+      if let asset = selectedAsset {
+        Attribution(asset: asset)
       }
     }
     .allowsHitTesting(!interactor.isAddingAsset)
