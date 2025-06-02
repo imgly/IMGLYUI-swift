@@ -61,9 +61,9 @@ public extension IMGLY where Wrapped == Image {
   /// An icon image for replace.
   static let replace = Wrapped(systemName: "arrow.left.arrow.right.square")
   /// An icon image for enter group.
-  static let enterGroup = Wrapped("enter_group", bundle: .module)
+  static let enterGroup = Wrapped("custom.group.enter", bundle: .module)
   /// An icon image for select group.
-  static let selectGroup = Wrapped("select_group", bundle: .module)
+  static let selectGroup = Wrapped("custom.group.select", bundle: .module)
   /// An icon image for delete.
   static let delete = Wrapped(systemName: "trash")
   /// An icon image for edit text.
@@ -83,4 +83,9 @@ public extension IMGLY where Wrapped == Image {
   static let preview = Wrapped(systemName: "eye")
   /// An icon image for toggling pages mode.
   static let pages = Wrapped(systemName: "doc.on.doc")
+
+  /// An icon image for bring forward.
+  static let bringForward = Wrapped(systemName: "square.2.stack.3d.top.fill")
+  /// An icon image for send backward.
+  static let sendBackward = Wrapped(systemName: "square.2.stack.3d.bottom.fill")
 }

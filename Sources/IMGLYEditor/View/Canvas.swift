@@ -86,6 +86,29 @@ struct Canvas: View {
     BottomBar(content: content, id: id, height: bottomBarHeight, bottomSafeAreaInset: bottomSafeAreaInset)
   }
 
+  @Environment(\.imglyCanvasMenuItems) private var canvasMenuItems
+  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
+
+  private var assetLibrary: some AssetLibrary {
+    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
+  }
+
+  private var canvasMenuContext: CanvasMenu.Context? {
+    guard let engine = interactor.engine, let id, engine.block.isValid(id) else {
+      return nil
+    }
+    do {
+      return try .init(engine: engine, eventHandler: interactor, assetLibrary: assetLibrary,
+                       selection: .init(block: id, engine: engine))
+    } catch {
+      let error = EditorError(
+        "Could not create CanvasMenu.Context.\nReason:\n\(error.localizedDescription)"
+      )
+      interactor.handleErrorWithTask(error)
+      return nil
+    }
+  }
+
   @ViewBuilder var canvas: some View {
     ZStack {
       if viewDebugging {
@@ -96,7 +119,9 @@ struct Canvas: View {
                             topSafeAreaInset: topSafeAreaInset,
                             bottomSafeAreaInset: safeAreaInsetHeight,
                             isVisible: !isTimelineAnimating) {
-          CanvasMenu()
+          if let canvasMenuItems, let canvasMenuContext {
+            CanvasMenuView(items: canvasMenuItems, context: canvasMenuContext)
+          }
         }
     }
   }

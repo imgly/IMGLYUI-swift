@@ -14,6 +14,18 @@ public extension IMGLY where Wrapped == AdaptiveIconOnlyLabelStyle {
   static var adaptiveIconOnly: Wrapped { Wrapped() }
 }
 
+public extension LabelStyle where Self == CanvasMenuLabelStyle {
+  /// Gets a namespace holder for `IMGLY` compatible types.
+  static var imgly: IMGLY<Self>.Type { IMGLY<Self>.self }
+}
+
+public extension IMGLY where Wrapped == CanvasMenuLabelStyle {
+  /// A label style used for the ``CanvasMenu``.
+  /// - Parameter style: The style of the label style.
+  /// - Returns: The created label style.
+  static func canvasMenu(_ style: Wrapped.Style) -> Wrapped { Wrapped(style: style) }
+}
+
 // MARK: - Internal interface
 
 extension LabelStyle where Self == TileLabelStyle {

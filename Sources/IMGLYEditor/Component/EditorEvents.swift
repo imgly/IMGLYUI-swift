@@ -143,6 +143,10 @@ public extension EditorEvents.Selection {
   struct SelectGroup: EditorEvent {}
   /// An event for deleting the selected design block.
   struct Delete: EditorEvent {}
+  /// An event for bringing forward the selected design block.
+  struct BringForward: EditorEvent {}
+  /// An event for sending backward the selected design block.
+  struct SendBackward: EditorEvent {}
 }
 
 public extension EditorEvents.AddFrom {
@@ -238,6 +242,16 @@ public extension EditorEvent where Self == EditorEvents.Selection.SelectGroup {
 public extension EditorEvent where Self == EditorEvents.Selection.Delete {
   /// Creates an ``EditorEvent`` to delete the selected design block.
   static var deleteSelection: Self { Self() }
+}
+
+public extension EditorEvent where Self == EditorEvents.Selection.BringForward {
+  /// Creates an ``EditorEvent`` to bring forward the selected design block.
+  static var bringSelectionForward: Self { Self() }
+}
+
+public extension EditorEvent where Self == EditorEvents.Selection.SendBackward {
+  /// Creates an ``EditorEvent`` to send backward the selected design block.
+  static var sendSelectionBackward: Self { Self() }
 }
 
 public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {

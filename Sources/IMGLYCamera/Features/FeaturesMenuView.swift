@@ -63,14 +63,20 @@ extension FeaturesMenuView {
           if mode == .disabled {
             Divider()
           }
-          Text(mode.name)
-            .tag(mode)
+          Label {
+            Text(mode.name)
+          } icon: {
+            mode.image
+          }
+          .tag(mode)
         }
       }
+      .pickerStyle(.inline)
+
     } label: {
       FeatureLabelView(
         text: camera.countdownMode == .disabled ? "Timer" : camera.countdownMode.name,
-        image: Image(systemName: "timer"),
+        image: camera.countdownMode.image,
         isSelected: camera.countdownMode != .disabled,
         hasLabel: hasTransientLabel
       )

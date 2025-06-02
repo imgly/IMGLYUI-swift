@@ -37,8 +37,8 @@ public extension InspectorBar {
     /// The engine of the current editor.
     /// - Note: Prefer using the ``selection`` property for accessing the current selection instead of querying the same
     /// data from engine because the engine values will update immediately on changes whereas this provided
-    /// ``selection``
-    /// is cached for the presentation time of the navigation bar including its appear and disappear animations.
+    /// ``selection`` is cached for the presentation time of the inspector bar including its appear and disappear
+    /// animations.
     public let engine: Engine
     public let eventHandler: EditorEventHandler
     /// The asset library configured with the ``IMGLY/assetLibrary(_:)`` view modifier.
@@ -46,7 +46,7 @@ public extension InspectorBar {
     /// The current selection.
     /// - Note: Prefer using this provided selection property instead of querying the same data from engine because the
     /// engine values will update immediately on changes whereas this provided `selection` is cached for the
-    /// presentation time of the navigation bar including its appear and disappear animations.
+    /// presentation time of the inspector bar including its appear and disappear animations.
     public let selection: Selection
   }
 

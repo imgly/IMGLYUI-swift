@@ -85,6 +85,10 @@ extension Interactor: EditorEventHandler {
     case is EditorEvents.Selection.Delete:
       pause()
       bottomBarButtonTapped(for: .delete)
+    case is EditorEvents.Selection.BringForward:
+      actionButtonTapped(for: .up)
+    case is EditorEvents.Selection.SendBackward:
+      actionButtonTapped(for: .down)
 
     // MARK: - AddFrom
     case let event as EditorEvents.AddFrom.PhotoRoll:

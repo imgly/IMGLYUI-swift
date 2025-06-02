@@ -12,8 +12,6 @@ final class DesignInteractorBehavior: InteractorBehavior {
     try context.engine.editor.setSettingEnum("touch/pinchAction", value: "Zoom")
     try context.engine.editor.setSettingEnum("touch/rotateAction", value: "None")
 
-    try context.engine.editor.setSettingBool("features/pageCarouselEnabled", value: true)
-
     // Make sure to set all settings before calling `onCreate` callback so that the consumer can change them if needed!
     try await context.interactor.config.callbacks.onCreate(context.engine)
 
@@ -31,6 +29,8 @@ final class DesignInteractorBehavior: InteractorBehavior {
     if let zoomLevel {
       context.interactor.zoomModel.defaultZoomLevel = zoomLevel
     }
+
+    try context.engine.editor.setSettingBool("features/pageCarouselEnabled", value: true)
   }
 
   func enableEditMode(_: InteractorContext) throws {}

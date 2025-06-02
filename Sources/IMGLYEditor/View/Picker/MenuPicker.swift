@@ -18,7 +18,8 @@ struct MenuPicker<Data>: View
         Menu {
           Picker(selection: $selection) {
             ForEach(data, id: \.self) { value in
-              value.label.tag(value as Data.Element?)
+              value.label
+                .tag(value as Data.Element?)
             }
           } label: {
             EmptyView()

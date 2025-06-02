@@ -1,4 +1,3 @@
-import IMGLYCoreUI
 import IMGLYEngine
 import SwiftUI
 
@@ -375,19 +374,13 @@ public extension InspectorBar.Buttons {
         try context.engine.block.isAllowedByScope(context.selection.block, key: "editor/add") &&
           !isBackgroundTrack(context.selection.parentBlock)
       }
-      @MainActor func isDuplicateAllowed() throws -> Bool {
-        try context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/duplicate")
-      }
-      @MainActor func isDeleteAllowed() throws -> Bool {
-        try context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/destroy")
-      }
       return try ![.page, .audio].contains(context.selection.type) &&
         context.selection.kind != "voiceover" && (
           context.engine.block.isAllowedByScope(context.selection.block, key: "layer/blendMode") ||
             context.engine.block.isAllowedByScope(context.selection.block, key: "layer/opacity") ||
             isMoveAllowed() ||
-            isDeleteAllowed() ||
-            isDuplicateAllowed()
+            context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/destroy") ||
+            context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/duplicate")
         )
     }
   ) -> some InspectorBar.Item {
@@ -676,19 +669,16 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/delete``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// not `DesignBlockType.page`, and its engine scope `"lifecycle/destroy"` is allowed
+  /// not `DesignBlockType.page`, and its engine scope `"lifecycle/destroy"` is allowed.
   /// - Returns: The created button.
   static func delete(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.deleteSelection) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in Text("Delete").foregroundColor(.red) },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.delete.foregroundColor(.red) },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
-    isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
-      @MainActor func isDeleteAllowed() throws -> Bool {
-        try context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/destroy")
-      }
-      return try context.selection.type != .page &&
-        isDeleteAllowed()
+    isVisible: @escaping InspectorBar.Context.To<Bool> = {
+      try $0.selection.type != .page &&
+        $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/destroy")
     }
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.delete, action: action, label: { context in

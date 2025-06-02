@@ -7,6 +7,7 @@ import SwiftUI
 
   @Environment(\.layoutDirection) private var layoutDirection
   @Environment(\.imglyInspectorBarItems) private var inspectorBarItems
+  @Environment(\.imglyCanvasMenuItems) private var canvasMenuItems
   @Environment(\.colorScheme) private var colorScheme
 
   @_spi(Internal) public init(zoomPadding: CGFloat = 16) {
@@ -156,6 +157,19 @@ import SwiftUI
           InspectorBar.Buttons.reorder() // Video, Image, Sticker, Shape, Text (video scenes only)
           InspectorBar.Buttons.duplicate() // Video, Image, Sticker, Shape, Text, Audio
           InspectorBar.Buttons.delete() // Video, Image, Sticker, Shape, Text, Audio, Voiceover
+        }
+      }
+      .imgly.canvasMenuItems { context in
+        if let canvasMenuItems {
+          try canvasMenuItems(context)
+        } else {
+          CanvasMenu.Buttons.selectGroup()
+          CanvasMenu.Divider()
+          CanvasMenu.Buttons.bringForward()
+          CanvasMenu.Buttons.sendBackward()
+          CanvasMenu.Divider()
+          CanvasMenu.Buttons.duplicate()
+          CanvasMenu.Buttons.delete()
         }
       }
       .modifier(NavigationBarView(items: navigationBarItems ?? { _ in [] }, context: navigationBarContext))

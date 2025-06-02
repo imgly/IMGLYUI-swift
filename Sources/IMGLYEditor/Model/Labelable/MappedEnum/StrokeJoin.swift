@@ -16,9 +16,9 @@ enum StrokeJoin: String, MappedEnum {
 
   var imageName: String? {
     switch self {
-    case .miter: "join_miter"
-    case .bevel: "join_bevel"
-    case .round: "join_round"
+    case .miter: "custom.stroke.join.miter"
+    case .bevel: "custom.stroke.join.bevel"
+    case .round: "custom.stroke.join.round"
     }
   }
 

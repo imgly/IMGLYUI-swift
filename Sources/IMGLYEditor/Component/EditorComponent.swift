@@ -1,6 +1,4 @@
-import IMGLYEngine
 import SwiftUI
-@_spi(Internal) import struct IMGLYCore.Error
 
 // MARK: - EditorComponentID
 
@@ -8,11 +6,23 @@ import SwiftUI
 /// - Note: Every unique ``EditorComponent`` must have a unique id suitable to be used with a SwiftUI `ForEach` view.
 public struct EditorComponentID: Hashable, Sendable {
   let value: String
+  let isUnique: Bool
+  var uniqueID: Int?
 
   /// Creates an editor component identifier.
   /// - Parameter value: The value of the identifier.
   public init(_ value: String) {
     self.value = value
+    isUnique = true
+  }
+
+  /// Creates an editor component identifier.
+  /// - Parameters:
+  ///   - value: The value of the identifier.
+  ///   - isUnique: Whether the identifier is unique. `false` is currently only supported for ``CanvasMenu`` items.
+  init(_ value: String, isUnique: Bool) {
+    self.value = value
+    self.isUnique = isUnique
   }
 }
 

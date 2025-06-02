@@ -16,9 +16,9 @@ enum StrokePosition: String, MappedEnum {
 
   var imageName: String? {
     switch self {
-    case .inside: "stroke_position_inside"
-    case .center: "stroke_position_center"
-    case .outside: "stroke_position_outside"
+    case .inside: "custom.stroke.position.inside"
+    case .center: "custom.stroke.position.center"
+    case .outside: "custom.stroke.position.outside"
     }
   }
 

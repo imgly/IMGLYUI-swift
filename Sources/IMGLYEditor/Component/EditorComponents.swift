@@ -1,5 +1,4 @@
 import SwiftUI
-@_spi(Internal) import struct IMGLYCore.Error
 
 /// A namespace for the editor components.
 public enum EditorComponents {}
@@ -48,8 +47,9 @@ public extension EditorComponents {
           try action(context)
         } catch {
           if let interactor = context.eventHandler as? Interactor {
-            let error = Error(errorDescription:
-              "Could not run action for EditorComponents.Button `\(id.value)`.\nReason:\n\(error.localizedDescription)")
+            let error = EditorError(
+              "Could not run action for EditorComponents.Button `\(id.value)`.\nReason:\n\(error.localizedDescription)"
+            )
             interactor.handleError(error)
           }
         }

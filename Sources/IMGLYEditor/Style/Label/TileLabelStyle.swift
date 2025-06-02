@@ -10,7 +10,7 @@ struct TileLabelStyle: LabelStyle {
   var orientation = Orientation.vertical
   var titleFont = Font.footnote
   var iconFont = Font.title2
-  var size = CGSize(width: 83, height: 60)
+  var size = CGSize(width: 72, height: 60)
   var alignment: Alignment = .center
 
   private func title(_ configuration: Configuration) -> some View {
@@ -30,14 +30,14 @@ struct TileLabelStyle: LabelStyle {
         icon(configuration)
         title(configuration)
       }
-      .frame(idealWidth: size.width + 33, maxWidth: .infinity, alignment: alignment)
+      .frame(minWidth: size.width + 33, maxWidth: .infinity, alignment: alignment)
       .frame(height: 33)
     } else {
       VStack(spacing: 4) {
         icon(configuration)
         title(configuration)
       }
-      .frame(idealWidth: size.width, maxWidth: .infinity, alignment: alignment)
+      .frame(minWidth: size.width, maxWidth: .infinity, alignment: alignment)
       .frame(height: size.height)
     }
   }

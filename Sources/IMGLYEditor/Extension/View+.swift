@@ -172,6 +172,44 @@ public extension IMGLY where Wrapped: View {
     wrapped.environment(\.imglyInspectorBarModifications, modifications)
   }
 
+  /// Sets the registered ``CanvasMenu/Item``s and defines their order for the ``CanvasMenu`` UI component of the
+  /// editor. By default, the same items are used for all editor solutions.
+  /// - Note: Registering does not mean displaying. The `items` will be displayed if
+  /// ``EditorComponent/isVisible(_:)-hdb5`` returns `true` for them.
+  ///
+  /// The default implementation of this modifier is:
+  /// ```swift
+  /// .imgly.canvasMenuItems { context in
+  ///   CanvasMenu.Buttons.selectGroup()
+  ///   CanvasMenu.Divider()
+  ///   CanvasMenu.Buttons.bringForward()
+  ///   CanvasMenu.Buttons.sendBackward()
+  ///   CanvasMenu.Divider()
+  ///   CanvasMenu.Buttons.duplicate()
+  ///   CanvasMenu.Buttons.delete()
+  /// }
+  /// ```
+  /// - Parameter items: A ``CanvasMenu/Builder`` closure that provides the ``CanvasMenu/Context`` and returns an array
+  /// of ``CanvasMenu/Item``s.
+  /// - Returns: A view that has the given items set.
+  func canvasMenuItems(@CanvasMenu.Builder _ items: @escaping CanvasMenu.Items) -> some View {
+    wrapped.environment(\.imglyCanvasMenuItems, items)
+  }
+
+  /// Sets the modifications that should be applied to the order of ``CanvasMenu/Items``s defined by
+  /// ``canvasMenuItems(_:)``. This modifier can be used, when you do not want to touch the default general order of the
+  /// items, but rather add additional items and replace/hide some of the default items. By default, no modifications
+  /// are applied.
+  /// - Warning: Note that the order of items may change between editor versions, therefore
+  /// ``modifyCanvasMenuItems(_:)`` must be used with care. Consider overwriting the default items instead with
+  /// ``canvasMenuItems(_:)`` if you want to have strict ordering between different editor versions.
+  /// - Parameter modifications: A closure that provides the ``CanvasMenu/Context`` as first and a
+  /// ``CanvasMenu/Modifier`` as second argument. Use the modifier to change the items.
+  /// - Returns: A view that has the given modifications set.
+  func modifyCanvasMenuItems(_ modifications: @escaping CanvasMenu.Modifications) -> some View {
+    wrapped.environment(\.imglyCanvasMenuModifications, modifications)
+  }
+
   /// Sets the registered ``NavigationBar/Item``s and defines their order for the ``NavigationBar`` UI component of the
   /// editor. The default implementation of this modifier depends on the used editor solution.
   /// - Note: Registering does not mean displaying. The `items` will be displayed if
