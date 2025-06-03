@@ -92,6 +92,8 @@ import SwiftUI
       .sheet(isPresented: $interactor.sheet.isPresented) {
         let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
         interactor.updateZoom(for: .sheetClosed, with: zoom)
+        // Reset sheet state to prevent memory leaks from retain cycles in view references
+        interactor.sheet = SheetState()
       } content: {
         Sheet()
           .background {
