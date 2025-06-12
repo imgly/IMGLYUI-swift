@@ -10,7 +10,7 @@ struct TileLabelStyle: LabelStyle {
   var orientation = Orientation.vertical
   var titleFont = Font.footnote
   var iconFont = Font.title2
-  var size = CGSize(width: 72, height: 60)
+  var size = CGSize(width: 64, height: 60)
   var alignment: Alignment = .center
 
   private func title(_ configuration: Configuration) -> some View {

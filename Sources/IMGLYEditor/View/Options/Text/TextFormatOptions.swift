@@ -85,7 +85,7 @@ struct TextFormatOptions: View {
                              inlineTitle: false, selection: selection) { asset, isSelected in
           FontLabel(fontURL: asset.uri, isSelected: isSelected, title: .init(asset.subFamily))
         } linkLabel: { selection in
-          Text(selection?.subFamily ?? "Unnamed Weight")
+          Text(.init(selection?.subFamily ?? "Unnamed Weight"))
         }
       }
     }
