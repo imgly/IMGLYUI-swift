@@ -73,6 +73,7 @@ public extension IMGLY where Wrapped: View {
   ///     Dock.Buttons.textLibrary()
   ///     Dock.Buttons.shapesLibrary()
   ///     Dock.Buttons.stickersLibrary()
+  ///     Dock.Buttons.resize()
   ///   }
   ///
   /// PhotoEditor(settings)
@@ -97,6 +98,7 @@ public extension IMGLY where Wrapped: View {
   ///     Dock.Buttons.audioLibrary()
   ///     Dock.Buttons.voiceover()
   ///     Dock.Buttons.reorder()
+  ///     Dock.Buttons.resize()
   ///   }
   /// ```
   /// - Parameter items: A ``Dock/Builder`` closure that provides the ``Dock/Context`` and returns an array of
@@ -392,5 +394,10 @@ extension IMGLY where Wrapped: View {
 
   func onWillDisappear(_ perform: @escaping () -> Void) -> some View {
     wrapped.background(WillDisappearHandler(onWillDisappear: perform))
+  }
+
+  @MainActor
+  func alert(_ presented: Binding<Bool>, @ViewBuilder content: @escaping () -> some View) -> some View {
+    wrapped.modifier(AlertOverlay(isPresented: presented, overlay: content))
   }
 }

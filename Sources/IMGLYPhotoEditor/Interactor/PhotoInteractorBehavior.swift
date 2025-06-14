@@ -14,12 +14,12 @@ final class PhotoInteractorBehavior: InteractorBehavior {
 
     try context.engine.block.setScopeEnabled(page, scope: .key(.editorSelect), enabled: false)
     try context.engine.block.setScopeEnabled(page, scope: .key(.layerMove), enabled: false)
-    try context.engine.block.setScopeEnabled(page, scope: .key(.layerResize), enabled: false)
-    try context.engine.block.setScopeEnabled(page, scope: .key(.layerRotate), enabled: false)
+    try context.engine.block.setScopeEnabled(page, scope: .key(.layerResize), enabled: true)
+    try context.engine.block.setScopeEnabled(page, scope: .key(.layerRotate), enabled: true)
 
     try context.engine.editor.setSettingBool("page/allowCropInteraction", value: true)
-    try context.engine.editor.setSettingBool("page/allowMoveInteraction", value: false)
-    try context.engine.editor.setSettingBool("page/allowResizeInteraction", value: false)
+    try context.engine.editor.setSettingBool("page/allowMoveInteraction", value: true)
+    try context.engine.editor.setSettingBool("page/allowResizeInteraction", value: true)
     try context.engine.editor.setSettingBool("page/restrictResizeInteractionToFixedAspectRatio", value: false)
     try context.engine.editor.setSettingBool("page/allowRotateInteraction", value: false)
   }

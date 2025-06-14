@@ -66,6 +66,7 @@ public struct DesignEditor: View {
           Dock.Buttons.textLibrary()
           Dock.Buttons.shapesLibrary()
           Dock.Buttons.stickersLibrary()
+          Dock.Buttons.resize()
         }
       }
   }

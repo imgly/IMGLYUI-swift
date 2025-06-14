@@ -74,6 +74,11 @@ public extension SheetTypes {
     let id: DesignBlockID
   }
 
+  /// A sheet that is used to resize pages.
+  struct Resize: SheetType {
+    public let style: SheetStyle
+  }
+
   /// A sheet that is used to control the layering of design blocks.
   struct Layer: SheetType {
     public let style: SheetStyle
@@ -232,16 +237,26 @@ public extension SheetType where Self == SheetTypes.Blur {
 public extension SheetType where Self == SheetTypes.Crop {
   /// Creates a ``SheetType`` that is used to crop design blocks with image and video fills.
   /// - Parameters:
-  ///   - style: The style of the sheet. By default, the ``SheetStyle/default(isFloating:detent:detents:)`` style is
+  ///   - style: The style of the sheet. By default, the ``SheetStyle/only(detent:)`` style is
   /// used.
   ///   - id: The id of the design block to apply the crop.
   /// - Returns: The created ``SheetTypes/Crop`` sheet type.
   static func crop(
-    style: SheetStyle = .default(detent: .imgly.small, detents: [.imgly.small, .imgly.large]),
+    style: SheetStyle = .only(detent: .imgly.medium),
     id: DesignBlockID
   ) -> Self {
     Self(style: style, id: id)
   }
+}
+
+public extension SheetType where Self == SheetTypes.Resize {
+  /// Creates a ``SheetType`` that is used to resize pages.
+  /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(detent:)``style is
+  /// used.
+  /// - Returns: The created ``SheetTypes/Resize`` sheet type.
+  static func resize(
+    style: SheetStyle = .only(detent: .imgly.small)
+  ) -> Self { Self(style: style) }
 }
 
 public extension SheetType where Self == SheetTypes.Layer {

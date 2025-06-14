@@ -51,6 +51,8 @@ public extension Dock.Buttons.ID {
   static var blur: EditorComponentID { "ly.img.component.dock.button.blur" }
   /// The id of the ``Dock/Buttons/crop(action:title:icon:isEnabled:isVisible:)`` button.
   static var crop: EditorComponentID { "ly.img.component.dock.button.crop" }
+  /// The id of the ``Dock/Buttons/resize(action:title:icon:isEnabled:isVisible:)`` button.
+  static var resize: EditorComponentID { "ly.img.component.dock.button.resize" }
 }
 
 @MainActor
@@ -536,6 +538,29 @@ public extension Dock.Buttons {
     }
   ) -> some Dock.Item {
     Dock.Button(id: ID.crop, action: action, label: { context in
+      let title = try title(context)
+      let icon = try icon(context)
+      Label { title } icon: { icon }
+    }, isEnabled: isEnabled, isVisible: isVisible)
+  }
+
+  /// Creates a ``Dock/Button`` that opens the resize sheet.
+  /// - Parameters:
+  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  /// event is invoked with sheet type ``SheetType/resize(style:)``.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Resize" is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/resize``  is used.
+  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isVisible: Whether the button is visible. By default, it is always `true`.
+  /// - Returns: The created button.
+  static func resize(
+    action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .resize())) },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Resize") },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.resize },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+  ) -> some Dock.Item {
+    Dock.Button(id: ID.resize, action: action, label: { context in
       let title = try title(context)
       let icon = try icon(context)
       Label { title } icon: { icon }

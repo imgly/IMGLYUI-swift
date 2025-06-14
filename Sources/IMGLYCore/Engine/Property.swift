@@ -168,6 +168,8 @@ import Foundation
   case cameraResolutionHeight = "camera/resolution/height"
 
   case audioFileURI = "audio/fileURI"
+
+  case contentFillMode = "contentFill/mode"
 }
 
 @_spi(Internal) public extension Property {

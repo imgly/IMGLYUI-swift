@@ -6,4 +6,5 @@ enum ZoomEvent {
   case sheetGeometryChanged
   case textCursorChanged(CGPoint?)
   case sheetClosed
+  case pageSizeChanged
 }

@@ -14,6 +14,7 @@ struct Sheet: View {
     case .font: FontSheet()
     case .fontSize: FontSizeSheet()
     case .color: ColorSheet()
+    case .resize: ResizeOptionsSheet()
     default: EmptyView()
     }
   }
@@ -41,6 +42,7 @@ struct Sheet: View {
     case is SheetTypes.FillStroke: FillStrokeOptionsSheet()
     case is SheetTypes.TextBackground: BackgroundOptionsSheet()
     case is SheetTypes.Volume: VolumeOptionsSheet()
+    case is SheetTypes.Resize: ResizeOptionsSheet()
     default: EmptyView()
     }
   }

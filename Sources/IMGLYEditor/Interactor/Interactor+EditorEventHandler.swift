@@ -173,6 +173,9 @@ extension Interactor: EditorEventHandler {
       } else {
         setEditMode(.crop)
       }
+    case let sheet as SheetTypes.Resize:
+      clampPlayheadPositionToSelectedClip()
+      self.sheet = .init(sheet)
     case let sheet as SheetTypes.Layer:
       clampPlayheadPositionToSelectedClip()
       if let content = sheetContentForSelection {

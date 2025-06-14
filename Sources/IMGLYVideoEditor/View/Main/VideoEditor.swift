@@ -54,6 +54,7 @@ public struct VideoEditor: View {
           Dock.Buttons.audioLibrary()
           Dock.Buttons.voiceover()
           Dock.Buttons.reorder()
+          Dock.Buttons.resize()
         }
       }
   }

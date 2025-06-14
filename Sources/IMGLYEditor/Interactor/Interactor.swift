@@ -56,6 +56,8 @@ import SwiftUI
   typealias EffectType = IMGLYEngine.EffectType
   typealias Font = IMGLYEngine.Font
   typealias TextCase = IMGLYEngine.TextCase
+  typealias DesignUnit = IMGLYEngine.DesignUnit
+  typealias FillType = IMGLYEngine.FillType
 
   struct Selection: Equatable {
     let blocks: [BlockID]
@@ -654,7 +656,7 @@ extension Interactor {
 
   func isAllowed(_ id: BlockID?, _ mode: SheetMode) -> Bool {
     switch mode {
-    case .selectionColors, .font, .fontSize, .color:
+    case .selectionColors, .font, .fontSize, .color, .resize:
       true
     case .delete:
       isAllowed(id, Action.delete)
@@ -954,6 +956,98 @@ extension Interactor: AssetLibraryInteractor {
   }
 }
 
+// MARK: - Resizing
+
+extension Interactor {
+  func applyResizeAsset(sourceID: String, asset: AssetResult, to id: DesignBlockID?) {
+    func resizePages() async throws {
+      let pages = try engine?.getSortedPages()
+      if let pages {
+        // Temporarily disable camera clamping as otherwise the page carousel breaks
+        // while resizing as we cannot batch update the sizes for all pages.
+        // Do not temporarily disable the page carousel because this leads to
+        // visual bugs. It will be reapplied with the next zoom update.
+        try disableCameraClamping()
+
+        await withThrowingTaskGroup(of: Void.self) { group in
+          for page in pages {
+            group.addTask {
+              try await self.engine?.asset.applyToBlock(sourceID: sourceID, assetResult: asset, block: page)
+            }
+          }
+        }
+
+        switch asset.payload?.transformPreset {
+        case let .fixedSize(width, height, designUnit):
+          let scene = try engine?.scene.get()
+          if let scene {
+            try engine?.block.setFloat(scene, property: "scene/pageDimensions/width", value: width)
+            try engine?.block.setFloat(scene, property: "scene/pageDimensions/height", value: height)
+            try engine?.scene.setDesignUnit(designUnit)
+          }
+
+          updateZoom(
+            for: .pageSizeChanged,
+            with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding)
+          )
+        default: break
+        }
+      }
+    }
+
+    Task(priority: .userInitiated) {
+      do {
+        if let id, let type = try engine?.block.getType(id) {
+          if type == DesignBlockType.page.rawValue {
+            try await resizePages()
+          } else {
+            try await engine?.asset.applyToBlock(sourceID: sourceID, assetResult: asset, block: id)
+          }
+        } else {
+          try await resizePages()
+        }
+        try engine?.editor.addUndoStep()
+      } catch {
+        handleError(error)
+      }
+    }
+  }
+
+  func resizePages(width: CGFloat, height: CGFloat, designUnit: DesignUnit, dpi: CGFloat, pixelScale: CGFloat) throws {
+    guard let pages = try engine?.getSortedPages(), let scene = try engine?.scene.get() else { return }
+    // Temporarily disable camera clamping as otherwise the page carousel breaks
+    // while resizing as we cannot batch update the sizes for all pages.
+    // Do not temporarily disable the page carousel because this leads to
+    // visual bugs. It will be reapplied with the next zoom update.
+    try disableCameraClamping()
+
+    try engine?.scene.setDesignUnit(designUnit)
+    try engine?.block.setFloat(scene, property: "scene/pixelScaleFactor", value: Float(pixelScale))
+    try engine?.block.setFloat(scene, property: "scene/dpi", value: Float(dpi))
+    try engine?.block.setFloat(scene, property: "scene/pageDimensions/width", value: Float(width))
+    try engine?.block.setFloat(scene, property: "scene/pageDimensions/height", value: Float(height))
+    try engine?.block.resizeContentAware(pages, width: Float(width), height: Float(height))
+
+    for page in pages {
+      try engine?.block.setWidth(page, value: Float(width))
+      try engine?.block.setHeight(page, value: Float(height))
+    }
+    updateZoom(for: .pageSizeChanged, with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding))
+    try engine?.editor.addUndoStep()
+  }
+
+  private func disableCameraClamping() throws {
+    guard let engine else { return }
+    let scene = try engine.getScene()
+    if try engine.scene.unstable_isCameraZoomClampingEnabled(scene) {
+      try engine.scene.unstable_disableCameraZoomClamping()
+    }
+    if try engine.scene.unstable_isCameraPositionClampingEnabled(scene) {
+      try engine.scene.unstable_disableCameraPositionClamping()
+    }
+  }
+}
+
 // MARK: - Actions
 
 extension Interactor {
@@ -1038,6 +1132,10 @@ extension Interactor {
         } else {
           try engine?.sendBackwardSelectedElement()
         }
+      case .resize:
+        sheet.commit { model in
+          model = .init(mode, style: .only(detent: .imgly.small))
+        }
       }
     } catch {
       handleError(error)
@@ -1103,13 +1201,32 @@ extension Interactor {
 
   // MARK: - Zoom
 
-  func updateZoom(for event: ZoomEvent,
-                  // swiftlint:disable:next large_tuple
-                  with zoom: (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat)) {
+  // swiftlint:disable:next large_tuple
+  func updateZoom(for event: ZoomEvent, with zoom: (zoomPadding: CGFloat,
+                                                    canvasGeometry: Geometry?,
+                                                    sheetGeometry: Geometry?,
+                                                    layoutDirection: LayoutDirection?)) {
+    let zoomParameters = zoomParameters(
+      zoomPadding: zoom.zoomPadding,
+      canvasGeometry: zoom.canvasGeometry,
+      sheetGeometry: zoom.sheetGeometry,
+      layoutDirection: zoom.layoutDirection ?? .leftToRight
+    )
+    updateZoom(for: event, with: zoomParameters)
+  }
+
+  private func updateZoom(for event: ZoomEvent,
+                          // swiftlint:disable:next large_tuple
+                          with zoom: (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat)) {
     if zoomModel.defaultPadding != zoom.padding {
       zoomModel.defaultPadding = zoom.padding
     }
+    if zoomModel.canvasHeight != zoom.canvasHeight {
+      zoomModel.canvasHeight = zoom.canvasHeight
+    }
     switch event {
+    case .pageSizeChanged:
+      updateZoom(with: zoom.insets, canvasHeight: zoom.canvasHeight, zoomToPage: true)
     case .canvasGeometryChanged:
       zoomModel.defaultInsets = zoom.insets ?? EdgeInsets()
       updateZoom(
@@ -1219,6 +1336,35 @@ extension Interactor {
         handleError(error)
       }
     }
+  }
+
+  func zoomParameters(
+    zoomPadding: CGFloat,
+    canvasGeometry: Geometry?,
+    sheetGeometry: Geometry?,
+    layoutDirection: LayoutDirection = .leftToRight
+    // swiftlint:disable:next large_tuple
+  ) -> (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat) {
+    let canvasHeight = canvasGeometry?.size.height ?? 0
+
+    let insets: EdgeInsets?
+    if let sheetGeometry, let canvasGeometry {
+      var sheetInsets = canvasGeometry.safeAreaInsets
+      let height = canvasGeometry.size.height
+      let sheetMinY = sheetGeometry.frame.minY - sheetGeometry.safeAreaInsets.top
+      sheetInsets.bottom = max(sheetInsets.bottom, zoomPadding + height - sheetMinY)
+      sheetInsets.bottom = min(sheetInsets.bottom, height * 0.7)
+      insets = sheetInsets
+    } else {
+      insets = canvasGeometry?.safeAreaInsets
+    }
+
+    if var rtl = insets, layoutDirection == .rightToLeft {
+      swap(&rtl.leading, &rtl.trailing)
+      return (rtl, canvasHeight, zoomPadding)
+    }
+
+    return (insets, canvasHeight, zoomPadding)
   }
 }
 
@@ -1334,11 +1480,13 @@ extension Interactor {
       try getContext(behavior.enableEditMode)
     }
     viewMode = .edit
+    sheet.isPresented = false
   }
 
   func enablePagesMode() throws {
     try engine?.block.deselectAll()
     viewMode = .pages
+    sheet.isPresented = false
   }
 
   func exportScene() {
@@ -1748,6 +1896,11 @@ extension Interactor {
   func historyChanged() {
     guard let engine else { return }
     do {
+      // If in page crop/resize mode, zoom to page again.
+      if editMode == .crop, let selection = selection?.blocks.first, let type = try? engine.block.getType(selection),
+         type != DesignBlockType.graphic.rawValue {
+        updateZoom(for: .pageSizeChanged, with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding))
+      }
       if isPagesMode {
         try pageOverview.update(from: engine)
       } else {

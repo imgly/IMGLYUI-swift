@@ -16,7 +16,7 @@ import Foundation
     case .delete: "Delete"
     case let .page(index): "Page \(index + 1)"
     case .addPage: "Add Page"
-    case .resetCrop: "Reset Crop"
+    case .resetCrop: "Reset"
     case .flipCrop: "Flip"
     }
   }

@@ -12,6 +12,7 @@ enum SheetMode: Labelable, IdentifiableByHash {
   case fontSize(_ id: Interactor.BlockID?)
   case color(_ id: Interactor.BlockID?, _ colorPalette: [NamedColor]?)
   case delete, duplicate
+  case resize
 
   var pinnedBlockID: Interactor.BlockID? {
     switch self {
@@ -48,6 +49,7 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .addPage: "Add Page"
     case .moveUp: "Move Up"
     case .moveDown: "Move Down"
+    case .resize: "Resize"
     }
   }
 
@@ -60,6 +62,7 @@ enum SheetMode: Labelable, IdentifiableByHash {
     case .addPage: "custom.doc.badge.plus"
     case .moveUp: "arrow.up.doc"
     case .moveDown: "arrow.down.doc"
+    case .resize: "custom.arrow.down.left.and.arrow.up.right"
     }
   }
 

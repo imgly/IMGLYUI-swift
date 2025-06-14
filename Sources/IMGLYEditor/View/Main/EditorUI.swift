@@ -19,33 +19,6 @@ import SwiftUI
   private var sheetGeometryIfPresented: Geometry? { interactor.sheet.isPresented ? sheetGeometry : nil }
   private let zoomPadding: CGFloat
 
-  private func zoomParameters(
-    canvasGeometry: Geometry?,
-    sheetGeometry: Geometry?
-    // swiftlint:disable:next large_tuple
-  ) -> (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat) {
-    let canvasHeight = canvasGeometry?.size.height ?? 0
-
-    let insets: EdgeInsets?
-    if let sheetGeometry, let canvasGeometry {
-      var sheetInsets = canvasGeometry.safeAreaInsets
-      let height = canvasGeometry.size.height
-      let sheetMinY = sheetGeometry.frame.minY - sheetGeometry.safeAreaInsets.top
-      sheetInsets.bottom = max(sheetInsets.bottom, zoomPadding + height - sheetMinY)
-      sheetInsets.bottom = min(sheetInsets.bottom, height * 0.7)
-      insets = sheetInsets
-    } else {
-      insets = canvasGeometry?.safeAreaInsets
-    }
-
-    if var rtl = insets, layoutDirection == .rightToLeft {
-      swap(&rtl.leading, &rtl.trailing)
-      return (rtl, canvasHeight, zoomPadding)
-    }
-
-    return (insets, canvasHeight, zoomPadding)
-  }
-
   @State private var interactivePopGestureRecognizer: UIGestureRecognizer?
 
   @_spi(Internal) public var body: some View {
@@ -71,29 +44,25 @@ import SwiftUI
         canvasGeometry = newValue
       }
       .onChange(of: canvasGeometry) { newValue in
-        let zoom = zoomParameters(canvasGeometry: newValue, sheetGeometry: sheetGeometryIfPresented)
-        interactor.updateZoom(for: .canvasGeometryChanged, with: zoom)
+        updateZoom(for: .canvasGeometryChanged, canvasGeometry: newValue)
       }
       .onChange(of: interactor.page) { _ in
-        let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
-        interactor.updateZoom(for: .pageChanged, with: zoom)
+        updateZoom(for: .pageChanged)
       }
       .onChange(of: interactor.isPagesMode) { newValue in
         if !newValue {
           // Force zoom to page when the page overview is closed to be sure that the right page is always shown.
-          let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
-          interactor.updateZoom(for: .pageChanged, with: zoom)
+          updateZoom(for: .pageChanged)
         }
       }
       .onChange(of: interactor.textCursorPosition) { newValue in
-        let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
-        interactor.updateZoom(for: .textCursorChanged(newValue), with: zoom)
+        updateZoom(for: .textCursorChanged(newValue))
       }
       .sheet(isPresented: $interactor.sheet.isPresented) {
-        let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
-        interactor.updateZoom(for: .sheetClosed, with: zoom)
+        updateZoom(for: .sheetClosed)
         // Reset sheet state to prevent memory leaks from retain cycles in view references
         interactor.sheet = SheetState()
+
       } content: {
         Sheet()
           .background {
@@ -107,8 +76,7 @@ import SwiftUI
           }
           .onChange(of: sheetGeometry) { newValue in
             if newValue?.frame == .zero { return }
-            let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: newValue)
-            interactor.updateZoom(for: .sheetGeometryChanged, with: zoom)
+            updateZoom(for: .sheetGeometryChanged, sheetGeometry: newValue)
           }
           .imgly.errorAlert(isSheet: true)
           // We're setting the color scheme here because .preferredColorScheme inside 'Sheet'
@@ -119,7 +87,12 @@ import SwiftUI
       .modifier(ExportSheet(exportState: interactor.export))
       .modifier(ShareSheet())
       .onAppear {
-        let zoom = zoomParameters(canvasGeometry: canvasGeometry, sheetGeometry: sheetGeometryIfPresented)
+        let zoom = interactor.zoomParameters(
+          zoomPadding: zoomPadding,
+          canvasGeometry: canvasGeometry,
+          sheetGeometry: sheetGeometryIfPresented,
+          layoutDirection: layoutDirection
+        )
         interactor.loadScene(with: zoom.insets)
       }
       .imgly.onWillDisappear {
@@ -175,6 +148,16 @@ import SwiftUI
         }
       }
       .modifier(NavigationBarView(items: navigationBarItems ?? { _ in [] }, context: navigationBarContext))
+  }
+
+  private func updateZoom(for _: ZoomEvent, canvasGeometry: Geometry? = nil, sheetGeometry: Geometry? = nil) {
+    let zoom = (
+      zoomPadding,
+      canvasGeometry ?? self.canvasGeometry,
+      sheetGeometry ?? sheetGeometryIfPresented,
+      layoutDirection
+    )
+    interactor.updateZoom(for: .sheetClosed, with: zoom)
   }
 
   @Environment(\.imglyNavigationBarItems) private var navigationBarItems

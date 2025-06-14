@@ -51,7 +51,7 @@ struct BottomBar: View {
       return []
     }
 
-    var modes: [SheetMode] = [.editPage, .addPage, .moveUp, .moveDown, .duplicate]
+    var modes: [SheetMode] = [.editPage, .addPage, .moveUp, .moveDown, .duplicate, .resize]
     if interactor.pageCount > 1 {
       modes += [.delete]
     }

@@ -258,7 +258,7 @@ extension EnvironmentValues {
         .filter { !excludedSources.contains($0.sourceID) }
         .prefix(maxItemCount)
         .enumerated())
-      ForEach(items, id: \.element) { index, asset in
+      ForEach(items, id: \.element.id) { index, asset in
         let padding: CGFloat = {
           if index > 0 {
             return asset.sourceID != data.model.assets[index - 1].sourceID ? sourcePadding : 0
@@ -270,7 +270,7 @@ extension EnvironmentValues {
           .modifier(AttributionSheet(asset: asset) {
             selectedAsset = asset
           })
-          .id(itemIndex(asset) ?? index as AnyHashable)
+          .id(itemIndex(asset) ?? asset.id as AnyHashable)
           .onAppear {
             loadMoreContentIfNeeded(currentItem: asset)
           }

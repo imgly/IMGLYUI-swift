@@ -47,6 +47,8 @@ public extension IMGLY where Wrapped == Image {
   static let volume = Wrapped(systemName: "speaker.wave.3.fill")
   /// An icon image for crop.
   static let crop = Wrapped(systemName: "crop.rotate")
+  /// An icon image for resize.
+  static let resize = Wrapped("custom.arrow.down.left.and.arrow.up.right", bundle: .module)
 
   /// An icon image for duplicate.
   static let duplicate = Wrapped(systemName: "plus.square.on.square")

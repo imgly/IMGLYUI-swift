@@ -16,7 +16,10 @@ struct CropOptions: View {
         try blocks.forEach {
           isStraighteningOrRotating = true
           let oldCropScaleRatio = try engine.block.getCropScaleRatio($0)
-          try engine.block.adjustCropToFillFrame($0, minScaleRatio: minScaleRatio)
+          let contentFillMode = try engine.block.getContentFillMode($0)
+          if contentFillMode != .contain {
+            try engine.block.adjustCropToFillFrame($0, minScaleRatio: minScaleRatio)
+          }
           let newCropScaleRatio = try engine.block.getCropScaleRatio($0)
           if oldCropScaleRatio == newCropScaleRatio {
             isStraighteningOrRotating = false
@@ -41,15 +44,45 @@ struct CropOptions: View {
       cropRotationDegrees.wrappedValue = cropRotationDegrees.wrappedValue.decomposedDegrees.rotationDegrees + value
     }
 
-    Section("Straighten") {
-      MeasurementScalePicker(value: straightenDegrees, unit: UnitAngle.degrees, in: -45 ... 45,
-                             tickStep: 3, tickSpacing: 10) { started in
-        if !started {
-          interactor.addUndoStep()
-        }
+    HStack(alignment: .bottom, spacing: 0) {
+      Button {
+        interactor.actionButtonTapped(for: .flipCrop)
+      } label: {
+        Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right")
+          .font(.title3)
+          .tint(.primary)
+          .frame(width: 44, height: 44)
+          .padding(.leading, 8)
       }
-      .accessibilityLabel("Straighten")
+      .accessibilityLabel("Flip")
+      VStack(alignment: .center, spacing: 1) {
+        Text("Rotate")
+          .font(.caption2)
+        MeasurementScalePicker(value: straightenDegrees, unit: UnitAngle.degrees, in: -45 ... 45,
+                               tickStep: 3, tickSpacing: 10) { started in
+          if !started {
+            interactor.addUndoStep()
+          }
+        }
+        .accessibilityLabel("Straighten")
+      }
+      Button {
+        cropRotationDegrees.wrappedValue = (cropRotationDegrees.wrappedValue - 90).normalizedDegrees
+        interactor.addUndoStep()
+      } label: {
+        Image(systemName: "rotate.left")
+          .font(.title3)
+          .tint(.primary)
+      }
+      .buttonStyle(.option)
+      .frame(width: 44, height: 44)
+      .padding(.trailing, 8)
+      .accessibilityLabel("Rotate")
     }
+    .padding(.vertical, 8)
+    .background(Color(.secondarySystemGroupedBackground))
+    .clipShape(RoundedRectangle(cornerRadius: 13))
+    .padding(.horizontal, 16)
     .onAppear {
       minScaleRatio = cropScaleRatio.wrappedValue
     }
@@ -60,35 +93,45 @@ struct CropOptions: View {
       }
       minScaleRatio = newValue
     }
-
-    Section {
-      EmptyView()
-    } header: {
-      HStack(spacing: 8) {
-        ActionButton(.resetCrop)
-          .disabled(!interactor.canResetCrop(id))
-        Button {
-          cropRotationDegrees.wrappedValue = (cropRotationDegrees.wrappedValue - 90).normalizedDegrees
-          interactor.addUndoStep()
-        } label: {
-          Label("Rotate", systemImage: "rotate.left")
-        }
-        ActionButton(.flipCrop)
-      }
-      .tint(.primary)
-      .buttonStyle(.option)
-      .labelStyle(.tile(orientation: .vertical))
-    }
-    .listRowInsets(EdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0))
-    .textCase(.none)
   }
 
   var body: some View {
-    List {
+    VStack {
       if interactor.supportsCrop(id) {
         cropOptions
+          .padding(.bottom, 8)
+        TransformOptions(interactor: interactor, item: { asset in
+          TransformItem(asset: asset)
+        },
+        sources: sources,
+        mode: transformMode)
       }
     }
+    .background(Color(.systemGroupedBackground))
+  }
+
+  private var sources: [AssetLoader.SourceData] {
+    switch (isPage, interactor.behavior.unselectedPageCrop) {
+    case (true, true):
+      [.init(id: "ly.img.crop.presets"), .init(id: "ly.img.page.presets")]
+    case (true, false):
+      [.init(id: "ly.img.page.presets")]
+    case (false, _):
+      [.init(id: "ly.img.crop.presets")]
+    }
+  }
+
+  private var transformMode: TransformMode {
+    guard let id else { return .cropAndResize }
+    if !isPage { return .crop }
+    let hasImageFill = interactor.get(id, .fill, property: .key(.type)) == Interactor.FillType.image.rawValue
+    return hasImageFill ? .cropAndResize : .resize
+  }
+
+  private var isPage: Bool {
+    guard let id else { return true }
+    let isPage = interactor.get(id, property: .key(.type)) == Interactor.BlockType.page.rawValue
+    return isPage
   }
 }
 
