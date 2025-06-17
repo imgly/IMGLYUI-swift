@@ -962,7 +962,8 @@ extension Interactor {
   func applyResizeAsset(sourceID: String, asset: AssetResult, to id: DesignBlockID?) {
     func resizePages() async throws {
       let pages = try engine?.getSortedPages()
-      if let pages {
+      let scene = try engine?.scene.get()
+      if let engine, let pages, let scene {
         // Temporarily disable camera clamping as otherwise the page carousel breaks
         // while resizing as we cannot batch update the sizes for all pages.
         // Do not temporarily disable the page carousel because this leads to
@@ -972,26 +973,31 @@ extension Interactor {
         await withThrowingTaskGroup(of: Void.self) { group in
           for page in pages {
             group.addTask {
-              try await self.engine?.asset.applyToBlock(sourceID: sourceID, assetResult: asset, block: page)
+              try await engine.asset.applyToBlock(sourceID: sourceID, assetResult: asset, block: page)
             }
           }
         }
 
         switch asset.payload?.transformPreset {
         case let .fixedSize(width, height, designUnit):
-          let scene = try engine?.scene.get()
-          if let scene {
-            try engine?.block.setFloat(scene, property: "scene/pageDimensions/width", value: width)
-            try engine?.block.setFloat(scene, property: "scene/pageDimensions/height", value: height)
-            try engine?.scene.setDesignUnit(designUnit)
+          let dpi: Float = designUnit == .px ? 72 : 300
+          try engine.block.setFloat(scene, property: "scene/pageDimensions/width", value: width)
+          try engine.block.setFloat(scene, property: "scene/pageDimensions/height", value: height)
+          try engine.block.setFloat(scene, property: "scene/dpi", value: dpi)
+        case .fixedAspectRatio:
+          if let id {
+            let width = try engine.block.getWidth(id)
+            let height = try engine.block.getHeight(id)
+            try engine.block.setFloat(scene, property: "scene/pageDimensions/width", value: width)
+            try engine.block.setFloat(scene, property: "scene/pageDimensions/height", value: height)
           }
-
-          updateZoom(
-            for: .pageSizeChanged,
-            with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding)
-          )
         default: break
         }
+
+        updateZoom(
+          for: .pageSizeChanged,
+          with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding)
+        )
       }
     }
 
@@ -1028,10 +1034,6 @@ extension Interactor {
     try engine?.block.setFloat(scene, property: "scene/pageDimensions/height", value: Float(height))
     try engine?.block.resizeContentAware(pages, width: Float(width), height: Float(height))
 
-    for page in pages {
-      try engine?.block.setWidth(page, value: Float(width))
-      try engine?.block.setHeight(page, value: Float(height))
-    }
     updateZoom(for: .pageSizeChanged, with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding))
     try engine?.editor.addUndoStep()
   }
