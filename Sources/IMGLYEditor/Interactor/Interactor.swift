@@ -205,6 +205,8 @@ import SwiftUI
   /// Stores Combine subscriptions
   var cancellables = Set<AnyCancellable>()
 
+  private var isResizingPages = false
+
   // MARK: - Life cycle
 
   init(config: EngineConfiguration, behavior: InteractorBehavior, dismiss: DismissAction) {
@@ -998,6 +1000,7 @@ extension Interactor {
           for: .pageSizeChanged,
           with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding)
         )
+        isResizingPages = true
       }
     }
 
@@ -1035,6 +1038,8 @@ extension Interactor {
     try engine?.block.resizeContentAware(pages, width: Float(width), height: Float(height))
 
     updateZoom(for: .pageSizeChanged, with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding))
+
+    isResizingPages = true
     try engine?.editor.addUndoStep()
   }
 
@@ -1897,6 +1902,7 @@ extension Interactor {
 
   func historyChanged() {
     guard let engine else { return }
+
     do {
       // If in page crop/resize mode, zoom to page again.
       if editMode == .crop, let selection = selection?.blocks.first, let type = try? engine.block.getType(selection),
@@ -1918,9 +1924,13 @@ extension Interactor {
         page = pageIndex
       }
     } else {
-      let pageIndex = try? engine.getCurrentPageIndex()
-      if let pageIndex, pageIndex != page {
-        page = pageIndex
+      if isResizingPages {
+        isResizingPages = false
+      } else {
+        let pageIndex = try? engine.getCurrentPageIndex()
+        if let pageIndex, pageIndex != page {
+          page = pageIndex
+        }
       }
     }
     let canUndo = (try? engine.editor.canUndo()) ?? false

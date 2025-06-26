@@ -36,14 +36,15 @@ import SwiftUI
     }
   }
 
-  var mediaDescription: String {
-    if media.contains(.image), media.contains(.movie) {
+  private func titleKey(for action: String) -> LocalizedStringKey {
+    let suffix = if media.contains(.image), media.contains(.movie) {
       "Photo or Video"
     } else if media.contains(.image) {
       "Photo"
     } else {
       "Video"
     }
+    return LocalizedStringKey(action + " " + suffix)
   }
 
   @_spi(Internal) public var body: some View {
@@ -51,17 +52,17 @@ import SwiftUI
       Button {
         showImagePicker.toggle()
       } label: {
-        SwiftUI.Label(LocalizedStringKey("Choose \(mediaDescription)"), systemImage: "photo.on.rectangle")
+        SwiftUI.Label(titleKey(for: "Choose"), systemImage: "photo.on.rectangle")
       }
       Button {
         showCamera.toggle()
       } label: {
-        SwiftUI.Label(LocalizedStringKey("Take \(mediaDescription)"), systemImage: "camera")
+        SwiftUI.Label(titleKey(for: "Take"), systemImage: "camera")
       }
       Button {
         showFileImporter.toggle()
       } label: {
-        SwiftUI.Label(LocalizedStringKey("Select \(mediaDescription)"), systemImage: "folder")
+        SwiftUI.Label(titleKey(for: "Select"), systemImage: "folder")
       }
     } label: {
       label()

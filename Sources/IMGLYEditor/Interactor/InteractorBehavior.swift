@@ -127,10 +127,6 @@ import SwiftUI
     // Make sure to set all settings before calling `onCreate` callback so that the consumer can change them if needed!
     try await context.interactor.config.callbacks.onCreate(context.engine)
 
-    let scene = try context.engine.getScene()
-    let page = try context.engine.getPage(context.interactor.page)
-    _ = try context.engine.block.addOutline(Engine.outlineBlockName, for: page, to: scene)
-    try context.engine.showOutline(false)
     try context.engine.showPage(context.interactor.page)
     try enableEditMode(context)
     let zoomLevel = try await context.engine.zoomToPage(

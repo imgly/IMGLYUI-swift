@@ -1,6 +1,7 @@
 @_spi(Internal) import IMGLYCore
 @_spi(Internal) import IMGLYCoreUI
 @_spi(Internal) import IMGLYEditor
+import IMGLYEngine
 import SwiftUI
 
 final class ApparelInteractorBehavior: InteractorBehavior {
@@ -18,6 +19,16 @@ final class ApparelInteractorBehavior: InteractorBehavior {
       try context.engine.block.set($0, property: .key(.fillEnabled), value: false)
       try context.engine.showOutline(false)
     }
+  }
+
+  func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws {
+    try await DefaultInteractorBehavior.default.loadScene(context, with: insets)
+
+    let scene = try context.engine.getScene()
+    let page = try context.engine.getPage(context.interactor.page)
+    _ = try context.engine.block.addOutline(Engine.outlineBlockName, for: page, to: scene)
+    try context.engine.showOutline(false)
+    try pageSetup(context)
   }
 
   func enableEditMode(_ context: InteractorContext) throws {

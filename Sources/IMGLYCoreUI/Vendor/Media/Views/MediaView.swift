@@ -1,4 +1,5 @@
 #if os(iOS)
+  import AVFoundation
   import CoreServices
   import Photos
   import SwiftUI
@@ -62,6 +63,11 @@
 
   final class CameraWrapper: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate,
     UIAdaptivePresentationControllerDelegate {
+    private enum Localization {
+      static var buttonCancel: String { NSLocalizedString("Cancel", comment: "") }
+      static var buttonSettings: String { NSLocalizedString("Settings", comment: "") }
+    }
+
     fileprivate var isPresented: Binding<Bool>
     fileprivate var source: UIImagePickerController.SourceType
     fileprivate var media: [MediaType]
@@ -96,30 +102,110 @@
 
     func updateState() {
       let isAlreadyPresented = presentedViewController != nil
+      guard isAlreadyPresented != isPresented.wrappedValue, !isAlreadyPresented else { return }
 
-      if isAlreadyPresented != isPresented.wrappedValue {
-        if !isAlreadyPresented {
-          let controller = UIImagePickerController()
+      if source == .camera {
+        let requiresMicrophone = media.contains { $0 == .movie }
 
-          controller.sourceType = source
-          controller.mediaTypes = media.map(\.identifier)
-          if FeatureFlags.isEnabled(.transcodePickerImageImports) {
-            controller.imageExportPreset = .compatible
-          } else {
-            controller.imageExportPreset = .current
+        func handleMicrophonePermission() {
+          guard requiresMicrophone else {
+            presentImagePicker()
+            return
           }
-          if FeatureFlags.isEnabled(.transcodePickerVideoImports) {
-            controller.videoExportPreset = AVAssetExportPresetHighestQuality
-          } else {
-            controller.videoExportPreset = AVAssetExportPresetPassthrough
+
+          switch AVCaptureDevice.authorizationStatus(for: .audio) {
+          case .authorized:
+            presentImagePicker()
+          case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .audio) { micGranted in
+              DispatchQueue.main.async {
+                micGranted ? self.presentImagePicker() : self.presentMicrophonePermissionAlert()
+              }
+            }
+          case .denied, .restricted:
+            presentMicrophonePermissionAlert()
+          @unknown default:
+            presentMicrophonePermissionAlert()
           }
-          controller.delegate = self
-          controller.presentationController?.delegate = self
-          controller.modalPresentationStyle = .automatic
-          controller.overrideUserInterfaceStyle = (colorScheme == .dark) ? .dark : .light
-          present(controller, animated: true, completion: nil)
         }
+
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+          handleMicrophonePermission()
+        case .notDetermined:
+          AVCaptureDevice.requestAccess(for: .video) { cameraGranted in
+            DispatchQueue.main.async {
+              cameraGranted ? handleMicrophonePermission() : self.presentCameraPermissionAlert()
+            }
+          }
+        case .denied, .restricted:
+          presentCameraPermissionAlert()
+        @unknown default:
+          presentCameraPermissionAlert()
+        }
+      } else {
+        presentImagePicker()
       }
+    }
+
+    private func presentCameraPermissionAlert() {
+      let alert = UIAlertController(
+        title: CamMicUsageDescriptionFromBundleHelper.shared.cameraAlertHeadline,
+        message: CamMicUsageDescriptionFromBundleHelper.shared.cameraUsageDescription,
+        preferredStyle: .alert
+      )
+      alert.addAction(UIAlertAction(title: Localization.buttonCancel, style: .cancel) { [weak self] _ in
+        self?.isPresented.wrappedValue = false
+      })
+
+      alert.addAction(UIAlertAction(title: Localization.buttonSettings, style: .default) { _ in
+        if let appSettings = URL(string: UIApplication.openSettingsURLString),
+           UIApplication.shared.canOpenURL(appSettings) {
+          UIApplication.shared.open(appSettings)
+        }
+      })
+      present(alert, animated: true)
+    }
+
+    private func presentMicrophonePermissionAlert() {
+      let alert = UIAlertController(
+        title: CamMicUsageDescriptionFromBundleHelper.shared.microphoneAlertHeadline,
+        message: CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription,
+        preferredStyle: .alert
+      )
+      alert.addAction(UIAlertAction(title: Localization.buttonCancel, style: .cancel) { [weak self] _ in
+        self?.isPresented.wrappedValue = false
+      })
+
+      alert.addAction(UIAlertAction(title: Localization.buttonSettings, style: .default) { _ in
+        if let appSettings = URL(string: UIApplication.openSettingsURLString),
+           UIApplication.shared.canOpenURL(appSettings) {
+          UIApplication.shared.open(appSettings)
+        }
+      })
+      present(alert, animated: true)
+    }
+
+    private func presentImagePicker() {
+      let controller = UIImagePickerController()
+
+      controller.sourceType = source
+      controller.mediaTypes = media.map(\.identifier)
+      if FeatureFlags.isEnabled(.transcodePickerImageImports) {
+        controller.imageExportPreset = .compatible
+      } else {
+        controller.imageExportPreset = .current
+      }
+      if FeatureFlags.isEnabled(.transcodePickerVideoImports) {
+        controller.videoExportPreset = AVAssetExportPresetHighestQuality
+      } else {
+        controller.videoExportPreset = AVAssetExportPresetPassthrough
+      }
+      controller.delegate = self
+      controller.presentationController?.delegate = self
+      controller.modalPresentationStyle = .automatic
+      controller.overrideUserInterfaceStyle = (colorScheme == .dark) ? .dark : .light
+      present(controller, animated: true, completion: nil)
     }
 
     func presentationControllerDidDismiss(_: UIPresentationController) {

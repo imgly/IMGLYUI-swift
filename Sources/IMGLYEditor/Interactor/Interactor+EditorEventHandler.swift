@@ -239,7 +239,7 @@ extension Interactor: EditorEventHandler {
   @discardableResult func hideSheet() -> Bool {
     let wasPresented = sheet.isPresented
     if sheet.isPresented {
-      export.hide()
+      sheet = .init()
     }
     return wasPresented
   }

@@ -150,14 +150,14 @@ import SwiftUI
       .modifier(NavigationBarView(items: navigationBarItems ?? { _ in [] }, context: navigationBarContext))
   }
 
-  private func updateZoom(for _: ZoomEvent, canvasGeometry: Geometry? = nil, sheetGeometry: Geometry? = nil) {
+  private func updateZoom(for event: ZoomEvent, canvasGeometry: Geometry? = nil, sheetGeometry: Geometry? = nil) {
     let zoom = (
       zoomPadding,
       canvasGeometry ?? self.canvasGeometry,
       sheetGeometry ?? sheetGeometryIfPresented,
       layoutDirection
     )
-    interactor.updateZoom(for: .sheetClosed, with: zoom)
+    interactor.updateZoom(for: event, with: zoom)
   }
 
   @Environment(\.imglyNavigationBarItems) private var navigationBarItems
