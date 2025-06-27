@@ -8,9 +8,9 @@ enum ContentFillMode: String, MappedEnum {
   var imageName: String? {
     switch self {
     case .Cover:
-      "custom.fillmode.crop"
-    case .Crop:
       "custom.fillmode.cover"
+    case .Crop:
+      "custom.fillmode.crop"
     case .Contain:
       "custom.fillmode.fit"
     }
