@@ -1247,6 +1247,8 @@ extension Interactor {
         updateZoom(with: zoom.insets, canvasHeight: zoom.canvasHeight, zoomToPage: true)
       }
     case .sheetGeometryChanged:
+      // Reset zoom insets to properly allow zooming to the page while the sheet is open.
+      zoomModel.defaultInsets = zoom.insets ?? EdgeInsets()
       updateZoom(with: zoom.insets, canvasHeight: zoom.canvasHeight)
     case .sheetClosed:
       // Reset zoom insets because they could have been overwritten by canvas geometry changes
