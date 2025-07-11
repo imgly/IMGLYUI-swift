@@ -1,16 +1,16 @@
 import Foundation
 @_spi(Internal) import IMGLYCoreUI
 
-enum StrokePosition: String, MappedEnum {
+enum StrokePosition: String, MappedEnum, Labelable {
   case inside = "Inner"
   case center = "Center"
   case outside = "Outer"
 
-  var description: String {
+  var localizationValue: String.LocalizationValue {
     switch self {
-    case .inside: "Inside"
-    case .center: "Center"
-    case .outside: "Outside"
+    case .inside: "ly_img_editor_sheet_fill_stroke_position_option_inside"
+    case .center: "ly_img_editor_sheet_fill_stroke_position_option_center"
+    case .outside: "ly_img_editor_sheet_fill_stroke_position_option_outside"
     }
   }
 

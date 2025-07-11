@@ -1,5 +1,6 @@
 import SwiftUI
 @_spi(Internal) import IMGLYCore
+@_spi(Internal) import IMGLYCoreUI
 
 struct CropModeSelector: View {
   @EnvironmentObject private var interactor: Interactor
@@ -28,7 +29,7 @@ struct CropModePicker: View {
         Picker("", selection: $selection) {
           ForEach(groups[index], id: \.self) { mode in
             Label {
-              Text(mode.description)
+              Text(mode.localizedStringResource)
             } icon: {
               icon(for: mode)
             }
@@ -42,7 +43,7 @@ struct CropModePicker: View {
         HStack(spacing: 4) {
           icon(for: selection)
             .foregroundColor(.primary)
-          Text(selection.description)
+          Text(selection.localizedStringResource)
         }
         .transaction { transaction in
           transaction.animation = nil

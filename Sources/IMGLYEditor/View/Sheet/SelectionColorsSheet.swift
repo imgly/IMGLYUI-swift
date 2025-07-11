@@ -6,14 +6,14 @@ struct SelectionColorsSheet: View {
 
   @State var selectionColors = SelectionColors()
 
-  @ViewBuilder func colorOptions(_ title: LocalizedStringKey, colors: [SelectionColor]) -> some View {
+  @ViewBuilder func colorOptions(_ title: LocalizedStringResource, colors: [SelectionColor]) -> some View {
     ForEach(colors) { color in
       ColorOptions(title: title, color: color.binding, addUndoStep: interactor.addUndoStep)
     }
   }
 
   var body: some View {
-    DismissableTitledSheet("Template Colors") {
+    DismissableTitledSheet(.imgly.localized("ly_img_editor_postcard_sheet_colors_title")) {
       List {
         let sections = interactor.bind(selectionColors, completion: nil)
         ForEach(sections, id: \.name) { section in
@@ -24,7 +24,10 @@ struct SelectionColorsSheet: View {
           } else {
             let title = LocalizedStringKey(section.name)
             Section(title) {
-              colorOptions(LocalizedStringKey(section.name + " Color"), colors: section.colors)
+              colorOptions(
+                "ly_img_editor_postcard_sheet_template_colors_color_picker_title \(section.name)",
+                colors: section.colors
+              )
             }
             .accessibilityElement(children: .contain)
             .accessibilityLabel(title)
@@ -37,11 +40,5 @@ struct SelectionColorsSheet: View {
     .onAppear {
       selectionColors = interactor.selectionColors
     }
-  }
-}
-
-struct SelectionColorsSheet_Previews: PreviewProvider {
-  static var previews: some View {
-    defaultPreviews(sheet: .init(.selectionColors))
   }
 }

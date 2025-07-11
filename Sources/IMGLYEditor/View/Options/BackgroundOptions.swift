@@ -58,8 +58,10 @@ struct BackgroundOptions: View {
   var body: some View {
     List {
       if interactor.supportsBackground(id) {
-        Section("Color") {
+        Section {
           BackgroundColorOptions()
+        } header: {
+          Text(.imgly.localized("ly_img_editor_sheet_text_background_label_color"))
         }
 
         if isEnabled {
@@ -72,37 +74,42 @@ struct BackgroundOptions: View {
 
   private var paddingControls: some View {
     Group {
-      // Vertical Padding Slider
-      Section("Vertical Padding") {
+      Section {
         PropertySlider<Float>(
-          "Vertical Padding",
+          .imgly.localized("ly_img_editor_sheet_text_background_label_vertical_padding"),
           in: 0 ... maxVerticalPadding,
           property: .key(.backgroundColorPaddingTop),
           setter: backgroundVerticalPaddingSetter,
           getter: backgroundVerticalPaddingGetter
         )
-        .accessibilityLabel("Background Vertical Padding")
+      } header: {
+        Text(.imgly.localized("ly_img_editor_sheet_text_background_label_vertical_padding"))
       }
 
-      // Horizontal Padding Slider
-      Section("Horizontal Padding") {
+      Section {
         PropertySlider<Float>(
-          "Horizontal Padding",
+          .imgly.localized("ly_img_editor_sheet_text_background_label_horizontal_padding"),
           in: 0 ... maxHorizontalPadding,
           property: .key(.backgroundColorPaddingLeft),
           setter: backgroundHorizontalPaddingSetter,
           getter: backgroundHorizontalPaddingGetter
         )
-        .accessibilityLabel("Background Horizontal Padding")
+      } header: {
+        Text(.imgly.localized("ly_img_editor_sheet_text_background_label_horizontal_padding"))
       }
     }
   }
 
   private var cornerRadiusControl: some View {
-    Section("Corner Radius") {
-      PropertySlider<Float>("Corner Radius", in: 0 ... maxCornerRadius, property: .key(.backgroundColorCornerRadius))
+    Section {
+      PropertySlider<Float>(
+        .imgly.localized("ly_img_editor_sheet_text_background_label_round_corners"),
+        in: 0 ... maxCornerRadius,
+        property: .key(.backgroundColorCornerRadius)
+      )
+    } header: {
+      Text(.imgly.localized("ly_img_editor_sheet_text_background_label_round_corners"))
     }
-    .accessibilityLabel("Background Corner Radius")
   }
 }
 

@@ -11,7 +11,7 @@ struct BackgroundTrackAddButton: View {
         interactor.openCamera(EditorEvents.AddFrom.defaultAssetSourceIDs)
       } label: {
         Label {
-          Text("Camera")
+          Text(.imgly.localized("ly_img_editor_timeline_add_clip_option_camera"))
         } icon: {
           Image("custom.camera.fill.badge.plus", bundle: .module)
         }
@@ -20,7 +20,7 @@ struct BackgroundTrackAddButton: View {
         interactor.openImagePicker(EditorEvents.AddFrom.defaultAssetSourceIDs)
       } label: {
         Label {
-          Text("Photo Roll")
+          Text(.imgly.localized("ly_img_editor_timeline_add_clip_option_photo_roll"))
         } icon: {
           Image("custom.photo.fill.on.rectangle.fill.badge.plus", bundle: .module)
         }
@@ -28,12 +28,16 @@ struct BackgroundTrackAddButton: View {
       Button {
         interactor.addAssetToBackgroundTrack()
       } label: {
-        Label("Library", systemImage: "play.square.stack")
+        Label {
+          Text(.imgly.localized("ly_img_editor_timeline_add_clip_option_library"))
+        } icon: {
+          Image(systemName: "play.square.stack")
+        }
       }
     } label: {
       HStack {
         Label {
-          Text("Add Clip")
+          Text(.imgly.localized("ly_img_editor_timeline_button_add_clip"))
         } icon: {
           Image(systemName: "plus")
         }

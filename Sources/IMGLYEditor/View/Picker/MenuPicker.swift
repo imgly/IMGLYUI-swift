@@ -5,7 +5,7 @@ import SwiftUI
 /// up&down chevron.
 struct MenuPicker<Data>: View
   where Data: RandomAccessCollection, Data.Element: Labelable {
-  let title: LocalizedStringKey
+  let title: LocalizedStringResource
   let data: Data
   @Binding var selection: Data.Element?
 
@@ -29,7 +29,7 @@ struct MenuPicker<Data>: View
         } label: {
           HStack(spacing: 4) {
             if let selection {
-              Text(selection.localizedStringKey)
+              Text(selection.localizedStringResource)
             }
             Image(systemName: "chevron.up.chevron.down")
               .font(.footnote.weight(.medium))

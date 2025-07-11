@@ -16,7 +16,7 @@ struct BottomBarCloseButton: View {
           Image(systemName: "xmark")
             .font(.headline)
         }
-        .accessibilityLabel("Close")
+        .accessibilityLabel(Text(.imgly.localized("ly_img_editor_inspector_bar_button_close")))
     }
     .buttonStyle(.plain)
   }

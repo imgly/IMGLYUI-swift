@@ -145,21 +145,62 @@ public enum OnUpload {
   }
 }
 
+/// A namespace for `onClose` callbacks.
+public enum OnClose {
+  /// The callback type.
+  public typealias Callback = @Sendable @MainActor (
+    _ engine: Engine,
+    _ eventHandler: EditorEventHandler
+  ) -> Void
+
+  /// The default callback that displays the close confirmation alert if there are any unsaved changes, else closes the
+  /// editor.
+  public static let `default`: Callback = { engine, eventHandler in
+    let hasUnsavedChanges = (try? engine.editor.canUndo()) ?? false
+
+    if hasUnsavedChanges {
+      eventHandler.send(.showCloseConfirmationAlert)
+    } else {
+      eventHandler.send(.closeEditor)
+    }
+  }
+}
+
+/// A namespace for `onError` callbacks.
+public enum OnError {
+  /// The callback type.
+  public typealias Callback = @Sendable @MainActor (
+    _ error: Swift.Error,
+    _ eventHandler: EditorEventHandler
+  ) -> Void
+
+  /// The default callback that displays the error alert.
+  public static let `default`: Callback = { error, eventHandler in
+    eventHandler.send(.showErrorAlert(error))
+  }
+}
+
 // MARK: - Internal interface
 
 @_spi(Internal) public struct EngineCallbacks: Sendable {
   @_spi(Internal) public let onCreate: OnCreate.Callback
   let onExport: OnExport.Callback
   let onUpload: OnUpload.Callback
+  let onClose: OnClose.Callback
+  let onError: OnError.Callback
 
   init(
     onCreate: @escaping OnCreate.Callback = OnCreate.default,
     onExport: @escaping OnExport.Callback = OnExport.default,
-    onUpload: @escaping OnUpload.Callback = OnUpload.default
+    onUpload: @escaping OnUpload.Callback = OnUpload.default,
+    onClose: @escaping OnClose.Callback = OnClose.default,
+    onError: @escaping OnError.Callback = OnError.default
   ) {
     self.onCreate = onCreate
     self.onExport = onExport
     self.onUpload = onUpload
+    self.onClose = onClose
+    self.onError = onError
   }
 }
 

@@ -3,37 +3,45 @@ import SwiftUI
 @_spi(Internal) public protocol Labelable: Localizable, Hashable {
   var imageName: String? { get }
   var isSystemImage: Bool { get }
+
+  /// Enable to align the baseline of the icon with the title or with other icons.
+  var isIconEmbeddedInText: Bool { get }
 }
 
 @_spi(Internal) public extension Labelable {
   var isSystemImage: Bool { true }
+  var isIconEmbeddedInText: Bool { false }
 
   @ViewBuilder var label: some View {
-    label(suffix: nil)
-  }
-
-  @ViewBuilder func label(suffix: String?) -> some View {
     if let imageName {
       if isSystemImage {
-        Label(localizedStringKey(suffix: suffix), systemImage: imageName)
-          .symbolRenderingMode(.monochrome)
+        Label {
+          Text(localizedStringResource)
+        } icon: {
+          if isIconEmbeddedInText {
+            Text(Image(systemName: imageName))
+          } else {
+            Image(systemName: imageName)
+          }
+        }
+        .symbolRenderingMode(.monochrome)
       } else {
         Label {
-          Text(localizedStringKey(suffix: suffix))
+          Text(localizedStringResource)
         } icon: {
-          Image(imageName, bundle: .module)
+          if isIconEmbeddedInText {
+            Text(Image(imageName, bundle: .module))
+          } else {
+            Image(imageName, bundle: .module)
+          }
         }
       }
     } else {
-      Text(localizedStringKey(suffix: suffix))
+      Text(localizedStringResource)
     }
   }
 
   @ViewBuilder var taggedLabel: some View {
-    taggedLabel(suffix: nil)
-  }
-
-  @ViewBuilder func taggedLabel(suffix: String?) -> some View {
-    label(suffix: suffix).tag(self)
+    label.tag(self)
   }
 }

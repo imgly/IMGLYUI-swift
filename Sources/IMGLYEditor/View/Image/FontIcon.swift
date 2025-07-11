@@ -1,12 +1,14 @@
 import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
 
-struct FontIcon: View {
+@_spi(Internal) public struct FontIcon: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
   private var fontLibrary: FontLibrary { interactor.fontLibrary }
 
-  var body: some View {
+  @_spi(Internal) public init() {}
+
+  @_spi(Internal) public var body: some View {
     let text = interactor.bindTextState(id, resetFontProperties: true)
 
     if let assetID = text.wrappedValue.assetID,

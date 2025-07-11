@@ -37,7 +37,7 @@ struct ReorderingView: View {
     .scrollIndicators(.never)
     .background {
       if track.clips.count > 0 {
-        Text("Press and hold to Reorder")
+        Text(.imgly.localized("ly_img_editor_sheet_reorder_label_info"))
           .font(.footnote)
           .foregroundColor(.secondary)
           .offset(y: thumbnailHeight)

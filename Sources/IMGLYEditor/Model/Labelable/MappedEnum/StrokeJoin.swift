@@ -1,16 +1,16 @@
 import Foundation
 @_spi(Internal) import IMGLYCoreUI
 
-enum StrokeJoin: String, MappedEnum {
+enum StrokeJoin: String, MappedEnum, Labelable {
   case miter = "Miter"
   case bevel = "Bevel"
   case round = "Round"
 
-  var description: String {
+  var localizationValue: String.LocalizationValue {
     switch self {
-    case .miter: "Miter"
-    case .bevel: "Bevel"
-    case .round: "Round"
+    case .miter: "ly_img_editor_sheet_fill_stroke_join_option_miter"
+    case .bevel: "ly_img_editor_sheet_fill_stroke_join_option_bevel"
+    case .round: "ly_img_editor_sheet_fill_stroke_join_option_round"
     }
   }
 

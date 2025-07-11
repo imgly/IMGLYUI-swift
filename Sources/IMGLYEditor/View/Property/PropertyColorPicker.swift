@@ -3,7 +3,7 @@
 import SwiftUI
 
 struct PropertyColorPicker: View {
-  let title: LocalizedStringKey
+  let title: LocalizedStringResource
   let supportsOpacity: Bool
   let property: Property
   let propertyBlock: PropertyBlock?
@@ -14,7 +14,7 @@ struct PropertyColorPicker: View {
   @Environment(\.imglySelection) private var id
   @State private var showColorPicker = false
 
-  init(_ title: LocalizedStringKey, supportsOpacity: Bool = true, property: Property,
+  init(_ title: LocalizedStringResource, supportsOpacity: Bool = true, property: Property,
        propertyBlock: PropertyBlock? = nil,
        selection: Interactor.BlockID? = nil,
        defaultValue: CGColor? = nil) {
@@ -37,17 +37,19 @@ struct PropertyColorPicker: View {
   }
 
   var body: some View {
-    ColorPicker(title, selection: color)
-      .onTapGesture {
-        // Override normal tap and show custom color picker instead.
-        showColorPicker = true
+    ColorPicker(selection: color) {
+      Text(title)
+    }
+    .onTapGesture {
+      // Override normal tap and show custom color picker instead.
+      showColorPicker = true
+    }
+    .imgly
+    .colorPicker(title, isPresented: $showColorPicker, selection: color,
+                 supportsOpacity: supportsOpacity) { started in
+      if !started {
+        interactor.addUndoStep()
       }
-      .imgly
-      .colorPicker(title, isPresented: $showColorPicker, selection: color,
-                   supportsOpacity: supportsOpacity) { started in
-        if !started {
-          interactor.addUndoStep()
-        }
-      }
+    }
   }
 }

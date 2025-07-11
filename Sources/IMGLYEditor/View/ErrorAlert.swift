@@ -17,6 +17,7 @@ struct ErrorAlert: ViewModifier {
           .onDisappear {
             if details.shouldDismiss {
               dismiss()
+              details.dismissCallback?()
             }
           }
         if let confirmTitle = details.confirmTitle {

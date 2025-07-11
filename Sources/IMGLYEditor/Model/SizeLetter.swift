@@ -2,11 +2,17 @@ import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
 
 enum SizeLetter: String, Localizable {
-  case small = "Small"
-  case medium = "Medium"
-  case large = "Large"
+  case small
+  case medium
+  case large
 
-  var description: String { rawValue }
+  var localizationValue: String.LocalizationValue {
+    switch self {
+    case .small: "Small"
+    case .medium: "Medium"
+    case .large: "Large"
+    }
+  }
 }
 
 extension SizeLetter {

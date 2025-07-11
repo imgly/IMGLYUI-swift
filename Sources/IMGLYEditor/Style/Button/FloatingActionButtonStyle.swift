@@ -1,10 +1,15 @@
 import SwiftUI
 
-struct FloatingActionButtonStyle: PrimitiveButtonStyle {
+/// A primitive button style for the asset library.
+public struct AssetLibraryButtonStyle: PrimitiveButtonStyle {
   @Environment(\.colorScheme) private var colorScheme
 
-  func makeBody(configuration: Configuration) -> some View {
+  public func makeBody(configuration: Configuration) -> some View {
     Button(configuration)
+      .font(.title2)
+      .fontWeight(.bold)
+      .labelStyle(.iconOnly)
+      .frame(width: 56, height: 56)
       .foregroundColor(.accentColor)
       .background(
         Circle()

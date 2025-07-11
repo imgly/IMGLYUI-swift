@@ -1,8 +1,9 @@
-// swift-tools-version:5.10
+// swift-tools-version:6.1
 import PackageDescription
 
 let package = Package(
   name: "IMGLYUI",
+  defaultLocalization: "en",
   platforms: [.iOS(.v16)],
   products: [
     // Comment out these products for development to fix SwiftUI previews inside this package
@@ -28,7 +29,7 @@ let package = Package(
              ]),
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.55.1"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.56.0-rc.0"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "1.1.2"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.10.0"),
   ],
@@ -78,15 +79,14 @@ let package = Package(
       dependencies: [.target(name: "IMGLYEditor")],
       resources: [.process("Resources")]
     ),
-  ]
+  ],
+  swiftLanguageModes: [.v5]
 )
 
 for target in package.targets {
   let settings = target.swiftSettings ?? []
   // Use this for development
   // var settings = target.swiftSettings ?? []
-  // settings.append(.enableExperimentalFeature("StrictConcurrency")) // Xcode 15
-  // settings.append(.unsafeFlags(["-strict-concurrency=complete"])) // Xcode 14, don't use `unsafeFlags` in
-  // production!
+  // settings.append(.enableExperimentalFeature("StrictConcurrency")) // Xcode 15, 16
   target.swiftSettings = settings
 }

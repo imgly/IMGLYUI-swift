@@ -2,11 +2,13 @@
 @_spi(Internal) import IMGLYCoreUI
 import SwiftUI
 
-struct FillColorIcon: View {
+@_spi(Internal) public struct FillColorIcon: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  var body: some View {
+  @_spi(Internal) public init() {}
+
+  @_spi(Internal) public var body: some View {
     if interactor.isColorFill(id) {
       let isEnabled: Binding<Bool> = interactor.bind(id, property: .key(.fillEnabled), default: false)
 

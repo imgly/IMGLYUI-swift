@@ -8,7 +8,7 @@ struct StrokeColorOptions: View {
 
   var body: some View {
     if interactor.supportsStroke(id) {
-      ColorOptions(title: "Stroke Color",
+      ColorOptions(title: .imgly.localized("ly_img_editor_sheet_fill_stroke_color_picker_title_stroke"),
                    isEnabled: interactor.bind(id, property: .key(.strokeEnabled), default: false),
                    color: interactor.bind(id, property: .key(.strokeColor), default: .imgly.black, completion:
                      Interactor.Completion.set(property: .key(.strokeEnabled), value: true)),

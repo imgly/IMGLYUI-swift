@@ -8,6 +8,7 @@ extension PrimitiveButtonStyle where Self == OptionButtonStyle {
   static var option: Self { Self() }
 }
 
-extension PrimitiveButtonStyle where Self == FloatingActionButtonStyle {
-  static var fab: Self { Self() }
+public extension PrimitiveButtonStyle where Self == AssetLibraryButtonStyle {
+  /// Creates a `PrimitiveButtonStyle` for the asset library.
+  static var assetLibrary: Self { Self() }
 }

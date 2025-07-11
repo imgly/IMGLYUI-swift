@@ -9,12 +9,12 @@ public enum CameraLayoutMode: String, CaseIterable, Equatable, Sendable {
 }
 
 extension CameraLayoutMode {
-  var name: LocalizedStringKey {
+  var name: LocalizedStringResource {
     switch self {
     case .horizontal:
-      "Horizontal"
+      .imgly.localized("ly_img_camera_layout_option_horizontal")
     case .vertical:
-      "Vertical"
+      .imgly.localized("ly_img_camera_layout_option_vertical")
     }
   }
 

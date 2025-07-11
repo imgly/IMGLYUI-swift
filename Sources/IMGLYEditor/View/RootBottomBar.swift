@@ -7,60 +7,13 @@ struct RootBottomBar: View {
 
   @State var rootBottomBarWidth: CGFloat?
 
-  private let fabSize: CGFloat = 56
-  private let padding: CGFloat = 16
-
-  @ViewBuilder var fab: some View {
-    Button {
-      interactor.send(.openSheet(type: .libraryAdd {
-        AssetLibrarySheet(content: nil)
-      }))
-    } label: {
-      Label("Add", systemImage: "plus")
-        .font(.title2)
-        .fontWeight(.bold)
-        .labelStyle(.iconOnly)
-        .frame(width: fabSize, height: fabSize)
-    }
-    .buttonStyle(.fab)
-    .padding(.horizontal, padding)
-  }
-
-  @ViewBuilder var divider: some View {
-    Divider()
-      .frame(height: 40)
-  }
-
-  @ViewBuilder func button(_ item: RootBottomBarItem) -> some View {
-    if let mode = item.sheetMode {
-      Button {
-        interactor.bottomBarButtonTapped(for: mode)
-      } label: {
-        mode.label(mode.pinnedBlockID, interactor)
-      }
-      .labelStyle(.bottomBar(alignment: mode == .selectionColors ? .leading : .center))
-      .imgly.selection(mode.pinnedBlockID)
-    } else {
-      EmptyView()
-    }
-  }
-
-  var showFAB: Bool {
-    dockItems == nil && interactor.rootBottomBarItems.contains { $0 == .fab }
-  }
-
-  var items: [RootBottomBarItem] {
-    interactor.rootBottomBarItems.filter {
-      switch $0 {
-      case .fab: false
-      case .selectionColors: !interactor.selectionColors.isEmpty
-      default: true
-      }
-    }
-  }
+  private let padding: CGFloat = 8
 
   @Environment(\.imglyDockItems) private var dockItems
   @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
+  @Environment(\.imglyDockBackgroundColor) private var backgroundColor
+  @Environment(\.imglyDockItemAlignment) private var alignment
+  @Environment(\.imglyDockScrollDisabled) private var scrollDisabled
 
   private var assetLibrary: some AssetLibrary {
     anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
@@ -73,14 +26,24 @@ struct RootBottomBar: View {
     return .init(engine: engine, eventHandler: interactor, assetLibrary: assetLibrary)
   }
 
+  private var dockAlignment: Alignment {
+    if let dockContext, let alignment = try? alignment(dockContext) {
+      alignment
+    } else {
+      Alignment.center
+    }
+  }
+
+  private var dockScrollDisabled: Bool {
+    if let dockContext, let scrollDisabled = try? scrollDisabled(dockContext) {
+      scrollDisabled
+    } else {
+      false
+    }
+  }
+
   @ViewBuilder var content: some View {
     HStack(spacing: 0) {
-      if showFAB {
-        fab
-      }
-      if showFAB, !items.isEmpty {
-        divider
-      }
       ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: 0) {
           Group {
@@ -88,19 +51,16 @@ struct RootBottomBar: View {
               DockView(items: dockItems, context: dockContext)
                 .symbolRenderingMode(.monochrome)
                 .labelStyle(.bottomBar)
-            } else {
-              ForEach(items) {
-                button($0)
-              }
             }
           }
           .fixedSize()
         }
         .buttonStyle(.bottomBar)
-        .padding(.horizontal, showFAB ? padding : padding / 2)
-        .padding(.vertical, padding)
-        .frame(minWidth: showFAB ? 0 : rootBottomBarWidth)
+        .padding(.horizontal, padding)
+        .padding(.vertical, padding * 2)
+        .frame(minWidth: rootBottomBarWidth, alignment: dockAlignment)
       }
+      .scrollDisabled(dockScrollDisabled)
       .modifier(DisableScrollBounceIfSupported())
       .mask {
         // Mask the scroll view so that the fade-out gradients work on a blurred background material.
@@ -114,7 +74,7 @@ struct RootBottomBar: View {
                 startPoint: UnitPoint(x: 0, y: 0.5),
                 endPoint: .trailing
               )
-              .frame(width: showFAB ? padding : padding / 2)
+              .frame(width: padding)
               Spacer()
               LinearGradient(
                 gradient: Gradient(
@@ -123,7 +83,7 @@ struct RootBottomBar: View {
                 startPoint: UnitPoint(x: 0.3, y: 0.5),
                 endPoint: .trailing
               )
-              .frame(width: showFAB ? padding : padding / 2)
+              .frame(width: padding)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .drawingGroup()
@@ -144,17 +104,26 @@ struct RootBottomBar: View {
 
   @State private var isDockHidden = true
 
+  private var dockBackgroundColor: Color {
+    if let dockContext, let color = try? backgroundColor(dockContext, colorScheme) {
+      return color
+    } else {
+      let color = colorScheme == .dark
+        ? Color(uiColor: .systemBackground)
+        : Color(uiColor: .secondarySystemBackground)
+      return color
+    }
+  }
+
   var body: some View {
     content
       .onPreferenceChange(DockHiddenKey.self) { newValue in
         isDockHidden = newValue
       }
       .background(alignment: .top) {
-        if !items.isEmpty || !isDockHidden {
+        if !isDockHidden {
           Rectangle()
-            .fill(colorScheme == .dark
-              ? Color(uiColor: .systemBackground)
-              : Color(uiColor: .secondarySystemBackground))
+            .fill(dockBackgroundColor)
             .ignoresSafeArea()
         }
       }

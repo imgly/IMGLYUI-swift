@@ -10,9 +10,13 @@ struct FillColorOptions: View {
 
   var body: some View {
     if interactor.supportsFill(id) {
-      MenuPicker<ColorFillType.AllCases>(title: "Type", data: ColorFillType.allCases, selection: $fillType)
-        .disabled(interactor.sheet.content == .text)
-        .accessibilityLabel("Fill Type")
+      MenuPicker<ColorFillType.AllCases>(
+        title: .imgly.localized("ly_img_editor_sheet_fill_stroke_label_type"),
+        data: ColorFillType.allCases,
+        selection: $fillType
+      )
+      .disabled(interactor.sheet.content == .text)
+      .accessibilityLabel("Fill Type")
 
       if interactor.isGradientFill(id), fillType == .gradient {
         GradientOptions()
@@ -25,12 +29,12 @@ struct FillColorOptions: View {
           setter: colorSetter,
           completion: Interactor.Completion.set(property: .key(.fillEnabled), value: true)
         )
-        ColorOptions(title: "Fill Color",
+        ColorOptions(title: .imgly.localized("ly_img_editor_sheet_fill_stroke_color_picker_title_fill"),
                      isEnabled: interactor.bind(id, property: .key(.fillEnabled), default: false),
                      color: colorBinding,
                      addUndoStep: interactor.addUndoStep)
           .accessibilityElement(children: .contain)
-          .accessibilityLabel("Fill Color")
+          .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_fill_stroke_color_picker_title_fill")))
       }
     }
   }

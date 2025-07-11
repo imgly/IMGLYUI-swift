@@ -241,7 +241,11 @@ extension EnvironmentValues {
               Button {
                 data.model.retry()
               } label: {
-                Label("Retry", systemImage: "arrow.clockwise")
+                Label {
+                  Text(.imgly.localized("ly_img_editor_asset_library_button_retry"))
+                } icon: {
+                  Image(systemName: "arrow.clockwise")
+                }
               }
               .buttonStyle(.bordered)
               .tint(.secondary)

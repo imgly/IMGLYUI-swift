@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AssetProperties {
-  let title: LocalizedStringKey
-  let backTitle: LocalizedStringKey
+  let title: String
+  let backTitle: LocalizedStringResource
   let properties: [EffectProperty]
 }

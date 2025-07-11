@@ -1,4 +1,5 @@
 import SwiftUI
+@_spi(Internal) import IMGLYCoreUI
 
 struct ResizeOverlay: View {
   @Environment(\.dismiss) var dismiss
@@ -9,7 +10,7 @@ struct ResizeOverlay: View {
   }
 
   var body: some View {
-    AlertView(title: "Resize", content: {
+    AlertView(title: .imgly.localized("ly_img_editor_dialog_resize_title"), content: {
       let aspectSet = viewModel.aspect != nil
       ScrollView {
         VStack(alignment: .leading) {
@@ -17,7 +18,7 @@ struct ResizeOverlay: View {
             viewModel.updateAspect()
           } label: {
             Label(title: {
-              Text(.init("Resize Proportionally"))
+              Text(.imgly.localized("ly_img_editor_dialog_resize_button_resize_proportionally"))
                 .foregroundStyle(.primary)
             }, icon: {
               Image(systemName: aspectSet ? "lock.fill" : "lock.open")
@@ -31,10 +32,18 @@ struct ResizeOverlay: View {
           }
           .foregroundStyle(.primary)
           HStack(alignment: .bottom, spacing: 8) {
-            textField(title: "Width", text: $viewModel.width)
-              .accessibilityLabel("Width")
-            textField(title: "Height", text: $viewModel.height)
-              .accessibilityLabel("Height")
+            textField(
+              title: .imgly.localized("ly_img_editor_dialog_resize_label_width \(viewModel.designUnit.abbreviation)"),
+              textFieldTitle: "Width",
+              text: $viewModel.width
+            )
+            .accessibilityLabel("Width")
+            textField(
+              title: .imgly.localized("ly_img_editor_dialog_resize_label_height \(viewModel.designUnit.abbreviation)"),
+              textFieldTitle: "Height",
+              text: $viewModel.height
+            )
+            .accessibilityLabel("Height")
           }
           .padding(.vertical, 8)
           Divider()
@@ -51,26 +60,40 @@ struct ResizeOverlay: View {
     }, apply: viewModel.apply)
   }
 
-  @ViewBuilder private func textField(title: String, text: Binding<CGFloat>) -> some View {
+  @ViewBuilder private func textField(
+    title: LocalizedStringResource,
+    textFieldTitle: LocalizedStringResource,
+    text: Binding<CGFloat>
+  ) -> some View {
     VStack(alignment: .leading, spacing: 4) {
-      Text("\(title) (\(viewModel.designUnit.description))")
+      Text(title)
         .font(.caption)
 
-      TextField(.init(title), value: text, formatter: viewModel.numberFormatter)
-        .keyboardType(.decimalPad)
-        .padding(.horizontal, 10)
-        .frame(height: 34)
-        .background(Color(.tertiarySystemFill))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+      TextField(value: text, formatter: viewModel.numberFormatter) {
+        Text(textFieldTitle)
+      }
+      .keyboardType(.decimalPad)
+      .padding(.horizontal, 10)
+      .frame(height: 34)
+      .background(Color(.tertiarySystemFill))
+      .clipShape(RoundedRectangle(cornerRadius: 10))
     }
   }
 
   @ViewBuilder private func designUnitPicker() -> some View {
     let data: [Interactor.DesignUnit] = [.in, .mm, .px]
-    ResizePicker(title: "Unit", data: data, selection: $viewModel.designUnit) { element in
-      Text(element.label)
+    ResizePicker(
+      title: .imgly.localized("ly_img_editor_dialog_resize_label_unit"),
+      data: data,
+      selection: $viewModel.designUnit
+    ) { element in
+      Text(element.localizedStringResource)
     } label: { element in
-      element?.label ?? ""
+      if let element {
+        element.localizedStringResource
+      } else {
+        ""
+      }
     }
   }
 
@@ -78,13 +101,14 @@ struct ResizeOverlay: View {
     let isPx = viewModel.designUnit == .px
     let formatExtension = isPx ? "x" : "dpi"
     ResizePicker(
-      title: isPx ? "Pixel Scale" : "Resolution",
+      title: isPx ? .imgly.localized("ly_img_editor_dialog_resize_label_pixel_scale") : .imgly
+        .localized("ly_img_editor_dialog_resize_label_resolution"),
       data: isPx ? viewModel.pixelScaleValues : viewModel.resolutionValues,
       selection: isPx ? $viewModel.pixelScale : $viewModel.dpi
     ) { element in
       Text(viewModel.formatValue(element) + formatExtension)
     } label: { element in
-      viewModel.formatValue(element ?? 0) + formatExtension
+      "\(viewModel.formatValue(element ?? 0) + formatExtension)"
     }
   }
 }

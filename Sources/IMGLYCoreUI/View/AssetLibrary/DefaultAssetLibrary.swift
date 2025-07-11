@@ -128,37 +128,69 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   @AssetLibraryBuilder func uploads(_ sceneMode: SceneMode?) -> AssetLibraryContent {
-    AssetLibrarySource.imageUpload(.title("Images"), source: .init(demoSource: .imageUpload))
+    // Don't use upload strings here as it shouldn't state "Photo Roll" twice as this is already the parent.
+    AssetLibrarySource.imageUpload(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_images")),
+      source: .init(demoSource: .imageUpload)
+    )
     if sceneMode == .video {
-      AssetLibrarySource.videoUpload(.title("Videos"), source: .init(demoSource: .videoUpload))
+      AssetLibrarySource.videoUpload(
+        .title(.imgly.localized("ly_img_editor_asset_library_section_videos")),
+        source: .init(demoSource: .videoUpload)
+      )
     }
   }
 
   @AssetLibraryBuilder var videosAndImages: AssetLibraryContent {
-    AssetLibraryGroup.video("Videos") { videos }
-    AssetLibraryGroup.image("Images") { images }
-    AssetLibraryGroup.upload("Photo Roll") {
-      AssetLibrarySource.imageUpload(.title("Images"), source: .init(demoSource: .imageUpload))
-      AssetLibrarySource.videoUpload(.title("Videos"), source: .init(demoSource: .videoUpload))
+    AssetLibraryGroup.video(.imgly.localized("ly_img_editor_asset_library_section_videos")) { videos }
+    AssetLibraryGroup.image(.imgly.localized("ly_img_editor_asset_library_section_images")) { images }
+    AssetLibraryGroup.upload(.imgly.localized("ly_img_editor_asset_library_section_uploads")) {
+      // Don't use upload strings here as it shouldn't state "Photo Roll" twice as this is already the parent.
+      AssetLibrarySource.imageUpload(
+        .title(.imgly.localized("ly_img_editor_asset_library_section_images")),
+        source: .init(demoSource: .imageUpload)
+      )
+      AssetLibrarySource.videoUpload(
+        .title(.imgly.localized("ly_img_editor_asset_library_section_videos")),
+        source: .init(demoSource: .videoUpload)
+      )
     }
   }
 
   /// The default video asset library content.
   @AssetLibraryBuilder public static var videos: AssetLibraryContent {
-    AssetLibrarySource.video(.title("Videos"), source: .init(demoSource: .video))
-    AssetLibrarySource.videoUpload(.title("Photo Roll"), source: .init(demoSource: .videoUpload))
+    AssetLibrarySource.video(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_videos")),
+      source: .init(demoSource: .video)
+    )
+    AssetLibrarySource.videoUpload(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_video_uploads")),
+      source: .init(demoSource: .videoUpload)
+    )
   }
 
   /// The default audio asset library content.
   @AssetLibraryBuilder public static var audio: AssetLibraryContent {
-    AssetLibrarySource.audio(.title("Audio"), source: .init(demoSource: .audio))
-    AssetLibrarySource.audioUpload(.title("Uploads"), source: .init(demoSource: .audioUpload))
+    AssetLibrarySource.audio(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_audio")),
+      source: .init(demoSource: .audio)
+    )
+    AssetLibrarySource.audioUpload(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_audio_uploads")),
+      source: .init(demoSource: .audioUpload)
+    )
   }
 
   /// The default image asset library content.
   @AssetLibraryBuilder public static var images: AssetLibraryContent {
-    AssetLibrarySource.image(.title("Images"), source: .init(demoSource: .image))
-    AssetLibrarySource.imageUpload(.title("Photo Roll"), source: .init(demoSource: .imageUpload))
+    AssetLibrarySource.image(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_images")),
+      source: .init(demoSource: .image)
+    )
+    AssetLibrarySource.imageUpload(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_image_uploads")),
+      source: .init(demoSource: .imageUpload)
+    )
   }
 
   @AssetLibraryBuilder public func text(_ sceneMode: SceneMode?) -> AssetLibraryContent {
@@ -169,30 +201,40 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
-  let plainText = AssetLibrarySource.text(.title("Text"), source: .init(id: TextAssetSource.id))
+  let plainText = AssetLibrarySource.text(
+    .title(.imgly.localized("ly_img_editor_asset_library_section_text")),
+    source: .init(id: TextAssetSource.id)
+  )
 
   @AssetLibraryBuilder public var textAndTextComponents: AssetLibraryContent {
-    AssetLibrarySource.text(.title("Plain Text"), source: .init(id: TextAssetSource.id))
-    AssetLibrarySource.textComponent(.title("Font Combinations"), source: .init(demoSource: .textComponents))
+    AssetLibrarySource.text(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_plain_text")),
+      source: .init(id: TextAssetSource.id)
+    )
+    AssetLibrarySource.textComponent(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_font_combinations")),
+      source: .init(demoSource: .textComponents)
+    )
   }
 
   /// The default shape asset library content.
   @AssetLibraryBuilder public static var shapes: AssetLibraryContent {
-    AssetLibrarySource.shape(.title("Basic"), source: .init(
+    AssetLibrarySource.shape(.title(.imgly.localized("ly_img_editor_asset_library_section_basic")), source: .init(
       defaultSource: .vectorPath, config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/vectorpaths"])))
-    AssetLibrarySource.shape(.title("Abstract"), source: .init(
+    AssetLibrarySource.shape(.title(.imgly.localized("ly_img_editor_asset_library_section_abstract")), source: .init(
       defaultSource: .vectorPath, config: .init(groups: ["//ly.img.cesdk.vectorpaths.abstract/category/abstract"])))
   }
 
   /// The default sticker asset library content.
   @AssetLibraryBuilder public static var stickers: AssetLibraryContent {
-    AssetLibrarySource.sticker(.titleForGroup { group in
-      if let name = group?.split(separator: "/").last {
-        name.capitalized
-      } else {
-        "Stickers"
-      }
-    }, source: .init(defaultSource: .sticker))
+    AssetLibrarySource.sticker(.title(.imgly.localized("ly_img_editor_asset_library_section_doodle")), source: .init(
+      defaultSource: .sticker, config: .init(groups: ["//ly.img.cesdk.stickers.doodle/category/doodle"])))
+    AssetLibrarySource.sticker(.title(.imgly.localized("ly_img_editor_asset_library_section_emoji")), source: .init(
+      defaultSource: .sticker, config: .init(groups: ["//ly.img.cesdk.stickers.emoji/category/emoji"])))
+    AssetLibrarySource.sticker(.title(.imgly.localized("ly_img_editor_asset_library_section_emoticons")), source: .init(
+      defaultSource: .sticker, config: .init(groups: ["//ly.img.cesdk.stickers.emoticons/category/emoticons"])))
+    AssetLibrarySource.sticker(.title(.imgly.localized("ly_img_editor_asset_library_section_hand")), source: .init(
+      defaultSource: .sticker, config: .init(groups: ["//ly.img.cesdk.stickers.hand/category/hand"])))
   }
 
   func tabContent(_ sceneMode: SceneMode?, _ tab: Tab) -> AssetLibraryContent {
@@ -211,20 +253,25 @@ public struct DefaultAssetLibrary: AssetLibrary {
   func elementsContent(_ sceneMode: SceneMode?, _ tab: Tab) -> AssetLibraryContent {
     switch tab {
     case .elements: AssetLibraryGroup.empty
-    case .uploads: AssetLibraryGroup.upload("Photo Roll") { uploads(sceneMode) }
-    case .videos: AssetLibraryGroup.video("Videos") { videos }
-    case .audio: AssetLibraryGroup.audio("Audio") { audio }
-    case .images: AssetLibraryGroup.image("Images") { images }
+    case .uploads: AssetLibraryGroup
+      .upload(.imgly.localized("ly_img_editor_asset_library_section_uploads")) { uploads(sceneMode) }
+    case .videos: AssetLibraryGroup.video(.imgly.localized("ly_img_editor_asset_library_section_videos")) { videos }
+    case .audio: AssetLibraryGroup.audio(.imgly.localized("ly_img_editor_asset_library_section_audio")) { audio }
+    case .images: AssetLibraryGroup.image(.imgly.localized("ly_img_editor_asset_library_section_images")) { images }
     case .text:
       if sceneMode == .video {
         plainText
       } else {
-        AssetLibraryGroup.text("Text", excludedPreviewSources: [Engine.DemoAssetSource.textComponents.rawValue]) {
+        AssetLibraryGroup.text(
+          .imgly.localized("ly_img_editor_asset_library_section_text"),
+          excludedPreviewSources: [Engine.DemoAssetSource.textComponents.rawValue]
+        ) {
           textAndTextComponents
         }
       }
-    case .shapes: AssetLibraryGroup.shape("Shapes") { shapes }
-    case .stickers: AssetLibraryGroup.sticker("Stickers") { stickers }
+    case .shapes: AssetLibraryGroup.shape(.imgly.localized("ly_img_editor_asset_library_section_shapes")) { shapes }
+    case .stickers: AssetLibraryGroup
+      .sticker(.imgly.localized("ly_img_editor_asset_library_section_stickers")) { stickers }
     }
   }
 
@@ -266,42 +313,70 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// The default label for the elements tab.
-  @ViewBuilder public static func elementsLabel(_ title: LocalizedStringKey) -> some View {
-    Label(title, systemImage: "books.vertical")
+  @ViewBuilder public static func elementsLabel(_ title: LocalizedStringResource) -> some View {
+    Label {
+      Text(title)
+    } icon: {
+      Image(systemName: "books.vertical")
+    }
   }
 
   /// The default label for the uploads tab.
-  @ViewBuilder public static func uploadsLabel(_ title: LocalizedStringKey) -> some View {
-    Label(title, systemImage: "camera")
+  @ViewBuilder public static func uploadsLabel(_ title: LocalizedStringResource) -> some View {
+    Label {
+      Text(title)
+    } icon: {
+      Image(systemName: "camera")
+    }
   }
 
   /// The default label for the videos tab.
-  @ViewBuilder public static func videosLabel(_ title: LocalizedStringKey) -> some View {
-    Label(title, systemImage: "play.rectangle")
+  @ViewBuilder public static func videosLabel(_ title: LocalizedStringResource) -> some View {
+    Label {
+      Text(title)
+    } icon: {
+      Image(systemName: "play.rectangle")
+    }
   }
 
   /// The default label for the audio tab.
-  @ViewBuilder public static func audioLabel(_ title: LocalizedStringKey) -> some View {
-    Label(title, systemImage: "music.note.list")
+  @ViewBuilder public static func audioLabel(_ title: LocalizedStringResource) -> some View {
+    Label {
+      Text(title)
+    } icon: {
+      Image(systemName: "music.note.list")
+    }
   }
 
   /// The default label for the images tab.
-  @ViewBuilder public static func imagesLabel(_ title: LocalizedStringKey) -> some View {
-    Label(title, systemImage: "photo")
+  @ViewBuilder public static func imagesLabel(_ title: LocalizedStringResource) -> some View {
+    Label {
+      Text(title)
+    } icon: {
+      Image(systemName: "photo")
+    }
   }
 
   /// The default label for the text tab.
-  @ViewBuilder public static func textLabel(_ title: LocalizedStringKey) -> some View {
-    Label(title, systemImage: "textformat.alt")
+  @ViewBuilder public static func textLabel(_ title: LocalizedStringResource) -> some View {
+    Label {
+      Text(title)
+    } icon: {
+      Image(systemName: "textformat.alt")
+    }
   }
 
   /// The default label for the shapes tab.
-  @ViewBuilder public static func shapesLabel(_ title: LocalizedStringKey) -> some View {
-    Label(title, systemImage: "square.on.circle")
+  @ViewBuilder public static func shapesLabel(_ title: LocalizedStringResource) -> some View {
+    Label {
+      Text(title)
+    } icon: {
+      Image(systemName: "square.on.circle")
+    }
   }
 
   /// The default label for the stickers tab.
-  @ViewBuilder public static func stickersLabel(_ title: LocalizedStringKey) -> some View {
+  @ViewBuilder public static func stickersLabel(_ title: LocalizedStringResource) -> some View {
     // Fixes light/dark mode fill issue with `"face.smiling"` for iOS 16.
     Label {
       Text(title)
@@ -312,56 +387,86 @@ public struct DefaultAssetLibrary: AssetLibrary {
 
   @ViewBuilder var uploadsTab: some View {
     AssetLibrarySceneModeReader { sceneMode in
-      AssetLibraryTab("Photo Roll") { uploads(sceneMode) } label: { Self.uploadsLabel($0) }
+      AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_uploads")) {
+        uploads(sceneMode)
+      } label: {
+        Self.uploadsLabel($0)
+      }
     }
   }
 
   @ViewBuilder public var elementsTab: some View {
     AssetLibrarySceneModeReader { sceneMode in
-      AssetLibraryTab("Elements") { elements(sceneMode) } label: { Self.elementsLabel($0) }
+      AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_elements")) {
+        elements(sceneMode)
+      } label: {
+        Self.elementsLabel($0)
+      }
     }
   }
 
   @ViewBuilder public var videosTab: some View {
-    AssetLibraryTab("Videos") { videos } label: { Self.videosLabel($0) }
+    AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_videos")) { videos } label: {
+      Self.videosLabel($0)
+    }
   }
 
   @ViewBuilder public var audioTab: some View {
-    AssetLibraryTab("Audio") { audio } label: { Self.audioLabel($0) }
+    AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_audio")) { audio } label: {
+      Self.audioLabel($0)
+    }
   }
 
   @ViewBuilder public var imagesTab: some View {
-    AssetLibraryTab("Images") { images } label: { Self.imagesLabel($0) }
+    AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_images")) { images } label: {
+      Self.imagesLabel($0)
+    }
   }
 
   @ViewBuilder public var textTab: some View {
     AssetLibrarySceneModeReader { sceneMode in
       if sceneMode == .video {
-        AssetLibraryTabView("Text") { plainText.content } label: { Self.textLabel($0) }
+        AssetLibraryTabView(.imgly.localized("ly_img_editor_asset_library_title_text")) {
+          plainText.content
+        } label: {
+          Self.textLabel($0)
+        }
       } else {
-        AssetLibraryTab("Text") { textAndTextComponents } label: { Self.textLabel($0) }
+        AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_text")) {
+          textAndTextComponents
+        } label: {
+          Self.textLabel($0)
+        }
       }
     }
   }
 
   @ViewBuilder public var shapesTab: some View {
-    AssetLibraryTab("Shapes") { shapes } label: { Self.shapesLabel($0) }
+    AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_shapes")) { shapes } label: {
+      Self.shapesLabel($0)
+    }
   }
 
   @ViewBuilder public var stickersTab: some View {
-    AssetLibraryTab("Stickers") { stickers } label: { Self.stickersLabel($0) }
+    AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_stickers")) { stickers } label: {
+      Self.stickersLabel($0)
+    }
   }
 
   @ViewBuilder public var clipsTab: some View {
-    AssetLibraryTab("Clips") { videosAndImages } label: { _ in EmptyView() }
+    AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_clips")) { videosAndImages } label: { _ in
+      EmptyView()
+    }
   }
 
   @ViewBuilder public var overlaysTab: some View {
-    AssetLibraryTab("Overlays") { videosAndImages } label: { _ in EmptyView() }
+    AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_overlays")) { videosAndImages } label: { _ in
+      EmptyView()
+    }
   }
 
   @ViewBuilder public var stickersAndShapesTab: some View {
-    AssetLibraryTab("Stickers") {
+    AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_stickers_and_shapes")) {
       stickers
       shapes
     } label: { _ in EmptyView() }

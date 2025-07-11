@@ -2,14 +2,14 @@
 @_spi(Internal) import IMGLYCoreUI
 import SwiftUI
 
-struct PropertyNavigationLink<T: MappedEnum>: View {
-  let title: LocalizedStringKey
+struct PropertyNavigationLink<T: MappedEnum & Labelable>: View {
+  let title: LocalizedStringResource
   let property: Property
 
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  init(_ title: LocalizedStringKey, property: Property) {
+  init(_ title: LocalizedStringResource, property: Property) {
     self.title = title
     self.property = property
   }
@@ -27,11 +27,15 @@ struct PropertyNavigationLink<T: MappedEnum>: View {
     }
 
     NavigationLinkPicker(title: title, data: [values], selection: selection) { value, isSelected in
-      Label(value.localizedStringKey, systemImage: "checkmark")
-        .labelStyle(.icon(hidden: !isSelected))
+      Label {
+        Text(value.localizedStringResource)
+      } icon: {
+        Image(systemName: "checkmark")
+      }
+      .labelStyle(.icon(hidden: !isSelected))
     } linkLabel: { selection in
       if let selection {
-        Text(selection.localizedStringKey)
+        Text(selection.localizedStringResource)
       }
     }
   }

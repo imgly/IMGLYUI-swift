@@ -3,24 +3,22 @@ import SwiftUI
 
 /// A tab used in an ``AssetLibrary`` to display any `View`.
 public struct AssetLibraryTabView<Content: View, Label: View>: View {
-  private let title: String
+  private let title: LocalizedStringResource
   @ViewBuilder private let content: () -> Content
-  @ViewBuilder private let label: (_ title: LocalizedStringKey) -> Label
+  @ViewBuilder private let label: (_ title: LocalizedStringResource) -> Label
 
   /// Creates an asset library tab with any `content`.
   /// - Parameters:
   ///   - title: The title of the tab.
   ///   - content: The content.
   ///   - label: The label of the tab. The `title` is passed to this closure.
-  public init(_ title: String,
+  public init(_ title: LocalizedStringResource,
               @ViewBuilder content: @escaping () -> Content,
-              @ViewBuilder label: @escaping (_ title: LocalizedStringKey) -> Label) {
+              @ViewBuilder label: @escaping (_ title: LocalizedStringResource) -> Label) {
     self.title = title
     self.content = content
     self.label = label
   }
-
-  var localizedTitle: LocalizedStringKey { .init(title) }
 
   @Environment(\.imglyIsAssetLibraryMoreTab) private var isMoreTab
   @Environment(\.imglyAssetLibraryTitleDisplayMode) private var titleDisplayMode
@@ -31,7 +29,7 @@ public struct AssetLibraryTabView<Content: View, Label: View>: View {
   }
 
   @ViewBuilder var labelContent: some View {
-    label(localizedTitle)
+    label(title)
   }
 
   public var body: some View {
@@ -52,22 +50,21 @@ public struct AssetLibraryTabView<Content: View, Label: View>: View {
       .tabItem {
         labelContent
       }
-      .tag(title)
+      .tag(title.key)
     }
   }
 }
 
 private struct TabContent<Content: View>: View {
-  let title: String
+  let title: LocalizedStringResource
   @ViewBuilder let content: () -> Content
 
   @Environment(\.imglyDismissButtonView) private var dismissButtonView
   @EnvironmentObject private var searchState: AssetLibrarySearchState
-  private var localizedTitle: LocalizedStringKey { .init(title) }
 
   var body: some View {
     content()
-      .navigationTitle(localizedTitle)
+      .navigationTitle(Text(title))
       .toolbar {
         ToolbarItem {
           HStack(spacing: 16) {

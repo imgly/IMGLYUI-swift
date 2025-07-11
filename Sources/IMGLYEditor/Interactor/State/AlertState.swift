@@ -9,6 +9,7 @@ struct AlertState: BatchMutable, Equatable {
     let message: String
     let shouldDismiss: Bool
     let dismissTitle: String
+    var dismissCallback: (() -> Void)?
     let confirmTitle: String?
     var confirmCallback: (() -> Void)?
 
@@ -17,6 +18,7 @@ struct AlertState: BatchMutable, Equatable {
       message: String,
       shouldDismiss: Bool,
       dismissTitle: String = "Dismiss",
+      dismissCallback: (() -> Void)? = nil,
       confirmTitle: String? = nil,
       confirmCallback: (() -> Void)? = nil
     ) {
@@ -24,6 +26,7 @@ struct AlertState: BatchMutable, Equatable {
       self.message = message
       self.shouldDismiss = shouldDismiss
       self.dismissTitle = dismissTitle
+      self.dismissCallback = dismissCallback
       self.confirmTitle = confirmTitle
       self.confirmCallback = confirmCallback
     }
@@ -43,9 +46,14 @@ struct AlertState: BatchMutable, Equatable {
   }
 
   /// Show alert for `error` and `dismiss` parent after dismissing the alert.
-  init(_ error: Swift.Error, dismiss: Bool) {
+  init(_ error: Swift.Error, dismiss: Bool, onDismiss: @escaping (() -> Void) = {}) {
     isPresented = true
-    details = Details(title: "Error", message: error.localizedDescription, shouldDismiss: dismiss)
+    details = Details(
+      title: "Error",
+      message: error.localizedDescription,
+      shouldDismiss: dismiss,
+      dismissCallback: onDismiss
+    )
   }
 
   /// Show alert for `message` and `dismiss` parent after dismissing the alert.
@@ -59,6 +67,7 @@ struct AlertState: BatchMutable, Equatable {
        message: String,
        dismiss: Bool,
        dismissTitle: String = "Cancel",
+       dismissCallback: @escaping (() -> Void) = {},
        confirmTitle: String,
        confirmCallback: @escaping (() -> Void)) {
     isPresented = true
@@ -66,6 +75,7 @@ struct AlertState: BatchMutable, Equatable {
                       message: message,
                       shouldDismiss: dismiss,
                       dismissTitle: dismissTitle,
+                      dismissCallback: dismissCallback,
                       confirmTitle: confirmTitle,
                       confirmCallback: confirmCallback)
   }

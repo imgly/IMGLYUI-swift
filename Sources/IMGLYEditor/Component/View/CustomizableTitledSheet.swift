@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct CustomizableTitledSheet<Content: View, Leading: View, Trailing: View>: View {
-  let title: LocalizedStringKey
+  let title: LocalizedStringResource
   let content: () -> Content
   let leading: () -> Leading
   let trailing: () -> Trailing
 
   init(
-    _ title: LocalizedStringKey,
+    _ title: LocalizedStringResource,
     @ViewBuilder content: @escaping () -> Content,
     @ViewBuilder leading: @escaping () -> Leading,
     @ViewBuilder trailing: @escaping () -> Trailing = { SheetDismissButton()

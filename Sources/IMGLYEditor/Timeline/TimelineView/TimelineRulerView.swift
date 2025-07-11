@@ -24,7 +24,6 @@ struct TimelineRulerView: View {
       )
 
       ForEach(markers, id: \.self) { marker in
-
         HStack {
           if timeline.timelineRulerScaleInterval == 5 {
             let ticks: [TimeInterval] = Array(stride(from: 1, through: 4, by: 1))

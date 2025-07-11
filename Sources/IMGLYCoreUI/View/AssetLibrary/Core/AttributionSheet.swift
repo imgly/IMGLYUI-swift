@@ -36,23 +36,23 @@ struct Attribution: View {
     asset.result.label ?? asset.result.filename ?? asset.result.id
   }
 
-  var credits: LocalizedStringKey? {
+  var credits: LocalizedStringResource? {
     if let assetCredits, let sourceCredits {
-      .init("By \(assetCredits) on \(sourceCredits)")
+      .imgly.localized("ly_img_editor_asset_library_label_credits_artist_on_source \(assetCredits) \(sourceCredits)")
     } else if let assetCredits {
-      .init("By \(assetCredits)")
+      .imgly.localized("ly_img_editor_asset_library_label_credits_artist \(assetCredits)")
     } else if let sourceCredits {
-      .init("On \(sourceCredits)")
+      .imgly.localized("ly_img_editor_asset_library_label_credits_on_source \(sourceCredits)")
     } else {
       nil
     }
   }
 
-  var license: LocalizedStringKey? {
+  var license: AttributedString? {
     if let assetLicense {
-      .init("\(assetLicense)")
+      assetLicense
     } else if let sourceLicense {
-      .init("\(sourceLicense)")
+      sourceLicense
     } else {
       nil
     }
@@ -80,7 +80,7 @@ struct Attribution: View {
         }
         .padding([.leading, .trailing], 16)
       }
-      .navigationTitle("Details")
+      .navigationTitle(Text(.imgly.localized("ly_img_editor_asset_library_title_credits")))
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {

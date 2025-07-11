@@ -7,55 +7,23 @@ enum SheetMode: Labelable, IdentifiableByHash {
   case moveUp
   case moveDown
 
-  case selectionColors
-  case font(_ id: Interactor.BlockID?, _ fontFamilies: [String]?)
-  case fontSize(_ id: Interactor.BlockID?)
-  case color(_ id: Interactor.BlockID?, _ colorPalette: [NamedColor]?)
   case delete, duplicate
   case resize
 
-  var pinnedBlockID: Interactor.BlockID? {
+  var localizationValue: String.LocalizationValue {
     switch self {
-    case let .font(id, _): id
-    case let .fontSize(id): id
-    case let .color(id, _): id
-    default: nil
-    }
-  }
-
-  var fontFamilies: [String]? {
-    switch self {
-    case let .font(_, families): families
-    default: nil
-    }
-  }
-
-  var colorPalette: [NamedColor]? {
-    switch self {
-    case let .color(_, palette): palette
-    default: nil
-    }
-  }
-
-  var description: String {
-    switch self {
-    case .selectionColors: "Colors"
-    case .font: "Font"
-    case .fontSize: "Size"
-    case .color: "Color"
-    case .delete: "Delete"
-    case .duplicate: "Duplicate"
-    case .editPage: "Edit"
-    case .addPage: "Add Page"
-    case .moveUp: "Move Up"
-    case .moveDown: "Move Down"
-    case .resize: "Resize"
+    case .delete: "ly_img_editor_pages_view_mode_dock_button_delete"
+    case .duplicate: "ly_img_editor_pages_view_mode_dock_button_duplicate"
+    case .editPage: "ly_img_editor_pages_view_mode_dock_button_edit"
+    case .addPage: "ly_img_editor_pages_view_mode_dock_button_add_page"
+    case .moveUp: "ly_img_editor_pages_view_mode_dock_button_move_up"
+    case .moveDown: "ly_img_editor_pages_view_mode_dock_button_move_down"
+    case .resize: "ly_img_editor_pages_view_mode_dock_button_resize"
     }
   }
 
   var imageName: String? {
     switch self {
-    case .selectionColors, .font, .fontSize, .color: nil
     case .delete: "trash"
     case .duplicate: "plus.square.on.square"
     case .editPage: "square.and.pencil"
@@ -71,40 +39,5 @@ enum SheetMode: Labelable, IdentifiableByHash {
       return true
     }
     return !imageName.hasPrefix("custom.")
-  }
-
-  @MainActor
-  func localizedStringKey(_: Interactor.BlockID?, _: Interactor) -> LocalizedStringKey {
-    localizedStringKey
-  }
-
-  @MainActor @ViewBuilder func label(_: Interactor.BlockID?, _: Interactor) -> some View {
-    switch self {
-    case .selectionColors:
-      Label {
-        Text(localizedStringKey)
-      } icon: {
-        SelectionColorsIcon()
-      }
-    case .font:
-      Label {
-        Text(localizedStringKey)
-      } icon: {
-        FontIcon()
-      }
-    case .fontSize:
-      Label {
-        Text(localizedStringKey)
-      } icon: {
-        FontSizeIcon()
-      }
-    case .color:
-      Label {
-        Text(localizedStringKey)
-      } icon: {
-        FillColorIcon()
-      }
-    default: label
-    }
   }
 }

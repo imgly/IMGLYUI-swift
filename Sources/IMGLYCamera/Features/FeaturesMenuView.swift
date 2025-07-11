@@ -58,7 +58,7 @@ struct FeaturesMenuView: View {
 extension FeaturesMenuView {
   @ViewBuilder func countdownButton() -> some View {
     Menu {
-      Picker("Countdown Mode", selection: $camera.countdownMode) {
+      Picker(selection: $camera.countdownMode) {
         ForEach(CountdownMode.allCases, id: \.rawValue) { mode in
           if mode == .disabled {
             Divider()
@@ -70,12 +70,15 @@ extension FeaturesMenuView {
           }
           .tag(mode)
         }
+      } label: {
+        Text(.imgly.localized("ly_img_camera_button_timer"))
       }
       .pickerStyle(.inline)
 
     } label: {
       FeatureLabelView(
-        text: camera.countdownMode == .disabled ? "Timer" : camera.countdownMode.name,
+        text: camera.countdownMode == .disabled ? .imgly.localized("ly_img_camera_button_timer") : camera.countdownMode
+          .name,
         image: camera.countdownMode.image,
         isSelected: camera.countdownMode != .disabled,
         hasLabel: hasTransientLabel
@@ -86,7 +89,7 @@ extension FeaturesMenuView {
   @ViewBuilder func dualCameraButton() -> some View {
     if camera.isMultiCamSupported {
       Menu {
-        Picker("Dual Camera", selection: camera.dualCameraModeBinding) {
+        Picker(selection: camera.dualCameraModeBinding) {
           ForEach(camera.layoutModeMenuOptions) { mode in
             if mode == camera.layoutModeMenuOptions.last, allowModeSwitching {
               Divider()
@@ -98,10 +101,12 @@ extension FeaturesMenuView {
             }
             .tag(mode.tag)
           }
+        } label: {
+          Text(.imgly.localized("ly_img_camera_button_dual_camera"))
         }
       } label: {
         FeatureLabelView(
-          text: "Dual Camera",
+          text: .imgly.localized("ly_img_camera_button_dual_camera"),
           image: camera.cameraMode.layoutMode?.image ?? Image("custom.camera.dual", bundle: .module),
           isSelected: camera.isDualCameraActive,
           hasLabel: hasTransientLabel
@@ -114,17 +119,19 @@ extension FeaturesMenuView {
     switch camera.cameraMode {
     case let .reaction(layout, _, _):
       Menu {
-        Picker("Reactions", selection: camera.reactionsCameraModeBinding) {
+        Picker(selection: camera.reactionsCameraModeBinding) {
           ForEach(camera.layoutModeMenuOptions) { mode in
             if mode.tag == nil, allowModeSwitching {
               Divider()
             }
             mode.labelView
           }
+        } label: {
+          Text(.imgly.localized("ly_img_camera_button_reaction"))
         }
       } label: {
         FeatureLabelView(
-          text: "Reaction",
+          text: .imgly.localized("ly_img_camera_button_reaction"),
           image: layout.image,
           isSelected: true,
           hasLabel: hasTransientLabel
@@ -204,7 +211,7 @@ extension CameraModel {
   }
 
   var offItem: PickerOption<CameraLayoutMode?> {
-    PickerOption(label: "Off", icon: Image(systemName: "xmark"), tag: nil)
+    PickerOption(label: .imgly.localized("ly_img_camera_layout_option_off"), icon: Image(systemName: "xmark"), tag: nil)
   }
 }
 

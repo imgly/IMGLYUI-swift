@@ -21,8 +21,21 @@ extension Interactor: EditorEventHandler {
       delayIfNecessary(hideExportSheet() || hideSheet()) { [weak self] in
         self?.shareItem = .url([event.url])
       }
+    case is EditorEvents.OnClose:
+      if #available(iOS 17, *) {
+        onClose()
+      } else {
+        // Always dismiss any open sheet before calling onClose on iOS 16, to avoid iOS presentation conflicts
+        delayIfNecessary(hideSheet()) { [weak self] in
+          self?.onClose()
+        }
+      }
     case is EditorEvents.CloseEditor:
       dismiss?()
+    case is EditorEvents.ShowCloseConfirmationAlert:
+      showCloseConfirmationAlert()
+    case let event as EditorEvents.ShowErrorAlert:
+      showErrorAlert(event.error, event.onDismiss)
     case let event as EditorEvents.SetViewMode:
       switch event.viewMode {
       case .edit:
@@ -86,9 +99,9 @@ extension Interactor: EditorEventHandler {
       pause()
       bottomBarButtonTapped(for: .delete)
     case is EditorEvents.Selection.BringForward:
-      actionButtonTapped(for: .up)
+      actionButtonTapped(for: .bringForward)
     case is EditorEvents.Selection.SendBackward:
-      actionButtonTapped(for: .down)
+      actionButtonTapped(for: .sendBackward)
 
     // MARK: - AddFrom
     case let event as EditorEvents.AddFrom.PhotoRoll:
@@ -206,6 +219,18 @@ extension Interactor: EditorEventHandler {
       if let content = sheetContentForSelection {
         self.sheet = .init(sheet, content)
       }
+    case let sheet as SheetTypes.DesignColors:
+      clampPlayheadPositionToSelectedClip()
+      self.sheet = .init(sheet)
+    case let sheet as SheetTypes.GreetingColors:
+      clampPlayheadPositionToSelectedClip()
+      self.sheet = .init(sheet)
+    case let sheet as SheetTypes.GreetingFont:
+      clampPlayheadPositionToSelectedClip()
+      self.sheet = .init(sheet)
+    case let sheet as SheetTypes.GreetingSize:
+      clampPlayheadPositionToSelectedClip()
+      self.sheet = .init(sheet)
     default:
       print("Unhandled sheet type \(event.type)")
     }
@@ -239,7 +264,7 @@ extension Interactor: EditorEventHandler {
   @discardableResult func hideSheet() -> Bool {
     let wasPresented = sheet.isPresented
     if sheet.isPresented {
-      sheet = .init()
+      sheet.isPresented = false
     }
     return wasPresented
   }
