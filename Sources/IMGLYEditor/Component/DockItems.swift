@@ -666,7 +666,7 @@ public extension Dock.Buttons {
 
     public func body(content: Content) -> some View {
       content
-        .buttonStyle(.assetLibrary)
+        .buttonStyle(.imgly.assetLibrary)
         .padding(.horizontal, 8)
     }
   }

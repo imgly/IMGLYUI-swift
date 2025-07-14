@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A primitive button style for the asset library.
+/// A primitive button style for the asset library dock button.
 public struct AssetLibraryButtonStyle: PrimitiveButtonStyle {
   @Environment(\.colorScheme) private var colorScheme
 
