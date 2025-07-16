@@ -382,7 +382,7 @@ public extension InspectorBar.Buttons {
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
   /// not `DesignBlockType.page`, its kind is not `"voiceover"`, and its engine scope `"layer/blendMode"`,
-  /// `"layer/opacity"`, `"editor/add"`, `"lifecycle/duplicate"`, or `"lifecycle/destroy"` is allowed.
+  /// `"layer/opacity"`, `"layer/move"`, `"lifecycle/duplicate"`, or `"lifecycle/destroy"` is allowed.
   /// - Returns: The created button.
   static func layer(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .layer())) },
@@ -401,7 +401,7 @@ public extension InspectorBar.Buttons {
         }
       }
       @MainActor func isMoveAllowed() throws -> Bool {
-        try context.engine.block.isAllowedByScope(context.selection.block, key: "editor/add") &&
+        try context.engine.block.isAllowedByScope(context.selection.block, key: "layer/move") &&
           !isBackgroundTrack(context.selection.parentBlock)
       }
       return try ![.page, .audio].contains(context.selection.type) &&

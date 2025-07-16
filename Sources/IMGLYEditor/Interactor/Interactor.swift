@@ -655,10 +655,8 @@ extension Interactor {
       isAllowed(id, Action.duplicate)
     case .editPage, .addPage:
       true
-    case .moveUp:
-      isAllowed(id, Action.bringForward)
-    case .moveDown:
-      isAllowed(id, Action.sendBackward)
+    case .moveUp, .moveDown:
+      true
     }
   }
 
@@ -671,7 +669,7 @@ extension Interactor {
       } else {
         true
       }
-      return isAllowed(id, scope: .editorAdd) && canReorderTrack
+      return isAllowed(id, scope: .layerMove) && canReorderTrack
     case .duplicate:
       return isAllowed(id, scope: .lifecycleDuplicate)
     case .delete:

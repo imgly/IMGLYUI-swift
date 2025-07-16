@@ -33,9 +33,4 @@ import SwiftUI
       "play.square.stack"
     }
   }
-
-  /// Set custom options
-  @_spi(Internal) @MainActor public static func setOptions(_ options: [AddClipOption]) {
-    defaultOptions = options
-  }
 }
