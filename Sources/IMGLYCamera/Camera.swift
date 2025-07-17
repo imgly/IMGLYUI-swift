@@ -137,7 +137,7 @@ public struct Camera: View {
             .overlay(alignment: .top) {
               Group {
                 if camera.recordingsManager.hasReachedMaxDuration {
-                  Text(.imgly.localized("ly_img_camera_label_recording_limit \(maxDuration)"))
+                  Text("Recording limit is \(maxDuration)")
                     .fixedSize()
                     .offset(x: 0, y: -50)
                     .transition(.offset(x: 0, y: 20).combined(with: .opacity))
@@ -278,31 +278,20 @@ extension Camera {
         camera.cancel()
       }
     } label: {
-      Label {
-        Text(.imgly.localized("ly_img_camera_button_close"))
-      } icon: {
-        Image(systemName: "xmark")
-      }
-      .labelStyle(.iconOnly)
+      Image(systemName: "xmark")
     }
     .buttonStyle(CameraToolButtonStyle())
     .confirmationDialog(
-      Text(.imgly.localized("ly_img_camera_dialog_delete_recordings_title")),
+      "Delete all clips and close the camera?\nThis cannot be undone.",
       isPresented: $isShowingDeleteAllDialog,
       titleVisibility: .visible
     ) {
-      Button(role: .destructive) {
+      Button("Delete All", role: .destructive) {
         camera.cancel()
-      } label: {
-        Text(.imgly.localized("ly_img_camera_dialog_delete_recordings_button_confirm"))
       }
-      Button(role: .cancel) {
+      Button("Cancel", role: .cancel) {
         isShowingDeleteAllDialog = false
-      } label: {
-        Text(.imgly.localized("ly_img_camera_dialog_delete_recordings_button_dismiss"))
       }
-    } message: {
-      Text(.imgly.localized("ly_img_camera_dialog_delete_recordings_text"))
     }
   }
 
@@ -310,31 +299,20 @@ extension Camera {
     Button {
       isShowingDeleteDialog = true
     } label: {
-      Label {
-        Text(.imgly.localized("ly_img_camera_button_delete_last_recording"))
-      } icon: {
-        Image(systemName: "xmark.square.fill")
-      }
-      .labelStyle(.iconOnly)
+      Image(systemName: "xmark.square.fill")
     }
     .buttonStyle(CameraActionButtonStyle(style: .delete))
     .confirmationDialog(
-      Text(.imgly.localized("ly_img_camera_dialog_delete_last_recording_title")),
+      "Delete your last recorded clip? This cannot be undone.",
       isPresented: $isShowingDeleteDialog,
       titleVisibility: .visible
     ) {
-      Button(role: .destructive) {
+      Button("Delete Last Recording", role: .destructive) {
         camera.deleteLastRecording()
-      } label: {
-        Text(.imgly.localized("ly_img_camera_dialog_delete_last_recording_button_confirm"))
       }
-      Button(role: .cancel) {
+      Button("Cancel", role: .cancel) {
         isShowingDeleteDialog = false
-      } label: {
-        Text(.imgly.localized("ly_img_camera_dialog_delete_last_recording_button_dismiss"))
       }
-    } message: {
-      Text(.imgly.localized("ly_img_camera_dialog_delete_last_recording_text"))
     }
   }
 
@@ -343,12 +321,7 @@ extension Camera {
       HapticsHelper.shared.cameraSelectFeature()
       camera.done()
     } label: {
-      Label {
-        Text(.imgly.localized("ly_img_camera_button_continue"))
-      } icon: {
-        Image(systemName: "arrow.forward")
-      }
-      .labelStyle(.iconOnly)
+      Image(systemName: "arrow.forward")
     }
     .buttonStyle(CameraActionButtonStyle(style: .default))
   }
@@ -361,7 +334,7 @@ extension Camera {
       Image(systemName: "arrow.triangle.2.circlepath")
         .rotationEffect(camera.isFrontBackFlipped ? .degrees(180) : .zero)
         .animation(.imgly.flip.delay(0.1), value: camera.isFrontBackFlipped)
-        .accessibilityLabel(Text(.imgly.localized("ly_img_camera_button_flip_camera")))
+        .accessibilityLabel(camera.isFrontBackFlipped ? "Flip to back camera" : "Flip to front camera")
     }
     .buttonStyle(CameraToolButtonStyle())
   }
@@ -372,7 +345,7 @@ extension Camera {
       camera.swapReactionVideoPosition()
     } label: {
       Image(systemName: "rectangle.2.swap")
-        .accessibilityLabel(Text(.imgly.localized("ly_img_camera_button_swap_positions")))
+        .accessibilityLabel("Swap video and camera position")
     }
     .buttonStyle(CameraToolButtonStyle())
   }
@@ -385,11 +358,12 @@ extension Camera {
       switch camera.flashMode {
       case .off:
         Image(systemName: "bolt.slash.fill")
+          .accessibilityLabel("Flash is off")
       case .on:
         Image(systemName: "bolt.fill")
+          .accessibilityLabel("Flash is on")
       }
     }
-    .accessibilityLabel(Text(.imgly.localized("ly_img_camera_button_toggle_flash")))
     .buttonStyle(CameraToolButtonStyle())
   }
 }

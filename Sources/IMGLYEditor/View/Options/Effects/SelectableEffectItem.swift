@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SelectableEffectItem<Content: View>: View {
-  let title: String
+  let title: LocalizedStringKey
   let selected: Bool
   @ViewBuilder let content: Content
 

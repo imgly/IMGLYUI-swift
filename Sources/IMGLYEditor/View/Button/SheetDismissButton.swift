@@ -7,14 +7,10 @@ struct SheetDismissButton: View {
     Button {
       interactor.sheetDismissButtonTapped()
     } label: {
-      Label {
-        Text(.imgly.localized("ly_img_editor_sheet_button_close"))
-      } icon: {
-        Image(systemName: "chevron.down.circle.fill")
-      }
-      .symbolRenderingMode(.hierarchical)
-      .foregroundColor(.secondary)
-      .font(.title2)
+      Label("Dismiss", systemImage: "chevron.down.circle.fill")
+        .symbolRenderingMode(.hierarchical)
+        .foregroundColor(.secondary)
+        .font(.title2)
     }
   }
 }

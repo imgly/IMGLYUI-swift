@@ -4,10 +4,7 @@ struct NoneItem: View {
   @Binding var selection: AssetSelection?
 
   var body: some View {
-    SelectableEffectItem(
-      title: String(localized: .imgly.localized("ly_img_editor_asset_library_label_none")),
-      selected: selection?.identifier == nil
-    ) {
+    SelectableEffectItem(title: "None", selected: selection?.identifier == nil) {
       ZStack {
         Color(.systemGray5)
         Image(systemName: "nosign")

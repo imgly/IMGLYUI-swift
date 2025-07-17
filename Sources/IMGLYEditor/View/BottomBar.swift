@@ -21,7 +21,7 @@ struct BottomBar: View {
     Button {
       interactor.bottomBarButtonTapped(for: mode)
     } label: {
-      mode.label
+      mode.label(id, interactor)
     }
     .foregroundColor(mode == .delete ? .red : nil)
     .disabled(!isButtonEnabled(mode))

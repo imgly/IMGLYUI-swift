@@ -53,8 +53,6 @@ public extension Dock.Buttons.ID {
   static var crop: EditorComponentID { "ly.img.component.dock.button.crop" }
   /// The id of the ``Dock/Buttons/resize(action:title:icon:isEnabled:isVisible:)`` button.
   static var resize: EditorComponentID { "ly.img.component.dock.button.resize" }
-  /// The id of the ``Dock/Buttons/assetLibrary(action:title:icon:isEnabled:isVisible:)`` button.
-  static var assetLibrary: EditorComponentID { "ly.img.component.dock.button.assetLibrary" }
 }
 
 @MainActor
@@ -64,8 +62,7 @@ public extension Dock.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/elementsTab`` content
   /// is displayed on the sheet.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_elements` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Elements" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addElement``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -74,9 +71,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(type: .libraryAdd { context.assetLibrary.elementsTab }))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_elements"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Elements") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addElement },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
@@ -93,8 +88,7 @@ public extension Dock.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/audioTab`` content is
   /// displayed on the sheet.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_audio` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Audio" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addAudio``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -103,9 +97,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(type: .libraryAdd { context.assetLibrary.audioTab }))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_audio"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Audio") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addAudio },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
@@ -122,8 +114,7 @@ public extension Dock.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/imagesTab`` content
   /// is displayed on the sheet.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_images` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Image" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addImage``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -132,9 +123,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(type: .libraryAdd { context.assetLibrary.imagesTab }))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_images"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Image") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addImage },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
@@ -151,8 +140,7 @@ public extension Dock.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/textTab`` content is
   /// displayed on the sheet.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_text` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Text" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addText``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -163,9 +151,7 @@ public extension Dock.Buttons {
         context.assetLibrary.textTab
       }))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_text"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Text") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addText },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
@@ -182,8 +168,7 @@ public extension Dock.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/shapesTab`` content
   /// is displayed on the
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_shapes` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Shape" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addShape``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -192,9 +177,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(type: .libraryAdd { context.assetLibrary.shapesTab }))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_shapes"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Shape") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addShape },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
@@ -211,8 +194,7 @@ public extension Dock.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/stickersTab`` content
   /// is displayed on the sheet.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_stickers` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Sticker" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addSticker``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -221,9 +203,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(type: .libraryAdd { context.assetLibrary.stickersTab }))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_stickers"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Sticker") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addSticker },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
@@ -240,8 +220,7 @@ public extension Dock.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/overlaysTab`` content
   /// is displayed on the sheet.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_overlays` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Overlay" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addVideo``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -250,9 +229,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(type: .libraryAdd { context.assetLibrary.overlaysTab }))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_overlays"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Overlay") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addVideo },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
@@ -269,8 +246,7 @@ public extension Dock.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and
   /// ``AssetLibrary/stickersAndShapesTab`` content is displayed on the sheet.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_stickers` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Sticker" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addSticker``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -279,9 +255,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(type: .libraryAdd { context.assetLibrary.stickersAndShapesTab }))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _
-      in Text(.imgly.localized("ly_img_editor_dock_button_stickers"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Sticker") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addSticker },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
@@ -297,8 +271,7 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/addFromPhotoRoll(to:)`` event is invoked.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_photo_roll` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Photo Roll" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
   /// ``IMGLY/addPhotoRollForeground``  or ``IMGLY/addPhotoRollBackground`` is used depending on the scene mode.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
@@ -306,9 +279,7 @@ public extension Dock.Buttons {
   /// - Returns: The created button.
   static func photoRoll(
     action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.addFromPhotoRoll()) },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_photo_roll"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Photo Roll") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
       let isVideoScene = try context.engine.scene.getMode() == .video
       return isVideoScene ? Image.imgly.addPhotoRollBackground : Image.imgly.addPhotoRollForeground
@@ -327,8 +298,7 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/addFromSystemCamera(to:)`` event is invoked.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_camera` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Camera" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addCameraForeground``
   /// or ``IMGLY/addCameraBackground`` is used depending on the scene mode.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
@@ -336,9 +306,7 @@ public extension Dock.Buttons {
   /// - Returns: The created button.
   static func systemCamera(
     action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.addFromSystemCamera()) },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_camera"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Camera") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
       let isVideoScene = try context.engine.scene.getMode() == .video
       return isVideoScene ? Image.imgly.addCameraBackground : Image.imgly.addCameraForeground
@@ -357,8 +325,7 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/addFromIMGLYCamera(to:)`` event is invoked.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_camera` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Camera" is used
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addCameraForeground``
   /// or ``IMGLY/addCameraBackground`` is used depending on the scene mode.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
@@ -366,9 +333,7 @@ public extension Dock.Buttons {
   /// - Returns: The created button.
   static func imglyCamera(
     action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.addFromIMGLYCamera()) },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_camera"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Camera") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
       let isVideoScene = try context.engine.scene.getMode() == .video
       return isVideoScene ? Image.imgly.addCameraBackground : Image.imgly.addCameraForeground
@@ -387,8 +352,7 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/voiceover(style:)``.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_voiceover` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Voiceover" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addVoiceover``  is
   /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
@@ -396,9 +360,7 @@ public extension Dock.Buttons {
   /// - Returns: The created button.
   static func voiceover(
     action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .voiceover())) },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_voiceover"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Voiceover") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addVoiceover },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
@@ -414,8 +376,7 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/reorder(style:)``.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_reorder` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Reorder" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/reorder``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if there is more than one child in the
@@ -423,9 +384,7 @@ public extension Dock.Buttons {
   /// - Returns: The created button.
   static func reorder(
     action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .reorder())) },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_reorder"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Reorder") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.reorder },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { context in
@@ -449,8 +408,7 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/adjustments(style:id:)`` for the current page.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_adjustments` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Adjustments is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/adjustments``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the engine scope
@@ -460,9 +418,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(type: .adjustments(id: nonNil($0.engine.scene.getCurrentPage()))))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_adjustments"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Adjustments") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.adjustments },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
@@ -480,8 +436,7 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/filter(style:id:)`` for the current page.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_filter` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Filter" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/filter``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the engine scope
@@ -491,9 +446,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(type: .filter(id: nonNil($0.engine.scene.getCurrentPage()))))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_filter"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Filter") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.filter },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
@@ -511,8 +464,7 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/effect(style:id:)`` for the current page.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_effect` is used
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Effect" is used
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/effect``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the engine scope
@@ -522,9 +474,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(type: .effect(id: nonNil($0.engine.scene.getCurrentPage()))))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_effect"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Effect") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.effect },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
@@ -542,8 +492,7 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/blur(style:id:)`` for the current page.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_blur` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Blur" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/blur``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the engine scope
@@ -553,9 +502,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(type: .blur(id: nonNil($0.engine.scene.getCurrentPage()))))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_blur"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Blur") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.blur },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
@@ -573,8 +520,7 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/crop(style:id:)`` for the current page.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_crop` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Crop" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/crop``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the engine scope `"layer/crop"` is
@@ -584,9 +530,7 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(type: .crop(id: nonNil($0.engine.scene.getCurrentPage()))))
     },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_crop"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Crop") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.crop },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
@@ -604,17 +548,14 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/resize(style:)``.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_resize` is used.
+  ///   - title: The title view which is used to label the button. By default, the `Text` "Resize" is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/resize``  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
   static func resize(
     action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .resize())) },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_resize"))
-    },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in Text("Resize") },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.resize },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
@@ -624,50 +565,5 @@ public extension Dock.Buttons {
       let icon = try icon(context)
       Label { title } icon: { icon }
     }, isEnabled: isEnabled, isVisible: isVisible)
-  }
-
-  /// Creates a ``Dock/Button`` that opens the asset library sheet.
-  /// - Parameters:
-  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)``.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_library` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addAsset``  is
-  /// used.
-  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
-  ///   - isVisible: Whether the button is visible. By default, it is always `true`.
-  ///   - modifier: The ViewModifier to apply to the dock button. By default, the `EmptyModifier` is
-  /// used.
-  /// - Returns: The created button.
-  static func assetLibrary(
-    action: @escaping Dock.Context.To<Void> = { context in
-      context.eventHandler.send(.openSheet(type: .libraryAdd { context.assetLibrary }))
-    },
-    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_dock_button_library"))
-    },
-    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addAsset },
-    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
-    modifier: @escaping Dock.Context.To<some ViewModifier> = { _ in EmptyModifier() }
-  ) -> some Dock.Item {
-    Dock.Button(id: ID.assetLibrary, action: action, label: { context in
-      let title = try title(context)
-      let icon = try icon(context)
-      Label { title } icon: { icon }
-    }, isEnabled: isEnabled, isVisible: isVisible, modifier: modifier)
-  }
-}
-
-public extension Dock.Buttons {
-  /// A `ViewModifier` for the ``Dock/Buttons/assetLibrary(action:title:icon:isEnabled:isVisible:modifier:)``.
-  struct AssetLibraryModifier: ViewModifier {
-    public init() {}
-
-    public func body(content: Content) -> some View {
-      content
-        .buttonStyle(.imgly.assetLibrary)
-        .padding(.horizontal, 8)
-    }
   }
 }

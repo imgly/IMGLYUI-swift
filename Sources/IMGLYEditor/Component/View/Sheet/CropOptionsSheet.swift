@@ -6,7 +6,7 @@ struct CropOptionsSheet: View {
   @Environment(\.imglySelection) private var id
 
   var body: some View {
-    CustomizableTitledSheet(.imgly.localized("ly_img_editor_sheet_crop_title")) {
+    CustomizableTitledSheet("Crop") {
       CropOptions()
     } leading: {
       // Do not use ActionButton here as placing it inside toolbar
@@ -23,7 +23,7 @@ struct CropOptionsSheet: View {
               Image(imageName, bundle: .module)
             }
           }
-          Text(action.localizedStringResource)
+          Text(LocalizedStringKey(action.description))
         }
       }
       .disabled(!interactor.canResetCrop(id))

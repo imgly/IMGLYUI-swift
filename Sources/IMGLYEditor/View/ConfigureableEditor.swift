@@ -12,14 +12,6 @@ struct OnUploadKey: EnvironmentKey {
   static let defaultValue: OnUpload.Callback? = nil
 }
 
-struct OnCloseKey: EnvironmentKey {
-  static let defaultValue: OnClose.Callback? = nil
-}
-
-struct OnErrorKey: EnvironmentKey {
-  static let defaultValue: OnError.Callback? = nil
-}
-
 @_spi(Internal) public extension EnvironmentValues {
   var imglyOnCreate: OnCreate.Callback? {
     get { self[OnCreateKey.self] }
@@ -35,24 +27,12 @@ struct OnErrorKey: EnvironmentKey {
     get { self[OnUploadKey.self] }
     set { self[OnUploadKey.self] = newValue }
   }
-
-  var imglyOnClose: OnClose.Callback? {
-    get { self[OnCloseKey.self] }
-    set { self[OnCloseKey.self] = newValue }
-  }
-
-  var imglyOnError: OnError.Callback? {
-    get { self[OnErrorKey.self] }
-    set { self[OnErrorKey.self] = newValue }
-  }
 }
 
 struct ConfigureableEditor: ViewModifier {
   @Environment(\.imglyOnCreate) private var onCreate
   @Environment(\.imglyOnExport) private var onExport
   @Environment(\.imglyOnUpload) private var onUpload
-  @Environment(\.imglyOnClose) private var onClose
-  @Environment(\.imglyOnError) private var onError
   @Environment(\.dismiss) private var dismiss
 
   let settings: EngineSettings
@@ -62,9 +42,7 @@ struct ConfigureableEditor: ViewModifier {
     let callbacks = EngineCallbacks(
       onCreate: onCreate ?? OnCreate.default,
       onExport: onExport ?? OnExport.default,
-      onUpload: onUpload ?? OnUpload.default,
-      onClose: onClose ?? OnClose.default,
-      onError: onError ?? OnError.default
+      onUpload: onUpload ?? OnUpload.default
     )
     let config = EngineConfiguration(settings: settings, callbacks: callbacks)
     content

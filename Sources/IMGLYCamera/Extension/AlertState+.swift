@@ -5,14 +5,10 @@ extension AlertState {
   static func cameraPermissions(cancel: @escaping () -> Void) -> Self {
     AlertState(
       title: CamMicUsageDescriptionFromBundleHelper.shared.cameraAlertHeadline,
-      message: String(localized: CamMicUsageDescriptionFromBundleHelper.shared.cameraUsageDescription),
+      message: CamMicUsageDescriptionFromBundleHelper.shared.cameraUsageDescription,
       buttons: [
-        .init(
-          title: .imgly.localized("ly_img_editor_dialog_permission_camera_button_dismiss", table: .imglyCoreUI),
-          role: .cancel,
-          action: cancel
-        ),
-        .init(title: .imgly.localized("ly_img_editor_dialog_permission_camera_button_confirm", table: .imglyCoreUI)) {
+        .init(title: "Don't Allow", role: .cancel, action: cancel),
+        .init(title: "Settings") {
           cancel()
           if let url = URL(string: UIApplication.openSettingsURLString) {
             Task {
@@ -27,16 +23,10 @@ extension AlertState {
   static func microphonePermissions(cancel: @escaping () -> Void) -> Self {
     AlertState(
       title: CamMicUsageDescriptionFromBundleHelper.shared.microphoneAlertHeadline,
-      message: String(localized: CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription),
+      message: CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription,
       buttons: [
-        .init(
-          title: .imgly.localized("ly_img_editor_dialog_permission_microphone_button_dismiss", table: .imglyCoreUI),
-          role: .cancel,
-          action: cancel
-        ),
-        .init(
-          title: .imgly.localized("ly_img_editor_dialog_permission_microphone_button_confirm", table: .imglyCoreUI)
-        ) {
+        .init(title: "Don't Allow", role: .cancel, action: cancel),
+        .init(title: "Settings") {
           cancel()
           if let url = URL(string: UIApplication.openSettingsURLString) {
             Task {
@@ -49,8 +39,8 @@ extension AlertState {
   }
 
   static func failedToLoadAsset() -> Self {
-    AlertState(title: .imgly.localized("ly_img_camera_dialog_video_error_title"), buttons: [
-      .init(title: .imgly.localized("ly_img_camera_dialog_video_error_button_dismiss"), action: {}),
+    AlertState(title: "Failed to load asset", buttons: [
+      .init(title: "Ok", action: {}),
     ])
   }
 }

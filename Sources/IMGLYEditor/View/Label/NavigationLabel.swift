@@ -8,14 +8,14 @@ public struct NavigationLabel: View {
     case forward = "chevron.forward"
   }
 
-  let title: LocalizedStringResource
+  let title: LocalizedStringKey
   let direction: Direction
 
   /// Creates a navigation label with a title and direction.
   /// - Parameters:
   ///   - title: The title of the label.
   ///   - direction: The direction of the label.
-  public init(_ title: LocalizedStringResource, direction: Direction) {
+  public init(_ title: LocalizedStringKey, direction: Direction) {
     self.title = title
     self.direction = direction
   }

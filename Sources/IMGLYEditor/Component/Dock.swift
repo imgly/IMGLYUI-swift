@@ -9,21 +9,6 @@ struct DockModificationsKey: EnvironmentKey {
   static let defaultValue: Dock.Modifications? = nil
 }
 
-struct DockAlignmentKey: EnvironmentKey {
-  static let defaultValue: Dock.Alignment = { _ in .center }
-}
-
-struct DockBackgroundColorKey: EnvironmentKey {
-  static let defaultValue: Dock.BackgroundColor = { _, colorScheme in colorScheme == .dark
-    ? Color(uiColor: .systemBackground)
-    : Color(uiColor: .secondarySystemBackground)
-  }
-}
-
-struct DockScrollDisabledKey: EnvironmentKey {
-  static let defaultValue: Dock.ScrollDisabled = { _ in false }
-}
-
 @_spi(Internal) public extension EnvironmentValues {
   var imglyDockItems: Dock.Items? {
     get { self[DockItemsKey.self] }
@@ -33,21 +18,6 @@ struct DockScrollDisabledKey: EnvironmentKey {
   var imglyDockModifications: Dock.Modifications? {
     get { self[DockModificationsKey.self] }
     set { self[DockModificationsKey.self] = newValue }
-  }
-
-  var imglyDockItemAlignment: Dock.Alignment {
-    get { self[DockAlignmentKey.self] }
-    set { self[DockAlignmentKey.self] = newValue }
-  }
-
-  var imglyDockBackgroundColor: Dock.BackgroundColor {
-    get { self[DockBackgroundColorKey.self] }
-    set { self[DockBackgroundColorKey.self] = newValue }
-  }
-
-  var imglyDockScrollDisabled: Dock.ScrollDisabled {
-    get { self[DockScrollDisabledKey.self] }
-    set { self[DockScrollDisabledKey.self] = newValue }
   }
 }
 
@@ -77,16 +47,6 @@ public extension Dock {
   typealias Modifications = @Sendable @MainActor (_ context: Context, _ items: Modifier) throws -> Void
   /// A button dock ``Item`` component.
   typealias Button = EditorComponents.Button
-  /// A custom dock ``Item`` component.
-  typealias Custom = EditorComponents.Custom
-}
-
-@_spi(Internal) public extension Dock {
-  typealias Alignment = Context.SendableTo<SwiftUI.Alignment>
-  typealias ScrollDisabled = Context.SendableTo<Bool>
-  typealias BackgroundColor = @Sendable @MainActor (_ context: Context, _ colorScheme: ColorScheme) throws -> SwiftUI
-    .Color
 }
 
 extension Dock.Button: Dock.Item where Context == Dock.Context {}
-extension Dock.Custom: Dock.Item where Context == Dock.Context {}

@@ -62,6 +62,7 @@ import SwiftUI
         updateZoom(for: .sheetClosed)
         // Reset sheet state to prevent memory leaks from retain cycles in view references
         interactor.sheet = SheetState()
+
       } content: {
         Sheet()
           .background {
@@ -78,15 +79,13 @@ import SwiftUI
             updateZoom(for: .sheetGeometryChanged, sheetGeometry: newValue)
           }
           .imgly.errorAlert(isSheet: true)
-          // We're setting color scheme and interactor environment object here inside sheet
-          // because they are sometimes ignored on iOS 18
+          // We're setting the color scheme here because .preferredColorScheme inside 'Sheet'
+          // is sometimes ignored on iOS 18
           .preferredColorScheme(colorScheme)
-          .environmentObject(interactor)
       }
       .imgly.errorAlert(isSheet: false)
       .modifier(ExportSheet(exportState: interactor.export))
       .modifier(ShareSheet())
-      .modifier(CloseConfirmationAlert())
       .onAppear {
         let zoom = interactor.zoomParameters(
           zoomPadding: zoomPadding,

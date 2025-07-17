@@ -2,8 +2,8 @@
 @_spi(Internal) import IMGLYCoreUI
 import SwiftUI
 
-struct PropertyPicker<T: MappedEnum & Labelable>: View {
-  let title: LocalizedStringResource
+struct PropertyPicker<T: MappedEnum>: View {
+  let title: LocalizedStringKey
   let property: Property
   let cases: [T]
   let setter: Interactor.PropertySetter<T>
@@ -11,7 +11,7 @@ struct PropertyPicker<T: MappedEnum & Labelable>: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  init(_ title: LocalizedStringResource, property: Property,
+  init(_ title: LocalizedStringKey, property: Property,
        cases: [T] = T.allCases.map { $0 },
        setter: @escaping Interactor.PropertySetter<T> = Interactor.Setter.set()) {
     self.title = title

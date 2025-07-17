@@ -3,7 +3,7 @@
 import SwiftUI
 
 struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride: BinaryFloatingPoint {
-  let title: LocalizedStringResource
+  let title: LocalizedStringKey
   let bounds: ClosedRange<T>
   let property: Property
   let mapping: Mapping
@@ -18,7 +18,7 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  init(_ title: LocalizedStringResource, in bounds: ClosedRange<T>, property: Property,
+  init(_ title: LocalizedStringKey, in bounds: ClosedRange<T>, property: Property,
        mapping: @escaping Mapping = { value, _ in value },
        setter: @escaping Interactor.PropertySetter<T> = Interactor.Setter.set(),
        getter: @escaping Interactor.PropertyGetter<T> = Interactor.Getter.get(),
@@ -55,6 +55,6 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
         interactor.addUndoStep()
       }
     }
-    .accessibilityLabel(Text(title))
+    .accessibilityLabel(title)
   }
 }

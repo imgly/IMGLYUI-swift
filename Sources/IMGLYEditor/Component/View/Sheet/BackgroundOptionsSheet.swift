@@ -6,7 +6,7 @@ struct BackgroundOptionsSheet: View {
   @Environment(\.imglySelection) private var id
 
   var body: some View {
-    DismissableTitledSheet(.imgly.localized("ly_img_editor_sheet_text_background_title")) {
+    DismissableTitledSheet("Background") {
       BackgroundOptions(isEnabled: interactor.bind(id,
                                                    property: .key(.backgroundColorEnabled),
                                                    default: false))

@@ -1,3 +1,4 @@
+@_spi(Internal) import IMGLYCore
 import SwiftUI
 
 // MARK: - Public interface

@@ -21,20 +21,8 @@ public extension EditorEvents {
     let url: URL
   }
 
-  /// An event before closing the editor
-  struct OnClose: EditorEvent {}
-
   /// An event for closing the editor.
   struct CloseEditor: EditorEvent {}
-
-  /// An event for showing a confirmation alert when closing the editor with unsaved changes.
-  struct ShowCloseConfirmationAlert: EditorEvent {}
-
-  /// An event for showing a error alert when closing the editor with an error.
-  struct ShowErrorAlert: EditorEvent {
-    let error: Swift.Error
-    let onDismiss: () -> Void
-  }
 
   /// An event for setting the view mode of the editor.
   struct SetViewMode: EditorEvent {
@@ -78,30 +66,9 @@ public extension EditorEvent where Self == EditorEvents.ShareFile {
   static func shareFile(_ url: URL) -> Self { Self(url: url) }
 }
 
-public extension EditorEvent where Self == EditorEvents.OnClose {
-  /// Creates an ``EditorEvent`` to trigger the onClose callback.
-  /// - Returns: The created ``EditorEvents/OnClose`` event.
-  static var onClose: Self { Self() }
-}
-
 public extension EditorEvent where Self == EditorEvents.CloseEditor {
   /// Creates an ``EditorEvent`` to close the editor.
   static var closeEditor: Self { Self() }
-}
-
-public extension EditorEvent where Self == EditorEvents.ShowCloseConfirmationAlert {
-  /// Creates an ``EditorEvent`` to show the close confirmation alert.
-  static var showCloseConfirmationAlert: Self { Self() }
-}
-
-public extension EditorEvent where Self == EditorEvents.ShowErrorAlert {
-  /// Creates an ``EditorEvent`` to show the error alert.
-  static func showErrorAlert(
-    _ error: Swift.Error,
-    _ onDismiss: @escaping () -> Void = {}
-  ) -> Self {
-    Self(error: error, onDismiss: onDismiss)
-  }
 }
 
 public extension EditorEvent where Self == EditorEvents.SetViewMode {

@@ -8,12 +8,8 @@ struct SearchButton: View {
     Button {
       searchState.isPresented = true
     } label: {
-      Label {
-        Text(.imgly.localized("ly_img_editor_asset_library_button_search"))
-      } icon: {
-        Image(systemName: "magnifyingglass")
-      }
-      .font(.body.weight(.semibold))
+      Label("Search", systemImage: "magnifyingglass")
+        .font(.body.weight(.semibold))
     }
   }
 }

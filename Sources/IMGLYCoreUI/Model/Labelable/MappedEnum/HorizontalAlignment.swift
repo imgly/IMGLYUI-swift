@@ -1,15 +1,15 @@
 import Foundation
 
-@_spi(Internal) public enum HorizontalAlignment: String, MappedEnum, Labelable {
+@_spi(Internal) public enum HorizontalAlignment: String, MappedEnum {
   case left = "Left"
   case center = "Center"
   case right = "Right"
 
-  @_spi(Internal) public var localizationValue: String.LocalizationValue {
+  @_spi(Internal) public var description: String {
     switch self {
-    case .left: "ly_img_editor_sheet_format_text_alignment_horizontal_option_left"
-    case .center: "ly_img_editor_sheet_format_text_alignment_horizontal_option_center"
-    case .right: "ly_img_editor_sheet_format_text_alignment_horizontal_option_right"
+    case .left: "Align Left"
+    case .center: "Align Horizontal Center"
+    case .right: "Align Right"
     }
   }
 

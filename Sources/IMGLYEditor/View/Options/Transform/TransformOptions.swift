@@ -81,7 +81,7 @@ struct TransformOptions<Item: View>: View {
             if mode != .crop {
               HStack {
                 Image("custom.arrow.down.left.and.arrow.up.right", bundle: .module)
-                Text("\(Int(dimensions.width)) × \(Int(dimensions.height)) \(dimensions.designUnit.abbreviation)")
+                Text("\(Int(dimensions.width)) × \(Int(dimensions.height)) \(dimensions.designUnit.description)")
                   .clipShape(Rectangle())
               }
               .font(.subheadline)

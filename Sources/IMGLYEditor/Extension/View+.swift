@@ -1,4 +1,3 @@
-import IMGLYEngine
 import SwiftUI
 @_spi(Advanced) import SwiftUIIntrospect
 @_spi(Internal) import IMGLYCore
@@ -26,25 +25,6 @@ public extension IMGLY where Wrapped: View {
   /// - Returns: A view that has the given callback set.
   func onExport(_ onExport: @escaping OnExport.Callback) -> some View {
     wrapped.environment(\.imglyOnExport, onExport)
-  }
-
-  /// Sets the callback that is invoked when the close button is tapped.
-  /// The callback receives the engine, and the event handler.
-  /// The default implementation displays the close confirmation alert if there are unsaved changes, else closes the
-  /// editor.
-  /// - Parameter onClose: The callback.
-  /// - Returns: A view that has the given callback set.
-  func onClose(_ onClose: @escaping OnClose.Callback) -> some View {
-    wrapped.environment(\.imglyOnClose, onClose)
-  }
-
-  /// Sets the callback that is invoked when an error is thrown while loading the editor.
-  /// The callback receives the error and the event handler.
-  /// The default implementation displays the error alert.
-  /// - Parameter onError: The callback.
-  /// - Returns: A view that has the given callback set.
-  func onError(_ onError: @escaping OnError.Callback) -> some View {
-    wrapped.environment(\.imglyOnError, onError)
   }
 
   /// Sets the callback that is invoked after an asset is added to an asset source. When selecting an asset to upload, a
@@ -346,22 +326,6 @@ public extension IMGLY where Wrapped: View {
   func pageNavigation(_ enabled: Bool) -> some View {
     wrapped.environment(\.imglyIsPageNavigationEnabled, enabled)
   }
-
-  func selection(_ id: DesignBlockID?) -> some View {
-    wrapped.environment(\.imglySelection, id)
-  }
-
-  func dockBackgroundColor(_ color: @escaping Dock.BackgroundColor) -> some View {
-    wrapped.environment(\.imglyDockBackgroundColor, color)
-  }
-
-  func dockItemAlignment(_ alignment: @escaping Dock.Alignment) -> some View {
-    wrapped.environment(\.imglyDockItemAlignment, alignment)
-  }
-
-  func dockScrollDisabled(_ disabled: @escaping Dock.ScrollDisabled) -> some View {
-    wrapped.environment(\.imglyDockScrollDisabled, disabled)
-  }
 }
 
 extension IMGLY where Wrapped: View {
@@ -373,6 +337,10 @@ extension IMGLY where Wrapped: View {
   func interactor(_ interactor: Interactor) -> some View {
     selection(interactor.selection?.blocks.first)
       .environmentObject(interactor)
+  }
+
+  func selection(_ id: Interactor.BlockID?) -> some View {
+    wrapped.environment(\.imglySelection, id)
   }
 
   @MainActor

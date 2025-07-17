@@ -4,8 +4,7 @@ import SwiftUI
 public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
   public var id: Int {
     var hasher = Hasher()
-    hasher.combine(title?.key)
-    hasher.combine(title?.table)
+    hasher.combine(title)
     for component in components {
       hasher.combine(component.id)
     }
@@ -15,7 +14,7 @@ public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
   public var sources: [AssetLoader.SourceData] { components.flatMap(\.sources) }
   public var view: AnyView { AnyView(erasing: body) }
 
-  private let title: LocalizedStringResource?
+  private let title: String?
   private let excludedPreviewSources: Set<String>
   let components: [AssetLibraryContent]
   @ViewBuilder private let preview: () -> Preview
@@ -34,7 +33,7 @@ public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
   ///   - excludedPreviewSources: Asset source IDs whose assets should not be displayed in the `preview`.
   ///   - content: The asset library content.
   ///   - preview: The preview view of the group.
-  public init(_ title: LocalizedStringResource, excludedPreviewSources: Set<String> = [],
+  public init(_ title: String, excludedPreviewSources: Set<String> = [],
               @AssetLibraryBuilder content: () -> AssetLibraryContent,
               @ViewBuilder preview: @MainActor @escaping () -> Preview = { AssetPreview.imageOrVideo }) {
     let content = content()

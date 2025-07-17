@@ -15,7 +15,7 @@ struct KeyboardToolbar: View {
                 .preference(key: KeyboardToolbarSafeAreaInsetsKey.self, value: geo.safeAreaInsets)
             }
           }
-          .navigationTitle(Text(.imgly.localized("ly_img_editor_edit_text_title")))
+          .navigationTitle("Edit Text")
           .navigationBarTitleDisplayMode(.inline)
           .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

@@ -31,11 +31,11 @@ struct CountdownTimerView: View {
             // Alternate between two text fields to enable insertion/removal transitions.
             Group {
               if Int(countdownTimer.remainingSeconds) % 2 == 0 {
-                Text(verbatim: "\(Int(countdownTimer.remainingSeconds))")
+                Text("\(Int(countdownTimer.remainingSeconds))")
                   .id("CountdownTimerID1-\(countdownTimer.remainingSeconds)")
 
               } else {
-                Text(verbatim: "\(Int(countdownTimer.remainingSeconds))")
+                Text("\(Int(countdownTimer.remainingSeconds))")
                   .id("CountdownTimerID2-\(countdownTimer.remainingSeconds)")
               }
             }

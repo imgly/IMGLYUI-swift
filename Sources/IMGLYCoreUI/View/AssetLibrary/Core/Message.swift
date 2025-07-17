@@ -3,20 +3,17 @@ import SwiftUI
 /// A message view used in the ``AssetLibrary``.
 public struct Message: View {
   /// No elements message.
-  public static let noElements = Message(.imgly.localized("ly_img_editor_asset_library_label_empty"))
+  public static let noElements = Message("No Elements")
   /// No service message.
-  public static let noService = Message(
-    .imgly.localized("ly_img_editor_asset_library_label_error"),
-    systemImage: "exclamationmark.triangle"
-  )
+  public static let noService = Message("Cannot Connect to Service", systemImage: "exclamationmark.triangle")
 
-  private let title: LocalizedStringResource
+  private let title: LocalizedStringKey
   private let systemImage: String?
   private let imageFont: Font?
 
   @Environment(\.imglyAssetGridMessageTextOnly) private var messageTextOnly
 
-  init(_ title: LocalizedStringResource, systemImage: String? = nil, imageFont: Font? = nil) {
+  init(_ title: LocalizedStringKey, systemImage: String? = nil, imageFont: Font? = nil) {
     self.title = title
     self.systemImage = systemImage
     self.imageFont = imageFont

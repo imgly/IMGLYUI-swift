@@ -4,7 +4,7 @@ struct FeatureLabelView: View {
   @ScaledMetric var circleDiameter: Double = 48
   @ScaledMetric var padding: Double = 4
 
-  let text: LocalizedStringResource
+  let text: LocalizedStringKey
   let image: Image
 
   let isSelected: Bool

@@ -4,11 +4,11 @@ import Foundation
 enum TextFrameBehavior: Labelable, CaseIterable {
   case auto, autoHeight, fixed
 
-  var localizationValue: String.LocalizationValue {
+  var description: String {
     switch self {
-    case .auto: "ly_img_editor_sheet_format_text_frame_behavior_option_auto_size"
-    case .autoHeight: "ly_img_editor_sheet_format_text_frame_behavior_option_auto_height"
-    case .fixed: "ly_img_editor_sheet_format_text_frame_behavior_option_fixed_size"
+    case .auto: "Auto Size"
+    case .autoHeight: "Auto Height"
+    case .fixed: "Fixed Size"
     }
   }
 

@@ -19,19 +19,10 @@ struct StrokeOptions: View {
             value.wrappedValue = exp(newValue)
           }
         }
-        PropertyPicker<StrokeStyle>(
-          .imgly.localized("ly_img_editor_sheet_fill_stroke_label_style"),
-          property: .key(.strokeStyle)
-        )
-        PropertyPicker<StrokePosition>(
-          .imgly.localized("ly_img_editor_sheet_fill_stroke_label_position"),
-          property: .key(.strokePosition)
-        )
-        .disabled(interactor.sheet.content == .text)
-        PropertyPicker<StrokeJoin>(
-          .imgly.localized("ly_img_editor_sheet_fill_stroke_label_join"),
-          property: .key(.strokeCornerGeometry)
-        )
+        PropertyPicker<StrokeStyle>("Style", property: .key(.strokeStyle))
+        PropertyPicker<StrokePosition>("Position", property: .key(.strokePosition))
+          .disabled(interactor.sheet.content == .text)
+        PropertyPicker<StrokeJoin>("Join", property: .key(.strokeCornerGeometry))
       }
     }
   }

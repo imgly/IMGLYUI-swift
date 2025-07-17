@@ -2,16 +2,16 @@ import Foundation
 @_spi(Internal) import IMGLYCore
 import IMGLYEngine
 
-@_spi(Internal) public enum ColorFillType: String, MappedEnum, Labelable {
+@_spi(Internal) public enum ColorFillType: String, MappedEnum {
   case solid = "//ly.img.ubq/fill/color"
   case gradient = "//ly.img.ubq/fill/gradient/linear"
   case none
 
-  @_spi(Internal) public var localizationValue: String.LocalizationValue {
+  @_spi(Internal) public var description: String {
     switch self {
-    case .solid: "ly_img_editor_sheet_fill_stroke_type_option_solid"
-    case .gradient: "ly_img_editor_sheet_fill_stroke_type_option_gradient_linear"
-    case .none: "ly_img_editor_sheet_fill_stroke_type_option_none"
+    case .solid: "Solid"
+    case .gradient: "Gradient"
+    case .none: "None"
     }
   }
 

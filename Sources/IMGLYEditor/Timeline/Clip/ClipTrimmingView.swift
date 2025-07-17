@@ -282,6 +282,7 @@ struct ClipTrimmingView: View {
       break
 
     case .trimStart:
+
       let maxNegativeDelta: CMTime
       let maxPositiveDelta: CMTime
 
@@ -335,6 +336,7 @@ struct ClipTrimmingView: View {
       }
 
     case .trimEnd:
+
       let maxNegativeDelta: CMTime
       let maxPositiveDelta: CMTime
 

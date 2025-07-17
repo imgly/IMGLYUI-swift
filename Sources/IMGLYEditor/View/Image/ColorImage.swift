@@ -5,7 +5,7 @@ extension ImagePaint {
   static let transparentColorPattern = ImagePaint(
     image: Image("transparent_color_pattern", bundle: .module),
     scale: {
-      // Fix for iOS 17.0..<17.2 when compiled with Xcode 15&16 (https://github.com/oliverfoggin/ImagePaintTest)
+      // Fix for iOS 17.0..<17.2 when compiled with Xcode 15 (https://github.com/oliverfoggin/ImagePaintTest)
       if #available(iOS 17.0, *) {
         if #available(iOS 17.2, *) {
           1

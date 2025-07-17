@@ -4,12 +4,12 @@ import SwiftUI
 
 @_spi(Internal) public struct AlertState: Equatable {
   var id: UUID
-  var title: LocalizedStringResource
+  var title: String
   var message: String?
   var buttons: [ButtonState]
 
   @_spi(Internal) public init(
-    title: LocalizedStringResource,
+    title: String,
     message: String? = nil,
     buttons: [ButtonState]
   ) {
@@ -26,12 +26,12 @@ import SwiftUI
 
 @_spi(Internal) public struct ButtonState: Identifiable, Equatable {
   public var id: UUID
-  var title: LocalizedStringResource
+  var title: String
   var role: ButtonRole?
   var action: () -> Void
 
   @_spi(Internal) public init(
-    title: LocalizedStringResource,
+    title: String,
     role: ButtonRole? = nil,
     action: @escaping () -> Void
   ) {
@@ -54,7 +54,7 @@ import SwiftUI
       presenting: alert.wrappedValue,
       actions: { alert in
         ForEach(alert.buttons) { button in
-          Button(role: button.role) { button.action() } label: { Text(button.title) }
+          Button(button.title, role: button.role, action: button.action)
         }
       },
       message: { alert in

@@ -63,6 +63,11 @@
 
   final class CameraWrapper: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate,
     UIAdaptivePresentationControllerDelegate {
+    private enum Localization {
+      static var buttonCancel: String { NSLocalizedString("Cancel", comment: "") }
+      static var buttonSettings: String { NSLocalizedString("Settings", comment: "") }
+    }
+
     fileprivate var isPresented: Binding<Bool>
     fileprivate var source: UIImagePickerController.SourceType
     fileprivate var media: [MediaType]
@@ -145,21 +150,15 @@
 
     private func presentCameraPermissionAlert() {
       let alert = UIAlertController(
-        title: String(localized: CamMicUsageDescriptionFromBundleHelper.shared.cameraAlertHeadline),
-        message: String(localized: CamMicUsageDescriptionFromBundleHelper.shared.cameraUsageDescription),
+        title: CamMicUsageDescriptionFromBundleHelper.shared.cameraAlertHeadline,
+        message: CamMicUsageDescriptionFromBundleHelper.shared.cameraUsageDescription,
         preferredStyle: .alert
       )
-      alert.addAction(UIAlertAction(
-        title: String(localized: .imgly.localized("ly_img_editor_dialog_permission_camera_button_dismiss")),
-        style: .cancel
-      ) { [weak self] _ in
+      alert.addAction(UIAlertAction(title: Localization.buttonCancel, style: .cancel) { [weak self] _ in
         self?.isPresented.wrappedValue = false
       })
 
-      alert.addAction(UIAlertAction(
-        title: String(localized: .imgly.localized("ly_img_editor_dialog_permission_camera_button_confirm")),
-        style: .default
-      ) { _ in
+      alert.addAction(UIAlertAction(title: Localization.buttonSettings, style: .default) { _ in
         if let appSettings = URL(string: UIApplication.openSettingsURLString),
            UIApplication.shared.canOpenURL(appSettings) {
           UIApplication.shared.open(appSettings)
@@ -170,21 +169,15 @@
 
     private func presentMicrophonePermissionAlert() {
       let alert = UIAlertController(
-        title: String(localized: CamMicUsageDescriptionFromBundleHelper.shared.microphoneAlertHeadline),
-        message: String(localized: CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription),
+        title: CamMicUsageDescriptionFromBundleHelper.shared.microphoneAlertHeadline,
+        message: CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription,
         preferredStyle: .alert
       )
-      alert.addAction(UIAlertAction(
-        title: String(localized: .imgly.localized("ly_img_editor_dialog_permission_microphone_button_dismiss")),
-        style: .cancel
-      ) { [weak self] _ in
+      alert.addAction(UIAlertAction(title: Localization.buttonCancel, style: .cancel) { [weak self] _ in
         self?.isPresented.wrappedValue = false
       })
 
-      alert.addAction(UIAlertAction(
-        title: String(localized: .imgly.localized("ly_img_editor_dialog_permission_microphone_button_confirm")),
-        style: .default
-      ) { _ in
+      alert.addAction(UIAlertAction(title: Localization.buttonSettings, style: .default) { _ in
         if let appSettings = URL(string: UIApplication.openSettingsURLString),
            UIApplication.shared.canOpenURL(appSettings) {
           UIApplication.shared.open(appSettings)

@@ -8,7 +8,7 @@ struct EffectProperty: Identifiable {
     case color(supportsOpacity: Bool, defaultValue: CGColor?)
   }
 
-  let label: LocalizedStringResource
+  let label: LocalizedStringKey
   let value: Value
   let property: Property
   let id: Interactor.BlockID?
@@ -17,7 +17,7 @@ struct EffectProperty: Identifiable {
     let isLUT = filter == .lut
     let property = isLUT ? "lut_filter" : "duotone_filter"
     let intensity = EffectProperty(
-      label: .imgly.localized("ly_img_editor_sheet_filter_label_intensity"),
+      label: "Intensity",
       value: .float(range: isLUT ? 0 ... 1 : -1 ... 1, defaultValue: 1),
       property: .raw("effect/\(property)/intensity"),
       id: selection
@@ -29,112 +29,112 @@ struct EffectProperty: Identifiable {
     switch blur {
     case .radial:
       [EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_intensity"),
+        label: "Intensity",
         value: .float(range: 0 ... 100, defaultValue: 30),
         property: .key(.blurRadialBlurRadius),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_gradient_size"),
+        label: "Size of Gradient",
         value: .float(range: 0 ... 1000, defaultValue: 50),
         property: .key(.blurRadialGradientRadius),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_non_blurred_size"),
+        label: "Size of non-blurred Area",
         value: .float(range: 0 ... 1000, defaultValue: 75),
         property: .key(.blurRadialRadius),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_point_x"),
+        label: "Point - X",
         value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurRadialX),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_point_y"),
+        label: "Point - Y",
         value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurRadialY),
         id: selection
       )]
     case .mirrored:
       [EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_intensity"),
+        label: "Intensity",
         value: .float(range: 0 ... 100, defaultValue: 30),
         property: .key(.blurMirroredBlurRadius),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_gradient_size"),
+        label: "Size of Gradient",
         value: .float(range: 0 ... 1000, defaultValue: 50),
         property: .key(.blurMirroredGradientSize),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_non_blurred_size"),
+        label: "Size of non-blurred Area",
         value: .float(range: 0 ... 1000, defaultValue: 75),
         property: .key(.blurMirroredSize),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_point_x1"),
+        label: "Point 1 - X",
         value: .float(range: 0 ... 1, defaultValue: 0),
         property: .key(.blurMirroredX1),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_point_y1"),
+        label: "Point 1 - Y",
         value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurMirroredY1),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_point_x2"),
+        label: "Point 2 - X",
         value: .float(range: 0 ... 1, defaultValue: 1),
         property: .key(.blurMirroredX2),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_point_y2"),
+        label: "Point 2 - Y",
         value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurMirroredY2),
         id: selection
       )]
     case .uniform:
       [EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_intensity"),
+        label: "Intensity",
         value: .float(range: 0 ... 1, defaultValue: 0.2),
         property: .key(.blurUniformIntensity),
         id: selection
       )]
     case .linear:
       [EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_intensity"),
+        label: "Intensity",
         value: .float(range: 0 ... 100, defaultValue: 30),
         property: .key(.blurLinearBlurRadius),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_point_x1"),
+        label: "Point 1 - X",
         value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurLinearX1),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_point_y1"),
+        label: "Point 1 - Y",
         value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.blurLinearY1),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_point_x2"),
+        label: "Point 2 - X",
         value: .float(range: 0 ... 1, defaultValue: 1),
         property: .key(.blurLinearX2),
         id: selection
       ),
       EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_blur_label_point_y2"),
+        label: "Point 2 - Y",
         value: .float(range: 0 ... 1, defaultValue: 1),
         property: .key(.blurLinearY2),
         id: selection
@@ -150,13 +150,13 @@ struct EffectProperty: Identifiable {
     case .pixelize:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_pixelize_horizontal_count"),
+          label: "Horizontal Count",
           value: .float(range: 5 ... 50, defaultValue: 20),
           property: .key(.effectPixelizeHorizontalPixelSize),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_pixelize_vertical_count"),
+          label: "Vertical Count",
           value: .float(range: 5 ... 50, defaultValue: 20),
           property: .key(.effectPixelizeVerticalPixelSize),
           id: selection
@@ -165,13 +165,13 @@ struct EffectProperty: Identifiable {
     case .radialPixel:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_radial_pixel_row_pixels"),
+          label: "Radius per Row",
           value: .float(range: 0.05 ... 1, defaultValue: 0.1),
           property: .key(.effectRadialPixelRadius),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_radial_pixel_row_size"),
+          label: "Size per Row",
           value: .float(range: 0.01 ... 1, defaultValue: 0.01),
           property: .key(.effectRadialPixelSegments),
           id: selection
@@ -180,25 +180,25 @@ struct EffectProperty: Identifiable {
     case .crossCut:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_cross_cut_horizontal_cuts"),
+          label: "Horizontal Cuts",
           value: .float(range: 1 ... 10, defaultValue: 5),
           property: .key(.effectCrossCutSlices),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_cross_cut_horizontal_offset"),
+          label: "Horizontal Offset",
           value: .float(range: 0 ... 1, defaultValue: 0.07),
           property: .key(.effectCrossCutOffset),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_cross_cut_vertical_offset"),
+          label: "Vertical Offset",
           value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectCrossCutSpeedV),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_cross_cut_variation"),
+          label: "Variation",
           value: .float(range: 0 ... 1, defaultValue: 1),
           property: .key(.effectCrossCutTime),
           id: selection
@@ -207,19 +207,19 @@ struct EffectProperty: Identifiable {
     case .liquid:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_liquid_intensity"),
+          label: "Intensity",
           value: .float(range: 0 ... 1, defaultValue: 0.06),
           property: .key(.effectLiquidAmount),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_liquid_scale"),
+          label: "Scale",
           value: .float(range: 0 ... 1, defaultValue: 0.62),
           property: .key(.effectLiquidScale),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_liquid_variation"),
+          label: "Variation",
           value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectLiquidTime),
           id: selection
@@ -228,13 +228,13 @@ struct EffectProperty: Identifiable {
     case .outliner:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_outliner_intensity"),
+          label: "Intensity",
           value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectOutlinerAmount),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_outliner_blending"),
+          label: "Blending",
           value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectOutlinerPassthrough),
           id: selection
@@ -243,19 +243,19 @@ struct EffectProperty: Identifiable {
     case .dotPattern:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_dot_pattern_dots"),
+          label: "Number of Dots",
           value: .float(range: 1 ... 80, defaultValue: 30),
           property: .key(.effectDotPatternDots),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_dot_pattern_size"),
+          label: "Size of Dots",
           value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectDotPatternSize),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_dot_pattern_blur"),
+          label: "Global Blur",
           value: .float(range: 0 ... 1, defaultValue: 0.3),
           property: .key(.effectDotPatternBlur),
           id: selection
@@ -263,7 +263,7 @@ struct EffectProperty: Identifiable {
       ]
     case .posterize:
       [EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_effect_label_posterize_levels"),
+        label: "Number of Levels",
         value: .float(range: 1 ... 15, defaultValue: 3),
         property: .key(.effectPosterizeLevels),
         id: selection
@@ -271,25 +271,25 @@ struct EffectProperty: Identifiable {
     case .tvGlitch:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_tv_glitch_rough_distortion"),
+          label: "Rough Distortion",
           value: .float(range: 0 ... 10, defaultValue: 3),
           property: .key(.effectTvGlitchDistortion),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_tv_glitch_fine_distortion"),
+          label: "Fine Distortion",
           value: .float(range: 0 ... 5, defaultValue: 1),
           property: .key(.effectTvGlitchDistortion2),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_tv_glitch_variance"),
+          label: "Variance",
           value: .float(range: 0 ... 5, defaultValue: 2),
           property: .key(.effectTvGlitchSpeed),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_tv_glitch_vertical_offset"),
+          label: "Vertical Offset",
           value: .float(range: 0 ... 3, defaultValue: 1),
           property: .key(.effectTvGlitchRollSpeed),
           id: selection
@@ -298,13 +298,13 @@ struct EffectProperty: Identifiable {
     case .halfTone:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_half_tone_angle"),
+          label: "Angle of Pattern",
           value: .float(range: 0 ... 1, defaultValue: 0),
           property: .key(.effectHalfToneAngle),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_half_tone_scale"),
+          label: "Scale of Pattern",
           value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectHalfToneScale),
           id: selection
@@ -312,7 +312,7 @@ struct EffectProperty: Identifiable {
       ]
     case .linocut:
       [EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_effect_label_linocut_scale"),
+        label: "Scale of Pattern",
         value: .float(range: 0 ... 1, defaultValue: 0.5),
         property: .key(.effectLinocutScale),
         id: selection
@@ -320,13 +320,13 @@ struct EffectProperty: Identifiable {
     case .shifter:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_shifter_distance"),
+          label: "Distance",
           value: .float(range: 0 ... 1, defaultValue: 0.05),
           property: .key(.effectShifterAmount),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_shifter_direction"),
+          label: "Shift Direction",
           value: .float(range: 0 ... 6.3, defaultValue: 0.3),
           property: .key(.effectShifterAngle),
           id: selection
@@ -334,7 +334,7 @@ struct EffectProperty: Identifiable {
       ]
     case .mirror:
       [EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_effect_label_mirror_side"),
+        label: "Mirrored Side",
         value: .float(range: 0 ... 3, defaultValue: 1),
         property: .key(.effectMirrorSide),
         id: selection
@@ -342,19 +342,19 @@ struct EffectProperty: Identifiable {
     case .glow:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_glow_bloom"),
+          label: "Bloom",
           value: .float(range: 0 ... 10, defaultValue: 4),
           property: .key(.effectGlowSize),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_glow_intensity"),
+          label: "Intensity",
           value: .float(range: 0 ... 1, defaultValue: 0.5),
           property: .key(.effectGlowAmount),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_glow_darkening"),
+          label: "Darkening",
           value: .float(range: 0 ... 1, defaultValue: 0.3),
           property: .key(.effectGlowDarkness),
           id: selection
@@ -363,13 +363,13 @@ struct EffectProperty: Identifiable {
     case .vignette:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_vignette_size"),
+          label: "Size",
           value: .float(range: 0 ... 5, defaultValue: 1),
           property: .key(.effectVignetteOffset),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_vignette_color"),
+          label: "Color",
           value: .float(range: 0 ... 1, defaultValue: 1),
           property: .key(.effectVignetteDarkness),
           id: selection
@@ -378,13 +378,13 @@ struct EffectProperty: Identifiable {
     case .tiltShift:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_tilt_shift_intensity"),
+          label: "Intensity",
           value: .float(range: 0 ... 0.02, defaultValue: 0.016),
           property: .key(.effectTiltShiftAmount),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_tilt_shift_position"),
+          label: "Position",
           value: .float(range: 0 ... 1, defaultValue: 0.4),
           property: .key(.effectTiltShiftPosition),
           id: selection
@@ -392,7 +392,7 @@ struct EffectProperty: Identifiable {
       ]
     case .extrudeBlur:
       [EffectProperty(
-        label: .imgly.localized("ly_img_editor_sheet_effect_label_extrude_blur_intensity"),
+        label: "Intensity",
         value: .float(range: 0 ... 1, defaultValue: 0.2),
         property: .key(.effectExtrudeBlurAmount),
         id: selection
@@ -400,31 +400,31 @@ struct EffectProperty: Identifiable {
     case .recolor:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_recolor_source_color"),
+          label: "Source Color",
           value: .color(supportsOpacity: false, defaultValue: .imgly.black),
           property: .key(.effectRecolorFromColor),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_recolor_target_color"),
+          label: "Target Color",
           value: .color(supportsOpacity: false, defaultValue: .imgly.black),
           property: .key(.effectRecolorToColor),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_recolor_color_match"),
+          label: "Color Match",
           value: .float(range: 0 ... 1, defaultValue: 0.4),
           property: .key(.effectRecolorColorMatch),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_recolor_brightness_match"),
+          label: "Brightness Match",
           value: .float(range: 0 ... 1, defaultValue: 1),
           property: .key(.effectRecolorBrightnessMatch),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_recolor_smoothness"),
+          label: "Smoothness",
           value: .float(range: 0 ... 1, defaultValue: 0.08),
           property: .key(.effectRecolorSmoothness),
           id: selection
@@ -433,25 +433,25 @@ struct EffectProperty: Identifiable {
     case .greenScreen:
       [
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_green_screen_source_color"),
+          label: "Source Color",
           value: .color(supportsOpacity: false, defaultValue: .imgly.black),
           property: .key(.effectGreenScreenFromColor),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_green_screen_color_match"),
+          label: "Color Match",
           value: .float(range: 0 ... 1, defaultValue: 0.4),
           property: .key(.effectGreenScreenColorMatch),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_green_screen_smoothness"),
+          label: "Smoothness",
           value: .float(range: 0 ... 1, defaultValue: 0.08),
           property: .key(.effectGreenScreenSmoothness),
           id: selection
         ),
         EffectProperty(
-          label: .imgly.localized("ly_img_editor_sheet_effect_label_green_screen_spill"),
+          label: "Spill",
           value: .float(range: 0 ... 1, defaultValue: 0),
           property: .key(.effectGreenScreenSpill),
           id: selection

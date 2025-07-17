@@ -1,16 +1,16 @@
 import Foundation
 @_spi(Internal) import IMGLYCoreUI
 
-enum VerticalAlignment: String, MappedEnum, Labelable {
+enum VerticalAlignment: String, MappedEnum {
   case top = "Top"
   case center = "Center"
   case bottom = "Bottom"
 
-  var localizationValue: String.LocalizationValue {
+  var description: String {
     switch self {
-    case .top: "ly_img_editor_sheet_format_text_alignment_vertical_option_top"
-    case .center: "ly_img_editor_sheet_format_text_alignment_vertical_option_center"
-    case .bottom: "ly_img_editor_sheet_format_text_alignment_vertical_option_bottom"
+    case .top: "Align Top"
+    case .center: "Align Vertical Center"
+    case .bottom: "Align Bottom"
     }
   }
 

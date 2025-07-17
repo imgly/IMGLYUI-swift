@@ -103,7 +103,7 @@ public extension CanvasMenu.Context {
         siblings = [block]
       }
       let canReorderTrack = try !isBackgroundTrack(parentBlock) && siblings.count > 1
-      canMove = try engine.block.isAllowedByScope(block, key: "layer/move") && canReorderTrack
+      canMove = try engine.block.isAllowedByScope(block, key: "editor/add") && canReorderTrack
     }
   }
 }

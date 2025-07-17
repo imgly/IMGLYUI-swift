@@ -54,9 +54,9 @@ struct CropOptions: View {
           .frame(width: 44, height: 44)
           .padding(.leading, 8)
       }
-      .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_crop_button_flip")))
+      .accessibilityLabel("Flip")
       VStack(alignment: .center, spacing: 1) {
-        Text(.imgly.localized("ly_img_editor_sheet_crop_label_straighten"))
+        Text("Rotate")
           .font(.caption2)
         MeasurementScalePicker(value: straightenDegrees, unit: UnitAngle.degrees, in: -45 ... 45,
                                tickStep: 3, tickSpacing: 10) { started in
@@ -64,7 +64,7 @@ struct CropOptions: View {
             interactor.addUndoStep()
           }
         }
-        .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_crop_label_straighten")))
+        .accessibilityLabel("Straighten")
       }
       Button {
         cropRotationDegrees.wrappedValue = (cropRotationDegrees.wrappedValue - 90).normalizedDegrees
@@ -77,7 +77,7 @@ struct CropOptions: View {
       .buttonStyle(.option)
       .frame(width: 44, height: 44)
       .padding(.trailing, 8)
-      .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_crop_button_rotate_90")))
+      .accessibilityLabel("Rotate")
     }
     .padding(.vertical, 8)
     .background(Color(.secondarySystemGroupedBackground))
@@ -113,11 +113,11 @@ struct CropOptions: View {
   private var sources: [AssetLoader.SourceData] {
     switch (isPage, interactor.behavior.unselectedPageCrop) {
     case (true, true):
-      [.init(defaultSource: .cropPresets), .init(defaultSource: .pagePresets)]
+      [.init(id: "ly.img.crop.presets"), .init(id: "ly.img.page.presets")]
     case (true, false):
-      [.init(defaultSource: .pagePresets)]
+      [.init(id: "ly.img.page.presets")]
     case (false, _):
-      [.init(defaultSource: .cropPresets)]
+      [.init(id: "ly.img.crop.presets")]
     }
   }
 

@@ -20,7 +20,7 @@ public struct AudioUploadGrid: View {
             .imageScale(.large)
         }
         .padding(.trailing, 16)
-        Text(.imgly.localized("ly_img_editor_asset_library_button_add"))
+        Text("Add")
           .font(.caption.weight(.medium))
         Spacer()
       }

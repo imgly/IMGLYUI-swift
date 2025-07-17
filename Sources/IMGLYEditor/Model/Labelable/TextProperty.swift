@@ -4,11 +4,11 @@ import Foundation
 enum TextProperty: Labelable, IdentifiableByHash, CaseIterable {
   case inactive, bold, italic
 
-  var localizationValue: String.LocalizationValue {
+  var description: String {
     switch self {
     case .inactive: "Inactive"
-    case .bold: "ly_img_editor_sheet_format_text_button_bold"
-    case .italic: "ly_img_editor_sheet_format_text_button_italic"
+    case .bold: "Bold"
+    case .italic: "Italic"
     }
   }
 

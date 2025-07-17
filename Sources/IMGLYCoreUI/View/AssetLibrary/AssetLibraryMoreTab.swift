@@ -11,13 +11,14 @@ public struct AssetLibraryMoreTab<Content: View>: View {
     self.content = content
   }
 
-  private let title: LocalizedStringResource = .imgly.localized("ly_img_editor_asset_library_title_more")
+  private let title: String = "More"
+  var localizedTitle: LocalizedStringKey { .init(title) }
   @Environment(\.imglyDismissButtonView) private var dismissButtonView
 
   public var body: some View {
     NavigationView {
       MoreList(content: content)
-        .navigationTitle(Text(title))
+        .navigationTitle(localizedTitle)
         .toolbar {
           ToolbarItem {
             dismissButtonView
@@ -28,13 +29,9 @@ public struct AssetLibraryMoreTab<Content: View>: View {
     .navigationViewStyle(.stack)
     .imgly.searchableAssetLibraryTab()
     .tabItem {
-      Label {
-        Text(title)
-      } icon: {
-        Image(systemName: "ellipsis")
-      }
+      Label(localizedTitle, systemImage: "ellipsis")
     }
-    .tag(title.key)
+    .tag(title)
   }
 }
 

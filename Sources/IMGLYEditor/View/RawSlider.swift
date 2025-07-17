@@ -2,7 +2,7 @@
 import SwiftUI
 
 struct RawSlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride: BinaryFloatingPoint {
-  let title: LocalizedStringResource
+  let title: LocalizedStringKey
   let bounds: ClosedRange<T>
   let mapping: Mapping
   let getter: Interactor.RawGetter<T>
@@ -15,7 +15,7 @@ struct RawSlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride: Bina
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  init(_ title: LocalizedStringResource, in bounds: ClosedRange<T>,
+  init(_ title: LocalizedStringKey, in bounds: ClosedRange<T>,
        mapping: @escaping Mapping = { value, _ in value },
        setter: @escaping Interactor.RawSetter<T>,
        getter: @escaping Interactor.RawGetter<T>,
@@ -47,6 +47,6 @@ struct RawSlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride: Bina
         interactor.addUndoStep()
       }
     }
-    .accessibilityLabel(Text(title))
+    .accessibilityLabel(title)
   }
 }

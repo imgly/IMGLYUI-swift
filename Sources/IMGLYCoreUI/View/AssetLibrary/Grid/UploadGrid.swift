@@ -41,7 +41,7 @@ public struct UploadGrid: View {
         VStack(spacing: 6) {
           Image(systemName: "plus")
             .imageScale(.large)
-          Text(.imgly.localized("ly_img_editor_asset_library_button_add"))
+          Text("Add")
             .font(.caption.weight(.medium))
         }
       }

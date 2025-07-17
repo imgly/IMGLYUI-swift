@@ -4,4 +4,8 @@ import Foundation
   case vertical = "Vertical"
   case horizontal = "Horizontal"
   case depth = "Depth"
+
+  @_spi(Internal) public var description: String { rawValue }
+
+  @_spi(Internal) public var imageName: String? { nil }
 }

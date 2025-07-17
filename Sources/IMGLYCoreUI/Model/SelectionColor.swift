@@ -1,6 +1,13 @@
 import SwiftUI
 
-@_spi(Internal) public struct SelectionColor: Identifiable {
+@_spi(Internal) public struct SelectionColor: Identifiable, Localizable {
+  @_spi(Internal) public var description: String {
+    guard let hsba = color.hsba else {
+      return ""
+    }
+    return String(describing: hsba)
+  }
+
   @_spi(Internal) public var id: CGColor { color }
   let color: CGColor
   @_spi(Internal) public let binding: Binding<CGColor>

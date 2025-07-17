@@ -6,7 +6,7 @@ struct NavigationLinkPicker<Data, ElementLabel: View, LinkLabel: View>: View whe
   Data: RandomAccessCollection,
   Data.Element: RandomAccessCollection & Hashable,
   Data.Element.Element: Identifiable {
-  let title: LocalizedStringResource
+  let title: LocalizedStringKey
   let data: Data
   var inlineTitle = true
   @Binding var selection: Data.Element.Element.ID?
@@ -24,7 +24,7 @@ struct NavigationLinkPicker<Data, ElementLabel: View, LinkLabel: View>: View whe
     NavigationLink {
       ListPicker(data: data, selection: $selection, elementLabel: elementLabel)
         .toolbarBackground(.visible, for: .navigationBar)
-        .navigationTitle(Text(title))
+        .navigationTitle(title)
         .toolbar {
           ToolbarItem(placement: .navigationBarTrailing) {
             SheetDismissButton()
@@ -42,7 +42,7 @@ struct NavigationLinkPicker<Data, ElementLabel: View, LinkLabel: View>: View whe
           .lineLimit(1)
       }
     }
-    .accessibilityLabel(Text(title))
+    .accessibilityLabel(title)
   }
 }
 

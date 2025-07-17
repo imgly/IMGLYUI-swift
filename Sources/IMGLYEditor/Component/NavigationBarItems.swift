@@ -34,19 +34,20 @@ public extension NavigationBar.Buttons.ID {
 public extension NavigationBar.Buttons {
   /// Creates a ``NavigationBar/Button`` that closes the editor.
   /// - Parameters:
-  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/onClose`` event
+  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/closeEditor`` event
   /// is invoked.
   ///   - label: A view that describes the purpose of the button’s `action`. By default, a ``NavigationLabel`` with
-  /// localization key `ly_img_editor_navigation_bar_button_close_editor` is used.
+  /// title "Back" is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` while the editor is being created or
   /// if the current view mode is ``EditorViewMode/edit`` and engine setting `"features/pageCarouselEnabled"` is `true`
   /// or the current page is the first page of the scene.
   /// - Returns: The created button.
   static func closeEditor(
-    action: @escaping NavigationBar.Context.To<Void> = { $0.eventHandler.send(.onClose) },
+    action: @escaping NavigationBar.Context.To<Void> = { $0.eventHandler.send(.closeEditor) },
     @ViewBuilder label: @escaping NavigationBar.Context.To<some View> = { _ in
-      NavigationLabel(.imgly.localized("ly_img_editor_navigation_bar_button_close_editor"), direction: .backward)
+      NavigationLabel("Back", direction: .backward)
+        .accessibilityLabel("Close Editor")
     },
     isEnabled: @escaping NavigationBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping NavigationBar.Context.To<Bool> = {
@@ -67,8 +68,8 @@ public extension NavigationBar.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, engine `EditorAPI.undo()` is
   /// invoked.
-  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
-  /// `ly_img_editor_navigation_bar_button_undo`, icon ``IMGLY/undo``, and style ``IMGLY/adaptiveIconOnly`` is used.
+  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title "Undo",
+  /// icon ``IMGLY/undo``, and style ``IMGLY/adaptiveIconOnly`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created, the current
   /// view mode is not ``EditorViewMode/preview``, and engine `EditorAPI.canUndo()` is `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -76,7 +77,7 @@ public extension NavigationBar.Buttons {
   static func undo(
     action: @escaping NavigationBar.Context.To<Void> = { try $0.engine?.editor.undo() },
     @ViewBuilder label: @escaping NavigationBar.Context.To<some View> = {
-      Label { Text(.imgly.localized("ly_img_editor_navigation_bar_button_undo")) } icon: { Image.imgly.undo }
+      Label { Text("Undo") } icon: { Image.imgly.undo }
         .opacity($0.state.viewMode == .preview ? 0 : 1)
         .labelStyle(.imgly.adaptiveIconOnly)
     },
@@ -92,8 +93,8 @@ public extension NavigationBar.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, engine `EditorAPI.redo()` is
   /// invoked.
-  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
-  /// `ly_img_editor_navigation_bar_button_redo`, icon ``IMGLY/redo``, and style ``IMGLY/adaptiveIconOnly`` is used.
+  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title "Redo",
+  /// icon ``IMGLY/redo``, and style ``IMGLY/adaptiveIconOnly`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created, the current
   /// view mode is not ``EditorViewMode/preview``, and engine `EditorAPI.canRedo()` is `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -101,7 +102,7 @@ public extension NavigationBar.Buttons {
   static func redo(
     action: @escaping NavigationBar.Context.To<Void> = { try $0.engine?.editor.redo() },
     @ViewBuilder label: @escaping NavigationBar.Context.To<some View> = {
-      Label { Text(.imgly.localized("ly_img_editor_navigation_bar_button_redo")) } icon: { Image.imgly.redo }
+      Label { Text("Redo") } icon: { Image.imgly.redo }
         .opacity($0.state.viewMode == .preview ? 0 : 1)
         .labelStyle(.imgly.adaptiveIconOnly)
     },
@@ -117,8 +118,8 @@ public extension NavigationBar.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/startExport`` event
   /// is invoked.
-  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
-  /// `ly_img_editor_navigation_bar_button_export`, icon ``IMGLY/export``, and style ``IMGLY/adaptiveIconOnly`` is used.
+  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title "Export",
+  /// icon ``IMGLY/export``, and style ``IMGLY/adaptiveIconOnly`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created, is not
   /// exporting, and scene mode is `SceneMode.design` or the scene has a duration greater than 0.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` while the editor is being created or
@@ -128,7 +129,7 @@ public extension NavigationBar.Buttons {
   static func export(
     action: @escaping NavigationBar.Context.To<Void> = { $0.eventHandler.send(.startExport) },
     @ViewBuilder label: @escaping NavigationBar.Context.To<some View> = { _ in
-      Label { Text(.imgly.localized("ly_img_editor_navigation_bar_button_export")) } icon: { Image.imgly.export }
+      Label { Text("Export") } icon: { Image.imgly.export }
         .labelStyle(.imgly.adaptiveIconOnly)
     },
     isEnabled: @escaping NavigationBar.Context.To<Bool> = {
@@ -156,9 +157,8 @@ public extension NavigationBar.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/setViewMode(_:)``
   /// event is invoked.
-  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
-  /// `ly_img_editor_navigation_bar_button_toggle_preview_mode`, icon ``IMGLY/preview``, and style
-  /// ``IMGLY/adaptiveIconOnly`` is used.
+  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title "Preview"
+  /// or "Edit", icon ``IMGLY/preview``, and style ``IMGLY/adaptiveIconOnly`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created.
   ///   - isVisible: Whether the button is visible.  By default, it is always `true`.
   /// - Returns: The created button.
@@ -169,22 +169,14 @@ public extension NavigationBar.Buttons {
     @ViewBuilder label: @escaping NavigationBar.Context.To<some View> = {
       let isPreviewMode = $0.state.viewMode == .preview
       return ZStack(alignment: .leading) {
-        Label {
-          Text(.imgly.localized("ly_img_editor_navigation_bar_button_preview_mode"))
-        } icon: {
-          Image.imgly.preview
-        }
-        .opacity(isPreviewMode ? 0 : 1)
-        Label {
-          Text(.imgly.localized("ly_img_editor_navigation_bar_button_edit_mode"))
-        } icon: {
-          Image.imgly.preview.symbolVariant(.fill)
-        }
-        .opacity(isPreviewMode ? 1 : 0)
+        Label { Text("Preview") } icon: { Image.imgly.preview }
+          .opacity(isPreviewMode ? 0 : 1)
+        Label { Text("Edit") } icon: { Image.imgly.preview.symbolVariant(.fill) }
+          .opacity(isPreviewMode ? 1 : 0)
       }
       .labelStyle(.imgly.adaptiveIconOnly)
       .accessibilityElement(children: .ignore) // Required for iOS 16 otherwise a11y label is exposed as "Edit, Edit".
-      .accessibilityLabel(Text(.imgly.localized("ly_img_editor_navigation_bar_button_toggle_preview_mode")))
+      .accessibilityLabel(isPreviewMode ? "Edit" : "Preview")
     },
     isEnabled: @escaping NavigationBar.Context.To<Bool> = { !$0.state.isCreating },
     isVisible: @escaping NavigationBar.Context.To<Bool> = { _ in true }
@@ -202,9 +194,8 @@ public extension NavigationBar.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/setViewMode(_:)``
   /// event is invoked.
-  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
-  /// `ly_img_editor_navigation_bar_button_toggle_pages_mode`, icon ``IMGLY/pages`` and page count, and style
-  /// ``IMGLY/adaptiveIconOnly`` is used.
+  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title "Pages",
+  /// icon ``IMGLY/pages`` and page count, and style ``IMGLY/adaptiveIconOnly`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created.
   ///   - isVisible: Whether the button is visible.  By default, it is `true` if the scene contains a stack, `false`
   /// otherwise.
@@ -217,11 +208,7 @@ public extension NavigationBar.Buttons {
       let isPagesMode = $0.state.viewMode == .pages
       let pageCount = try $0.engine?.scene.get() != nil ? $0.engine?.scene.getPages().count ?? 0 : 0
       return Label {
-        let pages = AttributedString(localized:
-          .imgly.localized("ly_img_editor_navigation_bar_button_pages_mode \(pageCount)"))
-        // Remove page count from text that we need for localizing plurals (also with automatic grammatical agreement)
-        // since the icon is supposed to show the page count and not the text.
-        Text(pages.imgly.remove(string: "\(pageCount)"))
+        Text(pageCount > 1 ? "Pages" : "Page")
           .padding(.leading, -4)
       } icon: {
         HStack {
@@ -233,7 +220,7 @@ public extension NavigationBar.Buttons {
         }
       }
       .labelStyle(.imgly.adaptiveIconOnly)
-      .accessibilityLabel(Text(.imgly.localized("ly_img_editor_navigation_bar_button_toggle_pages_mode")))
+      .accessibilityLabel(isPagesMode ? "Hide Pages" : "Show Pages")
     },
     isEnabled: @escaping NavigationBar.Context.To<Bool> = { !$0.state.isCreating },
     isVisible: @escaping NavigationBar.Context.To<Bool> = {
@@ -254,7 +241,7 @@ public extension NavigationBar.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/navigateToPreviousPage`` event is invoked.
   ///   - label: A view that describes the purpose of the button’s `action`. By default, a ``NavigationLabel`` with
-  /// localization key `ly_img_editor_navigation_bar_button_previous` is used.
+  /// title "Previous" is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` when the editor is created, the
   /// current view mode is ``EditorViewMode/edit``, and engine setting `"features/pageCarouselEnabled"` is `true` or the
@@ -263,7 +250,7 @@ public extension NavigationBar.Buttons {
   static func previousPage(
     action: @escaping NavigationBar.Context.To<Void> = { $0.eventHandler.send(.navigateToPreviousPage) },
     @ViewBuilder label: @escaping NavigationBar.Context.To<some View> = { _ in
-      NavigationLabel(.imgly.localized("ly_img_editor_navigation_bar_button_previous"), direction: .backward)
+      NavigationLabel("Previous", direction: .backward)
     },
     isEnabled: @escaping NavigationBar.Context.To<Bool> = { !$0.state.isCreating },
     isVisible: @escaping NavigationBar.Context.To<Bool> = {
@@ -285,7 +272,7 @@ public extension NavigationBar.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/navigateToNextPage`` event is invoked.
   ///   - label: A view that describes the purpose of the button’s `action`. By default, a ``NavigationLabel`` with
-  /// localization key `ly_img_editor_navigation_bar_button_next` is used.
+  /// title "Next" is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` when the editor is created, the
   /// current view mode is ``EditorViewMode/edit``, and engine setting `"features/pageCarouselEnabled"` is `true` or the
@@ -294,7 +281,7 @@ public extension NavigationBar.Buttons {
   static func nextPage(
     action: @escaping NavigationBar.Context.To<Void> = { $0.eventHandler.send(.navigateToNextPage) },
     @ViewBuilder label: @escaping NavigationBar.Context.To<some View> = { _ in
-      NavigationLabel(.imgly.localized("ly_img_editor_navigation_bar_button_next"), direction: .forward)
+      NavigationLabel("Next", direction: .forward)
     },
     isEnabled: @escaping NavigationBar.Context.To<Bool> = { !$0.state.isCreating },
     isVisible: @escaping NavigationBar.Context.To<Bool> = {

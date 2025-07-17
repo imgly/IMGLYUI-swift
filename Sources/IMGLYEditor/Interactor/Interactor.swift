@@ -42,7 +42,6 @@ import SwiftUI
   @Published var error = AlertState()
   @Published var sheet = SheetState() { didSet { sheetChanged(oldValue) } }
   @Published var shareItem: ShareItem?
-  @Published var isCloseConfirmationAlertPresented = false
   var export = ExportSheetState()
   var dismiss: DismissAction?
 
@@ -181,6 +180,18 @@ import SwiftUI
       try behavior.isGestureActive(.init(engine, self), started)
     } catch {
       handleError(error)
+    }
+  }
+
+  var rootBottomBarItems: [RootBottomBarItem] {
+    guard let engine else {
+      return []
+    }
+    do {
+      return try behavior.rootBottomBarItems(.init(engine, self))
+    } catch {
+      handleErrorWithTask(error)
+      return []
     }
   }
 
@@ -647,7 +658,7 @@ extension Interactor {
 
   func isAllowed(_ id: BlockID?, _ mode: SheetMode) -> Bool {
     switch mode {
-    case .resize:
+    case .selectionColors, .font, .fontSize, .color, .resize:
       true
     case .delete:
       isAllowed(id, Action.delete)
@@ -655,21 +666,23 @@ extension Interactor {
       isAllowed(id, Action.duplicate)
     case .editPage, .addPage:
       true
-    case .moveUp, .moveDown:
-      true
+    case .moveUp:
+      isAllowed(id, Action.up)
+    case .moveDown:
+      isAllowed(id, Action.down)
     }
   }
 
   func isAllowed(_ id: BlockID?, _ action: Action) -> Bool {
     switch action {
-    case .toFront, .bringForward, .sendBackward, .toBack:
+    case .toTop, .up, .down, .toBottom:
       let canReorderTrack = if let id, let clip = timelineProperties.dataSource.findClip(id: id),
                                clip.isInBackgroundTrack || Set([.audio, .voiceOver]).contains(clip.clipType) {
         false
       } else {
         true
       }
-      return isAllowed(id, scope: .layerMove) && canReorderTrack
+      return isAllowed(id, scope: .editorAdd) && canReorderTrack
     case .duplicate:
       return isAllowed(id, scope: .lifecycleDuplicate)
     case .delete:
@@ -1074,6 +1087,22 @@ extension Interactor {
 
     do {
       switch mode {
+      case .selectionColors:
+        sheet.commit { model in
+          model = .init(mode)
+        }
+      case .font:
+        sheet.commit { model in
+          model = .init(mode)
+        }
+      case .fontSize:
+        sheet.commit { model in
+          model = .init(mode, style: .only(detent: .imgly.tiny))
+        }
+      case .color:
+        sheet.commit { model in
+          model = .init(mode, style: .only(detent: .imgly.tiny))
+        }
       case .delete:
         if isPagesMode {
           if let currentPage = pageOverview.currentPage {
@@ -1124,10 +1153,10 @@ extension Interactor {
   @_spi(Internal) public func actionButtonTapped(for action: Action) {
     do {
       switch action {
-      case .toFront: try engine?.bringToFrontSelectedElement()
-      case .bringForward: try engine?.bringForwardSelectedElement()
-      case .sendBackward: try engine?.sendBackwardSelectedElement()
-      case .toBack: try engine?.sendToBackSelectedElement()
+      case .toTop: try engine?.bringToFrontSelectedElement()
+      case .up: try engine?.bringForwardSelectedElement()
+      case .down: try engine?.sendBackwardSelectedElement()
+      case .toBottom: try engine?.sendToBackSelectedElement()
       case .duplicate: try engine?.duplicateSelectedElement()
       case .delete: try engine?.deleteSelectedElement(delay: NSEC_PER_MSEC * 200)
       case let .page(index): try setPage(index)
@@ -1161,7 +1190,7 @@ extension Interactor {
         // Reset history only once after onCreate!
         try engine.editor.resetHistory()
       } catch {
-        config.callbacks.onError(error, self)
+        handleErrorAndDismiss(error)
       }
     }
   }
@@ -1371,8 +1400,8 @@ extension Interactor {
     }
   }
 
-  func handleErrorAndDismiss(_ error: Swift.Error, _ onDismiss: @escaping () -> Void) {
-    self.error = .init(error, dismiss: true, onDismiss: onDismiss)
+  func handleErrorAndDismiss(_ error: Swift.Error) {
+    self.error = .init(error, dismiss: true)
   }
 
   func get<T: MappedType>(_ id: DesignBlockID, _ propertyBlock: PropertyBlock? = nil,
@@ -1467,24 +1496,6 @@ extension Interactor {
     try engine?.block.deselectAll()
     viewMode = .pages
     sheet.isPresented = false
-  }
-
-  func onClose() {
-    guard let engine else { return }
-
-    config.callbacks.onClose(engine, self)
-  }
-
-  func showCloseConfirmationAlert() {
-    isCloseConfirmationAlertPresented = true
-  }
-
-  func confirmClose() {
-    send(.closeEditor)
-  }
-
-  func showErrorAlert(_ error: Swift.Error, _ onDismiss: @escaping () -> Void) {
-    handleErrorAndDismiss(error, onDismiss)
   }
 
   func exportScene() {

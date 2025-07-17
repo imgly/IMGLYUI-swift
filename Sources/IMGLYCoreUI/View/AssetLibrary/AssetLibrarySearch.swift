@@ -10,8 +10,8 @@ import SwiftUI
     self.prompt = prompt
   }
 
-  func setPrompt(for title: LocalizedStringResource) {
-    prompt = .init(.imgly.localized("ly_img_editor_asset_library_label_search_placeholder \(title)"))
+  func setPrompt(for title: String) {
+    prompt = .init(LocalizedStringKey("Search \(title)" + String.ellipsis))
   }
 }
 

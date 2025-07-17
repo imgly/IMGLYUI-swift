@@ -18,8 +18,6 @@ public extension IMGLY where Wrapped == Image {
   static let addShape = Wrapped("custom.square.on.circle.badge.plus", bundle: .module)
   /// An icon image for adding a sticker.
   static let addSticker = Wrapped("custom.face.smiling.badge.plus", bundle: .module)
-  /// An icon image for adding an asset.
-  static let addAsset = Wrapped(systemName: "plus")
 
   /// An icon image for adding content from the photo roll to the background track.
   static let addPhotoRollBackground = Wrapped("custom.photo.fill.on.rectangle.fill.badge.plus", bundle: .module)

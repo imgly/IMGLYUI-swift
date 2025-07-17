@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct ResizePicker<Data, Item: View>: View where Data: RandomAccessCollection, Data.Element: Hashable {
-  let title: LocalizedStringResource
+  let title: String
   let data: Data
   @Binding var selection: Data.Element
   @ViewBuilder var itemBuilder: (Data.Element) -> Item
-  var label: (Data.Element?) -> LocalizedStringResource
+  var label: (Data.Element?) -> String
 
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
@@ -36,7 +36,7 @@ struct ResizePicker<Data, Item: View>: View where Data: RandomAccessCollection, 
         .background(Color(.tertiarySystemFill))
         .clipShape(RoundedRectangle(cornerRadius: 10))
       }
-      .accessibilityLabel(Text(title))
+      .accessibilityLabel(title)
     }
   }
 }

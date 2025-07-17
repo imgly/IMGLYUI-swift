@@ -17,11 +17,9 @@ import SwiftUI
         .foregroundColor(.secondary)
         .imageScale(.medium)
         .padding([.trailing], 4)
-      TextField(text: $searchText,
-                prompt: prompt?.foregroundColor(.secondary)) {
-        Text(.imgly.localized("ly_img_editor_asset_library_button_search"))
-      }
-      .submitLabel(.search)
+      TextField("Search", text: $searchText,
+                prompt: prompt?.foregroundColor(.secondary))
+        .submitLabel(.search)
       if !searchText.isEmpty {
         Button {
           searchText = ""
@@ -32,7 +30,6 @@ import SwiftUI
             .padding([.leading], 9)
         }
         .buttonStyle(.borderless)
-        .accessibilityLabel(Text(.imgly.localized("ly_img_editor_asset_library_button_search_clear")))
       }
     }
     .padding([.leading, .trailing], 6)

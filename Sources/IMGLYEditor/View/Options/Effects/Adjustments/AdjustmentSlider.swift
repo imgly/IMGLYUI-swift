@@ -1,10 +1,9 @@
 @_spi(Internal) import IMGLYCore
-@_spi(Internal) import IMGLYCoreUI
 import SwiftUI
 
 struct AdjustmentSlider: View {
   let adjustment: Adjustment
-  let title: LocalizedStringResource
+  let title: LocalizedStringKey
 
   var body: some View {
     let property = "effect/adjustments/\(adjustment.rawValue)"
@@ -36,11 +35,9 @@ struct AdjustmentSlider: View {
       }
       return try (completion?(engine, blocks, true) ?? true)
     }
-    Section {
-      PropertySlider<Float>(adjustment.localizedStringResource, in: -1 ... 1, property: .raw(property), setter: setter,
+    Section(title) {
+      PropertySlider<Float>(.init(adjustment.rawValue), in: -1 ... 1, property: .raw(property), setter: setter,
                             getter: getter)
-    } header: {
-      Text(title)
     }
   }
 }

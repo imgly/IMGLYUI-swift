@@ -3,7 +3,7 @@ import SwiftUI
 struct AlertView<Content: View>: View {
   @Environment(\.dismiss) private var dismiss
 
-  let title: LocalizedStringResource
+  let title: LocalizedStringKey
   @ViewBuilder let content: Content
   let apply: () -> Void
 
@@ -19,7 +19,7 @@ struct AlertView<Content: View>: View {
         Button {
           dismiss()
         } label: {
-          Text(.imgly.localized("ly_img_editor_dialog_resize_button_dismiss"))
+          Text(.init("Cancel"))
             .frame(maxWidth: .infinity, maxHeight: 44)
             .foregroundStyle(.red)
         }
@@ -29,7 +29,7 @@ struct AlertView<Content: View>: View {
           apply()
           dismiss()
         } label: {
-          Text(.imgly.localized("ly_img_editor_dialog_resize_button_confirm"))
+          Text(.init("Apply"))
             .frame(maxWidth: .infinity, maxHeight: 44)
             .fontWeight(.bold)
         }

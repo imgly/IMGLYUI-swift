@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct EffectPropertyOptions: View {
-  let title: String
+  let title: LocalizedStringKey
   let properties: [EffectProperty]
-  let backTitle: LocalizedStringResource
+  let backTitle: LocalizedStringKey
 
   @Binding var sheetState: EffectSheetState
   @EnvironmentObject private var interactor: Interactor
@@ -13,7 +13,7 @@ struct EffectPropertyOptions: View {
       ForEach(properties, id: \.property) { property in
         switch property.value {
         case let .float(range, defaultValue):
-          Section {
+          Section(property.label) {
             PropertySlider(
               property.label,
               in: range,
@@ -21,8 +21,6 @@ struct EffectPropertyOptions: View {
               selection: property.id,
               defaultValue: defaultValue
             )
-          } header: {
-            Text(property.label)
           }
         case let .color(supportsOpacity, defaultValue):
           Section {

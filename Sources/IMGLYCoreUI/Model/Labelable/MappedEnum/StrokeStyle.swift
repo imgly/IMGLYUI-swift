@@ -1,6 +1,6 @@
 import Foundation
 
-@_spi(Internal) public enum StrokeStyle: String, MappedEnum, Labelable {
+@_spi(Internal) public enum StrokeStyle: String, MappedEnum {
   case solid = "Solid"
   case dashed = "Dashed"
   case dashedRound = "DashedRound"
@@ -8,14 +8,14 @@ import Foundation
   case longDashedRound = "LongDashedRound"
   case dotted = "Dotted"
 
-  @_spi(Internal) public var localizationValue: String.LocalizationValue {
+  @_spi(Internal) public var description: String {
     switch self {
-    case .solid: "ly_img_editor_sheet_fill_stroke_style_option_solid"
-    case .dashed: "ly_img_editor_sheet_fill_stroke_style_option_dashed"
-    case .dashedRound: "ly_img_editor_sheet_fill_stroke_style_option_dashed_round"
-    case .longDashed: "ly_img_editor_sheet_fill_stroke_style_option_long_dashed"
-    case .longDashedRound: "ly_img_editor_sheet_fill_stroke_style_option_long_dashed_round"
-    case .dotted: "ly_img_editor_sheet_fill_stroke_style_option_dotted"
+    case .solid: "Solid"
+    case .dashed: "Dashed"
+    case .dashedRound: "Dashed Round"
+    case .longDashed: "Long Dashed"
+    case .longDashedRound: "Long Dashed Round"
+    case .dotted: "Dotted"
     }
   }
 

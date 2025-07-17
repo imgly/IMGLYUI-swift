@@ -13,7 +13,7 @@ struct ColorSheet: View {
   }
 
   var body: some View {
-    DismissableTitledSheet(.imgly.localized("ly_img_editor_postcard_sheet_colors_title")) {
+    DismissableTitledSheet("Color") {
       List {
         if interactor.supportsFill(id) {
           ColorOptions(title: "Color", color: fillColor, addUndoStep: interactor.addUndoStep)
@@ -22,5 +22,11 @@ struct ColorSheet: View {
         }
       }
     }
+  }
+}
+
+struct ColorSheet_Previews: PreviewProvider {
+  static var previews: some View {
+    defaultPreviews(sheet: .init(.color(nil, nil)))
   }
 }

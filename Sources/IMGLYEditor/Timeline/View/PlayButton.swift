@@ -17,7 +17,6 @@ struct PlayButton: View {
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
-    .accessibilityLabel(Text(player.isPlaying ? .imgly.localized("ly_img_editor_timeline_button_pause") : .imgly
-        .localized("ly_img_editor_timeline_button_play")))
+    .accessibilityLabel(player.isPlaying ? "Pause" : "Play")
   }
 }

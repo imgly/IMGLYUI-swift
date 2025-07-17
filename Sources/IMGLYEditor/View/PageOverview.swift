@@ -72,8 +72,7 @@ private struct PageGrid: View {
           ReorderableForEach(pages, active: $draggedPage) { page in
             if let pageIndex = pages.firstIndex(of: page) {
               let isSelected = page.block == currentPage
-              let title = String(localized: .imgly
-                .localized("ly_img_editor_pages_view_mode_thumbnail_label_page \(pageIndex + 1)"))
+              let title = LocalizedStringKey("Page \(pageIndex + 1)")
               SelectableItem(title: title, selected: isSelected) {
                 PageThumbnail(page: page, isSelected: isSelected)
                   .contentShape(.dragPreview, RoundedRectangle(cornerRadius: 8))

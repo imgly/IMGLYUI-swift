@@ -197,6 +197,7 @@ struct ReorderingThumbnailView: View {
                 }
             )
             .onChange(of: dragState) { value in
+
               withAnimation(.easeInOut(duration: 0.03)) {
                 if !isDragging {
                   draggedClip = clip

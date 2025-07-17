@@ -8,48 +8,22 @@ struct VoiceOverView<ViewModel: VoiceOverViewModelProtocol>: View {
   // MARK: - Constants
 
   private enum Localization {
-    static var buttonCancel: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_sheet_voiceover_button_dismiss")
+    static var buttonCancel: LocalizedStringKey { "Cancel" }
+    static var buttonDone: LocalizedStringKey { "Done" }
+    static var playButton: LocalizedStringKey { "Play Voiceover" }
+    static var muteButton: LocalizedStringKey { "Mute other Audio" }
+    static var unmuteButton: LocalizedStringKey { "Unmute Other Audio" }
+    static var labelStartRecording: LocalizedStringKey { "Start recording" }
+    static var buttonDontAllow: LocalizedStringKey { "Don’t Allow" }
+    static var buttonSettings: LocalizedStringKey { "Settings" }
+    static var buttonDeleteVoiceover: LocalizedStringKey { "Delete Voiceover" }
+    static var buttonDiscardVoiceover: LocalizedStringKey { "Discard Changes" }
+    static var confirmationCancelMessage: LocalizedStringKey {
+      "Your recording will be discarded. This cannot be undone."
     }
 
-    static var buttonDone: LocalizedStringResource { .imgly.localized("ly_img_editor_sheet_voiceover_button_confirm") }
-    static var playButton: LocalizedStringResource { .imgly.localized("ly_img_editor_sheet_voiceover_button_play") }
-    static var muteButton: LocalizedStringResource { .imgly.localized("ly_img_editor_sheet_voiceover_button_mute") }
-    static var unmuteButton: LocalizedStringResource { .imgly.localized("ly_img_editor_sheet_voiceover_button_unmute") }
-    static var labelStartRecording: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_sheet_voiceover_label_start_recording")
-    }
-
-    static var buttonDontAllow: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_dialog_permission_microphone_button_dismiss")
-    }
-
-    static var buttonSettings: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_dialog_permission_microphone_button_confirm")
-    }
-
-    static var buttonDeleteVoiceover: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_dialog_voiceover_delete_button_confirm")
-    }
-
-    static var buttonDeleteVoiceoverCancel: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_dialog_voiceover_delete_button_dismiss")
-    }
-
-    static var buttonDiscardVoiceover: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_dialog_voiceover_discard_button_confirm")
-    }
-
-    static var buttonDiscardVoiceoverCancel: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_dialog_voiceover_discard_button_dismiss")
-    }
-
-    static var confirmationCancelMessage: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_dialog_voiceover_delete_text")
-    }
-
-    static var confirmationEditCancelMessage: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_dialog_voiceover_discard_text")
+    static var confirmationEditCancelMessage: LocalizedStringKey {
+      "Your changes will be discarded. This cannot be undone."
     }
   }
 
@@ -100,16 +74,12 @@ struct VoiceOverView<ViewModel: VoiceOverViewModelProtocol>: View {
     }
     .imgly.loadingOverlay(isLoading: viewModel.state == .loading)
     .toolbar { toolbarContent }
-    .alert(Text(CamMicUsageDescriptionFromBundleHelper.shared.microphoneAlertHeadline),
+    .alert(Text(verbatim: CamMicUsageDescriptionFromBundleHelper.shared.microphoneAlertHeadline),
            isPresented: $viewModel.isShowingPermissionsAlertForMicrophone) {
-      Button(role: .cancel) {} label: {
-        Text(Localization.buttonDontAllow)
-      }
-      Button { AppSettingsHelper.openAppSettings() } label: {
-        Text(Localization.buttonSettings)
-      }
+      Button(Localization.buttonDontAllow, role: .cancel) {}
+      Button(Localization.buttonSettings) { AppSettingsHelper.openAppSettings() }
     } message: {
-      Text(CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription)
+      Text(verbatim: CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription)
     }
     .errorAlert(error: $identifiableError)
     .onChange(of: viewModel.state) { newState in
@@ -132,42 +102,34 @@ struct VoiceOverView<ViewModel: VoiceOverViewModelProtocol>: View {
   }
 
   private var leadingToolbarItem: some View {
-    Button {
+    Button(Localization.buttonCancel) {
       viewModel.pauseAnyActivity()
       if viewModel.alreadyRecordedAudio {
         isShowingCancelAlert = true
       } else {
         viewModel.cancelAction()
       }
-    } label: {
-      Text(Localization.buttonCancel)
     }
     .confirmationDialog(
-      Text(viewModel.mode == .new ?
-        Localization.confirmationCancelMessage : Localization.confirmationEditCancelMessage),
+      viewModel.mode == .new ? Localization.confirmationCancelMessage : Localization.confirmationEditCancelMessage,
       isPresented: $isShowingCancelAlert,
       titleVisibility: .visible
     ) {
-      Button(role: .destructive) {
+      Button(
+        viewModel.mode == .new ? Localization.buttonDeleteVoiceover : Localization.buttonDiscardVoiceover,
+        role: .destructive
+      ) {
         viewModel.cancelAction()
-      } label: {
-        Text(viewModel.mode == .new ?
-          Localization.buttonDeleteVoiceover : Localization.buttonDiscardVoiceover)
       }
-      Button(role: .cancel) {} label: {
-        Text(viewModel.mode == .new ?
-          Localization.buttonDeleteVoiceoverCancel : Localization.buttonDiscardVoiceoverCancel)
-      }
+      Button(Localization.buttonCancel, role: .cancel) {}
     }
     .tint(.blue)
     .buttonStyle(.borderless)
   }
 
   private var trailingToolbarItem: some View {
-    Button {
+    Button(Localization.buttonDone) {
       viewModel.doneAction()
-    } label: {
-      Text(Localization.buttonDone)
     }
     .tint(.blue)
     .fontWeight(.semibold)

@@ -26,7 +26,7 @@ struct TimecodeView: View {
         .foregroundStyle(.white)
 
       if maxDuration < .positiveInfinity {
-        Text(verbatim: "/")
+        Text("/")
           .foregroundStyle(.white.opacity(0.6))
         Text(maxDuration.imgly.formattedDurationStringForPlayer())
           .foregroundStyle(.white)

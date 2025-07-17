@@ -36,31 +36,15 @@ import SwiftUI
     }
   }
 
-  private enum Action {
-    case choose, take, select
-  }
-
-  // swiftlint:disable:next cyclomatic_complexity
-  private func title(for action: Action) -> String.LocalizationValue {
-    if media.contains(.image), media.contains(.movie) {
-      switch action {
-      case .choose: "ly_img_editor_asset_library_button_choose_photo_or_video"
-      case .take: "ly_img_editor_asset_library_button_take_photo_or_video"
-      case .select: "ly_img_editor_asset_library_button_select_photo_or_video"
-      }
+  private func titleKey(for action: String) -> LocalizedStringKey {
+    let suffix = if media.contains(.image), media.contains(.movie) {
+      "Photo or Video"
     } else if media.contains(.image) {
-      switch action {
-      case .choose: "ly_img_editor_asset_library_button_choose_photo"
-      case .take: "ly_img_editor_asset_library_button_take_photo"
-      case .select: "ly_img_editor_asset_library_button_select_photo"
-      }
+      "Photo"
     } else {
-      switch action {
-      case .choose: "ly_img_editor_asset_library_button_choose_video"
-      case .take: "ly_img_editor_asset_library_button_take_video"
-      case .select: "ly_img_editor_asset_library_button_select_video"
-      }
+      "Video"
     }
+    return LocalizedStringKey(action + " " + suffix)
   }
 
   @_spi(Internal) public var body: some View {
@@ -68,29 +52,17 @@ import SwiftUI
       Button {
         showImagePicker.toggle()
       } label: {
-        SwiftUI.Label {
-          Text(.imgly.localized(title(for: .choose)))
-        } icon: {
-          Image(systemName: "photo.on.rectangle")
-        }
+        SwiftUI.Label(titleKey(for: "Choose"), systemImage: "photo.on.rectangle")
       }
       Button {
         showCamera.toggle()
       } label: {
-        SwiftUI.Label {
-          Text(.imgly.localized(title(for: .take)))
-        } icon: {
-          Image(systemName: "camera")
-        }
+        SwiftUI.Label(titleKey(for: "Take"), systemImage: "camera")
       }
       Button {
         showFileImporter.toggle()
       } label: {
-        SwiftUI.Label {
-          Text(.imgly.localized(title(for: .select)))
-        } icon: {
-          Image(systemName: "folder")
-        }
+        SwiftUI.Label(titleKey(for: "Select"), systemImage: "folder")
       }
     } label: {
       label()

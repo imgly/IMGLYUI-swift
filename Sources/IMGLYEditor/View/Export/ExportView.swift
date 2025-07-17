@@ -5,10 +5,7 @@ import SwiftUI
 struct ExportView: View {
   enum State {
     case exporting(ExportProgress, cancelAction: () -> Void)
-    case completed(
-      title: LocalizedStringResource = .imgly.localized("ly_img_editor_dialog_export_success_button_dismiss"),
-      completedAction: () -> Void
-    )
+    case completed(title: LocalizedStringKey = "Close", completedAction: () -> Void)
     case error(Swift.Error, closeAction: () -> Void)
   }
 
@@ -26,7 +23,7 @@ struct ExportView: View {
   }
 
   private struct Message<Button: View>: View {
-    let title, text: LocalizedStringResource
+    let title, text: LocalizedStringKey
     @ViewBuilder let button: () -> Button
 
     var body: some View {
@@ -61,58 +58,44 @@ struct ExportView: View {
             }
           }
         }
-        Message(title: .imgly.localized("ly_img_editor_dialog_export_progress_title"),
-                text: .imgly.localized("ly_img_editor_dialog_export_progress_text")) {
+        Message(title: "Exporting",
+                text: "Just a few seconds...") {
           Button(role: .cancel) {
             isShowingCancelExportDialog = true
           } label: {
-            Text(.imgly.localized("ly_img_editor_dialog_export_progress_button_dismiss"))
+            Text("Cancel")
           }
         }
         .interactiveDismissDisabled()
         .confirmationDialog(
-          Text(.imgly.localized("ly_img_editor_dialog_export_cancel_title")),
+          "Are you sure you want to stop exporting?\nThis will delete your current progress and return to the editor.",
           isPresented: $isShowingCancelExportDialog,
           titleVisibility: .visible
         ) {
-          Button(role: .destructive) {
+          Button("Stop Exporting", role: .destructive) {
             cancelAction()
-          } label: {
-            Text(.imgly.localized("ly_img_editor_dialog_export_cancel_button_confirm"))
           }
-          Button(role: .cancel) {
+          Button("Cancel", role: .cancel) {
             isShowingCancelExportDialog = false
-          } label: {
-            Text(.imgly.localized("ly_img_editor_dialog_export_cancel_button_dismiss"))
           }
-        } message: {
-          Text(.imgly.localized("ly_img_editor_dialog_export_cancel_text"))
         }
       case let .completed(title, completedAction):
         Header {
           Image(systemName: "checkmark.circle")
             .foregroundColor(.green)
         }
-        Message(title: .imgly.localized("ly_img_editor_dialog_export_success_title"),
-                text: .imgly.localized("ly_img_editor_dialog_export_success_text")) {
-          Button {
-            completedAction()
-          } label: {
-            Text(title)
-          }
+        Message(title: "Export Complete",
+                text: "All done. You can close this dialog.") {
+          Button(title, action: completedAction)
         }
       case let .error(_, closeAction):
         Header {
           Image(systemName: "exclamationmark.circle")
             .foregroundColor(.red)
         }
-        Message(title: .imgly.localized("ly_img_editor_dialog_export_error_title"),
-                text: .imgly.localized("ly_img_editor_dialog_export_error_text")) {
-          Button {
-            closeAction()
-          } label: {
-            Text(.imgly.localized("ly_img_editor_dialog_export_error_button_dismiss"))
-          }
+        Message(title: "Something went wrong",
+                text: "We were not able to prepare your export.  Please, try again later.") {
+          Button("Close", action: closeAction)
         }
       }
     }

@@ -1,5 +1,4 @@
 @_spi(Internal) import IMGLYEditor
-import IMGLYEngine
 import SwiftUI
 
 /// Built to facilitate optimal post- & greeting- card design, from changing accent colors and selecting fonts to custom
@@ -36,10 +35,7 @@ public struct PostcardEditor: View {
           NavigationBar.ItemGroup(placement: .topBarLeading) {
             NavigationBar.Buttons.closeEditor()
             NavigationBar.Buttons.previousPage(
-              label: { _ in NavigationLabel(
-                .imgly.localized("ly_img_editor_navigation_bar_button_design"),
-                direction: .backward
-              ) }
+              label: { _ in NavigationLabel("Design", direction: .backward) }
             )
           }
           NavigationBar.ItemGroup(placement: .principal) {
@@ -49,35 +45,12 @@ public struct PostcardEditor: View {
           }
           NavigationBar.ItemGroup(placement: .topBarTrailing) {
             NavigationBar.Buttons.nextPage(
-              label: { _ in NavigationLabel(
-                .imgly.localized("ly_img_editor_navigation_bar_button_write"),
-                direction: .forward
-              ) }
+              label: { _ in NavigationLabel("Write", direction: .forward) }
             )
             NavigationBar.Buttons.export()
           }
         }
       }
-      .imgly.dockItems { _ in
-        Dock.Buttons
-          .assetLibrary(
-            isVisible: { try $0.engine.scene.getPages().first == $0.engine.scene.getCurrentPage() },
-            modifier: { _ in Dock.Buttons.AssetLibraryModifier() }
-          )
-        Dock.Custom(id: "ly.img.component.dock.postcard.divider", content: { _ in
-          Divider()
-            .frame(height: 40)
-            .padding(.leading, 8)
-        }, isVisible: { try $0.engine.scene.getPages().first == $0.engine.scene.getCurrentPage() })
-        Dock.Buttons.designColors()
-        Dock.Buttons.greetingFont()
-        Dock.Buttons.greetingSize()
-        Dock.Buttons.greetingColors()
-      }
-      .imgly.dockItemAlignment {
-        try $0.engine.scene.getPages().first == $0.engine.scene.getCurrentPage() ? .leading : .center
-      }
-      .imgly.dockScrollDisabled { _ in true }
   }
 }
 

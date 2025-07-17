@@ -5,15 +5,9 @@ struct AddAudioButton: View {
   // MARK: Properties
 
   private enum Localization {
-    static var buttonAddAudio: LocalizedStringResource { .imgly.localized("ly_img_editor_timeline_button_add_audio") }
-    static var buttonAddMusic: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_timeline_add_audio_option_music")
-    }
-
-    static var buttonAddVoiceover: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_timeline_add_audio_option_voiceover")
-    }
-
+    static var buttonAddAudio: LocalizedStringKey { "Audio" }
+    static var buttonAddMusic: LocalizedStringKey { "Music" }
+    static var buttonAddVoiceover: LocalizedStringKey { "Voiceover" }
     static var accessabilityAddAudio: LocalizedStringKey { "Add Audio Menu" }
     static var accessabilityAddMusic: LocalizedStringKey { "Add Music" }
     static var accessabilityAddVoiceover: LocalizedStringKey { "Add Voiceover" }
@@ -78,11 +72,7 @@ struct AddAudioButton: View {
 
   private func menuLabel() -> some View {
     HStack {
-      Label {
-        Text(Localization.buttonAddAudio)
-      } icon: {
-        Image(systemName: Images.systemPlus)
-      }
+      Label(Localization.buttonAddAudio, systemImage: Images.systemPlus)
       Spacer()
     }
     .frame(minWidth: 100)

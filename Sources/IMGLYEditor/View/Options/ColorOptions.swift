@@ -2,13 +2,13 @@ import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
 
 struct ColorOptions: View {
-  private let title: LocalizedStringResource?
+  private let title: LocalizedStringKey?
   private let isEnabledBinding: Binding<Bool>?
   @Binding private var color: CGColor
   private let addUndoStep: @MainActor () -> Void
   private let style: ColorPropertyButtonStyle
 
-  init(title: LocalizedStringResource? = nil,
+  init(title: LocalizedStringKey? = nil,
        isEnabled: Binding<Bool>? = nil,
        color: Binding<CGColor>,
        addUndoStep: @escaping @MainActor () -> Void = {},

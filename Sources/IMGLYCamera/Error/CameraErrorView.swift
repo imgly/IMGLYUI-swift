@@ -28,7 +28,7 @@ struct CameraErrorView: View {
           retryCallback()
         } label: {
           Label {
-            Text(.imgly.localized("ly_img_camera_dialog_video_error_button_confirm"))
+            Text("Retry")
           } icon: {
             Image(systemName: "arrow.clockwise")
           }

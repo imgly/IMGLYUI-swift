@@ -29,7 +29,7 @@ struct PlayerBarView: View {
           interactor.toggleIsLoopingPlaybackEnabled()
         }
       )
-      .accessibilityLabel(Text(.imgly.localized("ly_img_editor_timeline_button_loop")))
+      .accessibilityLabel("Loop Playback")
       .font(.system(size: 18))
       .padding(.horizontal, 8)
 
@@ -41,7 +41,7 @@ struct PlayerBarView: View {
         } label: {
           ZStack(alignment: .trailing) {
             Label {
-              Text(.imgly.localized("ly_img_editor_timeline_button_show_timeline"))
+              Text("Timeline")
                 .font(.footnote)
                 .fontWeight(.semibold)
             } icon: {
@@ -61,9 +61,7 @@ struct PlayerBarView: View {
         }
         .buttonStyle(.plain)
         .transition(.opacity)
-        .accessibilityLabel(Text(isTimelineMinimized ? .imgly
-            .localized("ly_img_editor_timeline_button_show_timeline") : .imgly
-            .localized("ly_img_editor_timeline_button_hide_timeline")))
+        .accessibilityLabel(isTimelineMinimized ? "Expand Timeline" : "Collapse Timeline")
       }
     }
   }

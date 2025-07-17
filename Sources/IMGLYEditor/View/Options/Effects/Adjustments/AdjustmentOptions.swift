@@ -1,5 +1,4 @@
 import SwiftUI
-@_spi(Internal) import IMGLYCoreUI
 
 struct AdjustmentsOptions: View {
   @EnvironmentObject private var interactor: Interactor
@@ -7,7 +6,7 @@ struct AdjustmentsOptions: View {
 
   @ViewBuilder var adjustmentOptions: some View {
     ForEach(Adjustment.allCases, id: \.rawValue) { adjustment in
-      AdjustmentSlider(adjustment: adjustment, title: adjustment.localizedStringResource)
+      AdjustmentSlider(adjustment: adjustment, title: .init(adjustment.rawValue))
     }
   }
 

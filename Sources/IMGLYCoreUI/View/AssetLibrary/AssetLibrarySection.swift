@@ -1,12 +1,12 @@
 import SwiftUI
 
 @_spi(Internal) public struct AssetLibrarySection<Destination: View, Preview: View, Accessory: View>: View {
-  private let title: LocalizedStringResource
+  private let title: String
   @ViewBuilder private let destination: () -> Destination
   @ViewBuilder private let preview: () -> Preview
   @ViewBuilder private let accessory: () -> Accessory
 
-  @_spi(Internal) public init(_ title: LocalizedStringResource,
+  @_spi(Internal) public init(_ title: String,
                               @ViewBuilder destination: @escaping () -> Destination,
                               @ViewBuilder preview: @escaping () -> Preview,
                               @ViewBuilder accessory: @escaping () -> Accessory = { EmptyView() }) {
@@ -16,6 +16,8 @@ import SwiftUI
     self.accessory = accessory
   }
 
+  var localizedTitle: LocalizedStringKey { .init(title) }
+
   @State var totalResults: Int?
   @Environment(\.imglyDismissButtonView) private var dismissButtonView
   @EnvironmentObject private var searchState: AssetLibrarySearchState
@@ -23,9 +25,9 @@ import SwiftUI
   @ViewBuilder var label: some View {
     if let totalResults {
       if totalResults < 0 || totalResults > 999 {
-        Text(.imgly.localized("ly_img_editor_asset_library_button_more"))
+        Text("More")
       } else {
-        Text(verbatim: "\(totalResults)")
+        Text("\(totalResults)")
       }
     }
     Image(systemName: "chevron.forward")
@@ -34,7 +36,7 @@ import SwiftUI
   @MainActor
   @ViewBuilder var content: some View {
     destination()
-      .navigationTitle(Text(title))
+      .navigationTitle(localizedTitle)
       .toolbar {
         ToolbarItem {
           HStack(spacing: 16) {
@@ -57,7 +59,7 @@ import SwiftUI
         }
     } header: {
       HStack(spacing: 26) {
-        Text(title)
+        Text(localizedTitle)
           .font(.headline)
         Spacer()
         accessory()
@@ -67,6 +69,7 @@ import SwiftUI
         } label: {
           label
             .font(.subheadline.weight(.semibold).monospacedDigit())
+            .accessibilityLabel(.init("More \(title)"))
         }
       }
       .padding(.top, 16)
@@ -103,7 +106,7 @@ struct SeeAll: View {
             .frame(width: 48, height: 48)
             .foregroundColor(.secondary)
         }
-        Text(.imgly.localized("ly_img_editor_asset_library_button_see_all"))
+        Text("See All")
           .font(.caption.weight(.medium))
       }
       .foregroundColor(.primary)

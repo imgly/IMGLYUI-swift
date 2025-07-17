@@ -21,12 +21,18 @@ struct FontSheet: View {
   var body: some View {
     let text = interactor.bindTextState(id, resetFontProperties: true, overrideScopes: [.key(.textCharacter)])
 
-    DismissableTitledSheet(.imgly.localized("ly_img_editor_postcard_sheet_font_title")) {
+    DismissableTitledSheet("Font") {
       ListPicker(data: [assets], selection: text.assetID) { asset, isSelected in
         Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
           .labelStyle(.icon(hidden: !isSelected,
                             titleFont: .custom(asset.result.payload?.typeface?.previewFontName ?? "", size: 17)))
       }
     }
+  }
+}
+
+struct FontSheet_Previews: PreviewProvider {
+  static var previews: some View {
+    defaultPreviews(sheet: .init(.font(nil, nil)))
   }
 }

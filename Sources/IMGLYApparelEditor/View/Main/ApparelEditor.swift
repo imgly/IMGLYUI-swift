@@ -43,12 +43,6 @@ public struct ApparelEditor: View {
           }
         }
       }
-      .imgly.dockItems { _ in
-        Dock.Buttons.assetLibrary(modifier: { _ in Dock.Buttons.AssetLibraryModifier() })
-      }
-      .imgly.dockItemAlignment { _ in .leading }
-      .imgly.dockBackgroundColor { _, _ in .clear }
-      .imgly.dockScrollDisabled { _ in true }
   }
 }
 

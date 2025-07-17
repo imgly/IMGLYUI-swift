@@ -2,10 +2,10 @@ import SwiftUI
 @_spi(Advanced) import SwiftUIIntrospect
 
 @_spi(Internal) public struct DismissableTitledSheet<Content: View>: View {
-  let title: LocalizedStringResource
+  let title: LocalizedStringKey
   let content: () -> Content
 
-  @_spi(Internal) public init(_ title: LocalizedStringResource, @ViewBuilder content: @escaping () -> Content) {
+  @_spi(Internal) public init(_ title: LocalizedStringKey, @ViewBuilder content: @escaping () -> Content) {
     self.title = title
     self.content = content
   }
@@ -24,10 +24,10 @@ import SwiftUI
 }
 
 @_spi(Internal) public struct TitledSheet<Content: View>: View {
-  let title: LocalizedStringResource
+  let title: LocalizedStringKey
   let content: () -> Content
 
-  @_spi(Internal) public init(_ title: LocalizedStringResource, @ViewBuilder content: @escaping () -> Content) {
+  @_spi(Internal) public init(_ title: LocalizedStringKey, @ViewBuilder content: @escaping () -> Content) {
     self.title = title
     self.content = content
   }
@@ -36,7 +36,7 @@ import SwiftUI
     NavigationView {
       content()
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(Text(title))
+        .navigationTitle(title)
     }
     .navigationViewStyle(.stack)
     .introspect(.navigationStack, on: .iOS(.v16...)) { navigationController in

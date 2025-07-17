@@ -1,14 +1,13 @@
-import Foundation
+import SwiftUI
 
-@_spi(Internal) public protocol Localizable {
-  var localizationValue: String.LocalizationValue { get }
-  var localizationTable: LocalizationTable { get }
-}
+@_spi(Internal) public protocol Localizable: CustomStringConvertible {}
 
 @_spi(Internal) public extension Localizable {
-  var localizationTable: LocalizationTable { .imglyCoreUI }
+  var localizedStringKey: LocalizedStringKey {
+    localizedStringKey(suffix: nil)
+  }
 
-  var localizedStringResource: LocalizedStringResource {
-    .imgly.localized(localizationValue, table: localizationTable)
+  func localizedStringKey(suffix: String?) -> LocalizedStringKey {
+    LocalizedStringKey(String(describing: self) + (suffix ?? ""))
   }
 }

@@ -134,7 +134,7 @@ public extension SheetType where Self == SheetTypes.LibraryAdd {
   /// - Returns: The created ``SheetTypes/LibraryAdd`` sheet type.
   @MainActor
   static func libraryAdd(
-    _ title: LocalizedStringResource,
+    _ title: String,
     style: SheetStyle = .addAsset(),
     @AssetLibraryBuilder content: @escaping () -> AssetLibraryContent
   ) -> Self {
@@ -168,7 +168,7 @@ public extension SheetType where Self == SheetTypes.LibraryReplace {
   /// - Returns: The created ``SheetTypes/LibraryReplace`` sheet type.
   @MainActor
   static func libraryReplace(
-    _ title: LocalizedStringResource,
+    _ title: String,
     style: SheetStyle = .default(),
     @AssetLibraryBuilder content: @escaping () -> AssetLibraryContent
   ) -> Self {
@@ -302,93 +302,4 @@ public extension SheetType where Self == SheetTypes.TextBackground {
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/TextBackground`` sheet
   static func textBackground(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
-}
-
-// MARK: - Postcard
-
-@_spi(Internal) public extension SheetTypes {
-  /// A sheet that is used to change the design colors.
-  struct DesignColors: SheetType {
-    public let style: SheetStyle
-  }
-
-  /// A sheet that is used to change the font size.
-  struct GreetingSize: SheetTypeForDesignBlock {
-    public let style: SheetStyle
-    let id: DesignBlockID
-  }
-
-  /// A sheet that is used to change the color.
-  struct GreetingColors: SheetTypeForDesignBlock {
-    public let style: SheetStyle
-    let id: DesignBlockID
-    let colorPalette: [NamedColor]?
-  }
-
-  /// A sheet that is used to change the font.
-  struct GreetingFont: SheetTypeForDesignBlock {
-    public let style: SheetStyle
-    let id: DesignBlockID
-    let fontFamilies: [String]?
-  }
-}
-
-@_spi(Internal) public extension SheetType where Self == SheetTypes.DesignColors {
-  /// Creates a ``SheetType`` that is used to change the selection colors.
-  /// - Parameters:
-  ///   - style: The style of the sheet. By default, the ``SheetStyle/default(isFloating:detent:detents:)`` style is
-  /// used.
-  /// - Returns: The created ``SheetTypes/DesignColors`` sheet type.
-  static func designColors(
-    style: SheetStyle = .default()
-  ) -> Self {
-    Self(style: style)
-  }
-}
-
-@_spi(Internal) public extension SheetType where Self == SheetTypes.GreetingColors {
-  /// Creates a ``SheetType`` that is used to change the color of a given block.
-  /// - Parameters:
-  ///   - style: The style of the sheet. By default, the ``SheetStyle/only(detent:)`` style is used.
-  ///   - id: The id of the design block to apply the color.
-  ///   - colorPalette: The available colors.
-  /// - Returns: The created ``SheetTypes/GreetingColors`` sheet type.
-  static func greetingColors(
-    style: SheetStyle = .only(detent: .imgly.tiny),
-    id: DesignBlockID,
-    colorPalette: [NamedColor]? = nil
-  ) -> Self {
-    Self(style: style, id: id, colorPalette: colorPalette)
-  }
-}
-
-@_spi(Internal) public extension SheetType where Self == SheetTypes.GreetingFont {
-  /// Creates a ``SheetType`` that is used to change the font of a given block.
-  /// - Parameters:
-  ///   - style: The style of the sheet. By default, the ``SheetStyle/default(isFloating:detent:detents:)`` style is
-  /// used.
-  ///   - id: The id of the design block to apply the font.
-  ///   - fontFamilies: The available font families.
-  /// - Returns: The created ``SheetTypes/GreetingFont`` sheet type.
-  static func greetingFont(
-    style: SheetStyle = .default(),
-    id: DesignBlockID,
-    fontFamilies: [String]? = nil
-  ) -> Self {
-    Self(style: style, id: id, fontFamilies: fontFamilies)
-  }
-}
-
-@_spi(Internal) public extension SheetType where Self == SheetTypes.GreetingSize {
-  /// Creates a ``SheetType`` that is used to change the font size of a given block.
-  /// - Parameters:
-  ///   - style: The style of the sheet. By default, the ``SheetStyle/only(detent:)`` style is used.
-  ///   - id: The id of the design block to apply the font size.
-  /// - Returns: The created ``SheetTypes/GreetingSize`` sheet type.
-  static func greetingSize(
-    style: SheetStyle = .only(detent: .imgly.tiny),
-    id: DesignBlockID
-  ) -> Self {
-    Self(style: style, id: id)
-  }
 }

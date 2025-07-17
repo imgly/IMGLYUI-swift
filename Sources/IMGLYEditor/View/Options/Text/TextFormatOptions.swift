@@ -30,11 +30,8 @@ struct TextFormatOptions: View {
   @ViewBuilder var fontSelection: some View {
     let textReset = interactor.bindTextState(id, resetFontProperties: true)
 
-    NavigationLinkPicker(
-      title: .imgly.localized("ly_img_editor_sheet_format_text_label_font"),
-      data: [fontLibrary.assets],
-      selection: textReset.assetID
-    ) { asset, isSelected in
+    NavigationLinkPicker(title: "Font", data: [fontLibrary.assets],
+                         selection: textReset.assetID) { asset, isSelected in
       Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
         .labelStyle(.icon(hidden: !isSelected,
                           titleFont: .custom(asset.result.payload?.typeface?.previewFontName ?? "", size: 17)))
@@ -86,11 +83,9 @@ struct TextFormatOptions: View {
 
         NavigationLinkPicker(title: "Font Weight", data: [nonItalicFonts, italicFonts],
                              inlineTitle: false, selection: selection) { asset, isSelected in
-          FontLabel(fontURL: asset.uri, isSelected: isSelected, title: asset.localizedSubFamiliy)
+          FontLabel(fontURL: asset.uri, isSelected: isSelected, title: .init(asset.subFamily))
         } linkLabel: { selection in
-          if let selection {
-            Text(selection.localizedSubFamiliy)
-          }
+          Text(.init(selection?.subFamily ?? "Unnamed Weight"))
         }
       }
     }
@@ -99,19 +94,13 @@ struct TextFormatOptions: View {
   }
 
   @ViewBuilder var fontSizeSelection: some View {
-    Section {
-      PropertySlider<Float>(
-        .imgly.localized("ly_img_editor_sheet_format_text_label_font_size"),
-        in: 6 ... 90,
-        property: .key(.textFontSize)
-      )
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_font_size"))
+    Section("Font Size") {
+      PropertySlider<Float>("Font Size", in: 6 ... 90, property: .key(.textFontSize))
     }
   }
 
   @ViewBuilder var alignmentSelection: some View {
-    Section {
+    Section("Alignment") {
       HStack(spacing: 32) {
         let alignmentX: Binding<HorizontalAlignment?> = interactor.bind(id, property: .key(.textHorizontalAlignment))
         PropertyButton(property: .left, selection: alignmentX)
@@ -126,8 +115,6 @@ struct TextFormatOptions: View {
       .padding([.leading, .trailing], 16)
       .labelStyle(.iconOnly)
       .buttonStyle(.borderless)
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_alignment"))
     }
   }
 
@@ -184,11 +171,7 @@ struct TextFormatOptions: View {
       return try (completion?(engine, blocks, didChange) ?? false) || didChange
     }
 
-    MenuPicker(
-      title: .imgly.localized("ly_img_editor_sheet_format_text_label_frame_behaviour"),
-      data: TextFrameBehavior.allCases,
-      selection: selection
-    )
+    MenuPicker(title: "Frame Behavior", data: TextFrameBehavior.allCases, selection: selection)
   }
 
   @ViewBuilder var clipping: some View {
@@ -199,33 +182,19 @@ struct TextFormatOptions: View {
     }
     if showClippingBinding.wrappedValue {
       let clipping: Binding<Bool> = interactor.bind(id, property: .key(.textClipLinesOutsideOfFrame), default: true)
-      Toggle(isOn: clipping) {
-        Text(.imgly.localized("ly_img_editor_sheet_format_text_label_frame_clipping"))
-      }
-      .tint(.blue)
+      Toggle("Clipping", isOn: clipping)
+        .tint(.blue)
     }
   }
 
   @ViewBuilder var letterOptions: some View {
-    Section {
-      PropertySlider<Float>(
-        .imgly.localized("ly_img_editor_sheet_format_text_label_line_height"),
-        in: 0.5 ... 2.5,
-        property: .key(.textLineHeight)
-      )
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_line_height"))
+    Section("Line Height") {
+      PropertySlider<Float>("Line Height", in: 0.5 ... 2.5, property: .key(.textLineHeight))
     }
-    Section {
-      PropertySlider<Float>(
-        .imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"),
-        in: 0 ... 2.5,
-        property: .key(.textParagraphSpacing)
-      )
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"))
+    Section("Paragraph Spacing") {
+      PropertySlider<Float>("Paragraph Spacing", in: 0 ... 2.5, property: .key(.textParagraphSpacing))
     }
-    Section {
+    Section("Letter Case") {
       HStack {
         let letterCase: Binding<Interactor.TextCase?> = interactor.bind(id) { engine, block in
           let textCase = try engine.block.getTextCases(block).first
@@ -254,17 +223,9 @@ struct TextFormatOptions: View {
       .padding([.leading, .trailing], 16)
       .labelStyle(.iconOnly)
       .buttonStyle(.borderless)
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_letter_case"))
     }
-    Section {
-      PropertySlider<Float>(
-        .imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"),
-        in: -0.15 ... 1.4,
-        property: .key(.textLetterSpacing)
-      )
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"))
+    Section("Letter Spacing") {
+      PropertySlider<Float>("Letter Spacing", in: -0.15 ... 1.4, property: .key(.textLetterSpacing))
     }
   }
 }

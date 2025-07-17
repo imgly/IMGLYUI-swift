@@ -1,7 +1,6 @@
-import Foundation
 @_spi(Internal) import IMGLYCoreUI
 
-enum ContentFillMode: String, MappedEnum, Labelable {
+enum ContentFillMode: String, MappedEnum {
   case Cover
   case Crop
   case Contain
@@ -17,14 +16,14 @@ enum ContentFillMode: String, MappedEnum, Labelable {
     }
   }
 
-  var localizationValue: String.LocalizationValue {
+  var description: String {
     switch self {
     case .Crop:
-      "ly_img_editor_sheet_crop_fill_mode_option_crop"
+      "Crop"
     case .Cover:
-      "ly_img_editor_sheet_crop_fill_mode_option_cover"
+      "Cover"
     case .Contain:
-      "ly_img_editor_sheet_crop_fill_mode_option_fit"
+      "Fit"
     }
   }
 

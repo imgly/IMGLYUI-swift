@@ -1,15 +1,10 @@
 import SwiftUI
 
-/// A primitive button style for the asset library dock button.
-public struct AssetLibraryButtonStyle: PrimitiveButtonStyle {
+struct FloatingActionButtonStyle: PrimitiveButtonStyle {
   @Environment(\.colorScheme) private var colorScheme
 
-  public func makeBody(configuration: Configuration) -> some View {
+  func makeBody(configuration: Configuration) -> some View {
     Button(configuration)
-      .font(.title2)
-      .fontWeight(.bold)
-      .labelStyle(.iconOnly)
-      .frame(width: 56, height: 56)
       .foregroundColor(.accentColor)
       .background(
         Circle()
