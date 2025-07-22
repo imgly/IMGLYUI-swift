@@ -2,7 +2,7 @@ import SwiftUI
 
 struct LayerOptionsSheet: View {
   var body: some View {
-    DismissableTitledSheet("Layer") {
+    DismissableTitledSheet(.imgly.localized("ly_img_editor_sheet_layer_title")) {
       LayerOptions()
     }
   }

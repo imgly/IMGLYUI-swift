@@ -3,24 +3,22 @@ import SwiftUI
 
 /// A tab used in an ``AssetLibrary`` to display ``AssetLibraryContent``.
 public struct AssetLibraryTab<Label: View>: View {
-  private let title: String
+  private let title: LocalizedStringResource
   @AssetLibraryBuilder private let content: () -> AssetLibraryContent
-  @ViewBuilder private let label: (_ title: LocalizedStringKey) -> Label
+  @ViewBuilder private let label: (_ title: LocalizedStringResource) -> Label
 
   /// Creates an asset library tab with asset library `content`.
   /// - Parameters:
   ///   - title: The title of the tab.
   ///   - content: The asset library content.
   ///   - label: The label of the tab. The `title` is passed to this closure.
-  public init(_ title: String,
+  public init(_ title: LocalizedStringResource,
               @AssetLibraryBuilder content: @escaping () -> AssetLibraryContent,
-              @ViewBuilder label: @escaping (_ title: LocalizedStringKey) -> Label) {
+              @ViewBuilder label: @escaping (_ title: LocalizedStringResource) -> Label) {
     self.title = title
     self.content = content
     self.label = label
   }
-
-  var localizedTitle: LocalizedStringKey { .init(title) }
 
   public var body: some View {
     AssetLibraryTabView(title) {

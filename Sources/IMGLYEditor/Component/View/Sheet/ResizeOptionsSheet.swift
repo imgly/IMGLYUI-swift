@@ -5,10 +5,10 @@ struct ResizeOptionsSheet: View {
   @EnvironmentObject var interactor: Interactor
 
   var body: some View {
-    DismissableTitledSheet("Resize") {
+    DismissableTitledSheet(.imgly.localized("ly_img_editor_sheet_resize_title")) {
       TransformOptions(interactor: interactor, item: { asset in
         TransformItem(asset: asset)
-      }, sources: [.init(id: "ly.img.page.presets")])
+      }, sources: [.init(defaultSource: .pagePresets)])
     }
   }
 }

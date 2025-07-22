@@ -3,7 +3,7 @@ import SwiftUI
 
 extension IMGLY where Wrapped: View {
   func colorPicker(
-    _ title: LocalizedStringKey? = nil,
+    _ title: LocalizedStringResource? = nil,
     isPresented: Binding<Bool>,
     selection: Binding<CGColor>,
     supportsOpacity: Bool = true,
@@ -15,7 +15,7 @@ extension IMGLY where Wrapped: View {
 }
 
 private struct ColorPickerSheet: UIViewRepresentable {
-  var title: LocalizedStringKey?
+  var title: LocalizedStringResource?
   @Binding var isPresented: Bool
   @Binding var selection: CGColor
   var supportsOpacity: Bool
@@ -88,7 +88,11 @@ private struct ColorPickerSheet: UIViewRepresentable {
       let modal = UIColorPickerViewController()
       modal.selectedColor = UIColor(cgColor: selection)
       modal.supportsAlpha = supportsOpacity
-      modal.title = title?.stringValue
+      if let title {
+        modal.title = String(localized: title)
+      } else {
+        modal.title = nil
+      }
       modal.delegate = context.coordinator
       modal.modalPresentationStyle = .popover
       modal.popoverPresentationController?.sourceView = uiView
@@ -98,20 +102,5 @@ private struct ColorPickerSheet: UIViewRepresentable {
       top?.present(modal, animated: true)
       context.coordinator.didPresent = true
     }
-  }
-}
-
-private extension LocalizedStringKey {
-  var stringKey: String? {
-    Mirror(reflecting: self).children.first(where: { $0.label == "key" })?.value as? String
-  }
-
-  var stringValue: String? {
-    guard let stringKey else { return nil }
-    let localizedString = NSLocalizedString(stringKey, bundle: .main, value: stringKey, comment: "")
-    if localizedString != stringKey {
-      return localizedString
-    }
-    return NSLocalizedString(stringKey, bundle: .module, value: stringKey, comment: "")
   }
 }

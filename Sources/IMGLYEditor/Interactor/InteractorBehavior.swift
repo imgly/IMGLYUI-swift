@@ -14,23 +14,6 @@ import SwiftUI
   }
 }
 
-@_spi(Internal) public enum RootBottomBarItem: IdentifiableByHash {
-  case fab, selectionColors
-  case font(_ id: DesignBlockID, fontFamilies: [String]? = nil)
-  case fontSize(_ id: DesignBlockID)
-  case color(_ id: DesignBlockID, colorPalette: [NamedColor]? = nil)
-
-  var sheetMode: SheetMode? {
-    switch self {
-    case .fab: nil
-    case .selectionColors: .selectionColors
-    case let .font(id, families): .font(id, families)
-    case let .fontSize(id): .fontSize(id)
-    case let .color(id, palette): .color(id, palette)
-    }
-  }
-}
-
 @_spi(Internal) public enum PreviewMode {
   case fixed
   case scrollable
@@ -49,7 +32,6 @@ import SwiftUI
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws
   func isGestureActive(_ context: InteractorContext, _ started: Bool) throws
   func isBottomBarEnabled(_ context: InteractorContext) throws -> Bool
-  func rootBottomBarItems(_ context: InteractorContext) throws -> [RootBottomBarItem]
   func pageChanged(_ context: InteractorContext) throws
   func historyChanged(_ context: InteractorContext) throws
   func updateState(_ context: InteractorContext) throws
@@ -206,10 +188,6 @@ import SwiftUI
 
   func isBottomBarEnabled(_: InteractorContext) throws -> Bool {
     true
-  }
-
-  func rootBottomBarItems(_: InteractorContext) throws -> [RootBottomBarItem] {
-    [.fab]
   }
 
   func pageChanged(_ context: InteractorContext) throws {

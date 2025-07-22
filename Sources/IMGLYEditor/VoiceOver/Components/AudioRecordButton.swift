@@ -87,10 +87,16 @@ struct AudioRecordButton: View {
           .matchedGeometryEffect(id: nameSpaceImage, in: nameSpaceImage)
 
       case .resume, .replace:
-        Text(state.displayText)
-          .foregroundColor(state.foregroundColor)
-          .transition(.opacity)
-          .animation(.easeInOut.delay(0.09), value: state)
+        Group {
+          if let text = state.displayText {
+            Text(text)
+          } else {
+            Text(verbatim: "")
+          }
+        }
+        .foregroundColor(state.foregroundColor)
+        .transition(.opacity)
+        .animation(.easeInOut.delay(0.09), value: state)
       }
     }
   }
@@ -159,11 +165,11 @@ extension RecordingState {
     }
   }
 
-  var displayText: String {
+  var displayText: LocalizedStringResource? {
     switch self {
-    case .resume: "Resume"
-    case .replace: "Replace"
-    default: ""
+    case .resume: .imgly.localized("ly_img_editor_sheet_voiceover_button_resume")
+    case .replace: .imgly.localized("ly_img_editor_sheet_voiceover_button_replace")
+    default: nil
     }
   }
 

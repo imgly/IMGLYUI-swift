@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SelectableItem<Content: View>: View {
-  let title: LocalizedStringKey
+  let title: String
   let selected: Bool
   @ViewBuilder let content: Content
 

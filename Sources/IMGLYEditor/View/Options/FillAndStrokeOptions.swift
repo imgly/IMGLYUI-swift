@@ -11,18 +11,22 @@ struct FillAndStrokeOptions: View {
 
   @ViewBuilder var fillAndStrokeOptions: some View {
     if interactor.isColorFill(id), interactor.supportsFill(id), interactor.isAllowed(id, scope: .fillChange) {
-      Section("Fill") {
+      Section {
         let fillType: Binding<ColorFillType?> = interactor
           .bind(id, .fill, property: .key(.type), getter: fillTypeGetter, setter: fillTypeSetter)
         FillColorOptions(fillType: fillType)
+      } header: {
+        Text(.imgly.localized("ly_img_editor_sheet_fill_stroke_label_fill"))
       }
     }
     if interactor.supportsStroke(id), interactor.isAllowed(id, scope: .strokeChange) {
-      Section("Stroke") {
+      Section {
         StrokeOptions(isEnabled: interactor.bind(id, property: .key(.strokeEnabled), default: false))
+      } header: {
+        Text(.imgly.localized("ly_img_editor_sheet_fill_stroke_label_stroke"))
       }
       .accessibilityElement(children: .contain)
-      .accessibilityLabel("Stroke")
+      .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_fill_stroke_label_stroke")))
     }
   }
 

@@ -6,16 +6,24 @@ import SwiftUI
 struct FontLabel: View {
   let fontURL: URL
   let isSelected: Bool
-  let title: LocalizedStringKey
+  let title: LocalizedStringResource
 
   var body: some View {
     FontLoader(fontURL: fontURL) { fontName in
-      Label(title, systemImage: "checkmark")
-        .labelStyle(.icon(hidden: !isSelected,
-                          titleFont: .custom(fontName, size: 17)))
+      Label {
+        Text(title)
+      } icon: {
+        Image(systemName: "checkmark")
+      }
+      .labelStyle(.icon(hidden: !isSelected,
+                        titleFont: .custom(fontName, size: 17)))
     } placeholder: {
-      Label(title, systemImage: "checkmark")
-        .labelStyle(.icon(hidden: !isSelected))
+      Label {
+        Text(title)
+      } icon: {
+        Image(systemName: "checkmark")
+      }
+      .labelStyle(.icon(hidden: !isSelected))
       Spacer()
     }
   }

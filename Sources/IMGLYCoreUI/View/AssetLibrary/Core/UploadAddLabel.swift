@@ -2,6 +2,10 @@ import SwiftUI
 
 struct UploadAddLabel: View {
   var body: some View {
-    Label("Add", systemImage: "plus")
+    Label {
+      Text(.imgly.localized("ly_img_editor_asset_library_button_add"))
+    } icon: {
+      Image(systemName: "plus")
+    }
   }
 }

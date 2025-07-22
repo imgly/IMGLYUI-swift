@@ -32,8 +32,6 @@ final class PhotoInteractorBehavior: InteractorBehavior {
     return try context.engine.block.getType(block) != DesignBlockType.page.rawValue
   }
 
-  func rootBottomBarItems(_: InteractorContext) throws -> [RootBottomBarItem] { [] }
-
   func historyChanged(_ context: InteractorContext) throws {
     let page = try context.engine.getSinglePage(withImageFill: false)
     if try context.engine.block.isSelected(page), context.engine.editor.getEditMode() != .crop {

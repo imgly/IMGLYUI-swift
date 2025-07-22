@@ -21,7 +21,7 @@ struct FontSizeSheet: View {
   @ViewBuilder func propertyButton(property: SizeLetter) -> some View {
     GenericPropertyButton(property: property, selection: fontSizeLetter) {
       Label {
-        Text(property.localizedStringKey)
+        Text(property.localizedStringResource)
       } icon: {
         property.icon
           .font(.system(.headline, design: .rounded))
@@ -30,20 +30,14 @@ struct FontSizeSheet: View {
   }
 
   var body: some View {
-    DismissableTitledSheet("Size") {
+    DismissableTitledSheet(.imgly.localized("ly_img_editor_postcard_sheet_size_title")) {
       List {
-        PropertyStack("Message") {
+        PropertyStack(.imgly.localized("ly_img_editor_postcard_sheet_size_label_message")) {
           propertyButton(property: .small)
           propertyButton(property: .medium)
           propertyButton(property: .large)
         }
       }
     }
-  }
-}
-
-struct FontSizeSheet_Previews: PreviewProvider {
-  static var previews: some View {
-    defaultPreviews(sheet: .init(.fontSize(nil)))
   }
 }

@@ -131,7 +131,6 @@ struct TimelineContentView: View {
       .overlay(alignment: .leading) {
         ForEach(Array(zip(timeline.snapIndicatorLinePositions.indices, timeline.snapIndicatorLinePositions)),
                 id: \.0) { _, position in
-
           SnapIndicatorLineView()
             .offset(x: timeline.convertToPoints(time: position) + viewportWidth / 2)
             .foregroundColor(configuration.timelineSnapIndicatorColor)

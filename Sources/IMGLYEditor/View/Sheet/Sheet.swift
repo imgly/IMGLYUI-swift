@@ -10,10 +10,6 @@ struct Sheet: View {
 
   @ViewBuilder func sheet(_ mode: SheetMode) -> some View {
     switch mode {
-    case .selectionColors: SelectionColorsSheet()
-    case .font: FontSheet()
-    case .fontSize: FontSizeSheet()
-    case .color: ColorSheet()
     case .resize: ResizeOptionsSheet()
     default: EmptyView()
     }
@@ -29,6 +25,14 @@ struct Sheet: View {
     case let sheet as SheetTypes.LibraryReplace:
       AnyView(erasing: sheet.content())
         .imgly.assetLibrary(titleDisplayMode: .inline)
+    case let sheet as SheetTypes.GreetingColors:
+      ColorSheet()
+        .imgly.selection(sheet.id)
+        .imgly.colorPalette(sheet.colorPalette)
+    case let sheet as SheetTypes.GreetingFont:
+      FontSheet()
+        .imgly.selection(sheet.id)
+        .imgly.fontFamilies(sheet.fontFamilies)
     case is SheetTypes.Voiceover: VoiceoverSheet()
     case is SheetTypes.Reorder: ReorderOptionsSheet()
     case is SheetTypes.Adjustments: AdjustmentsOptionsSheet()
@@ -43,6 +47,8 @@ struct Sheet: View {
     case is SheetTypes.TextBackground: BackgroundOptionsSheet()
     case is SheetTypes.Volume: VolumeOptionsSheet()
     case is SheetTypes.Resize: ResizeOptionsSheet()
+    case is SheetTypes.DesignColors: SelectionColorsSheet()
+    case is SheetTypes.GreetingSize: FontSizeSheet()
     default: EmptyView()
     }
   }
@@ -68,14 +74,7 @@ struct Sheet: View {
           sheet(type)
         }
       } else if let mode = sheet.mode {
-        if let id = mode.pinnedBlockID {
-          sheet(mode)
-            .imgly.selection(id)
-            .imgly.colorPalette(mode.colorPalette)
-            .imgly.fontFamilies(mode.fontFamilies)
-        } else {
-          sheet(mode)
-        }
+        sheet(mode)
       }
     }
     .imgly.assetLibrary(sceneMode: interactor.sceneMode)

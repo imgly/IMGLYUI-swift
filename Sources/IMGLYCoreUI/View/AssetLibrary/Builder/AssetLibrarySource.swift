@@ -16,7 +16,9 @@ import SwiftUI
 public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: View>: AssetLibraryContent, View {
   public var id: Int {
     var hasher = Hasher()
-    hasher.combine(title(nil))
+    let title = title(nil)
+    hasher.combine(title.key)
+    hasher.combine(title.table)
     hasher.combine(sources)
     return hasher.finalize()
   }
@@ -30,7 +32,7 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
       .imgly.assetLibrary(sources: sources)
   }
 
-  private let title: (_ group: String?) -> String
+  private let title: (_ group: String?) -> LocalizedStringResource
   private let source: AssetLoader.SourceData
   @ViewBuilder private let destination: () -> Destination
   @ViewBuilder private let preview: () -> Preview
@@ -39,13 +41,14 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
   /// The display mode of an asset source.
   public enum Mode {
     /// A single section is created which contains all groups for the asset source configuration.
-    case title(String)
+    case title(LocalizedStringResource)
     /// Multiple sections are created. One for each group of the asset source configuration.
     /// If `groups` of the asset source configuration is `nil` or empty available groups will be queried from the asset
     /// source. `group` for the `.titleForGroup` closure is `nil` when there are no groups available. In this case the
     /// resulting behavior is identical to the single `.title` mode and the `.titleForGroup` closure should return a
     /// valid title.
-    case titleForGroup((_ group: String?) -> String = { $0 ?? "Assets" })
+    case titleForGroup((_ group: String?)
+      -> LocalizedStringResource = { if let group = $0 { "\(group)" } else { "Assets" } })
   }
 
   /// Creates one or more sections for an asset `source` depending on the used display `mode`. Each section is displayed

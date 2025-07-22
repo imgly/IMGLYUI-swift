@@ -42,8 +42,12 @@ struct SearchBadge: View {
       Button {
         searchQuery.value = .init()
       } label: {
-        Label("Remove Search Query", systemImage: "xmark.circle.fill")
-          .labelStyle(.iconOnly)
+        Label {
+          Text(.imgly.localized("ly_img_editor_asset_library_button_search_clear"))
+        } icon: {
+          Image(systemName: "xmark.circle.fill")
+        }
+        .labelStyle(.iconOnly)
       }
     }
     .buttonStyle(.borderless)

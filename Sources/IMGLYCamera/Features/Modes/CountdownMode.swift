@@ -7,14 +7,14 @@ enum CountdownMode: TimeInterval, CaseIterable {
 }
 
 extension CountdownMode {
-  var name: LocalizedStringKey {
+  var name: LocalizedStringResource {
     switch self {
     case .count3:
-      "3 Seconds"
+      .imgly.localized("ly_img_camera_timer_option_3")
     case .count10:
-      "10 Seconds"
+      .imgly.localized("ly_img_camera_timer_option_10")
     case .disabled:
-      "Off"
+      .imgly.localized("ly_img_camera_timer_option_off")
     }
   }
 

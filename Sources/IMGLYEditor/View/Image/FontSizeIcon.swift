@@ -1,11 +1,13 @@
 @_spi(Internal) import IMGLYCore
 import SwiftUI
 
-struct FontSizeIcon: View {
+@_spi(Internal) public struct FontSizeIcon: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  var body: some View {
+  @_spi(Internal) public init() {}
+
+  @_spi(Internal) public var body: some View {
     let fontSize: Binding<Float?> = interactor.bind(id, property: .key(.textFontSize))
 
     if let fontSize = fontSize.wrappedValue {

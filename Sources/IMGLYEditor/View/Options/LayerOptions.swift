@@ -7,15 +7,15 @@ struct LayerOptions: View {
   @Environment(\.imglySelection) private var id
 
   @ViewBuilder var layerButtons: some View {
-    HStack(spacing: 8) {
-      Group {
-        ActionButton(.toTop)
-        ActionButton(.up)
+    VStack(spacing: 8) {
+      HStack(spacing: 8) {
+        ActionButton(.toFront)
+        ActionButton(.bringForward)
       }
       .disabled(!interactor.canBringForward(id))
-      Group {
-        ActionButton(.down)
-        ActionButton(.toBottom)
+      HStack(spacing: 8) {
+        ActionButton(.toBack)
+        ActionButton(.sendBackward)
       }
       .disabled(!interactor.canBringBackward(id))
     }
@@ -28,19 +28,28 @@ struct LayerOptions: View {
     List {
       if interactor.isAllowed(id, scope: .layerOpacity) {
         if interactor.supportsOpacity(id) {
-          Section("Opacity") {
-            PropertySlider<Float>("Opacity", in: 0 ... 1, property: .key(.opacity))
+          Section {
+            PropertySlider<Float>(
+              .imgly.localized("ly_img_editor_sheet_layer_label_opacity"),
+              in: 0 ... 1,
+              property: .key(.opacity)
+            )
+          } header: {
+            Text(.imgly.localized("ly_img_editor_sheet_layer_label_opacity"))
           }
         }
       }
       if interactor.isAllowed(id, scope: .layerBlendMode) {
         if interactor.supportsBlendMode(id) {
           Section {
-            PropertyNavigationLink<BlendMode>("Blend Mode", property: .key(.blendMode))
+            PropertyNavigationLink<BlendMode>(
+              .imgly.localized("ly_img_editor_sheet_layer_label_blend_mode"),
+              property: .key(.blendMode)
+            )
           }
         }
       }
-      if interactor.isAllowed(id, .toTop) {
+      if interactor.isAllowed(id, .toFront) {
         Section {
           EmptyView()
         } header: {

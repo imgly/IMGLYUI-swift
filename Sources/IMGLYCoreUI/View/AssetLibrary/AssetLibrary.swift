@@ -204,7 +204,8 @@ public extension AssetLibraryGroup<AssetPreview> {
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
   /// - Returns: The created `AssetLibraryGroup`.
-  static func upload(_ title: String, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
+  static func upload(_ title: LocalizedStringResource,
+                     @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
     self.init(title, content: content) { Preview.imageOrVideo }
   }
 
@@ -213,7 +214,7 @@ public extension AssetLibraryGroup<AssetPreview> {
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
   /// - Returns: The created `AssetLibraryGroup`.
-  static func image(_ title: String, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
+  static func image(_ title: LocalizedStringResource, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
     self.init(title, content: content) { Preview.imageOrVideo }
   }
 
@@ -222,7 +223,7 @@ public extension AssetLibraryGroup<AssetPreview> {
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
   /// - Returns: The created `AssetLibraryGroup`.
-  static func video(_ title: String, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
+  static func video(_ title: LocalizedStringResource, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
     self.init(title, content: content) { Preview.imageOrVideo }
   }
 
@@ -231,7 +232,7 @@ public extension AssetLibraryGroup<AssetPreview> {
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
   /// - Returns: The created `AssetLibraryGroup`.
-  static func shape(_ title: String, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
+  static func shape(_ title: LocalizedStringResource, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
     self.init(title, content: content) { Preview.shapeOrSticker }
   }
 
@@ -240,7 +241,8 @@ public extension AssetLibraryGroup<AssetPreview> {
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
   /// - Returns: The created `AssetLibraryGroup`.
-  static func sticker(_ title: String, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
+  static func sticker(_ title: LocalizedStringResource,
+                      @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
     self.init(title, content: content) { Preview.shapeOrSticker }
   }
 }
@@ -251,7 +253,7 @@ public extension AssetLibraryGroup<AudioPreview> {
   ///   - title: The displayed name of the group.
   ///   - content: The asset library content.
   /// - Returns: The created `AssetLibraryGroup`.
-  static func audio(_ title: String, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
+  static func audio(_ title: LocalizedStringResource, @AssetLibraryBuilder content: () -> AssetLibraryContent) -> Self {
     self.init(title, content: content) { Preview() }
   }
 }
@@ -264,7 +266,7 @@ public extension AssetLibraryGroup<TextPreview> {
   ///   - content: The asset library content.
   /// - Returns: The created `AssetLibraryGroup`.
   static func text(
-    _ title: String,
+    _ title: LocalizedStringResource,
     excludedPreviewSources: Set<String> = [],
     @AssetLibraryBuilder content: () -> AssetLibraryContent
   ) -> Self {

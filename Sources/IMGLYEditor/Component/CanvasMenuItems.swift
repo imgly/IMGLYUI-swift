@@ -48,8 +48,8 @@ public extension CanvasMenu.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/bringSelectionForward`` event is invoked.
-  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title "Bring
-  /// Forward" and icon ``IMGLY/bringForward`` is used.
+  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
+  /// `ly_img_editor_canvas_menu_button_bring_forward` and icon ``IMGLY/bringForward`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the selected design block is not
   /// the last reorderable child in the parent design block.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block can be
@@ -58,7 +58,11 @@ public extension CanvasMenu.Buttons {
   static func bringForward(
     action: @escaping CanvasMenu.Context.To<Void> = { $0.eventHandler.send(.bringSelectionForward) },
     @ViewBuilder label: @escaping CanvasMenu.Context.To<some View> = { _ in
-      Label { Text("Bring Forward") } icon: { Image.imgly.bringForward }
+      Label {
+        Text(.imgly.localized("ly_img_editor_canvas_menu_button_bring_forward"))
+      } icon: {
+        Image.imgly.bringForward
+      }
     },
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.siblings.last != $0.selection.block },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.canMove }
@@ -70,8 +74,8 @@ public extension CanvasMenu.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/sendSelectionBackward`` event is invoked.
-  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title "Send
-  /// Backward" and icon ``IMGLY/sendBackward`` is used.
+  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
+  /// `ly_img_editor_canvas_menu_button_send_backward` and icon ``IMGLY/sendBackward`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the selected design block is not
   /// the first reorderable child in the parent design block.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block can be
@@ -80,7 +84,11 @@ public extension CanvasMenu.Buttons {
   static func sendBackward(
     action: @escaping CanvasMenu.Context.To<Void> = { $0.eventHandler.send(.sendSelectionBackward) },
     @ViewBuilder label: @escaping CanvasMenu.Context.To<some View> = { _ in
-      Label { Text("Send Backward") } icon: { Image.imgly.sendBackward }
+      Label {
+        Text(.imgly.localized("ly_img_editor_canvas_menu_button_send_backward"))
+      } icon: {
+        Image.imgly.sendBackward
+      }
     },
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.siblings.first != $0.selection.block },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.canMove }
@@ -92,8 +100,8 @@ public extension CanvasMenu.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/duplicateSelection`` event is invoked.
-  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title
-  /// "Duplicate" and icon ``IMGLY/duplicate`` is used.
+  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
+  /// `ly_img_editor_canvas_menu_button_duplicate` and icon ``IMGLY/duplicate`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block's engine
   /// scope `"lifecycle/duplicate"` is allowed.
@@ -101,7 +109,11 @@ public extension CanvasMenu.Buttons {
   static func duplicate(
     action: @escaping CanvasMenu.Context.To<Void> = { $0.eventHandler.send(.duplicateSelection) },
     @ViewBuilder label: @escaping CanvasMenu.Context.To<some View> = { _ in
-      Label { Text("Duplicate") } icon: { Image.imgly.duplicate }
+      Label {
+        Text(.imgly.localized("ly_img_editor_canvas_menu_button_duplicate"))
+      } icon: {
+        Image.imgly.duplicate
+      }
     },
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { _ in true },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = {
@@ -115,8 +127,8 @@ public extension CanvasMenu.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/deleteSelection``
   /// event is invoked.
-  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title "Delete"
-  /// and icon ``IMGLY/delete`` is used.
+  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
+  /// `ly_img_editor_canvas_menu_button_delete` and icon ``IMGLY/delete`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block's engine
   /// scope `"lifecycle/destroy"` is allowed.
@@ -124,7 +136,11 @@ public extension CanvasMenu.Buttons {
   static func delete(
     action: @escaping CanvasMenu.Context.To<Void> = { $0.eventHandler.send(.deleteSelection) },
     @ViewBuilder label: @escaping CanvasMenu.Context.To<some View> = { _ in
-      Label { Text("Delete") } icon: { Image.imgly.delete }
+      Label {
+        Text(.imgly.localized("ly_img_editor_canvas_menu_button_delete"))
+      } icon: {
+        Image.imgly.delete
+      }
     },
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { _ in true },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = {
@@ -138,8 +154,9 @@ public extension CanvasMenu.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/selectGroupForSelection`` event is invoked.
-  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with title "Select
-  /// Group", icon ``IMGLY/selectGroup``, and style ``IMGLY/canvasMenu(_:)`` is used.
+  ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
+  /// `ly_img_editor_canvas_menu_button_select_group`, icon ``IMGLY/selectGroup``, and style ``IMGLY/canvasMenu(_:)`` is
+  /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block is part
   /// of a group.
@@ -147,8 +164,12 @@ public extension CanvasMenu.Buttons {
   static func selectGroup(
     action: @escaping CanvasMenu.Context.To<Void> = { $0.eventHandler.send(.selectGroupForSelection) },
     @ViewBuilder label: @escaping CanvasMenu.Context.To<some View> = { _ in
-      Label { Text("Select Group") } icon: { Image.imgly.selectGroup }
-        .labelStyle(.imgly.canvasMenu(.titleOnly))
+      Label {
+        Text(.imgly.localized("ly_img_editor_canvas_menu_button_select_group"))
+      } icon: {
+        Image.imgly.selectGroup
+      }
+      .labelStyle(.imgly.canvasMenu(.titleOnly))
     },
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { _ in true },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = { context in

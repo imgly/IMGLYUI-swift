@@ -11,10 +11,6 @@ struct SelectableAssetItem<Content: View>: View {
 
   @EnvironmentObject private var interactor: Interactor
 
-  private var localizedTitle: LocalizedStringKey {
-    .init(title)
-  }
-
   private var image: Image {
     if #available(iOS 17.0, *) {
       Image(systemName: "slider.horizontal.2.square")
@@ -31,7 +27,11 @@ struct SelectableAssetItem<Content: View>: View {
         .font(.largeTitle)
     }
     .onTapGesture {
-      let propertyState = AssetProperties(title: localizedTitle, backTitle: "Back", properties: properties)
+      let propertyState = AssetProperties(
+        title: title,
+        backTitle: .imgly.localized("ly_img_editor_sheet_button_back"),
+        properties: properties
+      )
       sheetState = .properties(propertyState)
       var detent = PresentationDetent.imgly.tiny
       var detents: Set<PresentationDetent> = [detent]
@@ -46,7 +46,7 @@ struct SelectableAssetItem<Content: View>: View {
   }
 
   var body: some View {
-    SelectableEffectItem(title: localizedTitle, selected: selected) {
+    SelectableEffectItem(title: title, selected: selected) {
       ZStack {
         content
         overlay

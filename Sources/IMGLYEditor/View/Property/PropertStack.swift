@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct PropertyStack<Content: View>: View {
-  let title: LocalizedStringKey
+  let title: LocalizedStringResource
   @ViewBuilder let content: () -> Content
 
-  init(_ title: LocalizedStringKey, @ViewBuilder content: @escaping () -> Content) {
+  init(_ title: LocalizedStringResource, @ViewBuilder content: @escaping () -> Content) {
     self.title = title
     self.content = content
   }

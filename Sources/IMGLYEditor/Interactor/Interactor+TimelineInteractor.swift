@@ -216,7 +216,8 @@ extension Interactor: TimelineInteractor {
       guard firstClipDuration >= timelineProperties.configuration.minClipDuration,
             secondClipDurationOrRemainingTotalDuration >= timelineProperties.configuration.minClipDuration else {
         handleError(
-          Error(errorDescription: "Can’t split because one of the clips would become too short.")
+          Error(errorDescription: String(localized: .imgly
+              .localized("ly_img_editor_timeline_error_split_short_duration")))
         )
         return
       }
@@ -257,7 +258,7 @@ extension Interactor: TimelineInteractor {
       }
     } else {
       handleError(
-        Error(errorDescription: "Please move the selected clip under the playhead")
+        Error(errorDescription: String(localized: .imgly.localized("ly_img_editor_timeline_error_split_out_of_range")))
       )
     }
   }
