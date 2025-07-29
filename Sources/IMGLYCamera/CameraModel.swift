@@ -77,8 +77,8 @@ final class CameraModel: ObservableObject {
   @Published private(set) var reactionVideoDuration: CMTime?
   @Published private(set) var hasVideoPermissions = false
   @Published private(set) var hasAudioPermissions = false
+  @Published private(set) var isLoadingAsset: Bool = false
   @Published var alertState: AlertState?
-  @Published var isLoadingAsset: Bool = false
 
   var hasRecordings: Bool {
     !recordingsManager.clips.isEmpty
@@ -86,6 +86,17 @@ final class CameraModel: ObservableObject {
 
   var isRecording: Bool {
     captureService.isRecording
+  }
+
+  var shouldShowCamera: Bool {
+    // If we're not in reaction mode, always show camera
+    guard case .reaction = cameraMode else {
+      return true
+    }
+
+    // If we're in reaction mode, only show camera if the reaction video finished loading
+    // reactionVideoDuration will be nil if loading failed or if there's no video
+    return !isLoadingAsset && reactionVideoDuration != nil
   }
 
   private var cancellables: Set<AnyCancellable> = []
@@ -144,16 +155,21 @@ final class CameraModel: ObservableObject {
     }
   }
 
-  func cancel() {
+  func cancel(error: CameraError? = nil) {
     cleanUp()
     do {
       try recordingsManager.deleteAll()
     } catch {
       handleCaptureError(error)
     }
-    // Inform the caller that the camera was possibly closed because of missing permissions.
-    let error = !hasVideoPermissions || !hasAudioPermissions ? CameraError.permissionsMissing : .cancelled
-    onDismiss(.failure(error))
+
+    if let error {
+      onDismiss(.failure(error))
+    } else {
+      // Inform the caller that the camera was possibly closed because of missing permissions.
+      let error = !hasVideoPermissions || !hasAudioPermissions ? CameraError.permissionsMissing : .cancelled
+      onDismiss(.failure(error))
+    }
   }
 
   // MARK: - Camera Capabilities
@@ -248,8 +264,10 @@ final class CameraModel: ObservableObject {
         let video = try await self?.interactor?.loadVideo(url: url)
         self?.reactionVideoDuration = video.map { CMTime(seconds: $0.duration) }
       } catch {
-        print(error)
-        self?.alertState = .failedToLoadAsset()
+        print("Failed to load reaction video from \(url): \(error)")
+        self?.alertState = .failedToLoadVideo {
+          self?.cancel(error: .failedToLoadVideo)
+        }
       }
     }
   }

@@ -1,15 +1,8 @@
 import IMGLYCore
 import SwiftUI
 
-@_spi(Internal) public struct AssetLibrarySourcesKey: EnvironmentKey {
-  @_spi(Internal) public static let defaultValue: [AssetLoader.SourceData] = []
-}
-
 @_spi(Internal) public extension EnvironmentValues {
-  var imglyAssetLibrarySources: AssetLibrarySourcesKey.Value {
-    get { self[AssetLibrarySourcesKey.self] }
-    set { self[AssetLibrarySourcesKey.self] = newValue }
-  }
+  @Entry var imglyAssetLibrarySources: [AssetLoader.SourceData] = []
 }
 
 /// The leaf nodes of hierarchical asset library content. It is used within an ``AssetLibraryBuilder`` context.

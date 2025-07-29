@@ -2,24 +2,9 @@ import IMGLYEngine
 import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
 
-struct CanvasMenuItemsKey: EnvironmentKey {
-  static let defaultValue: CanvasMenu.Items? = nil
-}
-
-struct CanvasMenuModificationsKey: EnvironmentKey {
-  static let defaultValue: CanvasMenu.Modifications? = nil
-}
-
 @_spi(Internal) public extension EnvironmentValues {
-  var imglyCanvasMenuItems: CanvasMenu.Items? {
-    get { self[CanvasMenuItemsKey.self] }
-    set { self[CanvasMenuItemsKey.self] = newValue }
-  }
-
-  var imglyCanvasMenuModifications: CanvasMenu.Modifications? {
-    get { self[CanvasMenuModificationsKey.self] }
-    set { self[CanvasMenuModificationsKey.self] = newValue }
-  }
+  @Entry var imglyCanvasMenuItems: CanvasMenu.Items?
+  @Entry var imglyCanvasMenuModifications: CanvasMenu.Modifications?
 }
 
 /// A namespace for the canvas menu component.

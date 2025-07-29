@@ -79,15 +79,8 @@ private struct TabContent<Content: View>: View {
   }
 }
 
-struct AssetLibraryTitleDisplayModeKey: EnvironmentKey {
-  static let defaultValue: NavigationBarItem.TitleDisplayMode = .automatic
-}
-
 extension EnvironmentValues {
-  var imglyAssetLibraryTitleDisplayMode: NavigationBarItem.TitleDisplayMode {
-    get { self[AssetLibraryTitleDisplayModeKey.self] }
-    set { self[AssetLibraryTitleDisplayModeKey.self] = newValue }
-  }
+  @Entry var imglyAssetLibraryTitleDisplayMode = NavigationBarItem.TitleDisplayMode.automatic
 }
 
 struct AssetLibraryTabView_Previews: PreviewProvider {

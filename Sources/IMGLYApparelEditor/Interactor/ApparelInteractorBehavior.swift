@@ -7,7 +7,6 @@ import SwiftUI
 final class ApparelInteractorBehavior: InteractorBehavior {
   var historyResetOnPageChange: HistoryResetBehavior { .always }
   var deselectOnPageChange: Bool { true }
-  var previewMode: PreviewMode { .fixed }
 
   private func pageSetup(_ context: InteractorContext) throws {
     try context.engine.block.overrideAndRestore(

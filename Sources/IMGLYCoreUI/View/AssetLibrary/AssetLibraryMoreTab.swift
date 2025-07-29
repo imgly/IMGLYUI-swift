@@ -55,15 +55,8 @@ private struct MoreList<Content: View>: View {
   }
 }
 
-struct AssetLibraryMoreTabKey: EnvironmentKey {
-  static let defaultValue: Bool = false
-}
-
 extension EnvironmentValues {
-  var imglyIsAssetLibraryMoreTab: Bool {
-    get { self[AssetLibraryMoreTabKey.self] }
-    set { self[AssetLibraryMoreTabKey.self] = newValue }
-  }
+  @Entry var imglyIsAssetLibraryMoreTab = false
 }
 
 struct AssetLibraryMoreTab_Previews: PreviewProvider {

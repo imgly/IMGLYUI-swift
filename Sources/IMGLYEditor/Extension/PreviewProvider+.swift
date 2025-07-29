@@ -36,7 +36,12 @@ private struct EditorPreview: View {
   @StateObject private var interactor: Interactor
 
   init(_ config: EngineConfiguration, sheet: SheetState?) {
-    _interactor = .init(wrappedValue: Interactor(config: config, behavior: .default, sheet: sheet))
+    _interactor = .init(wrappedValue: Interactor(
+      config: config,
+      behavior: .default,
+      assetLibrary: DefaultAssetLibrary(),
+      sheet: sheet
+    ))
   }
 
   var body: some View {

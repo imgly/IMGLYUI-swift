@@ -45,6 +45,7 @@ import SwiftUI
   @Published var isCloseConfirmationAlertPresented = false
   var export = ExportSheetState()
   var dismiss: DismissAction?
+  var assetLibrary: any AssetLibrary
 
   typealias BlockID = IMGLYEngine.DesignBlockID
   typealias BlockType = IMGLYEngine.DesignBlockType
@@ -104,7 +105,7 @@ import SwiftUI
   }
 
   var isCanvasHitTestingEnabled: Bool {
-    behavior.previewMode == .scrollable || !isPreviewMode
+    !isPreviewMode
   }
 
   var sceneMode: SceneMode? {
@@ -198,15 +199,22 @@ import SwiftUI
 
   // MARK: - Life cycle
 
-  init(config: EngineConfiguration, behavior: InteractorBehavior, dismiss: DismissAction) {
+  init(
+    config: EngineConfiguration,
+    behavior: InteractorBehavior,
+    dismiss: DismissAction,
+    assetLibrary: any AssetLibrary
+  ) {
     self.config = config
     self.behavior = behavior
     self.dismiss = dismiss
+    self.assetLibrary = assetLibrary
   }
 
-  init(config: EngineConfiguration, behavior: InteractorBehavior, sheet: SheetState?) {
+  init(config: EngineConfiguration, behavior: InteractorBehavior, assetLibrary: any AssetLibrary, sheet: SheetState?) {
     self.config = config
     self.behavior = behavior
+    self.assetLibrary = assetLibrary
     if let sheet {
       _sheet = .init(initialValue: sheet)
     }
@@ -221,6 +229,7 @@ import SwiftUI
     zoomLevelTask?.cancel()
     historyTask?.cancel()
     pageTask?.cancel()
+    onLoadedTask?.cancel()
     blockTasks.forEach { $0.value.cancel() }
     blockTasks.removeAll()
   }
@@ -232,6 +241,7 @@ import SwiftUI
     zoomLevelTask = observeZoomLevel()
     historyTask = observeHistory()
     pageTask = observePage()
+    onLoadedTask?.cancel()
     keyboardPublisher.assign(to: &$isKeyboardPresented)
   }
 
@@ -252,6 +262,7 @@ import SwiftUI
     zoomLevelTask?.cancel()
     historyTask?.cancel()
     pageTask?.cancel()
+    onLoadedTask?.cancel()
     _engine = nil
     timelineProperties.timeline = nil
     timelineProperties.thumbnailsManager.destroyProviders()
@@ -278,6 +289,7 @@ import SwiftUI
   private var zoomLevelTask: Task<Void, Never>?
   private var historyTask: Task<Void, Never>?
   private var pageTask: Task<Void, Never>?
+  private var onLoadedTask: Task<Void, Never>?
   var blockTasks = [BlockID: Task<Void, Never>]()
 }
 
@@ -1166,6 +1178,30 @@ extension Interactor {
     }
   }
 
+  private func onLoaded() {
+    guard onLoadedTask == nil else {
+      return
+    }
+    isCreating = false
+
+    onLoadedTask = Task {
+      do {
+        // Add a small delay to prevent collisions with isCreating
+        // in case the UI is updating simultaneously, e.g. when presenting a
+        // large sheet.
+        try await Task.sleep(for: .milliseconds(100))
+
+        if let engine {
+          try await config.callbacks.onLoaded(.init(engine: engine, eventHandler: self, assetLibrary: assetLibrary))
+        } else {
+          throw Error(errorDescription: "Engine not initialized. Failed to execute `.imgly.onLoaded` callback.")
+        }
+      } catch {
+        handleError(error)
+      }
+    }
+  }
+
   func cancelExport() {
     exportTask?.cancel()
   }
@@ -1285,7 +1321,7 @@ extension Interactor {
           // Wait a moment to be sure that the engine rendered the first intended frame after initial zooming before
           // presenting the canvas even on low-end devices (iPhone X).
           try await Task.sleep(for: .milliseconds(100))
-          isCreating = false
+          onLoaded()
         }
       } catch {
         handleError(error)
@@ -1439,11 +1475,6 @@ extension Interactor {
   }
 
   func enablePreviewMode() throws {
-    // Workaround as long as roles are present:
-    // Currently, the global scopes only apply to the "Creator" role so we
-    // temporarly switch to the "Creator" role to prevent selection of blocks.
-    try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .deny)
-    try engine?.editor.setRoleButPreserveGlobalScopes("Creator")
     // Call engine?.enablePreviewMode() in updateZoom to avoid page fill flickering.
     viewMode = .preview
     sheet.isPresented = false
@@ -1452,11 +1483,6 @@ extension Interactor {
 
   func enableEditMode() throws {
     if viewMode == .preview {
-      // Workaround as long as roles are present:
-      // Currently, the global scopes only apply to the "Creator" role so we
-      // temporarly switch to the "Creator" role to prevent selection of blocks.
-      try engine?.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .defer)
-      try engine?.editor.setRoleButPreserveGlobalScopes("Adopter")
       try getContext(behavior.enableEditMode)
     }
     viewMode = .edit
@@ -1501,7 +1527,7 @@ extension Interactor {
         return
       }
       do {
-        try await behavior.exportScene(.init(engine, self))
+        try await config.callbacks.onExport(engine, self)
       } catch is CancellationError {
         hideExportSheet()
       } catch {

@@ -180,10 +180,31 @@ public enum OnError {
   }
 }
 
+/// A namespace for `onLoaded` callbacks.
+public enum OnLoaded {
+  /// The callback type.
+  public typealias Callback = @Sendable @MainActor (_ context: OnLoaded.Context) async throws
+    -> Void
+
+  /// The default empty callback.
+  public static let `default`: Callback = { _ in }
+
+  /// The context of the ``OnLoaded/Callback``.
+  public struct Context {
+    /// The engine of the current editor.
+    public let engine: Engine
+    /// The event handler of the current editor.
+    public let eventHandler: EditorEventHandler
+    /// The asset library configured with the ``IMGLY/assetLibrary(_:)`` view modifier.
+    public let assetLibrary: any AssetLibrary
+  }
+}
+
 // MARK: - Internal interface
 
 @_spi(Internal) public struct EngineCallbacks: Sendable {
   @_spi(Internal) public let onCreate: OnCreate.Callback
+  let onLoaded: OnLoaded.Callback
   let onExport: OnExport.Callback
   let onUpload: OnUpload.Callback
   let onClose: OnClose.Callback
@@ -191,12 +212,14 @@ public enum OnError {
 
   init(
     onCreate: @escaping OnCreate.Callback = OnCreate.default,
+    onLoaded: @escaping OnLoaded.Callback = OnLoaded.default,
     onExport: @escaping OnExport.Callback = OnExport.default,
     onUpload: @escaping OnUpload.Callback = OnUpload.default,
     onClose: @escaping OnClose.Callback = OnClose.default,
     onError: @escaping OnError.Callback = OnError.default
   ) {
     self.onCreate = onCreate
+    self.onLoaded = onLoaded
     self.onExport = onExport
     self.onUpload = onUpload
     self.onClose = onClose

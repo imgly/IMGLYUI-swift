@@ -6,7 +6,6 @@ import SwiftUI
 final class PostcardInteractorBehavior: InteractorBehavior {
   var historyResetOnPageChange: HistoryResetBehavior { .always }
   var deselectOnPageChange: Bool { true }
-  var previewMode: PreviewMode { .fixed }
 
   func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws {
     try await DefaultInteractorBehavior.default.loadScene(context, with: insets)

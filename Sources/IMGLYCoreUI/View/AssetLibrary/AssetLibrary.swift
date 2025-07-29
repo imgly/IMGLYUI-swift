@@ -5,17 +5,9 @@ import SwiftUI
 @available(*, deprecated, message: "Use `IMGLYEngine.SceneMode` instead.")
 public typealias AssetLibrarySceneMode = SceneMode
 
-/// An `EnvironmentKey` for `SceneMode` used by the ``AssetLibrary``.
-@_spi(Internal) public struct AssetLibrarySceneModeKey: EnvironmentKey {
-  @_spi(Internal) public static let defaultValue: SceneMode? = nil
-}
-
 @_spi(Internal) public extension EnvironmentValues {
   /// The asset library scene mode.
-  var imglyAssetLibrarySceneMode: AssetLibrarySceneModeKey.Value {
-    get { self[AssetLibrarySceneModeKey.self] }
-    set { self[AssetLibrarySceneModeKey.self] = newValue }
-  }
+  @Entry var imglyAssetLibrarySceneMode: SceneMode?
 }
 
 /// A helper view that reads the `SceneMode` used by the ``AssetLibrary`` from the environment and provides access to

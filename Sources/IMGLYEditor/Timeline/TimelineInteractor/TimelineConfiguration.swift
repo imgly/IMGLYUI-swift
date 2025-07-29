@@ -4,15 +4,8 @@ import Foundation
 @_spi(Internal) import IMGLYCore
 import SwiftUI
 
-struct TimelineConfigurationKey: EnvironmentKey {
-  static let defaultValue = TimelineConfiguration()
-}
-
 extension EnvironmentValues {
-  var imglyTimelineConfiguration: TimelineConfiguration {
-    get { self[TimelineConfigurationKey.self] }
-    set { self[TimelineConfigurationKey.self] = newValue }
-  }
+  @Entry var imglyTimelineConfiguration = TimelineConfiguration()
 }
 
 /// Configure the appearance and behavior of the timeline.

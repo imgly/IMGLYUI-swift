@@ -14,6 +14,7 @@ public struct AssetPreview: View {
   }
 
   @MainActor
+  // swiftlint:disable:next cyclomatic_complexity
   @ViewBuilder func item(_ assetItem: AssetItem) -> some View {
     if case let .asset(asset) = assetItem {
       // If not set assume the default engine value.
@@ -33,6 +34,8 @@ public struct AssetPreview: View {
         case FillType.image.rawValue:
           if designBlockKind == BlockKind.key(.sticker).rawValue {
             StickerItem(asset: assetItem)
+          } else if designBlockKind == BlockKind.key(.shape).rawValue {
+            ShapeItem(asset: assetItem)
           } else {
             ImageItem(asset: assetItem)
           }

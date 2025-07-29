@@ -219,22 +219,80 @@ public struct DefaultAssetLibrary: AssetLibrary {
 
   /// The default shape asset library content.
   @AssetLibraryBuilder public static var shapes: AssetLibraryContent {
-    AssetLibrarySource.shape(.title(.imgly.localized("ly_img_editor_asset_library_section_basic")), source: .init(
-      defaultSource: .vectorPath, config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/vectorpaths"])))
-    AssetLibrarySource.shape(.title(.imgly.localized("ly_img_editor_asset_library_section_abstract")), source: .init(
-      defaultSource: .vectorPath, config: .init(groups: ["//ly.img.cesdk.vectorpaths.abstract/category/abstract"])))
+    AssetLibrarySource.shape(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_filled")),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/filled"]))
+    )
+    AssetLibrarySource.shape(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_outline")),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/outline"]))
+    )
+    AssetLibrarySource.shape(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_gradient")),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/gradient"]))
+    )
+    AssetLibrarySource.shape(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_image")),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/image"]))
+    )
+    AssetLibrarySource.shape(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_filled")),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-filled"]))
+    )
+    AssetLibrarySource.shape(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_outline")),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-outline"]))
+    )
+    AssetLibrarySource.shape(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_gradient")),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-gradient"]))
+    )
+    AssetLibrarySource.shape(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_image")),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-image"]))
+    )
   }
 
   /// The default sticker asset library content.
   @AssetLibraryBuilder public static var stickers: AssetLibraryContent {
-    AssetLibrarySource.sticker(.title(.imgly.localized("ly_img_editor_asset_library_section_doodle")), source: .init(
-      defaultSource: .sticker, config: .init(groups: ["//ly.img.cesdk.stickers.doodle/category/doodle"])))
-    AssetLibrarySource.sticker(.title(.imgly.localized("ly_img_editor_asset_library_section_emoji")), source: .init(
-      defaultSource: .sticker, config: .init(groups: ["//ly.img.cesdk.stickers.emoji/category/emoji"])))
-    AssetLibrarySource.sticker(.title(.imgly.localized("ly_img_editor_asset_library_section_emoticons")), source: .init(
-      defaultSource: .sticker, config: .init(groups: ["//ly.img.cesdk.stickers.emoticons/category/emoticons"])))
-    AssetLibrarySource.sticker(.title(.imgly.localized("ly_img_editor_asset_library_section_hand")), source: .init(
-      defaultSource: .sticker, config: .init(groups: ["//ly.img.cesdk.stickers.hand/category/hand"])))
+    AssetLibrarySource.sticker(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_emoji")),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.emoji/category/emoji"]))
+    )
+    AssetLibrarySource.sticker(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_emoticons")),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.emoticons/category/emoticons"]))
+    )
+    AssetLibrarySource.sticker(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_craft")),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.craft/category/craft"]))
+    )
+    AssetLibrarySource.sticker(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_3d_stickers")),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.3Dstickers/category/3Dstickers"]))
+    )
+    AssetLibrarySource.sticker(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_hand")),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.hand/category/hand"]))
+    )
+    AssetLibrarySource.sticker(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_doodle")),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.doodle/category/doodle"]))
+    )
   }
 
   func tabContent(_ sceneMode: SceneMode?, _ tab: Tab) -> AssetLibraryContent {

@@ -57,6 +57,19 @@ public extension IMGLY where Wrapped: View {
     wrapped.environment(\.imglyOnUpload, onUpload)
   }
 
+  /// Sets the callback that is invoked when the editor has been created and finished loading.
+  /// The callback receives the ``OnLoaded/Context`` which includes the engine, the event handler
+  /// as well as the asset library. It is intended for presenting custom UI components or managing custom
+  /// engine subscriptions. By default, an empty callback is executed.
+  /// - Important: If you perform asynchronous work within the callback, prefer using a `TaskGroup`, which the editor
+  ///              will automatically cancel when it is closed. If you use individual `Task`s instead, you must manually
+  ///              cancel them when the editor closes to avoid memory leaks.
+  /// - Parameter onLoaded: The callback.
+  /// - Returns: A view that has the given callback set.
+  func onLoaded(_ onLoaded: @escaping OnLoaded.Callback) -> some View {
+    wrapped.environment(\.imglyOnLoaded, onLoaded)
+  }
+
   /// Sets the asset library UI definition used by the editor. By default, the predefined ``DefaultAssetLibrary`` is
   /// used. To use custom asset sources in the asset library UI, the custom asset source must be first added to the
   /// engine. In addition to creating or loading a scene, registering the asset sources should be done in the

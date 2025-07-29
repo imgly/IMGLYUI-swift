@@ -11,8 +11,6 @@ struct ShapeItem: View {
       ReloadableAsyncImage(asset: asset) { image in
         image
           .resizable()
-          .renderingMode(.template)
-          .foregroundColor(.primary)
           .aspectRatio(contentMode: .fit)
           .aspectRatio(1, contentMode: .fit)
           .padding(8)

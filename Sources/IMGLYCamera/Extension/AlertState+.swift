@@ -48,9 +48,12 @@ extension AlertState {
     )
   }
 
-  static func failedToLoadAsset() -> Self {
+  static func failedToLoadVideo(cancel: @escaping () -> Void) -> Self {
     AlertState(title: .imgly.localized("ly_img_camera_dialog_video_error_title"), buttons: [
-      .init(title: .imgly.localized("ly_img_camera_dialog_video_error_button_dismiss"), action: {}),
+      .init(
+        title: .imgly.localized("ly_img_camera_dialog_video_error_button_dismiss"),
+        action: cancel
+      ),
     ])
   }
 }

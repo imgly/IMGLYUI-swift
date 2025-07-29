@@ -75,15 +75,8 @@ import SwiftUI
   }
 }
 
-struct AssetLibrarySeeAllKey: EnvironmentKey {
-  static let defaultValue: SeeAll? = nil
-}
-
 extension EnvironmentValues {
-  var imglySeeAllView: SeeAll? {
-    get { self[AssetLibrarySeeAllKey.self] }
-    set { self[AssetLibrarySeeAllKey.self] = newValue }
-  }
+  @Entry var imglySeeAllView: SeeAll?
 }
 
 @MainActor
@@ -111,15 +104,8 @@ struct SeeAll: View {
   }
 }
 
-struct AssetLibraryDismissButtonKey: EnvironmentKey {
-  static let defaultValue: DismissButton? = nil
-}
-
 extension EnvironmentValues {
-  var imglyDismissButtonView: DismissButton? {
-    get { self[AssetLibraryDismissButtonKey.self] }
-    set { self[AssetLibraryDismissButtonKey.self] = newValue }
-  }
+  @Entry var imglyDismissButtonView: DismissButton?
 }
 
 @MainActor

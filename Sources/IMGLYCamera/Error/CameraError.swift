@@ -4,6 +4,7 @@ import Foundation
 public enum CameraError: Error {
   case cancelled
   case permissionsMissing
+  case failedToLoadVideo
 }
 
 extension CameraError: LocalizedError {
@@ -13,6 +14,8 @@ extension CameraError: LocalizedError {
       "The user has cancelled the camera."
     case .permissionsMissing:
       "The user has denied camera or microphone access."
+    case .failedToLoadVideo:
+      "Failed to load the reaction video."
     }
   }
 }

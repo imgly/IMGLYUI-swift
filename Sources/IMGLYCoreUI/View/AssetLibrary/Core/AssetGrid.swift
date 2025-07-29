@@ -1,124 +1,30 @@
 import SwiftUI
 
-struct AssetGridAxisKey: EnvironmentKey {
-  static let defaultValue = Axis.vertical
-}
-
-struct AssetGridItemsKey: EnvironmentKey {
-  static let defaultValue = [GridItem(.flexible())]
-}
-
-struct AssetGridSpacingKey: EnvironmentKey {
-  static let defaultValue: CGFloat? = nil
-}
-
-struct AssetGridEdgesKey: EnvironmentKey {
-  static let defaultValue: Edge.Set = .all
-}
-
-struct AssetGridPaddingKey: EnvironmentKey {
-  static let defaultValue: CGFloat? = nil
-}
-
-struct AssetGridMessageTextOnlyKey: EnvironmentKey {
-  static let defaultValue = false
-}
-
-struct AssetGridMaxItemCountKey: EnvironmentKey {
-  static let defaultValue = Int.max
-}
-
 @_spi(Internal) public typealias AssetGridPlaceholderCount = @Sendable @MainActor (
   _ state: AssetLoader.Models.State,
   _ maxItemCount: Int
 ) -> Int
 
-struct AssetGridPlaceholderCountKey: EnvironmentKey {
-  static let defaultValue: AssetGridPlaceholderCount = { state, maxItemCount in
-    state == .loading ? min(20, maxItemCount) : 0
-  }
-}
-
-struct AssetGridSourcePaddingKey: EnvironmentKey {
-  static let defaultValue: CGFloat = 0
-}
-
 @_spi(Internal) public typealias AssetGridItemIndex = @Sendable @MainActor (_ asset: AssetLoader.Asset) -> AnyHashable?
-
-struct AssetGridItemIndexKey: EnvironmentKey {
-  static let defaultValue: AssetGridItemIndex = { _ in nil }
-}
 
 @_spi(Internal) public typealias AssetGridOnAppear = @Sendable @MainActor (ScrollViewProxy) -> Void
 
-struct AssetGridOnAppearKey: EnvironmentKey {
-  static let defaultValue: AssetGridOnAppear = { _ in }
-}
-
-struct AssetGridExcludedSourcesKey: EnvironmentKey {
-  static let defaultValue = Set<String>()
-}
-
 extension EnvironmentValues {
-  var imglyAssetGridAxis: AssetGridAxisKey.Value {
-    get { self[AssetGridAxisKey.self] }
-    set { self[AssetGridAxisKey.self] = newValue }
+  @Entry var imglyAssetGridAxis = Axis.vertical
+  @Entry var imglyAssetGridItems = [GridItem(.flexible())]
+  @Entry var imglyAssetGridSpacing: CGFloat?
+  @Entry var imglyAssetGridEdges = Edge.Set.all
+  @Entry var imglyAssetGridPadding: CGFloat?
+  @Entry var imglyAssetGridMessageTextOnly = false
+  @Entry var imglyAssetGridMaxItemCount = Int.max
+  @Entry var imglyAssetGridPlaceholderCount: AssetGridPlaceholderCount = { state, maxItemCount in
+    state == .loading ? min(20, maxItemCount) : 0
   }
 
-  var imglyAssetGridItems: AssetGridItemsKey.Value {
-    get { self[AssetGridItemsKey.self] }
-    set { self[AssetGridItemsKey.self] = newValue }
-  }
-
-  var imglyAssetGridSpacing: AssetGridSpacingKey.Value {
-    get { self[AssetGridSpacingKey.self] }
-    set { self[AssetGridSpacingKey.self] = newValue }
-  }
-
-  var imglyAssetGridEdges: AssetGridEdgesKey.Value {
-    get { self[AssetGridEdgesKey.self] }
-    set { self[AssetGridEdgesKey.self] = newValue }
-  }
-
-  var imglyAssetGridPadding: AssetGridPaddingKey.Value {
-    get { self[AssetGridPaddingKey.self] }
-    set { self[AssetGridPaddingKey.self] = newValue }
-  }
-
-  var imglyAssetGridMessageTextOnly: AssetGridMessageTextOnlyKey.Value {
-    get { self[AssetGridMessageTextOnlyKey.self] }
-    set { self[AssetGridMessageTextOnlyKey.self] = newValue }
-  }
-
-  var imglyAssetGridMaxItemCount: AssetGridMaxItemCountKey.Value {
-    get { self[AssetGridMaxItemCountKey.self] }
-    set { self[AssetGridMaxItemCountKey.self] = newValue }
-  }
-
-  var imglyAssetGridPlaceholderCount: AssetGridPlaceholderCountKey.Value {
-    get { self[AssetGridPlaceholderCountKey.self] }
-    set { self[AssetGridPlaceholderCountKey.self] = newValue }
-  }
-
-  var imglyAssetGridSourcePadding: AssetGridSourcePaddingKey.Value {
-    get { self[AssetGridSourcePaddingKey.self] }
-    set { self[AssetGridSourcePaddingKey.self] = newValue }
-  }
-
-  var imglyAssetGridItemIndex: AssetGridItemIndexKey.Value {
-    get { self[AssetGridItemIndexKey.self] }
-    set { self[AssetGridItemIndexKey.self] = newValue }
-  }
-
-  var imglyAssetGridOnAppear: AssetGridOnAppearKey.Value {
-    get { self[AssetGridOnAppearKey.self] }
-    set { self[AssetGridOnAppearKey.self] = newValue }
-  }
-
-  var imglyAssetGridExcludedSources: AssetGridExcludedSourcesKey.Value {
-    get { self[AssetGridExcludedSourcesKey.self] }
-    set { self[AssetGridExcludedSourcesKey.self] = newValue }
-  }
+  @Entry var imglyAssetGridSourcePadding: CGFloat = 0
+  @Entry var imglyAssetGridItemIndex: AssetGridItemIndex = { _ in nil }
+  @Entry var imglyAssetGridOnAppear: AssetGridOnAppear = { _ in }
+  @Entry var imglyAssetGridExcludedSources = Set<String>()
 }
 
 @_spi(Internal) public struct AssetGrid<Item: View, Empty: View, First: View, More: View>: View {

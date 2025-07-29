@@ -24,13 +24,6 @@ struct TimelineView: View {
   }
 }
 
-struct TimelineViewportWidthConfigurationKey: EnvironmentKey {
-  static let defaultValue: CGFloat = 0
-}
-
 extension EnvironmentValues {
-  var imglyViewportWidth: CGFloat {
-    get { self[TimelineViewportWidthConfigurationKey.self] }
-    set { self[TimelineViewportWidthConfigurationKey.self] = newValue }
-  }
+  @Entry var imglyViewportWidth: CGFloat = 0
 }

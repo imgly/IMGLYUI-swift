@@ -1,54 +1,16 @@
 import IMGLYEngine
 import SwiftUI
 
-struct DockItemsKey: EnvironmentKey {
-  static let defaultValue: Dock.Items? = nil
-}
-
-struct DockModificationsKey: EnvironmentKey {
-  static let defaultValue: Dock.Modifications? = nil
-}
-
-struct DockAlignmentKey: EnvironmentKey {
-  static let defaultValue: Dock.Alignment = { _ in .center }
-}
-
-struct DockBackgroundColorKey: EnvironmentKey {
-  static let defaultValue: Dock.BackgroundColor = { _, colorScheme in colorScheme == .dark
+@_spi(Internal) public extension EnvironmentValues {
+  @Entry var imglyDockItems: Dock.Items?
+  @Entry var imglyDockModifications: Dock.Modifications?
+  @Entry var imglyDockItemAlignment: Dock.Alignment = { _ in .center }
+  @Entry var imglyDockBackgroundColor: Dock.BackgroundColor = { _, colorScheme in colorScheme == .dark
     ? Color(uiColor: .systemBackground)
     : Color(uiColor: .secondarySystemBackground)
   }
-}
 
-struct DockScrollDisabledKey: EnvironmentKey {
-  static let defaultValue: Dock.ScrollDisabled = { _ in false }
-}
-
-@_spi(Internal) public extension EnvironmentValues {
-  var imglyDockItems: Dock.Items? {
-    get { self[DockItemsKey.self] }
-    set { self[DockItemsKey.self] = newValue }
-  }
-
-  var imglyDockModifications: Dock.Modifications? {
-    get { self[DockModificationsKey.self] }
-    set { self[DockModificationsKey.self] = newValue }
-  }
-
-  var imglyDockItemAlignment: Dock.Alignment {
-    get { self[DockAlignmentKey.self] }
-    set { self[DockAlignmentKey.self] = newValue }
-  }
-
-  var imglyDockBackgroundColor: Dock.BackgroundColor {
-    get { self[DockBackgroundColorKey.self] }
-    set { self[DockBackgroundColorKey.self] = newValue }
-  }
-
-  var imglyDockScrollDisabled: Dock.ScrollDisabled {
-    get { self[DockScrollDisabledKey.self] }
-    set { self[DockScrollDisabledKey.self] = newValue }
-  }
+  @Entry var imglyDockScrollDisabled: Dock.ScrollDisabled = { _ in false }
 }
 
 /// A namespace for the dock component.

@@ -1,14 +1,7 @@
 import SwiftUI
 
-private struct PageNavigationEnabledKey: EnvironmentKey {
-  static let defaultValue: Bool = false
-}
-
 extension EnvironmentValues {
-  var imglyIsPageNavigationEnabled: Bool {
-    get { self[PageNavigationEnabledKey.self] }
-    set { self[PageNavigationEnabledKey.self] = newValue }
-  }
+  @Entry var imglyIsPageNavigationEnabled = false
 }
 
 struct PageNavigationLabel: View {

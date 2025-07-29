@@ -218,7 +218,7 @@ public struct Camera: View {
         CameraCanvasView(interactor: interactor)
           .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
           .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
-          .opacity(camera.isLoadingAsset ? 0 : 1)
+          .opacity(camera.shouldShowCamera ? 1 : 0)
           .overlay {
             if camera.isLoadingAsset {
               ProgressView()

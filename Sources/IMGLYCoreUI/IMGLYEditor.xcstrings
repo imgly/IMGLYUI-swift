@@ -375,7 +375,24 @@
         }
       }
     },
-    "ly_img_editor_asset_library_section_abstract" : {
+    "ly_img_editor_asset_library_section_3d_stickers" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3D Grain"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3D Grain"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_abstract_filled" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -388,6 +405,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abstract"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_abstract_gradient" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abstrakter Verlauf"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abstract Gradient"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_abstract_image" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abstraktes Bild"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abstract Image"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_abstract_outline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abstrakte Kontur"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abstract Outline"
           }
         }
       }
@@ -426,19 +494,19 @@
         }
       }
     },
-    "ly_img_editor_asset_library_section_basic" : {
+    "ly_img_editor_asset_library_section_craft" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Basis"
+            "value" : "Bastel"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Basic"
+            "value" : "Craft"
           }
         }
       }
@@ -483,13 +551,30 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Emoticons"
+            "value" : "Emoticon"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Emoticons"
+            "value" : "Emoticon"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_filled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gefüllt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filled"
           }
         }
       }
@@ -511,19 +596,53 @@
         }
       }
     },
+    "ly_img_editor_asset_library_section_gradient" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verlauf"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gradient"
+          }
+        }
+      }
+    },
     "ly_img_editor_asset_library_section_hand" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hand"
+            "value" : "Hände"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hand"
+            "value" : "Hands"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_image" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bild"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image"
           }
         }
       }
@@ -562,6 +681,40 @@
         }
       }
     },
+    "ly_img_editor_asset_library_section_marker" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marker"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Markers"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_outline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontur"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outline"
+          }
+        }
+      }
+    },
     "ly_img_editor_asset_library_section_plain_text" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -592,6 +745,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Shapes"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_sketches" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skizzen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sketches"
           }
         }
       }

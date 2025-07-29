@@ -1,24 +1,9 @@
 import IMGLYEngine
 import SwiftUI
 
-struct InspectorBarItemsKey: EnvironmentKey {
-  static let defaultValue: InspectorBar.Items? = nil
-}
-
-struct InspectorBarModificationsKey: EnvironmentKey {
-  static let defaultValue: InspectorBar.Modifications? = nil
-}
-
 @_spi(Internal) public extension EnvironmentValues {
-  var imglyInspectorBarItems: InspectorBar.Items? {
-    get { self[InspectorBarItemsKey.self] }
-    set { self[InspectorBarItemsKey.self] = newValue }
-  }
-
-  var imglyInspectorBarModifications: InspectorBar.Modifications? {
-    get { self[InspectorBarModificationsKey.self] }
-    set { self[InspectorBarModificationsKey.self] = newValue }
-  }
+  @Entry var imglyInspectorBarItems: InspectorBar.Items?
+  @Entry var imglyInspectorBarModifications: InspectorBar.Modifications?
 }
 
 /// A namespace for the inspector bar component.

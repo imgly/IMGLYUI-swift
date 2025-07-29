@@ -14,20 +14,13 @@ import SwiftUI
   }
 }
 
-@_spi(Internal) public enum PreviewMode {
-  case fixed
-  case scrollable
-}
-
 @MainActor
 @_spi(Internal) public protocol InteractorBehavior: Sendable {
   var historyResetOnPageChange: HistoryResetBehavior { get }
   var deselectOnPageChange: Bool { get }
-  var previewMode: PreviewMode { get }
   var unselectedPageCrop: Bool { get }
 
   func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws
-  func exportScene(_ context: InteractorContext) async throws
   func enableEditMode(_ context: InteractorContext) throws
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws
   func isGestureActive(_ context: InteractorContext, _ started: Bool) throws
@@ -40,7 +33,6 @@ import SwiftUI
 @_spi(Internal) public extension InteractorBehavior {
   var historyResetOnPageChange: HistoryResetBehavior { .ifNeeded }
   var deselectOnPageChange: Bool { false }
-  var previewMode: PreviewMode { .scrollable }
   var unselectedPageCrop: Bool { false }
 
   func loadSettings(_ context: InteractorContext) throws {
@@ -125,53 +117,16 @@ import SwiftUI
     try context.engine.showAllPages(layout: context.interactor.verticalSizeClass == .compact ? .horizontal : .vertical)
   }
 
-  func exportScene(_ context: InteractorContext) async throws {
-    try await context.interactor.config.callbacks.onExport(context.engine, context.interactor)
-  }
-
   func enableEditMode(_ context: InteractorContext) throws {
     try context.engine.showPage(context.interactor.page)
   }
 
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws {
-    try await enableScrollableCameraClamping(context, insets)
+    try disableCameraClamping(context)
     try showAllPages(context)
     try context.engine.block.deselectAll()
     let pageID = try context.engine.getPage(context.interactor.page)
     try await context.engine.zoomToBlock(pageID, with: insets)
-  }
-
-  private func enableScrollableCameraClamping(_ context: InteractorContext, _ insets: EdgeInsets?) async throws {
-    var updatedInsets = insets ?? .init()
-    updatedInsets.leading += context.interactor.zoomModel.padding
-    updatedInsets.trailing += context.interactor.zoomModel.padding
-    updatedInsets.top += context.interactor.zoomModel.padding
-    updatedInsets.bottom += context.interactor.zoomModel.padding
-
-    let paddingLeft = Float(updatedInsets.leading)
-    let paddingRight = Float(updatedInsets.trailing)
-    let paddingTop = Float(updatedInsets.top)
-    let paddingBottom = Float(updatedInsets.bottom)
-    let margin = Float(context.interactor.zoomModel.defaultPadding + context.interactor.zoomModel.padding)
-
-    guard let pages = try? context.engine.getSortedPages(), let firstPage = pages.first else {
-      return
-    }
-    try context.engine.scene.unstable_enableCameraZoomClamping([firstPage], minZoomLimit: 1,
-                                                               maxZoomLimit: 1,
-                                                               paddingLeft: paddingLeft,
-                                                               paddingTop: paddingTop,
-                                                               paddingRight: paddingRight,
-                                                               paddingBottom: paddingBottom)
-    try context.engine.scene.unstable_enableCameraPositionClamping(pages,
-                                                                   paddingLeft: paddingLeft - margin,
-                                                                   paddingTop: paddingTop - margin,
-                                                                   paddingRight: paddingRight - margin,
-                                                                   paddingBottom: paddingBottom - margin,
-                                                                   scaledPaddingLeft: margin,
-                                                                   scaledPaddingTop: margin,
-                                                                   scaledPaddingRight: margin,
-                                                                   scaledPaddingBottom: margin)
   }
 
   func disableCameraClamping(_ context: InteractorContext) throws {

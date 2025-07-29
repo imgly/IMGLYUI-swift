@@ -1,14 +1,7 @@
 import SwiftUI
 
-struct AssetLibraryKey: EnvironmentKey {
-  static let defaultValue: AnyAssetLibrary? = nil
-}
-
 @_spi(Internal) public extension EnvironmentValues {
-  var imglyAssetLibrary: AnyAssetLibrary? {
-    get { self[AssetLibraryKey.self] }
-    set { self[AssetLibraryKey.self] = newValue }
-  }
+  @Entry var imglyAssetLibrary: AnyAssetLibrary?
 }
 
 @MainActor

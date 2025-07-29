@@ -1,24 +1,9 @@
 import IMGLYEngine
 import SwiftUI
 
-struct NavigationBarItemsKey: EnvironmentKey {
-  static let defaultValue: NavigationBar.Items? = nil
-}
-
-struct NavigationBarModificationsKey: EnvironmentKey {
-  static let defaultValue: NavigationBar.Modifications? = nil
-}
-
 @_spi(Internal) public extension EnvironmentValues {
-  var imglyNavigationBarItems: NavigationBar.Items? {
-    get { self[NavigationBarItemsKey.self] }
-    set { self[NavigationBarItemsKey.self] = newValue }
-  }
-
-  var imglyNavigationBarModifications: NavigationBar.Modifications? {
-    get { self[NavigationBarModificationsKey.self] }
-    set { self[NavigationBarModificationsKey.self] = newValue }
-  }
+  @Entry var imglyNavigationBarItems: NavigationBar.Items?
+  @Entry var imglyNavigationBarModifications: NavigationBar.Modifications?
 }
 
 /// A namespace for the navigation bar component.
