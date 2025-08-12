@@ -22,7 +22,7 @@ struct CountdownTimerView: View {
         .opacity(countdownTimer.remainingSeconds > 0 ? 1 : 0)
         .animation(
           noAnimate ? nil : .imgly.slide,
-          value: countdownTimer.remainingSeconds
+          value: countdownTimer.remainingSeconds,
         )
         .zIndex(1)
       ZStack {
@@ -46,14 +46,14 @@ struct CountdownTimerView: View {
                 .combined(with: .opacity),
               removal: .offset(y: 30)
                 .combined(with: .scale(scale: 0))
-                .combined(with: .opacity)
+                .combined(with: .opacity),
             ))
           }
           // Optical correction
           .offset(y: -3)
           .animation(
             .imgly.slide,
-            value: countdownTimer.remainingSeconds
+            value: countdownTimer.remainingSeconds,
           )
           .font(.system(size: 128))
           .tracking(0.8)

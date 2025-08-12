@@ -287,7 +287,7 @@ import SwiftUI
 }
 
 private let rulerCoordinateSpaceName = "ruler"
-private let rulerCoordinateSpace = CoordinateSpace.named(rulerCoordinateSpaceName)
+@MainActor private let rulerCoordinateSpace = CoordinateSpace.named(rulerCoordinateSpaceName)
 
 private struct ContentGeometryKey: PreferenceKey {
   static let defaultValue: Geometry? = nil

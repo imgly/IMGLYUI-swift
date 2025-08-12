@@ -78,7 +78,7 @@ extension TransformOptions {
             group.addTask {
               let assets = try await self.interactor.findAssets(
                 sourceID: source.id,
-                query: .init(query: nil, page: 1, groups: [id], perPage: 1)
+                query: .init(query: nil, page: 1, groups: [id], perPage: 1),
               )
               if let firstAsset = assets.assets.first {
                 return AssetLoader.Asset(sourceID: source.id, result: firstAsset)
@@ -127,7 +127,7 @@ extension TransformOptions {
           height: CGFloat(height),
           designUnit: designUnit,
           dpi: CGFloat(dpi),
-          pixelScale: CGFloat(pixelFactor)
+          pixelScale: CGFloat(pixelFactor),
         )
       } catch {
         return

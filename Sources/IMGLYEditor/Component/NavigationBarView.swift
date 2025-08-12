@@ -26,7 +26,7 @@ struct NavigationBarView: ViewModifier {
       }
     } catch {
       let error = EditorError(
-        "Could not create View for Navigation Bar.\nReason:\n\(error.localizedDescription)"
+        "Could not create View for Navigation Bar.\nReason:\n\(error.localizedDescription)",
       )
       interactor.handleErrorWithTask(error)
       return [:]

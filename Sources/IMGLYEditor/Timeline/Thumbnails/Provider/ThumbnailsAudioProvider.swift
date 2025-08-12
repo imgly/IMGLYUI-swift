@@ -56,7 +56,7 @@ extension ThumbnailsAudioProvider: ThumbnailsProvider {
           try await interactor.generateAudioThumbnails(
             clip: clip,
             timeRange: timeRange,
-            numberOfSamples: numberOfSamples
+            numberOfSamples: numberOfSamples,
           ) {
           audioWaves = thumb.samples
         }

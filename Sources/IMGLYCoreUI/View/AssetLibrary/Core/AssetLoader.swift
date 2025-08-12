@@ -199,7 +199,7 @@ public extension AssetLoader {
         locale: other.locale ?? locale,
         sortingOrder: other.sortingOrder != .none ? other.sortingOrder : sortingOrder,
         sortKey: other.sortKey ?? sortKey,
-        sortActiveFirst: other.sortActiveFirst
+        sortActiveFirst: other.sortActiveFirst,
       )
     }
   }
@@ -265,14 +265,14 @@ public extension AssetLoader {
       }
 
       assets = (order == .alternating ? Self.alternatingElements(of: orderedAssetsBySources) : orderedAssetsBySources
-        .flatMap { $0 })
+        .flatMap(\.self))
     }
 
     fileprivate static func search(
       _ sources: [AssetLoader.SourceData],
       for query: AssetLoader.QueryData,
       order: AssetLoader.ItemOrder,
-      perPage: Int
+      perPage: Int,
     ) -> Self {
       let sources = sources.map { (UUID(), $0) }
       var models = [UUID: AssetLoader.Model]()

@@ -26,7 +26,7 @@ struct SelectionColorsSheet: View {
             Section(title) {
               colorOptions(
                 "ly_img_editor_postcard_sheet_template_colors_color_picker_title \(section.name)",
-                colors: section.colors
+                colors: section.colors,
               )
             }
             .accessibilityElement(children: .contain)

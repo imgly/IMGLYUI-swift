@@ -27,7 +27,7 @@ import SwiftUI
 }
 
 /// Access all ``FeatureFlag``s.
-@propertyWrapper
+@MainActor @propertyWrapper
 @_spi(Internal) public struct Features: DynamicProperty {
   @ObservedObject private var featureFlags = FeatureFlags.shared
 
@@ -39,7 +39,7 @@ import SwiftUI
 }
 
 /// Access a specific ``FeatureFlag``.
-@propertyWrapper
+@MainActor @propertyWrapper
 @_spi(Internal) public struct Feature: DynamicProperty {
   @Features private var features
   private let flag: FeatureFlag

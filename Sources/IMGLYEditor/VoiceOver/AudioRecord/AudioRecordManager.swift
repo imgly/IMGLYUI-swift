@@ -95,7 +95,7 @@ final class AudioRecordManager {
       do {
         try audioSession.setCategory(
           .playAndRecord,
-          options: [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP]
+          options: [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP],
         )
         try audioSession.setActive(true)
         await MainActor.run {

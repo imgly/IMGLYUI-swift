@@ -5,9 +5,13 @@ import SwiftUI
 /// give users an idea of where to position elements.
 public struct ApparelEditor: View {
   /// Scene that will be loaded by the default implementation of the `onCreate` callback.
-  public static let defaultScene = Bundle.module.url(forResource: "apparel-ui-b-empty", withExtension: "scene")!
+  public nonisolated static let defaultScene = Bundle.module.url(
+    forResource: "apparel-ui-b-empty",
+    withExtension: "scene",
+  )!
 
   @Environment(\.imglyOnCreate) private var onCreate
+  @Environment(\.imglyOnChanged) private var onChanged
   @Environment(\.imglyNavigationBarItems) private var navigationBarItems
   private let settings: EngineSettings
 
@@ -49,6 +53,13 @@ public struct ApparelEditor: View {
       .imgly.dockItemAlignment { _ in .leading }
       .imgly.dockBackgroundColor { _, _ in .clear }
       .imgly.dockScrollDisabled { _ in true }
+      .imgly.onChanged { update, context in
+        guard let onChanged else {
+          try Apparel.OnChanged.default(update, context)
+          return
+        }
+        try onChanged(update, context)
+      }
   }
 }
 

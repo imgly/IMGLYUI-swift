@@ -58,7 +58,7 @@ struct EffectOptions<Item: View>: View {
         title: asset.title,
         properties: asset.properties,
         backTitle: asset.backTitle,
-        sheetState: $sheetState
+        sheetState: $sheetState,
       )
     }
   }

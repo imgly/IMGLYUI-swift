@@ -27,7 +27,7 @@ struct AdaptiveTileLabelStyle: LabelStyle {
     Label(configuration)
       .labelStyle(AdaptiveLabelStyle(
         compactStyle: .tile(orientation: .horizontal),
-        normalStyle: .tile(orientation: .vertical)
+        normalStyle: .tile(orientation: .vertical),
       ))
   }
 }
@@ -61,14 +61,14 @@ struct BottomBarLabelStyle: LabelStyle {
           orientation: .horizontal,
           titleFont: Self.titleFont,
           size: Self.size,
-          alignment: alignment
+          alignment: alignment,
         ),
         normalStyle: TileLabelStyle(
           orientation: .vertical,
           titleFont: Self.titleFont,
           size: Self.size,
-          alignment: alignment
-        )
+          alignment: alignment,
+        ),
       ))
       .padding(.horizontal, 4)
   }

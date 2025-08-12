@@ -48,13 +48,13 @@ public struct Camera: View {
   public init(
     _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
-    onDismiss: @escaping (Result<[Recording], CameraError>) -> Void
+    onDismiss: @escaping @MainActor (Result<[Recording], CameraError>) -> Void
   ) {
     let camera = CameraModel(
       settings,
       config: config,
       mode: .standard,
-      onDismiss: .legacy(onDismiss)
+      onDismiss: .legacy(onDismiss),
     )
 
     _camera = StateObject(wrappedValue: camera)
@@ -73,7 +73,7 @@ public struct Camera: View {
     _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
     mode: CameraMode = .standard,
-    onDismiss: @escaping (Result<CameraResult, CameraError>) -> Void
+    onDismiss: @escaping @MainActor (Result<CameraResult, CameraError>) -> Void
   ) {
     var mode = mode
     if !Camera.isModeSupported(mode) {
@@ -88,7 +88,7 @@ public struct Camera: View {
       settings,
       config: config,
       mode: mode,
-      onDismiss: .modern(onDismiss)
+      onDismiss: .modern(onDismiss),
     )
 
     _camera = StateObject(wrappedValue: camera)
@@ -200,7 +200,7 @@ public struct Camera: View {
         .gesture(
           MagnificationGesture()
             .onChanged { camera.updateZoom($0) }
-            .onEnded { camera.finishZoom($0) }
+            .onEnded { camera.finishZoom($0) },
         )
     }
   }
@@ -289,7 +289,7 @@ extension Camera {
     .confirmationDialog(
       Text(.imgly.localized("ly_img_camera_dialog_delete_recordings_title")),
       isPresented: $isShowingDeleteAllDialog,
-      titleVisibility: .visible
+      titleVisibility: .visible,
     ) {
       Button(role: .destructive) {
         camera.cancel()
@@ -321,7 +321,7 @@ extension Camera {
     .confirmationDialog(
       Text(.imgly.localized("ly_img_camera_dialog_delete_last_recording_title")),
       isPresented: $isShowingDeleteDialog,
-      titleVisibility: .visible
+      titleVisibility: .visible,
     ) {
       Button(role: .destructive) {
         camera.deleteLastRecording()

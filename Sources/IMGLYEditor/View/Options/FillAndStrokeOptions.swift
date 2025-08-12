@@ -73,7 +73,7 @@ struct FillAndStrokeOptions: View {
               .init(
                 color: Color
                   .rgba(r: currentSolidFill.r, g: currentSolidFill.g, b: currentSolidFill.b, a: currentSolidFill.a),
-                stop: 0
+                stop: 0,
               ),
               .init(color: Color.rgba(r: newColor.r, g: newColor.g, b: newColor.b, a: newColor.a), stop: 1),
             ]
@@ -87,7 +87,7 @@ struct FillAndStrokeOptions: View {
             $0,
             propertyBlock,
             property: .key(.type),
-            value: isNone ? value : value
+            value: isNone ? value : value,
           )
 
           if let colorStops {

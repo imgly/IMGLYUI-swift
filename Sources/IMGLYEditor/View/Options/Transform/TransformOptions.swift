@@ -119,7 +119,7 @@ struct TransformOptions<Item: View>: View {
         .fontWeight(isSelected ? .bold : .regular)
         .padding(EdgeInsets(top: 7, leading: 14, bottom: 7, trailing: 14))
         .background(
-          viewModel.selectedGroup == id ? Color.accentColor.opacity(0.15) : .clear
+          viewModel.selectedGroup == id ? Color.accentColor.opacity(0.15) : .clear,
         )
         .foregroundStyle(isSelected ? Color.accentColor : .primary)
         .clipShape(Capsule())

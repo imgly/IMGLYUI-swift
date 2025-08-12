@@ -28,7 +28,7 @@ struct RecordButton: View {
             if isEnabled {
               let width = geometry.size.width
               RoundedRectangle(
-                cornerRadius: [.recording, .countingDown].contains(state) ? cornerRadius : geometry.size.width / 2
+                cornerRadius: [.recording, .countingDown].contains(state) ? cornerRadius : geometry.size.width / 2,
               )
               .rotation(.degrees([.recording, .countingDown].contains(state) ? 0 : -45))
               .fill(state == .recording ? camera.configuration.recordingColor : .white)
@@ -65,8 +65,8 @@ struct RecordButton: View {
             camera.stopRecording()
             disableTemporarily()
             HapticsHelper.shared.cameraStopRecording()
-          }
-        )
+          },
+        ),
       )
     }
   }

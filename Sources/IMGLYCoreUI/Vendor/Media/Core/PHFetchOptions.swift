@@ -40,7 +40,7 @@ import Photos
   /// Appends the specified predicate to the current list of predicates.
   /// - Parameter predicate: The predicate to append
   func filter(_ predicate: NSPredicate) -> Self {
-    let predicates = [predicate, self.predicate].compactMap { $0 }
+    let predicates = [predicate, self.predicate].compactMap(\.self)
     self.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
     return self
   }

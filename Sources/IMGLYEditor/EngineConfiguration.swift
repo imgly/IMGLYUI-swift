@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUICore
 import UniformTypeIdentifiers
 @_spi(Internal) import struct IMGLYCore.Error
 import IMGLYEngine
@@ -8,7 +9,7 @@ import IMGLYEngine
 /// A namespace for `onCreate` callbacks.
 public enum OnCreate {
   /// The callback type.
-  public typealias Callback = @Sendable @MainActor (_ engine: Engine) async throws -> Void
+  public typealias Callback = @MainActor (_ engine: Engine) async throws -> Void
 
   /// The default callback which creates a new scene and loads the default and demo asset sources.
   public static let `default`: Callback = { engine in
@@ -39,7 +40,7 @@ public enum OnCreate {
 /// A namespace for `onExport` callbacks.
 public enum OnExport {
   /// The callback type.
-  public typealias Callback = @Sendable @MainActor (_ engine: Engine, _ eventHandler: EditorEventHandler) async throws
+  public typealias Callback = @MainActor (_ engine: Engine, _ eventHandler: EditorEventHandler) async throws
     -> Void
 
   /// The default callback which calls `BlockAPI.export` or `BlockAPI.exportVideo`
@@ -133,7 +134,7 @@ public enum OnExport {
 /// A namespace for `onUpload` callbacks.
 public enum OnUpload {
   /// The callback type.
-  public typealias Callback = @Sendable @MainActor (
+  public typealias Callback = @MainActor (
     _ engine: Engine,
     _ sourceID: String,
     _ asset: AssetDefinition
@@ -148,7 +149,7 @@ public enum OnUpload {
 /// A namespace for `onClose` callbacks.
 public enum OnClose {
   /// The callback type.
-  public typealias Callback = @Sendable @MainActor (
+  public typealias Callback = @MainActor (
     _ engine: Engine,
     _ eventHandler: EditorEventHandler
   ) -> Void
@@ -169,7 +170,7 @@ public enum OnClose {
 /// A namespace for `onError` callbacks.
 public enum OnError {
   /// The callback type.
-  public typealias Callback = @Sendable @MainActor (
+  public typealias Callback = @MainActor (
     _ error: Swift.Error,
     _ eventHandler: EditorEventHandler
   ) -> Void
@@ -183,13 +184,14 @@ public enum OnError {
 /// A namespace for `onLoaded` callbacks.
 @_spi(Internal) public enum OnLoaded {
   /// The callback type.
-  @_spi(Internal) public typealias Callback = @Sendable @MainActor (_ context: OnLoaded.Context) async throws
+  @_spi(Internal) public typealias Callback = @MainActor (_ context: OnLoaded.Context) async throws
     -> Void
 
   /// The default empty callback.
   @_spi(Internal) public static let `default`: Callback = { _ in }
 
   /// The context of the ``OnLoaded/Callback``.
+  @MainActor
   @_spi(Internal) public struct Context {
     /// The engine of the current editor.
     @_spi(Internal) public let engine: Engine
@@ -200,15 +202,45 @@ public enum OnError {
   }
 }
 
+/// A namespace for `onChanged` callbacks.
+@_spi(Internal) public enum OnChanged {
+  /// The callback type.
+  @_spi(Internal) public typealias Callback = @Sendable @MainActor (
+    _ update: OnChanged.EditorStateChange,
+    _ context: OnChanged.Context
+  ) throws -> Void
+
+  /// The default empty callback.
+  @_spi(Internal) public static let `default`: Callback = { _, _ in }
+
+  /// The context of the ``OnChanged/Callback``.
+  @_spi(Internal) public struct Context {
+    /// The engine of the current editor.
+    @_spi(Internal) public let engine: Engine
+    /// The event handler of the current editor.
+    @_spi(Internal) public let eventHandler: EditorEventHandler
+  }
+
+  /// A namespace for the editor state updates received through the ``OnChanged/Callback``.
+  @_spi(Internal) public enum EditorStateChange {
+    /// The canvas started/ended receiving a touch gesture.
+    /// - Parameters:
+    ///   - oldValue: The old value before the state change.
+    ///   - newValue: The new value after the state change.
+    case gestureActive(oldValue: Bool, newValue: Bool)
+  }
+}
+
 // MARK: - Internal interface
 
-@_spi(Internal) public struct EngineCallbacks: Sendable {
+@_spi(Internal) public struct EngineCallbacks {
   @_spi(Internal) public let onCreate: OnCreate.Callback
   let onLoaded: OnLoaded.Callback
   let onExport: OnExport.Callback
   let onUpload: OnUpload.Callback
   let onClose: OnClose.Callback
   let onError: OnError.Callback
+  let onChanged: OnChanged.Callback
 
   init(
     onCreate: @escaping OnCreate.Callback = OnCreate.default,
@@ -216,7 +248,8 @@ public enum OnError {
     onExport: @escaping OnExport.Callback = OnExport.default,
     onUpload: @escaping OnUpload.Callback = OnUpload.default,
     onClose: @escaping OnClose.Callback = OnClose.default,
-    onError: @escaping OnError.Callback = OnError.default
+    onError: @escaping OnError.Callback = OnError.default,
+    onChanged: @escaping OnChanged.Callback = OnChanged.default
   ) {
     self.onCreate = onCreate
     self.onLoaded = onLoaded
@@ -224,10 +257,11 @@ public enum OnError {
     self.onUpload = onUpload
     self.onClose = onClose
     self.onError = onError
+    self.onChanged = onChanged
   }
 }
 
-@_spi(Internal) public struct EngineConfiguration: Sendable {
+@_spi(Internal) public struct EngineConfiguration {
   @_spi(Internal) public let settings: EngineSettings
   @_spi(Internal) public let callbacks: EngineCallbacks
 }

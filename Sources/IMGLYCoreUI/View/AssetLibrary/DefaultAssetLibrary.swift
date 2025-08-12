@@ -67,7 +67,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
       audio: audio,
       images: images,
       shapes: shapes,
-      stickers: stickers
+      stickers: stickers,
     )
   }
 
@@ -81,7 +81,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
       audio: audio(),
       images: images,
       shapes: shapes,
-      stickers: stickers
+      stickers: stickers,
     )
   }
 
@@ -95,7 +95,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
       audio: audio,
       images: images(),
       shapes: shapes,
-      stickers: stickers
+      stickers: stickers,
     )
   }
 
@@ -109,7 +109,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
       audio: audio,
       images: images,
       shapes: shapes(),
-      stickers: stickers
+      stickers: stickers,
     )
   }
 
@@ -123,7 +123,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
       audio: audio,
       images: images,
       shapes: shapes,
-      stickers: stickers()
+      stickers: stickers(),
     )
   }
 
@@ -131,12 +131,12 @@ public struct DefaultAssetLibrary: AssetLibrary {
     // Don't use upload strings here as it shouldn't state "Photo Roll" twice as this is already the parent.
     AssetLibrarySource.imageUpload(
       .title(.imgly.localized("ly_img_editor_asset_library_section_images")),
-      source: .init(demoSource: .imageUpload)
+      source: .init(demoSource: .imageUpload),
     )
     if sceneMode == .video {
       AssetLibrarySource.videoUpload(
         .title(.imgly.localized("ly_img_editor_asset_library_section_videos")),
-        source: .init(demoSource: .videoUpload)
+        source: .init(demoSource: .videoUpload),
       )
     }
   }
@@ -148,11 +148,11 @@ public struct DefaultAssetLibrary: AssetLibrary {
       // Don't use upload strings here as it shouldn't state "Photo Roll" twice as this is already the parent.
       AssetLibrarySource.imageUpload(
         .title(.imgly.localized("ly_img_editor_asset_library_section_images")),
-        source: .init(demoSource: .imageUpload)
+        source: .init(demoSource: .imageUpload),
       )
       AssetLibrarySource.videoUpload(
         .title(.imgly.localized("ly_img_editor_asset_library_section_videos")),
-        source: .init(demoSource: .videoUpload)
+        source: .init(demoSource: .videoUpload),
       )
     }
   }
@@ -161,11 +161,11 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @AssetLibraryBuilder public static var videos: AssetLibraryContent {
     AssetLibrarySource.video(
       .title(.imgly.localized("ly_img_editor_asset_library_section_videos")),
-      source: .init(demoSource: .video)
+      source: .init(demoSource: .video),
     )
     AssetLibrarySource.videoUpload(
       .title(.imgly.localized("ly_img_editor_asset_library_section_video_uploads")),
-      source: .init(demoSource: .videoUpload)
+      source: .init(demoSource: .videoUpload),
     )
   }
 
@@ -173,11 +173,11 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @AssetLibraryBuilder public static var audio: AssetLibraryContent {
     AssetLibrarySource.audio(
       .title(.imgly.localized("ly_img_editor_asset_library_section_audio")),
-      source: .init(demoSource: .audio)
+      source: .init(demoSource: .audio),
     )
     AssetLibrarySource.audioUpload(
       .title(.imgly.localized("ly_img_editor_asset_library_section_audio_uploads")),
-      source: .init(demoSource: .audioUpload)
+      source: .init(demoSource: .audioUpload),
     )
   }
 
@@ -185,11 +185,11 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @AssetLibraryBuilder public static var images: AssetLibraryContent {
     AssetLibrarySource.image(
       .title(.imgly.localized("ly_img_editor_asset_library_section_images")),
-      source: .init(demoSource: .image)
+      source: .init(demoSource: .image),
     )
     AssetLibrarySource.imageUpload(
       .title(.imgly.localized("ly_img_editor_asset_library_section_image_uploads")),
-      source: .init(demoSource: .imageUpload)
+      source: .init(demoSource: .imageUpload),
     )
   }
 
@@ -203,17 +203,17 @@ public struct DefaultAssetLibrary: AssetLibrary {
 
   let plainText = AssetLibrarySource.text(
     .title(.imgly.localized("ly_img_editor_asset_library_section_text")),
-    source: .init(id: TextAssetSource.id)
+    source: .init(id: TextAssetSource.id),
   )
 
   @AssetLibraryBuilder public var textAndTextComponents: AssetLibraryContent {
     AssetLibrarySource.text(
       .title(.imgly.localized("ly_img_editor_asset_library_section_plain_text")),
-      source: .init(id: TextAssetSource.id)
+      source: .init(id: TextAssetSource.id),
     )
     AssetLibrarySource.textComponent(
       .title(.imgly.localized("ly_img_editor_asset_library_section_font_combinations")),
-      source: .init(demoSource: .textComponents)
+      source: .init(demoSource: .textComponents),
     )
   }
 
@@ -222,42 +222,42 @@ public struct DefaultAssetLibrary: AssetLibrary {
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_filled")),
       source: .init(defaultSource: .vectorPath,
-                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/filled"]))
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/filled"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_outline")),
       source: .init(defaultSource: .vectorPath,
-                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/outline"]))
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/outline"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_gradient")),
       source: .init(defaultSource: .vectorPath,
-                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/gradient"]))
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/gradient"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_image")),
       source: .init(defaultSource: .vectorPath,
-                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/image"]))
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/image"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_filled")),
       source: .init(defaultSource: .vectorPath,
-                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-filled"]))
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-filled"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_outline")),
       source: .init(defaultSource: .vectorPath,
-                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-outline"]))
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-outline"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_gradient")),
       source: .init(defaultSource: .vectorPath,
-                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-gradient"]))
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-gradient"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_image")),
       source: .init(defaultSource: .vectorPath,
-                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-image"]))
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-image"])),
     )
   }
 
@@ -266,32 +266,32 @@ public struct DefaultAssetLibrary: AssetLibrary {
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_emoji")),
       source: .init(defaultSource: .sticker,
-                    config: .init(groups: ["//ly.img.cesdk.stickers.emoji/category/emoji"]))
+                    config: .init(groups: ["//ly.img.cesdk.stickers.emoji/category/emoji"])),
     )
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_emoticons")),
       source: .init(defaultSource: .sticker,
-                    config: .init(groups: ["//ly.img.cesdk.stickers.emoticons/category/emoticons"]))
+                    config: .init(groups: ["//ly.img.cesdk.stickers.emoticons/category/emoticons"])),
     )
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_craft")),
       source: .init(defaultSource: .sticker,
-                    config: .init(groups: ["//ly.img.cesdk.stickers.craft/category/craft"]))
+                    config: .init(groups: ["//ly.img.cesdk.stickers.craft/category/craft"])),
     )
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_3d_stickers")),
       source: .init(defaultSource: .sticker,
-                    config: .init(groups: ["//ly.img.cesdk.stickers.3Dstickers/category/3Dstickers"]))
+                    config: .init(groups: ["//ly.img.cesdk.stickers.3Dstickers/category/3Dstickers"])),
     )
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_hand")),
       source: .init(defaultSource: .sticker,
-                    config: .init(groups: ["//ly.img.cesdk.stickers.hand/category/hand"]))
+                    config: .init(groups: ["//ly.img.cesdk.stickers.hand/category/hand"])),
     )
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_doodle")),
       source: .init(defaultSource: .sticker,
-                    config: .init(groups: ["//ly.img.cesdk.stickers.doodle/category/doodle"]))
+                    config: .init(groups: ["//ly.img.cesdk.stickers.doodle/category/doodle"])),
     )
   }
 
@@ -322,7 +322,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
       } else {
         AssetLibraryGroup.text(
           .imgly.localized("ly_img_editor_asset_library_section_text"),
-          excludedPreviewSources: [Engine.DemoAssetSource.textComponents.rawValue]
+          excludedPreviewSources: [Engine.DemoAssetSource.textComponents.rawValue],
         ) {
           textAndTextComponents
         }

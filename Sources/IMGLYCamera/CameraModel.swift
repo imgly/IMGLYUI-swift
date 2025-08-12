@@ -115,7 +115,7 @@ final class CameraModel: ObservableObject {
     configuration = config
     recordingsManager = RecordingsManager(
       maxTotalDuration: configuration.maxTotalDuration,
-      allowExceedingMaxDuration: configuration.allowExceedingMaxDuration
+      allowExceedingMaxDuration: configuration.allowExceedingMaxDuration,
     )
     configureNotificationHandlers()
     updateCameraCapabilities()
@@ -136,7 +136,7 @@ final class CameraModel: ObservableObject {
       .store(in: &cancellables)
   }
 
-  private func cleanUp(callback: (() -> Void)? = nil) {
+  private func cleanUp(callback: (@MainActor () -> Void)? = nil) {
     stopRecording()
     stopStreaming(callback: callback)
     interactor?.destroyEngine()
@@ -184,7 +184,7 @@ final class CameraModel: ObservableObject {
        .builtInUltraWideCamera,
        .builtInWideAngleCamera],
       mediaType: .video,
-      position: .unspecified
+      position: .unspecified,
     )
 
     let allVideoDevices = cameraDiscovery.devices
@@ -354,7 +354,7 @@ final class CameraModel: ObservableObject {
           isInitializingStream = true
           self.interactor = try await CameraCanvasInteractor(
             settings: settings,
-            videoSize: configuration.videoSize
+            videoSize: configuration.videoSize,
           )
           DispatchQueue.main.async { [weak self] in
             self?.state = .ready
@@ -397,7 +397,7 @@ final class CameraModel: ObservableObject {
     }
   }
 
-  func stopStreaming(callback: (() -> Void)? = nil) {
+  func stopStreaming(callback: (@MainActor () -> Void)? = nil) {
     captureService.pauseStreaming(callback: callback)
     cameraStreamTask?.cancel()
     cameraStreamTask = nil
@@ -483,7 +483,7 @@ final class CameraModel: ObservableObject {
       message: error.localizedDescription,
       buttons: [
         .init(title: "OK", action: {}),
-      ]
+      ],
     )
   }
 }
@@ -495,7 +495,7 @@ extension CameraModel {
   private func configureNotificationHandlers() {
     didEnterBackgroundNotificationPublisher = NotificationCenter.default.publisher(
       for: UIApplication.didEnterBackgroundNotification,
-      object: nil
+      object: nil,
     )
     .sink(receiveValue: { [weak self] _ in
       guard let self else { return }
@@ -505,7 +505,7 @@ extension CameraModel {
 
     didBecomeActiveNotificationPublisher = NotificationCenter.default.publisher(
       for: UIApplication.didBecomeActiveNotification,
-      object: nil
+      object: nil,
     )
     .sink(receiveValue: { [weak self] _ in
       guard let self else { return }
@@ -514,7 +514,7 @@ extension CameraModel {
 
     willResignActiveNotificationPublisher = NotificationCenter.default.publisher(
       for: UIApplication.willResignActiveNotification,
-      object: nil
+      object: nil,
     )
     .sink(receiveValue: { [weak self] _ in
       guard let self else { return }
@@ -523,7 +523,7 @@ extension CameraModel {
 
     captureSessionRuntimeErrorNotificationPublisher = NotificationCenter.default.publisher(
       for: .AVCaptureSessionRuntimeError,
-      object: captureService.captureSession
+      object: captureService.captureSession,
     )
     .sink(receiveValue: { [weak self] notification in
       guard let self else { return }
@@ -540,7 +540,7 @@ extension CameraModel {
 
     captureSessionWasInterruptedNotificationPublisher = NotificationCenter.default.publisher(
       for: .AVCaptureSessionWasInterrupted,
-      object: captureService.captureSession
+      object: captureService.captureSession,
     )
     .sink(receiveValue: { [weak self] notification in
       guard let self else { return }
@@ -569,7 +569,7 @@ extension CameraModel {
 
     captureSessionInterruptionEndedNotificationPublisher = NotificationCenter.default.publisher(
       for: .AVCaptureSessionInterruptionEnded,
-      object: captureService.captureSession
+      object: captureService.captureSession,
     )
     .sink(receiveValue: { [weak self] _ in
       guard let self else { return }
@@ -579,7 +579,9 @@ extension CameraModel {
 }
 
 extension CameraModel: CaptureServiceDelegate {
-  func captureServiceDidStopRecording(_: CaptureService) {
-    stopRecording()
+  nonisolated func captureServiceDidStopRecording(_: CaptureService) {
+    Task { @MainActor in
+      stopRecording()
+    }
   }
 }

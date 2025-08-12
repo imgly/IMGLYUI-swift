@@ -15,7 +15,7 @@ extension ImagePaint {
       } else {
         1
       }
-    }()
+    }(),
   )
 }
 

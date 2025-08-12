@@ -79,7 +79,7 @@ public extension Dock.Buttons {
     },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addElement },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.elementsLibrary, action: action, label: { context in
       let title = try title(context)
@@ -108,7 +108,7 @@ public extension Dock.Buttons {
     },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addAudio },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.audioLibrary, action: action, label: { context in
       let title = try title(context)
@@ -137,7 +137,7 @@ public extension Dock.Buttons {
     },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addImage },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.imagesLibrary, action: action, label: { context in
       let title = try title(context)
@@ -168,7 +168,7 @@ public extension Dock.Buttons {
     },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addText },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.textLibrary, action: action, label: { context in
       let title = try title(context)
@@ -197,7 +197,7 @@ public extension Dock.Buttons {
     },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addShape },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.shapesLibrary, action: action, label: { context in
       let title = try title(context)
@@ -226,7 +226,7 @@ public extension Dock.Buttons {
     },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addSticker },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.stickersLibrary, action: action, label: { context in
       let title = try title(context)
@@ -255,7 +255,7 @@ public extension Dock.Buttons {
     },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addVideo },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.overlaysLibrary, action: action, label: { context in
       let title = try title(context)
@@ -284,7 +284,7 @@ public extension Dock.Buttons {
     },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addSticker },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.stickersAndShapesLibrary, action: action, label: { context in
       let title = try title(context)
@@ -314,7 +314,7 @@ public extension Dock.Buttons {
       return isVideoScene ? Image.imgly.addPhotoRollBackground : Image.imgly.addPhotoRollForeground
     },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.photoRoll, action: action, label: { context in
       let title = try title(context)
@@ -344,7 +344,7 @@ public extension Dock.Buttons {
       return isVideoScene ? Image.imgly.addCameraBackground : Image.imgly.addCameraForeground
     },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.systemCamera, action: action, label: { context in
       let title = try title(context)
@@ -374,7 +374,7 @@ public extension Dock.Buttons {
       return isVideoScene ? Image.imgly.addCameraBackground : Image.imgly.addCameraForeground
     },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.imglyCamera, action: action, label: { context in
       let title = try title(context)
@@ -401,7 +401,7 @@ public extension Dock.Buttons {
     },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addVoiceover },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.voiceover, action: action, label: { context in
       let title = try title(context)
@@ -436,7 +436,7 @@ public extension Dock.Buttons {
         return false
       }
       return try context.engine.block.getChildren(backgroundTrack).count > 1
-    }
+    },
   ) -> some Dock.Item {
     Dock.Button(id: ID.reorder, action: action, label: { context in
       let title = try title(context)
@@ -467,7 +467,7 @@ public extension Dock.Buttons {
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope(nonNil($0.engine.scene.getCurrentPage()), key: "appearance/adjustments")
-    }
+    },
   ) -> some Dock.Item {
     Dock.Button(id: ID.adjustments, action: action, label: { context in
       let title = try title(context)
@@ -498,7 +498,7 @@ public extension Dock.Buttons {
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope(nonNil($0.engine.scene.getCurrentPage()), key: "appearance/filter")
-    }
+    },
   ) -> some Dock.Item {
     Dock.Button(id: ID.filter, action: action, label: { context in
       let title = try title(context)
@@ -529,7 +529,7 @@ public extension Dock.Buttons {
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope(nonNil($0.engine.scene.getCurrentPage()), key: "appearance/effect")
-    }
+    },
   ) -> some Dock.Item {
     Dock.Button(id: ID.effect, action: action, label: { context in
       let title = try title(context)
@@ -560,7 +560,7 @@ public extension Dock.Buttons {
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope(nonNil($0.engine.scene.getCurrentPage()), key: "appearance/blur")
-    }
+    },
   ) -> some Dock.Item {
     Dock.Button(id: ID.blur, action: action, label: { context in
       let title = try title(context)
@@ -591,7 +591,7 @@ public extension Dock.Buttons {
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope(nonNil($0.engine.scene.getCurrentPage()), key: "layer/crop")
-    }
+    },
   ) -> some Dock.Item {
     Dock.Button(id: ID.crop, action: action, label: { context in
       let title = try title(context)
@@ -617,7 +617,7 @@ public extension Dock.Buttons {
     },
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.resize },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
-    isVisible: @escaping Dock.Context.To<Bool> = { _ in true }
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.resize, action: action, label: { context in
       let title = try title(context)
@@ -649,7 +649,7 @@ public extension Dock.Buttons {
     @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addAsset },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
-    modifier: @escaping Dock.Context.To<some ViewModifier> = { _ in EmptyModifier() }
+    modifier: @escaping Dock.Context.To<some ViewModifier> = { _ in EmptyModifier() },
   ) -> some Dock.Item {
     Dock.Button(id: ID.assetLibrary, action: action, label: { context in
       let title = try title(context)

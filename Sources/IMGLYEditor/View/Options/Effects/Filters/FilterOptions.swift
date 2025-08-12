@@ -29,7 +29,7 @@ struct FilterOptions: View {
     @MainActor func createLUT(
       _ id: Interactor.BlockID,
       source: String,
-      index: Int? = nil
+      index: Int? = nil,
     ) throws {
       if let index {
         try engine.block.removeEffect(id, index: index)
@@ -98,7 +98,7 @@ struct FilterOptions: View {
       selection: selection,
       item: { asset, binding in FilterItem(asset: asset, selection: selection, sheetState: binding) },
       identifier: { identifier(for: $0) },
-      sources: [.init(id: "ly.img.filter.duotone"), .init(id: "ly.img.filter.lut")]
+      sources: [.init(id: "ly.img.filter.duotone"), .init(id: "ly.img.filter.lut")],
     )
   }
 

@@ -21,7 +21,7 @@ struct AudioWaveformView: View {
           RoundedRectangle(cornerRadius: 0.5)
             .frame(
               width: barWidth,
-              height: height
+              height: height,
             )
         }
       }

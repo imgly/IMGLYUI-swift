@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import Foundation
 import UIKit
 @_spi(Internal) import IMGLYCore
@@ -205,26 +205,27 @@ final class CaptureService: NSObject, @unchecked Sendable {
     }
   }
 
-  func pauseStreaming(callback: (() -> Void)?) {
+  func pauseStreaming(callback: (@MainActor () -> Void)?) {
     stopRunning(callback: callback)
   }
 
   private func startRunning() {
     queue.async { [weak self] in
       guard let self else { return }
-      do {
-        AVAudioSession.push()
-        try AVAudioSession.prepareForRecording()
-      } catch {
-        print("Couldn't prepare session for recording")
+      DispatchQueue.main.sync {
+        do {
+          AVAudioSession.push()
+          try AVAudioSession.prepareForRecording()
+        } catch {
+          print("Couldn't prepare session for recording")
+        }
       }
-
       captureSession.startRunning()
       isStreaming = true
     }
   }
 
-  private func stopRunning(callback: (() -> Void)? = nil) {
+  private func stopRunning(callback: (@MainActor () -> Void)? = nil) {
     guard isStreaming else { return }
 
     isStreaming = false
@@ -232,11 +233,13 @@ final class CaptureService: NSObject, @unchecked Sendable {
     queue.async { [weak self] in
       guard let self else { return }
       captureSession.stopRunning()
-      callback?()
-      do {
-        try AVAudioSession.pop()
-      } catch {
-        print("Couldn't return session to previous mode \(error)")
+      DispatchQueue.main.sync {
+        callback?()
+        do {
+          try AVAudioSession.pop()
+        } catch {
+          print("Couldn't return session to previous mode \(error)")
+        }
       }
     }
   }
@@ -256,7 +259,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
       recorder1 = VideoRecorder(
         audioSettings: audioSettings,
         videoSettings: output1Settings,
-        videoTransform: CGAffineTransformIdentity
+        videoTransform: CGAffineTransformIdentity,
       )
       recorder1?.startRecording(to: fileURL1, fileType: videoFileType)
       recorder2 = nil
@@ -267,7 +270,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
         recorder2 = VideoRecorder(
           audioSettings: audioSettings,
           videoSettings: output2Settings,
-          videoTransform: CGAffineTransformIdentity
+          videoTransform: CGAffineTransformIdentity,
         )
         recorder2?.startRecording(to: fileURL2, fileType: videoFileType)
       }
@@ -289,7 +292,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
             .init(url: firstVideoURL, rect: cameraMode.rect1),
             .init(url: secondVideoURL, rect: cameraMode.rect2 ?? .zero),
           ],
-          duration: recordedDuration
+          duration: recordedDuration,
         )
         self.streamingContinuation?.yield(.recording(recordedClip))
         currentlyRecordedClipDuration = nil
@@ -302,7 +305,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
           videos: [
             .init(url: firstVideoURL, rect: cameraMode.firstRecordingRect),
           ],
-          duration: recordedDuration
+          duration: recordedDuration,
         )
         self.streamingContinuation?.yield(.recording(recordedClip))
         currentlyRecordedClipDuration = nil
@@ -315,21 +318,21 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
   private func audioSettings() -> [String: NSObject]? {
     audioOutput.recommendedAudioSettingsForAssetWriter(
-      writingTo: videoFileType
+      writingTo: videoFileType,
     ) as? [String: NSObject]
   }
 
   private func output1Settings() -> [String: NSObject]? {
     videoOutput1.recommendedVideoSettings(
       forVideoCodecType: videoCodec,
-      assetWriterOutputFileType: videoFileType
+      assetWriterOutputFileType: videoFileType,
     ) as? [String: NSObject]
   }
 
   private func output2Settings() -> [String: NSObject]? {
     videoOutput2.recommendedVideoSettings(
       forVideoCodecType: videoCodec,
-      assetWriterOutputFileType: videoFileType
+      assetWriterOutputFileType: videoFileType,
     ) as? [String: NSObject]
   }
 
@@ -383,7 +386,7 @@ extension CaptureService: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptur
   func captureOutput(
     _ output: AVCaptureOutput,
     didOutput sampleBuffer: CMSampleBuffer,
-    from _: AVCaptureConnection
+    from _: AVCaptureConnection,
   ) {
     if let videoDataOutput = output as? AVCaptureVideoDataOutput {
       guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }

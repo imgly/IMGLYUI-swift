@@ -50,6 +50,6 @@ protocol AudioInteractor {
     _ audioBlock: DesignBlockID,
     from timeBegin: Double,
     until timeEnd: Double,
-    with numberOfSamples: Int
+    with numberOfSamples: Int,
   ) async throws -> AsyncThrowingStream<IMGLYEngine.AudioThumbnail, Swift.Error>
 }

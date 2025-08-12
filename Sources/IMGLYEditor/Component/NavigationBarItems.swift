@@ -58,7 +58,7 @@ public extension NavigationBar.Buttons {
       } else {
         true
       }
-    }
+    },
   ) -> some NavigationBar.Item {
     NavigationBar.Button(id: ID.closeEditor, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }
@@ -83,7 +83,7 @@ public extension NavigationBar.Buttons {
     isEnabled: @escaping NavigationBar.Context.To<Bool> = {
       try !$0.state.isCreating && $0.state.viewMode != .preview && $0.engine?.editor.canUndo() == true
     },
-    isVisible: @escaping NavigationBar.Context.To<Bool> = { _ in true }
+    isVisible: @escaping NavigationBar.Context.To<Bool> = { _ in true },
   ) -> some NavigationBar.Item {
     NavigationBar.Button(id: ID.undo, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }
@@ -108,7 +108,7 @@ public extension NavigationBar.Buttons {
     isEnabled: @escaping NavigationBar.Context.To<Bool> = {
       try !$0.state.isCreating && $0.state.viewMode != .preview && $0.engine?.editor.canRedo() == true
     },
-    isVisible: @escaping NavigationBar.Context.To<Bool> = { _ in true }
+    isVisible: @escaping NavigationBar.Context.To<Bool> = { _ in true },
   ) -> some NavigationBar.Item {
     NavigationBar.Button(id: ID.redo, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }
@@ -147,7 +147,7 @@ public extension NavigationBar.Buttons {
       } else {
         true
       }
-    }
+    },
   ) -> some NavigationBar.Item {
     NavigationBar.Button(id: ID.export, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }
@@ -187,14 +187,14 @@ public extension NavigationBar.Buttons {
       .accessibilityLabel(Text(.imgly.localized("ly_img_editor_navigation_bar_button_toggle_preview_mode")))
     },
     isEnabled: @escaping NavigationBar.Context.To<Bool> = { !$0.state.isCreating },
-    isVisible: @escaping NavigationBar.Context.To<Bool> = { _ in true }
+    isVisible: @escaping NavigationBar.Context.To<Bool> = { _ in true },
   ) -> some NavigationBar.Item {
     NavigationBar.Button(
       id: ID.togglePreviewMode,
       action: action,
       label: label,
       isEnabled: isEnabled,
-      isVisible: isVisible
+      isVisible: isVisible,
     )
   }
 
@@ -238,14 +238,14 @@ public extension NavigationBar.Buttons {
     isEnabled: @escaping NavigationBar.Context.To<Bool> = { !$0.state.isCreating },
     isVisible: @escaping NavigationBar.Context.To<Bool> = {
       try $0.state.isCreating || $0.engine?.block.find(byType: .stack).first != nil
-    }
+    },
   ) -> some NavigationBar.Item {
     NavigationBar.Button(
       id: ID.togglePagesMode,
       action: action,
       label: label,
       isEnabled: isEnabled,
-      isVisible: isVisible
+      isVisible: isVisible,
     )
   }
 
@@ -275,7 +275,7 @@ public extension NavigationBar.Buttons {
       } else {
         false
       }
-    }
+    },
   ) -> some NavigationBar.Item {
     NavigationBar.Button(id: ID.previousPage, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }
@@ -306,7 +306,7 @@ public extension NavigationBar.Buttons {
       } else {
         false
       }
-    }
+    },
   ) -> some NavigationBar.Item {
     NavigationBar.Button(id: ID.nextPage, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }

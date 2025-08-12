@@ -119,7 +119,7 @@ public extension SheetType where Self == SheetTypes.LibraryAdd {
   /// - Returns: The created ``SheetTypes/LibraryAdd`` sheet type.
   static func libraryAdd(
     style: SheetStyle = .addAsset(),
-    @ViewBuilder content: @escaping () -> any View
+    @ViewBuilder content: @escaping () -> any View,
   ) -> Self {
     Self(style: style, content: content)
   }
@@ -136,7 +136,7 @@ public extension SheetType where Self == SheetTypes.LibraryAdd {
   static func libraryAdd(
     _ title: LocalizedStringResource,
     style: SheetStyle = .addAsset(),
-    @AssetLibraryBuilder content: @escaping () -> AssetLibraryContent
+    @AssetLibraryBuilder content: @escaping () -> AssetLibraryContent,
   ) -> Self {
     Self(style: style, content: { AssetLibraryTab(title, content: content) { _ in EmptyView() } })
   }
@@ -152,7 +152,7 @@ public extension SheetType where Self == SheetTypes.LibraryReplace {
   /// - Returns: The created ``SheetTypes/LibraryReplace`` sheet type.
   static func libraryReplace(
     style: SheetStyle = .default(),
-    @ViewBuilder content: @escaping () -> any View
+    @ViewBuilder content: @escaping () -> any View,
   ) -> Self {
     Self(style: style, content: content)
   }
@@ -170,7 +170,7 @@ public extension SheetType where Self == SheetTypes.LibraryReplace {
   static func libraryReplace(
     _ title: LocalizedStringResource,
     style: SheetStyle = .default(),
-    @AssetLibraryBuilder content: @escaping () -> AssetLibraryContent
+    @AssetLibraryBuilder content: @escaping () -> AssetLibraryContent,
   ) -> Self {
     Self(style: style, content: { AssetLibraryTab(title, content: content) { _ in EmptyView() } })
   }
@@ -243,7 +243,7 @@ public extension SheetType where Self == SheetTypes.Crop {
   /// - Returns: The created ``SheetTypes/Crop`` sheet type.
   static func crop(
     style: SheetStyle = .only(detent: .imgly.medium),
-    id: DesignBlockID
+    id: DesignBlockID,
   ) -> Self {
     Self(style: style, id: id)
   }
@@ -255,7 +255,7 @@ public extension SheetType where Self == SheetTypes.Resize {
   /// used.
   /// - Returns: The created ``SheetTypes/Resize`` sheet type.
   static func resize(
-    style: SheetStyle = .only(detent: .imgly.small)
+    style: SheetStyle = .only(detent: .imgly.small),
   ) -> Self { Self(style: style) }
 }
 
@@ -340,7 +340,7 @@ public extension SheetType where Self == SheetTypes.TextBackground {
   /// used.
   /// - Returns: The created ``SheetTypes/DesignColors`` sheet type.
   static func designColors(
-    style: SheetStyle = .default()
+    style: SheetStyle = .default(),
   ) -> Self {
     Self(style: style)
   }
@@ -356,7 +356,7 @@ public extension SheetType where Self == SheetTypes.TextBackground {
   static func greetingColors(
     style: SheetStyle = .only(detent: .imgly.tiny),
     id: DesignBlockID,
-    colorPalette: [NamedColor]? = nil
+    colorPalette: [NamedColor]? = nil,
   ) -> Self {
     Self(style: style, id: id, colorPalette: colorPalette)
   }
@@ -373,7 +373,7 @@ public extension SheetType where Self == SheetTypes.TextBackground {
   static func greetingFont(
     style: SheetStyle = .default(),
     id: DesignBlockID,
-    fontFamilies: [String]? = nil
+    fontFamilies: [String]? = nil,
   ) -> Self {
     Self(style: style, id: id, fontFamilies: fontFamilies)
   }
@@ -387,7 +387,7 @@ public extension SheetType where Self == SheetTypes.TextBackground {
   /// - Returns: The created ``SheetTypes/GreetingSize`` sheet type.
   static func greetingSize(
     style: SheetStyle = .only(detent: .imgly.tiny),
-    id: DesignBlockID
+    id: DesignBlockID,
   ) -> Self {
     Self(style: style, id: id)
   }

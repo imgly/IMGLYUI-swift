@@ -35,8 +35,10 @@ private enum AudioSessionStateError: Swift.Error {
     }
   }
 
+  @MainActor
   private static let queue = StateQueue()
 
+  @MainActor
   static func push() {
     let state = SessionState(session: session)
     queue.push(state: state)
@@ -45,7 +47,7 @@ private enum AudioSessionStateError: Swift.Error {
   static func prepareForRecording() throws {
     try session.setCategory(
       .playAndRecord,
-      options: [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP]
+      options: [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP],
     )
   }
 
@@ -53,6 +55,7 @@ private enum AudioSessionStateError: Swift.Error {
     try session.setCategory(.playback)
   }
 
+  @MainActor
   static func pop() throws {
     let state = try queue.pop()
     try session.setCategory(state.category, mode: state.mode, options: state.categoryOptions)

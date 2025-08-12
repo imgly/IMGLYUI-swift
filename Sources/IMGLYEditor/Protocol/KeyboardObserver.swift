@@ -15,7 +15,7 @@ extension KeyboardObserver {
 
       NotificationCenter.default
         .publisher(for: UIResponder.keyboardWillHideNotification)
-        .map { _ in false }
+        .map { _ in false },
     )
     .eraseToAnyPublisher()
   }

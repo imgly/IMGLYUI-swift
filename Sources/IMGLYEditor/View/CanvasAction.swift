@@ -39,7 +39,7 @@ struct CanvasAction<Action>: ViewModifier where Action: View {
       x: rect.minX + (dx > 0 ? 0 : dx),
       y: rect.minY + (dy > 0 ? 0 : dy),
       width: rect.width + abs(dx),
-      height: rect.height + abs(dy)
+      height: rect.height + abs(dy),
     )
 
     // Shrink safe rect for some known anchors to keep the `action` centered
@@ -103,13 +103,13 @@ struct CanvasAction<Action>: ViewModifier where Action: View {
           }
         #if os(iOS)
           .simultaneousGesture(
-            DragGesture(minimumDistance: 1).updating($isDragging) { _, state, _ in state = true }
+            DragGesture(minimumDistance: 1).updating($isDragging) { _, state, _ in state = true },
           )
           .simultaneousGesture(
-            MagnificationGesture().updating($isMagnifying) { _, state, _ in state = true }
+            MagnificationGesture().updating($isMagnifying) { _, state, _ in state = true },
           )
           .simultaneousGesture(
-            RotationGesture().updating($isRotating) { _, state, _ in state = true }
+            RotationGesture().updating($isRotating) { _, state, _ in state = true },
           )
         #endif
 

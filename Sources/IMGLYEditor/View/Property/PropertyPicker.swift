@@ -12,7 +12,7 @@ struct PropertyPicker<T: MappedEnum & Labelable>: View {
   @Environment(\.imglySelection) private var id
 
   init(_ title: LocalizedStringResource, property: Property,
-       cases: [T] = T.allCases.map { $0 },
+       cases: [T] = T.allCases.map(\.self),
        setter: @escaping Interactor.PropertySetter<T> = Interactor.Setter.set()) {
     self.title = title
     self.property = property

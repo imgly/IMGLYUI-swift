@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A named color that is composed of a name, required for accessibility, and the actual `CGColor` to use.
-public struct NamedColor: Identifiable, Hashable {
+public struct NamedColor: Identifiable, Hashable, Sendable {
   public var id: CGColor { color }
 
   public func hash(into hasher: inout Hasher) {
@@ -9,7 +9,7 @@ public struct NamedColor: Identifiable, Hashable {
   }
 
   /// The color name.
-  public let name: LocalizedStringKey
+  public let name: LocalizedStringResource
   /// The color value.
   public let color: CGColor
 
@@ -17,7 +17,7 @@ public struct NamedColor: Identifiable, Hashable {
   /// - Parameters:
   ///   - name: The color name.
   ///   - color: The color value.
-  public init(_ name: LocalizedStringKey, _ color: CGColor) {
+  public init(_ name: LocalizedStringResource, _ color: CGColor) {
     self.name = name
     self.color = color
   }

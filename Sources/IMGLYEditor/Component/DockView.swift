@@ -22,7 +22,7 @@ struct DockView: View {
       }
     } catch {
       let error = EditorError(
-        "Could not create View for Dock.\nReason:\n\(error.localizedDescription)"
+        "Could not create View for Dock.\nReason:\n\(error.localizedDescription)",
       )
       interactor.handleErrorWithTask(error)
       return []

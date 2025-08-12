@@ -76,12 +76,12 @@ struct ReorderableForEach<Item: Reorderable, Content: View, Preview: View>: View
           item: item,
           items: items,
           active: $active,
-          hasChangedLocation: $hasChangedLocation
+          hasChangedLocation: $hasChangedLocation,
         ) { from, to in
           withAnimation {
             moveAction(from, to)
           }
-        }
+        },
       )
   }
 
@@ -138,8 +138,9 @@ private struct ReorderableDropOutsideDelegate<Item: Reorderable>: DropDelegate {
 @_spi(Internal) import IMGLYCore
 
 extension IMGLY where Wrapped: View {
+  @MainActor
   func reorderableForEachContainer(
-    active: Binding<(some Reorderable)?>
+    active: Binding<(some Reorderable)?>,
   ) -> some View {
     wrapped.onDrop(of: [.imgly.dragAndDrop], delegate: ReorderableDropOutsideDelegate(active: active))
   }

@@ -10,6 +10,7 @@
     ///   - media: An array that indicates the available media types
     ///   - onComplete: When the photo has been taken, this will be called with the resulting URL to the file or an
     /// error
+    @MainActor
     func camera(isPresented: Binding<Bool>, media: [MediaType] = [.image],
                 onComplete: @escaping MediaCompletion) -> some View {
       wrapped.background(CameraView(isPresented: isPresented, media: media, onComplete: onComplete))

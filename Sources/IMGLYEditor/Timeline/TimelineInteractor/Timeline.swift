@@ -3,7 +3,7 @@ import Foundation
 @_spi(Internal) import IMGLYCore
 
 /// Manage timelines state and snap detents.
-final class Timeline: ObservableObject, @unchecked Sendable {
+final class Timeline: ObservableObject {
   private(set) weak var interactor: (any TimelineInteractor)?
 
   private let pointsToSecondsRatio: CGFloat

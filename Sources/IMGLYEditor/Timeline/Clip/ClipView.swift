@@ -40,7 +40,7 @@ struct ClipView: View {
             clip: clip,
             cornerRadius: cornerRadius,
             pointsTrimOffsetWidth: 0,
-            thumbnailsProvider: AnyThumbnailsProvider(erasing: thumbnailsProvider)
+            thumbnailsProvider: AnyThumbnailsProvider(erasing: thumbnailsProvider),
           )
           .overlay {
             RoundedRectangle(cornerRadius: cornerRadius - 1)
@@ -49,7 +49,7 @@ struct ClipView: View {
                 clip.configuration.color.opacity(0.25),
                 style: clip.allowsSelecting
                   ? SwiftUI.StrokeStyle(lineWidth: 0.5)
-                  : SwiftUI.StrokeStyle(lineWidth: 0.5, dash: [2], dashPhase: 4)
+                  : SwiftUI.StrokeStyle(lineWidth: 0.5, dash: [2], dashPhase: 4),
               )
           }
           .opacity(clipOpacity)
@@ -66,7 +66,7 @@ struct ClipView: View {
             isMuted: clip.audioVolume == 0 || clip.isMuted,
             isSelectable: clip.allowsSelecting,
             cornerRadius: cornerRadius - 2,
-            isLooping: clip.isLooping
+            isLooping: clip.isLooping,
           )
         }
       }
@@ -132,7 +132,7 @@ struct ClipView: View {
       horizontalClipSpacing: clipSpacing,
       cornerRadius: configuration.cornerRadius,
       trimHandleWidth: configuration.trimHandleWidth,
-      icon: clip.configuration.icon
+      icon: clip.configuration.icon,
     )
     .id(ObjectIdentifier(clip))
   }
@@ -143,7 +143,7 @@ struct ClipView: View {
       .clipShape(RoundedRectangle(cornerRadius: configuration.cornerRadius))
       .overlay(
         RoundedRectangle(cornerRadius: configuration.cornerRadius)
-          .stroke(configuration.clipSelectionColor, lineWidth: Metrics.borderWidthClip)
+          .stroke(configuration.clipSelectionColor, lineWidth: Metrics.borderWidthClip),
       )
       .overlay(alignment: .topLeading) {
         ClipLabelView(
@@ -153,7 +153,7 @@ struct ClipView: View {
           isMuted: clip.audioVolume == 0 || clip.isMuted,
           isSelectable: clip.allowsSelecting,
           cornerRadius: configuration.cornerRadius,
-          isLooping: clip.isLooping
+          isLooping: clip.isLooping,
         )
       }
   }

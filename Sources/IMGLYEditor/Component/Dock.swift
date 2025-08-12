@@ -34,9 +34,9 @@ public extension Dock {
   }
 
   /// A closure to build an array of dock ``Item``s.
-  typealias Items = Context.SendableTo<[any Item]>
+  typealias Items = Context.To<[any Item]>
   /// A closure to modify an array of dock ``Item``s.
-  typealias Modifications = @Sendable @MainActor (_ context: Context, _ items: Modifier) throws -> Void
+  typealias Modifications = @MainActor (_ context: Context, _ items: Modifier) throws -> Void
   /// A button dock ``Item`` component.
   typealias Button = EditorComponents.Button
   /// A custom dock ``Item`` component.
@@ -44,10 +44,9 @@ public extension Dock {
 }
 
 @_spi(Internal) public extension Dock {
-  typealias Alignment = Context.SendableTo<SwiftUI.Alignment>
-  typealias ScrollDisabled = Context.SendableTo<Bool>
-  typealias BackgroundColor = @Sendable @MainActor (_ context: Context, _ colorScheme: ColorScheme) throws -> SwiftUI
-    .Color
+  typealias Alignment = Context.To<SwiftUI.Alignment>
+  typealias ScrollDisabled = Context.To<Bool>
+  typealias BackgroundColor = @MainActor (_ context: Context, _ colorScheme: ColorScheme) throws -> SwiftUI.Color
 }
 
 extension Dock.Button: Dock.Item where Context == Dock.Context {}

@@ -33,7 +33,7 @@ struct TextFormatOptions: View {
     NavigationLinkPicker(
       title: .imgly.localized("ly_img_editor_sheet_format_text_label_font"),
       data: [fontLibrary.assets],
-      selection: textReset.assetID
+      selection: textReset.assetID,
     ) { asset, isSelected in
       Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
         .labelStyle(.icon(hidden: !isSelected,
@@ -187,7 +187,7 @@ struct TextFormatOptions: View {
     MenuPicker(
       title: .imgly.localized("ly_img_editor_sheet_format_text_label_frame_behaviour"),
       data: TextFrameBehavior.allCases,
-      selection: selection
+      selection: selection,
     )
   }
 
@@ -271,7 +271,7 @@ struct TextFormatOptions: View {
 
 // MARK: - Extensions
 
-@_spi(Internal) extension Interactor.Font: Identifiable {
+@_spi(Internal) extension Interactor.Font: @retroactive Identifiable {
   @_spi(Internal) public var id: String {
     uri.absoluteString
   }

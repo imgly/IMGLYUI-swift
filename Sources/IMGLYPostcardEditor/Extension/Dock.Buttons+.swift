@@ -37,7 +37,7 @@ public extension Dock.Buttons {
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.scene.getPages().first == $0.engine.scene.getCurrentPage()
-    }
+    },
   ) -> some Dock.Item {
     Dock.Button(id: ID.designColors, action: action, label: { context in
       let title = try title(context)
@@ -80,7 +80,7 @@ public extension Dock.Buttons {
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.scene.getPages().last == $0.engine.scene.getCurrentPage()
-    }
+    },
   ) -> some Dock.Item {
     Dock.Button(id: ID.greetingColors, action: action, label: { context in
       let title = try title(context)
@@ -117,7 +117,7 @@ public extension Dock.Buttons {
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.scene.getPages().last == $0.engine.scene.getCurrentPage()
-    }
+    },
   ) -> some Dock.Item {
     Dock.Button(id: ID.greetingFont, action: action, label: { context in
       let title = try title(context)
@@ -152,7 +152,7 @@ public extension Dock.Buttons {
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = {
       try $0.engine.scene.getPages().last == $0.engine.scene.getCurrentPage()
-    }
+    },
   ) -> some Dock.Item {
     Dock.Button(id: ID.greetingSize, action: action, label: { context in
       let title = try title(context)

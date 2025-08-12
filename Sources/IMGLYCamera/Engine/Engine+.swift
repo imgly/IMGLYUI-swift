@@ -40,7 +40,7 @@ private extension Engine {
       recordings,
       useBackgroundTrack: backgroundTrack,
       page: pageID,
-      skipFirstVideoBecauseItWasAddedToTheSceneAlready: true
+      skipFirstVideoBecauseItWasAddedToTheSceneAlready: true,
     )
   }
 
@@ -65,7 +65,7 @@ private extension Engine {
     let duration = try addRecordings(
       recordings,
       useBackgroundTrack: nil,
-      page: pageID
+      page: pageID,
     )
 
     try await block.forceLoadAVResource(fill)
@@ -84,7 +84,7 @@ private extension Engine {
   @discardableResult
   func createScene(
     with video: Recording.Video,
-    frame: CGRect
+    frame: CGRect,
   ) async throws -> (video: DesignBlockID, videoFill: DesignBlockID) {
     // Create a scene with the video being reacted to.
     try await scene.create(fromVideo: video.url)
@@ -116,7 +116,7 @@ private extension Engine {
     _ recordings: [Recording],
     useBackgroundTrack backgroundTrack: DesignBlockID?,
     page: DesignBlockID,
-    skipFirstVideoBecauseItWasAddedToTheSceneAlready: Bool = false
+    skipFirstVideoBecauseItWasAddedToTheSceneAlready: Bool = false,
   ) throws -> Double {
     var didSkipFirstVideo = false
     var offset: Double = 0
@@ -132,7 +132,7 @@ private extension Engine {
           video,
           duration: recording.duration.seconds,
           at: offset,
-          appendTo: track
+          appendTo: track,
         )
       }
       offset += recording.duration.seconds
@@ -152,7 +152,7 @@ private extension Engine {
     _ video: Recording.Video,
     duration: Double,
     at offset: Double,
-    appendTo track: DesignBlockID
+    appendTo track: DesignBlockID,
   ) throws {
     let rect = video.rect
     let id = try block.create(.graphic)

@@ -14,7 +14,7 @@ class TimelinePinchGestureRecognizerDelegate: NSObject, UIGestureRecognizerDeleg
 
   func gestureRecognizer(
     _ gestureRecognizer: UIGestureRecognizer,
-    shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer,
   ) -> Bool {
     if gestureRecognizer.numberOfTouches == 2,
        otherGestureRecognizer is ClipTrimmingPanGestureRecognizer {

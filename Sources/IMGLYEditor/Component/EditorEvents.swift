@@ -98,7 +98,7 @@ public extension EditorEvent where Self == EditorEvents.ShowErrorAlert {
   /// Creates an ``EditorEvent`` to show the error alert.
   static func showErrorAlert(
     _ error: Swift.Error,
-    _ onDismiss: @escaping () -> Void = {}
+    _ onDismiss: @escaping () -> Void = {},
   ) -> Self {
     Self(error: error, onDismiss: onDismiss)
   }
@@ -293,7 +293,7 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {
   /// ``MediaType``.
   /// - Returns: The created ``EditorEvents/AddFrom/PhotoRoll`` event.
   static func addFromPhotoRoll(
-    to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
+    to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
   ) -> Self {
     Self(assetSourceIDs: assetSourceIDs)
   }
@@ -305,7 +305,7 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.SystemCamera {
   /// ``MediaType``.
   /// - Returns: The created ``EditorEvents/AddFrom/SystemCamera`` event.
   static func addFromSystemCamera(
-    to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
+    to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
   ) -> Self {
     Self(assetSourceIDs: assetSourceIDs)
   }
@@ -317,7 +317,7 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYCamera {
   /// ``MediaType``.
   /// - Returns: The created ``EditorEvents/AddFrom/IMGLYCamera`` event.
   static func addFromIMGLYCamera(
-    to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
+    to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
   ) -> Self {
     Self(assetSourceIDs: assetSourceIDs)
   }

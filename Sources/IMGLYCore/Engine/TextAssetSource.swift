@@ -19,7 +19,7 @@ public final class TextAssetSource: NSObject {
   ) async throws {
     guard let asset = try await engine.asset.findAssets(
       sourceID: typefaceSourceID,
-      query: .init(query: typefaceName, page: 0, locale: "en", perPage: 1)
+      query: .init(query: typefaceName, page: 0, locale: "en", perPage: 1),
     ).assets.first, let typeface = asset.payload?.typeface, typeface.name == typefaceName else {
       throw Error(errorDescription: "Typeface \(typefaceName) not found in \(typefaceSourceID) asset source.")
     }
@@ -45,7 +45,7 @@ public final class TextAssetSource: NSObject {
     label: String,
     fontWeight: FontWeight,
     fontSize: Int,
-    fontScale: Double
+    fontScale: Double,
   ) throws -> AssetResult {
     guard let uri = typeface.fonts.first(where: {
       $0.weight == fontWeight && $0.style == .normal
@@ -65,7 +65,7 @@ public final class TextAssetSource: NSObject {
         "blockType": DesignBlockType.text.rawValue,
       ],
       payload: .init(typeface: typeface),
-      context: .init(sourceID: Self.id)
+      context: .init(sourceID: Self.id),
     )
   }
 }
@@ -86,8 +86,12 @@ extension TextAssetSource: AssetSource {
       assets: Array(paginatedAssets),
       currentPage: queryData.page,
       nextPage: queryData.page == totalPages ? -1 : queryData.page + 1,
-      total: filteredAssets.count
+      total: filteredAssets.count,
     )
+  }
+
+  public func fetchAsset(id: String) async throws -> AssetResult? {
+    assets.first { $0.id == id }
   }
 
   @MainActor

@@ -82,7 +82,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       $0.selection.type == .audio &&
         $0.selection.kind == "voiceover"
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.editVoiceover, action: action, label: { context in
       let title = try title(context)
@@ -125,7 +125,7 @@ public extension InspectorBar.Buttons {
       } else {
         false
       }
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.reorder, action: action, label: { context in
       let title = try title(context)
@@ -160,7 +160,7 @@ public extension InspectorBar.Buttons {
         $0.selection.kind != "sticker" &&
         $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "appearance/adjustments")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.adjustments, action: action, label: { context in
       let title = try title(context)
@@ -195,7 +195,7 @@ public extension InspectorBar.Buttons {
         $0.selection.kind != "sticker" &&
         $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "appearance/filter")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.filter, action: action, label: { context in
       let title = try title(context)
@@ -230,7 +230,7 @@ public extension InspectorBar.Buttons {
         $0.selection.kind != "sticker" &&
         $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "appearance/effect")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.effect, action: action, label: { context in
       let title = try title(context)
@@ -265,7 +265,7 @@ public extension InspectorBar.Buttons {
         $0.selection.kind != "sticker" &&
         $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "appearance/blur")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.blur, action: action, label: { context in
       let title = try title(context)
@@ -295,7 +295,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try ($0.selection.type == .audio || $0.selection.fillType == .video) &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.volume, action: action, label: { context in
       let title = try title(context)
@@ -331,7 +331,7 @@ public extension InspectorBar.Buttons {
         $0.selection.kind != "animatedSticker" &&
         $0.engine.block.supportsCrop($0.selection.block) &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "layer/crop")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.crop, action: action, label: { context in
       let title = try title(context)
@@ -363,7 +363,7 @@ public extension InspectorBar.Buttons {
       try context.selection.type != .page &&
         context.selection.kind != "voiceover" &&
         context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/duplicate")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.duplicate, action: action, label: { context in
       let title = try title(context)
@@ -412,7 +412,7 @@ public extension InspectorBar.Buttons {
             context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/destroy") ||
             context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/duplicate")
         )
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.layer, action: action, label: { context in
       let title = try title(context)
@@ -444,7 +444,7 @@ public extension InspectorBar.Buttons {
       try $0.engine.scene.getMode() == .video &&
         $0.selection.kind != "voiceover" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/duplicate")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.split, action: action, label: { context in
       let title = try title(context)
@@ -493,7 +493,7 @@ public extension InspectorBar.Buttons {
         $0.engine.block.isAllowedByScope($0.selection.block, key: "stroke/change")
       return $0.selection.kind != "sticker" && $0.selection.kind != "animatedSticker" &&
         (showFill || showStroke)
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.fillStroke, action: action, label: { context in
       let title = try title(context)
@@ -533,7 +533,7 @@ public extension InspectorBar.Buttons {
       return try context.engine.scene.getMode() == .video &&
         context.selection.type != .audio &&
         !isBackgroundTrack(context.selection.parentBlock)
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.moveAsClip, action: action, label: { context in
       let title = try title(context)
@@ -574,7 +574,7 @@ public extension InspectorBar.Buttons {
       return try context.engine.scene.getMode() == .video &&
         context.selection.type != .audio &&
         isBackgroundTrack(context.selection.parentBlock)
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.moveAsOverlay, action: action, label: { context in
       let title = try title(context)
@@ -613,12 +613,12 @@ public extension InspectorBar.Buttons {
             }
           default:
             throw EditorError(
-              "Unsupported fillType \(context.selection.fillType?.rawValue ?? "") for replace inspector bar button."
+              "Unsupported fillType \(context.selection.fillType?.rawValue ?? "") for replace inspector bar button.",
             )
           }
         default:
           throw EditorError(
-            "Unsupported type \(context.selection.type?.rawValue ?? "") for replace inspector bar button."
+            "Unsupported type \(context.selection.type?.rawValue ?? "") for replace inspector bar button.",
           )
         }
       }()
@@ -635,7 +635,7 @@ public extension InspectorBar.Buttons {
           ($0.selection.type == .graphic && [.image, .video].contains($0.selection.fillType))
       ) && $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change") &&
         $0.selection.kind != "sticker" && $0.selection.kind != "animatedSticker"
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.replace, action: action, label: { context in
       let title = try title(context)
@@ -665,7 +665,7 @@ public extension InspectorBar.Buttons {
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       $0.selection.type == .group
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.enterGroup, action: action, label: { context in
       let title = try title(context)
@@ -701,7 +701,7 @@ public extension InspectorBar.Buttons {
         }
       }
       return try isGrouped(context.selection.parentBlock)
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.selectGroup, action: action, label: { context in
       let title = try title(context)
@@ -731,7 +731,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try $0.selection.type != .page &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/destroy")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.delete, action: action, label: { context in
       let title = try title(context)
@@ -761,7 +761,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try $0.selection.type == .text &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "text/edit")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.editText, action: action, label: { context in
       let title = try title(context)
@@ -791,7 +791,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try $0.selection.type == .text &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "text/character")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.formatText, action: action, label: { context in
       let title = try title(context)
@@ -825,9 +825,9 @@ public extension InspectorBar.Buttons {
         $0.engine.block.isAllowedByScope($0.selection.block, key: "shape/change") &&
         $0.engine.block.supportsShape($0.selection.block) &&
         [.line, .star, .polygon, .rect].contains(
-          ShapeType(rawValue: $0.engine.block.getType($0.engine.block.getShape($0.selection.block)))
+          ShapeType(rawValue: $0.engine.block.getType($0.engine.block.getShape($0.selection.block))),
         )
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.shape, action: action, label: { context in
       let title = try title(context)
@@ -857,7 +857,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
       try context.selection.type == .text &&
         context.engine.block.isAllowedByScope(context.selection.block, key: "text/character")
-    }
+    },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.textBackground, action: action, label: { context in
       let title = try title(context)

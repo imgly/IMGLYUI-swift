@@ -2,12 +2,13 @@ import SwiftUI
 @_spi(Internal) import IMGLYCore
 
 extension IMGLY where Wrapped: View {
+  @MainActor
   func colorPicker(
     _ title: LocalizedStringResource? = nil,
     isPresented: Binding<Bool>,
     selection: Binding<CGColor>,
     supportsOpacity: Bool = true,
-    onEditingChanged: @escaping (Bool) -> Void = { _ in }
+    onEditingChanged: @escaping (Bool) -> Void = { _ in },
   ) -> some View {
     wrapped.background(ColorPickerSheet(title: title, isPresented: isPresented, selection: selection,
                                         supportsOpacity: supportsOpacity, onEditingChanged: onEditingChanged))
@@ -44,7 +45,7 @@ private struct ColorPickerSheet: UIViewRepresentable {
       if cgColor.colorSpace?.name == CGColorSpace.displayP3, let convertedColor = cgColor.converted(
         to: .init(name: CGColorSpace.sRGB)!,
         intent: .defaultIntent,
-        options: nil
+        options: nil,
       ) {
         selection = convertedColor
       } else {
