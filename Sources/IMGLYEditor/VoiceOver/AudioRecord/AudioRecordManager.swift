@@ -1,4 +1,3 @@
-@preconcurrency import AVFAudio.AVAudioBuffer
 import AVFoundation
 import Combine
 @_spi(Internal) import IMGLYCore
@@ -153,13 +152,10 @@ final class AudioRecordManager {
     audioEngine.connect(mainMixer, to: output, format: inputFormat)
     audioEngine.connect(inputNode, to: resampler, format: desiredFormat)
 
-    resampler
-      .installTap(onBus: 0, bufferSize: bufferSize, format: desiredFormat) { @Sendable [weak self] buffer, when in
-        guard let self else { return }
-        Task { @MainActor in
-          delegate?.audioEngineDidReceiveBuffer(self, buffer: buffer, atTime: when)
-        }
-      }
+    resampler.installTap(onBus: 0, bufferSize: bufferSize, format: desiredFormat) { [weak self] buffer, when in
+      guard let self else { return }
+      delegate?.audioEngineDidReceiveBuffer(self, buffer: buffer, atTime: when)
+    }
 
     audioEngine.prepare()
   }
