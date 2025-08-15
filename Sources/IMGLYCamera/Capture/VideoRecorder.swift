@@ -58,9 +58,8 @@ class VideoRecorder: @unchecked Sendable {
           assetWriter.status == .writing else {
       throw (
         InternalCameraError(
-          // swiftlint:disable:next line_length
-          errorDescription: "Stopping failed. AssetWriter: \(assetWriter.debugDescription), isRecording: \(isRecording)",
-        ),
+          errorDescription: "Stopping failed. AssetWriter: \(assetWriter.debugDescription), isRecording: \(isRecording)"
+        )
       )
     }
 

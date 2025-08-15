@@ -19,7 +19,7 @@ public extension IMGLY where Wrapped == LocalizedStringResource {
   }
 }
 
-@_spi(Internal) public struct LocalizationTable: Sendable {
+@_spi(Internal) public struct LocalizationTable {
   let table: String?
   let bundle: Bundle
 
@@ -66,7 +66,7 @@ public extension IMGLY where Wrapped == LocalizedStringResource {
       wrapped.defaultValue, // Unfortunately, `wrapped.key` cannot be used as it is not exposed as a `StaticString`
       table: nil, // Assume there is no Localizable.xcstrings in IMGLYCoreUI
       locale: locale,
-      bundle: .atURL(Bundle.module.bundleURL),
+      bundle: .atURL(Bundle.module.bundleURL)
     )
     let notLocalizedString = String(localized: notLocalized)
 

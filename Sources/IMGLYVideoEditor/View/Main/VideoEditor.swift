@@ -4,7 +4,7 @@ import SwiftUI
 /// Built to support versatile video editing capabilities for a broad range of video applications.
 public struct VideoEditor: View {
   /// Scene that will be loaded by the default implementation of the `onCreate` callback.
-  public nonisolated static let defaultScene = Bundle.module.url(forResource: "video-empty", withExtension: "scene")!
+  public static let defaultScene = Bundle.module.url(forResource: "video-empty", withExtension: "scene")!
 
   @Environment(\.imglyOnCreate) private var onCreate
   @Environment(\.imglyNavigationBarItems) private var navigationBarItems

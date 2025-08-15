@@ -30,7 +30,7 @@ struct SelectableAssetItem<Content: View>: View {
       let propertyState = AssetProperties(
         title: title,
         backTitle: .imgly.localized("ly_img_editor_sheet_button_back"),
-        properties: properties,
+        properties: properties
       )
       sheetState = .properties(propertyState)
       var detent = PresentationDetent.imgly.tiny

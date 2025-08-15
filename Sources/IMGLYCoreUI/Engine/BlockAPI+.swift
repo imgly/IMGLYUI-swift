@@ -58,7 +58,7 @@ extension MappedType {
       } else {
         throw Error(
           // swiftlint:disable:next line_length
-          errorDescription: "Unimplemented type mapping from raw value '\(rawValue)' to type '\(T.self)' for property '\(property)'.",
+          errorDescription: "Unimplemented type mapping from raw value '\(rawValue)' to type '\(T.self)' for property '\(property)'."
         )
       }
     }
@@ -112,7 +112,7 @@ extension MappedType {
     default:
       throw Error(
         // swiftlint:disable:next line_length
-        errorDescription: "Unimplemented type mapping from block property type '\(type)' to type '\(T.self)' for property '\(property)'.",
+        errorDescription: "Unimplemented type mapping from block property type '\(type)' to type '\(T.self)' for property '\(property)'."
       )
     }
   }
@@ -194,7 +194,7 @@ extension MappedType {
     default:
       throw Error(
         // swiftlint:disable:next line_length
-        errorDescription: "Unimplemented type mapping to block property type '\(type)' from type '\(T.self)' for property '\(property)'.",
+        errorDescription: "Unimplemented type mapping to block property type '\(type)' from type '\(T.self)' for property '\(property)'."
       )
     }
   }
@@ -224,7 +224,7 @@ extension MappedType {
   /// mapped.
   func enumValues<T>(property: String) throws -> [T]
     where T: CaseIterable & RawRepresentable, T.RawValue == String {
-    let orderedCases = T.allCases.map(\.self) // Same order as defined in enum types.
+    let orderedCases = T.allCases.map { $0 } // Same order as defined in enum types.
     let cases = Set<String>(orderedCases.map(\.rawValue))
     let values = Set<String>(try getEnumValues(ofProperty: property))
     let unmappedValues = values.subtracting(cases)
@@ -408,7 +408,7 @@ extension MappedType {
       id,
       thumbnailHeight: Int(height * scale),
       timeRange: 0 ... 0.1,
-      numberOfFrames: 1,
+      numberOfFrames: 1
     )
     for try await thumbnail in stream {
       try Task.checkCancellation()

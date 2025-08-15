@@ -23,7 +23,7 @@ struct WaveView: View {
       x: CGFloat(wave.position) * (VoiceOverConfiguration.waveSizeWidth + VoiceOverConfiguration.waveSpaceSizeWidth),
       y: (maxHeight - height) / 2,
       width: VoiceOverConfiguration.waveSizeWidth,
-      height: height,
+      height: height
     )
     let color = wave.recorded ? Colors.waveRecording : Colors.wave
     return Path(waveRect)

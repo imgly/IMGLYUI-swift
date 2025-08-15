@@ -44,5 +44,5 @@ class AnyAssetLibraryInteractor: AssetLibraryInteractor {
       .eraseToAnyPublisher()
   }
 
-  nonisolated let objectWillChange: AnyPublisher<Void, Never>
+  let objectWillChange: AnyPublisher<Void, Never>
 }

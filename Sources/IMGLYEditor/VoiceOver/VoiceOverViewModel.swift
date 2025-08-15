@@ -222,7 +222,7 @@ final class VoiceOverViewModel: ObservableObject {
                 let newWave = Wave(
                   value: sample,
                   recorded: (self.alreadyRecordedAudio && self.state == .recording) ? true : false,
-                  position: barInitialPos,
+                  position: barInitialPos
                 )
                 self.audioWaves[barInitialPos] = newWave
               }
@@ -254,7 +254,7 @@ final class VoiceOverViewModel: ObservableObject {
   private func fetchAudioThumbnails() {
     let timeBegin = lastEndIntervalRequestedInSeconds ?? max(
       0,
-      player.playheadPosition.seconds - durationEachIntervalToRequestSamples,
+      player.playheadPosition.seconds - durationEachIntervalToRequestSamples
     )
     let timeEnd = timeBegin + durationEachIntervalToRequestSamples
     lastEndIntervalRequestedInSeconds = timeEnd
@@ -434,7 +434,7 @@ final class VoiceOverViewModel: ObservableObject {
   private func configureNotifications() {
     didEnterBackgroundNotificationPublisher = NotificationCenter.default.publisher(
       for: UIApplication.didEnterBackgroundNotification,
-      object: nil,
+      object: nil
     )
     .sink { [weak self] _ in
       self?.pauseAnyActivity()
@@ -442,7 +442,7 @@ final class VoiceOverViewModel: ObservableObject {
 
     willResignActiveNotificationPublisher = NotificationCenter.default.publisher(
       for: UIApplication.willResignActiveNotification,
-      object: nil,
+      object: nil
     )
     .sink { [weak self] _ in
       self?.pauseAnyActivity()

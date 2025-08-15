@@ -19,10 +19,8 @@ public extension IMGLY where Wrapped == PresentationDetent {
     case .imgly.small: AdaptiveSmallPresentationDetent.identifier
     case .imgly.medium: AdaptiveMediumPresentationDetent.identifier
     case .imgly.large: AdaptiveLargePresentationDetent.identifier
-    // Identical to UISheetPresentationController.Detent.medium().identifier but without @MainActor constraint.
-    case .medium: UISheetPresentationController.Detent.Identifier("com.apple.UIKit.medium")
-    // Identical to UISheetPresentationController.Detent.large().identifier but without @MainActor constraint.
-    case .large: UISheetPresentationController.Detent.Identifier("com.apple.UIKit.large")
+    case .medium: UISheetPresentationController.Detent.medium().identifier
+    case .large: UISheetPresentationController.Detent.large().identifier
     default:
       nil
     }

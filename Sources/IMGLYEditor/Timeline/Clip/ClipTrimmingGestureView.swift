@@ -18,7 +18,7 @@ class TransparentGestureView: UIView {
   init(delegate: ClipTrimmingPanGestureRecognizerDelegate) {
     gestureRecognizer = ClipTrimmingPanGestureRecognizer(
       target: delegate,
-      action: #selector(ClipTrimmingPanGestureRecognizerDelegate.panned(_:)),
+      action: #selector(ClipTrimmingPanGestureRecognizerDelegate.panned(_:))
     )
 
     super.init(frame: .zero)

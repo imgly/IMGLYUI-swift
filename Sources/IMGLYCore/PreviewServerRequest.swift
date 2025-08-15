@@ -1,6 +1,6 @@
 import Foundation
 
-@_spi(Internal) public enum PreviewServerRequest: String {
+@_spi(Internal) public enum PreviewServerRequest: String, Sendable {
   case secrets
   case resource
 

@@ -31,7 +31,7 @@ private struct PhotoRoll: ViewModifier {
         isPresented: $isPresented,
         media: media,
         maxSelectionCount: maxSelectionCount,
-        onComplete: completion,
+        onComplete: completion
       )
     } else {
       if maxSelectionCount != 1 {
@@ -39,7 +39,7 @@ private struct PhotoRoll: ViewModifier {
         let _ =
           print(
             // swiftlint:disable:next line_length
-            "`UIImagePickerController` does not support `maxSelectionCount` other than 1, falling back to single selection mode.",
+            "`UIImagePickerController` does not support `maxSelectionCount` other than 1, falling back to single selection mode."
           )
       }
       content.imgly.imagePicker(isPresented: $isPresented, media: media, onComplete: completion)

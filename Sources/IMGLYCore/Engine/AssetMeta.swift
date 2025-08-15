@@ -2,7 +2,7 @@ import Foundation
 
 @_spi(Internal) public typealias AssetMeta = [AssetMetaKey: String]
 
-@_spi(Internal) public enum AssetMetaKey: String, Sendable {
+@_spi(Internal) public enum AssetMetaKey: String {
   case uri
   case thumbUri
   case blockType

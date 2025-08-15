@@ -7,7 +7,7 @@ struct ExportView: View {
     case exporting(ExportProgress, cancelAction: () -> Void)
     case completed(
       title: LocalizedStringResource = .imgly.localized("ly_img_editor_dialog_export_success_button_dismiss"),
-      completedAction: () -> Void,
+      completedAction: () -> Void
     )
     case error(Swift.Error, closeAction: () -> Void)
   }
@@ -73,7 +73,7 @@ struct ExportView: View {
         .confirmationDialog(
           Text(.imgly.localized("ly_img_editor_dialog_export_cancel_title")),
           isPresented: $isShowingCancelExportDialog,
-          titleVisibility: .visible,
+          titleVisibility: .visible
         ) {
           Button(role: .destructive) {
             cancelAction()

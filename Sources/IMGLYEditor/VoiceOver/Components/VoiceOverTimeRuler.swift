@@ -18,8 +18,8 @@ struct VoiceOverTimeRuler: View {
         stride(
           from: 0,
           through: roundedUpToNearestTen,
-          by: timeline.timelineRulerScaleInterval,
-        ),
+          by: timeline.timelineRulerScaleInterval
+        )
       )
 
       ForEach(markers, id: \.self) { marker in

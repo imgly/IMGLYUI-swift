@@ -70,16 +70,6 @@ public extension IMGLY where Wrapped: View {
     wrapped.environment(\.imglyOnLoaded, onLoaded)
   }
 
-  /// Sets the callback that is invoked when the editor state has changed.
-  /// The callback receives the ``OnChanged/EditorStateChange`` and the ``OnChanged/Context``
-  /// which includes the engine and the event handler. It is intended to react to editor state changed.
-  /// By default, an empty callback is executed.
-  /// - Parameter onChanged: The callback.
-  /// - Returns: A view that has the given callback set.
-  @_spi(Internal) func onChanged(_ onChanged: @escaping OnChanged.Callback) -> some View {
-    wrapped.environment(\.imglyOnChanged, onChanged)
-  }
-
   /// Sets the asset library UI definition used by the editor. By default, the predefined ``DefaultAssetLibrary`` is
   /// used. To use custom asset sources in the asset library UI, the custom asset source must be first added to the
   /// engine. In addition to creating or loading a scene, registering the asset sources should be done in the
@@ -409,11 +399,10 @@ extension IMGLY where Wrapped: View {
       topSafeAreaInset: topSafeAreaInset,
       bottomSafeAreaInset: bottomSafeAreaInset,
       isVisible: isVisible,
-      action: action,
+      action: action
     ))
   }
 
-  @MainActor
   func errorAlert(isSheet: Bool) -> some View {
     wrapped.modifier(ErrorAlert(isSheet: isSheet))
   }
@@ -448,7 +437,6 @@ extension IMGLY where Wrapped: View {
     }
   }
 
-  @MainActor
   func onWillDisappear(_ perform: @escaping () -> Void) -> some View {
     wrapped.background(WillDisappearHandler(onWillDisappear: perform))
   }

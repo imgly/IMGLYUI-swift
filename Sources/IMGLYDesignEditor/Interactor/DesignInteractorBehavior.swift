@@ -24,7 +24,7 @@ final class DesignInteractorBehavior: InteractorBehavior {
     let zoomLevel = try await context.engine.zoomToPage(
       context.interactor.page,
       context.interactor.zoomModel.defaultInsets,
-      zoomModel: context.interactor.zoomModel,
+      zoomModel: context.interactor.zoomModel
     )
     if let zoomLevel {
       context.interactor.zoomModel.defaultZoomLevel = zoomLevel

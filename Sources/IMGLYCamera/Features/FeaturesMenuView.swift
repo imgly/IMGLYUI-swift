@@ -32,7 +32,7 @@ struct FeaturesMenuView: View {
         DragGesture(minimumDistance: 0)
           .onChanged { _ in
             showTransientLabels()
-          },
+          }
       )
       .menuOrder(.fixed)
       .transition(.offset(x: -20).combined(with: .opacity))
@@ -48,11 +48,9 @@ struct FeaturesMenuView: View {
     transientLabelTimer?.invalidate()
     transientLabelTimer = Timer.scheduledTimer(
       withTimeInterval: labelDisappearInterval,
-      repeats: false,
+      repeats: false
     ) { _ in
-      MainActor.assumeIsolated {
-        hasTransientLabel = false
-      }
+      hasTransientLabel = false
     }
   }
 }
@@ -83,7 +81,7 @@ extension FeaturesMenuView {
           .name,
         image: camera.countdownMode.image,
         isSelected: camera.countdownMode != .disabled,
-        hasLabel: hasTransientLabel,
+        hasLabel: hasTransientLabel
       )
     }
   }
@@ -111,7 +109,7 @@ extension FeaturesMenuView {
           text: .imgly.localized("ly_img_camera_button_dual_camera"),
           image: camera.cameraMode.layoutMode?.image ?? Image("custom.camera.dual", bundle: .module),
           isSelected: camera.isDualCameraActive,
-          hasLabel: hasTransientLabel,
+          hasLabel: hasTransientLabel
         )
       }
     }
@@ -136,7 +134,7 @@ extension FeaturesMenuView {
           text: .imgly.localized("ly_img_camera_button_reaction"),
           image: layout.image,
           isSelected: true,
-          hasLabel: hasTransientLabel,
+          hasLabel: hasTransientLabel
         )
       }
       .disabled(camera.hasRecordings)
@@ -149,7 +147,7 @@ extension FeaturesMenuView {
           text: "React",
           image: Image(systemName: "arrow.2.squarepath"),
           isSelected: false,
-          hasLabel: hasTransientLabel,
+          hasLabel: hasTransientLabel
         )
       }
     }
@@ -173,7 +171,7 @@ extension CameraModel {
   /// - Parameter embed: A closure that embeds the selected layout mode into the current camera mode.
   /// - Returns: A binding for the selected camera layout mode.
   private func layoutBinding(
-    _ embed: @escaping (CameraLayoutMode) -> CameraMode?,
+    _ embed: @escaping (CameraLayoutMode) -> CameraMode?
   ) -> Binding<CameraLayoutMode?> {
     .init { [unowned self] in
       cameraMode.layoutMode

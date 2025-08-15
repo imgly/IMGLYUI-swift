@@ -107,7 +107,7 @@ class CameraCanvasInteractor: ObservableObject {
         paddingLeft: 0,
         paddingTop: 0,
         paddingRight: 0,
-        paddingBottom: 0,
+        paddingBottom: 0
       )
     }
   }
@@ -152,7 +152,7 @@ class CameraCanvasInteractor: ObservableObject {
       let video = try await engine.addVideo(
         url: url,
         frame: frame,
-        page: page,
+        page: page
       )
       try engine.block.setFrame(streamRect1, value: currentCameraLayout.1 ?? .zero)
       reactionVideo = video
@@ -209,7 +209,7 @@ extension Engine {
   func addVideo(
     url: URL,
     frame: CGRect,
-    page: DesignBlockID,
+    page: DesignBlockID
   ) async throws -> ReactionVideo {
     let video = try block.create(.graphic)
     try block.setShape(video, shape: block.createShape(.rect))

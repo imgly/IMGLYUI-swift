@@ -21,7 +21,7 @@ class FontLibrary {
   func loadFromAssetSource(engine: Engine, sourceID: String) async throws {
     assets = try await engine.asset.findAssets(
       sourceID: sourceID,
-      query: .init(query: nil, page: 0, locale: "en", perPage: 1000),
+      query: .init(query: nil, page: 0, locale: "en", perPage: 1000)
     ).assets.map {
       .init(sourceID: sourceID, result: $0)
     }

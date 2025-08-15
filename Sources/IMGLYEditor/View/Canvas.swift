@@ -102,7 +102,7 @@ struct Canvas: View {
                        selection: .init(block: id, engine: engine))
     } catch {
       let error = EditorError(
-        "Could not create CanvasMenu.Context.\nReason:\n\(error.localizedDescription)",
+        "Could not create CanvasMenu.Context.\nReason:\n\(error.localizedDescription)"
       )
       interactor.handleErrorWithTask(error)
       return nil

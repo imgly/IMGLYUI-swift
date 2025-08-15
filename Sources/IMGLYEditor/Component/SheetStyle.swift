@@ -75,18 +75,18 @@ public struct SheetStyle: Hashable {
     isFloating: Bool,
     detent: PresentationDetent,
     detents: Set<PresentationDetent>,
-    largestUndimmedDetent: PresentationDetent? = nil,
+    largestUndimmedDetent: PresentationDetent? = nil
   ) -> Self {
     if let largestUndimmedDetent {
       let allDetentsArePredefined = withArrayBuilder {
         detent
-        detents.map(\.self)
+        detents.map { $0 }
         largestUndimmedDetent
       }.allSatisfy(\.isPredefined)
       assert(
         allDetentsArePredefined,
         // swiftlint:disable:next line_length
-        "If `largestUndimmedDetent` is not `nil` `PresentationDetent.medium`, `.large`, `.imgly.tiny`, `.imgly.small`, `.imgly.medium`, or `.imgly.large` must be used.",
+        "If `largestUndimmedDetent` is not `nil` `PresentationDetent.medium`, `.large`, `.imgly.tiny`, `.imgly.small`, `.imgly.medium`, or `.imgly.large` must be used."
       )
     }
     return self.init(isFloating, detent, detents, largestUndimmedDetent: largestUndimmedDetent)

@@ -5,7 +5,7 @@ struct OptionButtonStyle: PrimitiveButtonStyle {
     Button(configuration)
       .background(
         RoundedRectangle(cornerRadius: 11)
-          .fill(Color(uiColor: .secondarySystemGroupedBackground)),
+          .fill(Color(uiColor: .secondarySystemGroupedBackground))
       )
   }
 }

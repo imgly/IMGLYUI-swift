@@ -52,7 +52,7 @@ struct AlertState: BatchMutable, Equatable {
       title: "Error",
       message: error.localizedDescription,
       shouldDismiss: dismiss,
-      dismissCallback: onDismiss,
+      dismissCallback: onDismiss
     )
   }
 

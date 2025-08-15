@@ -43,7 +43,7 @@ extension Interactor: AudioInteractor {
 
   func getAudioBlockFileData(for audioBlock: DesignBlockID) async throws -> Blob? {
     if let url = try getAudioBlockURL(for: audioBlock) {
-      let (data, _) = try await URLSession.shared.data(from: url)
+      let (data, _) = try await URLSession.shared.get(url)
       return data.subdata(in: 44 ..< data.count) // Skip the first 44 header bytes
     }
     return nil
@@ -72,7 +72,7 @@ extension Interactor: AudioInteractor {
     _ audioBlock: DesignBlockID,
     from timeBegin: Double,
     until timeEnd: Double,
-    with numberOfSamples: Int = 5,
+    with numberOfSamples: Int = 5
   ) async throws -> AsyncThrowingStream<IMGLYEngine.AudioThumbnail, Swift.Error> {
     guard timeBegin < timeEnd else { throw Error(errorDescription: "Invalid time range") }
 
@@ -82,7 +82,7 @@ extension Interactor: AudioInteractor {
       samplesPerChunk: numberOfSamples,
       timeRange: timeRange,
       numberOfSamples: numberOfSamples,
-      numberOfChannels: 1,
+      numberOfChannels: 1
     )
   }
 }

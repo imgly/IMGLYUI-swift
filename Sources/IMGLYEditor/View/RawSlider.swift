@@ -36,7 +36,7 @@ struct RawSlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride: Bina
       default: defaultValue ?? bounds.lowerBound,
       getter: getter,
       setter: setter,
-      completion: nil,
+      completion: nil
     )
   }
 

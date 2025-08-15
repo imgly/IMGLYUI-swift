@@ -63,14 +63,14 @@ struct VolumeOptions: View {
       property: .raw(""),
       default: 0,
       getter: volumeGetter,
-      setter: volumeSetter,
+      setter: volumeSetter
     )
     let mutedBinding = interactor.bind(
       id,
       property: .raw(""),
       default: false,
       getter: mutedGetter,
-      setter: mutedSetter,
+      setter: mutedSetter
     )
 
     List {
@@ -191,7 +191,7 @@ struct VolumeSliderView: View {
           }
           .onEnded { _ in
             isDragging = false
-          },
+          }
       )
     }
     .animation(.easeInOut(duration: max(0.15 * value, 0.1)), value: isMuted)

@@ -57,7 +57,7 @@ struct ColorOptions: View {
           color: $0.color,
           isEnabled: isEnabled,
           selection: colorWithUndo,
-          style: style,
+          style: style
         )
         Spacer()
       }

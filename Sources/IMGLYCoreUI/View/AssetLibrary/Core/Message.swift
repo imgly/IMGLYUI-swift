@@ -7,7 +7,7 @@ public struct Message: View {
   /// No service message.
   public static let noService = Message(
     .imgly.localized("ly_img_editor_asset_library_label_error"),
-    systemImage: "exclamationmark.triangle",
+    systemImage: "exclamationmark.triangle"
   )
 
   private let title: LocalizedStringResource

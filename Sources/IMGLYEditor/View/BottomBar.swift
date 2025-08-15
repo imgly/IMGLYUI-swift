@@ -74,7 +74,7 @@ struct BottomBar: View {
                        selection: .init(block: id, engine: engine))
     } catch {
       let error = EditorError(
-        "Could not create InspectorBar.Context.\nReason:\n\(error.localizedDescription)",
+        "Could not create InspectorBar.Context.\nReason:\n\(error.localizedDescription)"
       )
       interactor.handleErrorWithTask(error)
       return nil
@@ -113,19 +113,19 @@ struct BottomBar: View {
           HStack {
             LinearGradient(
               gradient: Gradient(
-                colors: [.black, .clear],
+                colors: [.black, .clear]
               ),
               startPoint: UnitPoint(x: 0.8, y: 0.5),
-              endPoint: .trailing,
+              endPoint: .trailing
             )
             .frame(width: isCloseButtonEnabled ? leadingPadding : 0)
             Spacer()
             LinearGradient(
               gradient: Gradient(
-                colors: [.clear, .black],
+                colors: [.clear, .black]
               ),
               startPoint: UnitPoint(x: 0.3, y: 0.5),
-              endPoint: .trailing,
+              endPoint: .trailing
             )
             .frame(width: 30)
           }

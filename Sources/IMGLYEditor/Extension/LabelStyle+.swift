@@ -22,7 +22,6 @@ public extension IMGLY where Wrapped == CanvasMenuLabelStyle {
   /// A label style used for the ``CanvasMenu``.
   /// - Parameter style: The style of the label style.
   /// - Returns: The created label style.
-  @MainActor
   static func canvasMenu(_ style: Wrapped.Style) -> Wrapped { Wrapped(style: style) }
 }
 

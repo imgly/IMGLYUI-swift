@@ -30,7 +30,7 @@ extension ClipType: CustomStringConvertible {
 }
 
 /// A clip in the timeline.
-final class Clip: Identifiable, Hashable, ObservableObject {
+final class Clip: Identifiable, Hashable, ObservableObject, @unchecked Sendable {
   static func == (lhs: Clip, rhs: Clip) -> Bool {
     lhs.id == rhs.id
   }

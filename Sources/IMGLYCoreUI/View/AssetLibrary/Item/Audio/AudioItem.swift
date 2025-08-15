@@ -39,7 +39,7 @@ struct AudioItem: View {
         audioPreviewPlayer.$currentAsset,
         audioPreviewPlayer.$state,
         audioPreviewPlayer.$playheadPosition,
-        audioPreviewPlayer.$formattedPlayheadPosition,
+        audioPreviewPlayer.$formattedPlayheadPosition
       )
       .filter { currentAsset, _, _, _ in
         guard case let .asset(asset) = asset else {

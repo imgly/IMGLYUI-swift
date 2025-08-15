@@ -145,20 +145,20 @@
 
     private func presentCameraPermissionAlert() {
       let alert = UIAlertController(
-        title: String(localized: CamMicUsageDescriptionFromBundleHelper.cameraAlertHeadline),
-        message: String(localized: CamMicUsageDescriptionFromBundleHelper.cameraUsageDescription),
-        preferredStyle: .alert,
+        title: String(localized: CamMicUsageDescriptionFromBundleHelper.shared.cameraAlertHeadline),
+        message: String(localized: CamMicUsageDescriptionFromBundleHelper.shared.cameraUsageDescription),
+        preferredStyle: .alert
       )
       alert.addAction(UIAlertAction(
         title: String(localized: .imgly.localized("ly_img_editor_dialog_permission_camera_button_dismiss")),
-        style: .cancel,
+        style: .cancel
       ) { [weak self] _ in
         self?.isPresented.wrappedValue = false
       })
 
       alert.addAction(UIAlertAction(
         title: String(localized: .imgly.localized("ly_img_editor_dialog_permission_camera_button_confirm")),
-        style: .default,
+        style: .default
       ) { _ in
         if let appSettings = URL(string: UIApplication.openSettingsURLString),
            UIApplication.shared.canOpenURL(appSettings) {
@@ -170,20 +170,20 @@
 
     private func presentMicrophonePermissionAlert() {
       let alert = UIAlertController(
-        title: String(localized: CamMicUsageDescriptionFromBundleHelper.microphoneAlertHeadline),
-        message: String(localized: CamMicUsageDescriptionFromBundleHelper.microphoneUsageDescription),
-        preferredStyle: .alert,
+        title: String(localized: CamMicUsageDescriptionFromBundleHelper.shared.microphoneAlertHeadline),
+        message: String(localized: CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription),
+        preferredStyle: .alert
       )
       alert.addAction(UIAlertAction(
         title: String(localized: .imgly.localized("ly_img_editor_dialog_permission_microphone_button_dismiss")),
-        style: .cancel,
+        style: .cancel
       ) { [weak self] _ in
         self?.isPresented.wrappedValue = false
       })
 
       alert.addAction(UIAlertAction(
         title: String(localized: .imgly.localized("ly_img_editor_dialog_permission_microphone_button_confirm")),
-        style: .default,
+        style: .default
       ) { _ in
         if let appSettings = URL(string: UIApplication.openSettingsURLString),
            UIApplication.shared.canOpenURL(appSettings) {
@@ -226,7 +226,7 @@
 
     func imagePickerController(
       _ picker: UIImagePickerController,
-      didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any],
+      didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
     ) {
       guard let image = info[.originalImage] as? UIImage else {
         guard let videoURL = info[.mediaURL] as? URL else {
@@ -271,7 +271,7 @@
 
     private nonisolated func complete(
       with result: Result<[(URL, MediaType)], Swift.Error>,
-      picker: UIImagePickerController,
+      picker: UIImagePickerController
     ) {
       DispatchQueue.main.async {
         self.isPresented.wrappedValue = false

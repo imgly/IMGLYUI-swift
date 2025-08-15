@@ -2,7 +2,7 @@ import Foundation
 
 extension Bundle {
   private final class CurrentBundleFinder {}
-  static let module: Bundle = {
+  static var module: Bundle = {
     // If the app is built using static CocoaPods the resource bundle will be in the app's main bundle.
     if
       let assetBundleURL = Bundle.main.url(forResource: "IMGLYPostcardEditorAssets", withExtension: "bundle"),

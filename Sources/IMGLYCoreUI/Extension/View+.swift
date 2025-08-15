@@ -46,7 +46,7 @@ public extension View {
     sources: [AssetLoader.SourceData],
     search: Binding<AssetLoader.QueryData> = .constant(.init()),
     order: AssetLoader.ItemOrder = .alternating,
-    perPage: Int = 30,
+    perPage: Int = 30
   ) -> some View {
     wrapped.modifier(AssetLoader(sources: sources, search: search, order: order, perPage: perPage))
   }
@@ -116,7 +116,7 @@ extension IMGLY where Wrapped: View {
     _ name: Notification.Name,
     center: NotificationCenter = .default,
     object: AnyObject? = nil,
-    perform action: @escaping (Notification) -> Void,
+    perform action: @escaping (Notification) -> Void
   ) -> some View {
     wrapped.onReceive(center.publisher(for: name, object: object), perform: action)
   }

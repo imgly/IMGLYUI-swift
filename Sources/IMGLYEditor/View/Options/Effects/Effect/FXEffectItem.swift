@@ -26,7 +26,7 @@ struct FXEffectItem: View {
           .cornerRadius(8)
       } onTap: {
         selection = AssetSelection(
-          identifier: identifier,
+          identifier: identifier
         )
       }
     }, title: asset.result.label ?? "", selected: selected, properties: properties, asset: asset,

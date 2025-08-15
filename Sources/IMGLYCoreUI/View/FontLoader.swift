@@ -1,3 +1,5 @@
+@_spi(Internal) import IMGLYCore
+
 import SwiftUI
 
 @_spi(Internal) public struct FontLoader<Content: View, Placeholder: View>: View {
@@ -32,7 +34,7 @@ import SwiftUI
               fontName = registeredFontName
               return
             }
-            let (data, _) = try await URLSession.shared.data(from: fontURL)
+            let (data, _) = try await URLSession.shared.get(fontURL)
             let fonts = FontImporter.importFonts([fontURL: data])
             if let name = fonts.first?.value {
               fontName = name

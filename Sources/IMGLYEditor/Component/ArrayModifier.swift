@@ -59,7 +59,7 @@ public class ArrayModifier<Element, Group: Hashable> {
   private func error(operation: String, id: EditorComponentID) -> EditorError {
     .init(
       // swiftlint:disable:next line_length
-      "The '\(operation)' operation was invoked with id '\(id.value)' which does not exist in the source array or is already removed via remove API.",
+      "The '\(operation)' operation was invoked with id '\(id.value)' which does not exist in the source array or is already removed via remove API."
     )
   }
 }

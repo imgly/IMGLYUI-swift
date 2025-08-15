@@ -21,14 +21,14 @@ struct CircularProgressIndicator: View {
         .rotation(.degrees(-90))
         .trim(
           from: 0,
-          to: value,
+          to: value
         )
         .stroke(
           Color.accentColor,
           style: StrokeStyle(
             lineWidth: strokeWidth,
-            lineCap: .round,
-          ),
+            lineCap: .round
+          )
         )
       if value < 1 {
         Circle()
@@ -38,16 +38,16 @@ struct CircularProgressIndicator: View {
               gradient: Gradient(colors: [.clear, .primary.opacity(0.1)]),
               center: .center,
               startAngle: .zero + rotation,
-              endAngle: .degrees(180) + rotation,
+              endAngle: .degrees(180) + rotation
             ),
             style: StrokeStyle(
               lineWidth: strokeWidth,
-              lineCap: .round,
-            ),
+              lineCap: .round
+            )
           )
           .animation(
             .linear(duration: indeterminateRotationSpeed).repeatForever(autoreverses: false),
-            value: rotation,
+            value: rotation
           )
 
         Text(value, format: .percent.precision(.fractionLength(0)))

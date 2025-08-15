@@ -100,7 +100,7 @@ struct VoiceOverView<ViewModel: VoiceOverViewModelProtocol>: View {
     }
     .imgly.loadingOverlay(isLoading: viewModel.state == .loading)
     .toolbar { toolbarContent }
-    .alert(Text(CamMicUsageDescriptionFromBundleHelper.microphoneAlertHeadline),
+    .alert(Text(CamMicUsageDescriptionFromBundleHelper.shared.microphoneAlertHeadline),
            isPresented: $viewModel.isShowingPermissionsAlertForMicrophone) {
       Button(role: .cancel) {} label: {
         Text(Localization.buttonDontAllow)
@@ -109,7 +109,7 @@ struct VoiceOverView<ViewModel: VoiceOverViewModelProtocol>: View {
         Text(Localization.buttonSettings)
       }
     } message: {
-      Text(CamMicUsageDescriptionFromBundleHelper.microphoneUsageDescription)
+      Text(CamMicUsageDescriptionFromBundleHelper.shared.microphoneUsageDescription)
     }
     .errorAlert(error: $identifiableError)
     .onChange(of: viewModel.state) { newState in
@@ -146,7 +146,7 @@ struct VoiceOverView<ViewModel: VoiceOverViewModelProtocol>: View {
       Text(viewModel.mode == .new ?
         Localization.confirmationCancelMessage : Localization.confirmationEditCancelMessage),
       isPresented: $isShowingCancelAlert,
-      titleVisibility: .visible,
+      titleVisibility: .visible
     ) {
       Button(role: .destructive) {
         viewModel.cancelAction()

@@ -13,7 +13,7 @@ final class PostcardInteractorBehavior: InteractorBehavior {
       forPage: 0,
       includeDisabled: true,
       setDisabled: true,
-      ignoreScope: true,
+      ignoreScope: true
     )
     try context.engine.editor.setGlobalScope(key: ScopeKey.editorAdd.rawValue, value: .defer)
   }

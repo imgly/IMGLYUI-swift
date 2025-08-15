@@ -24,16 +24,16 @@ import SwiftUI
   }
 }
 
-@_spi(Internal) public struct ButtonState: Identifiable, Equatable, Sendable {
+@_spi(Internal) public struct ButtonState: Identifiable, Equatable {
   public var id: UUID
   var title: LocalizedStringResource
   var role: ButtonRole?
-  var action: @MainActor () -> Void
+  var action: () -> Void
 
   @_spi(Internal) public init(
     title: LocalizedStringResource,
     role: ButtonRole? = nil,
-    action: @escaping @MainActor () -> Void
+    action: @escaping () -> Void
   ) {
     id = UUID()
     self.title = title
@@ -59,7 +59,7 @@ import SwiftUI
       },
       message: { alert in
         alert.message.map { Text($0) }
-      },
+      }
     )
   }
 }

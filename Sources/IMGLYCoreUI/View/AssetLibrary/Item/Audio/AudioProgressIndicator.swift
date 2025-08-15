@@ -8,7 +8,7 @@ struct AudioProgressIndicator: View {
       .trim(from: 0, to: progress)
       .stroke(
         Color.white,
-        style: SwiftUI.StrokeStyle(lineWidth: 3.2, lineCap: .round),
+        style: SwiftUI.StrokeStyle(lineWidth: 3.2, lineCap: .round)
       )
       .rotationEffect(.degrees(-90))
       .animation(.easeOut, value: progress)

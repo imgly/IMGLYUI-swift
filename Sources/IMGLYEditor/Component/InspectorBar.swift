@@ -36,9 +36,9 @@ public extension InspectorBar {
   }
 
   /// A closure to build an array of inspector bar ``Item``s.
-  typealias Items = Context.To<[any Item]>
+  typealias Items = Context.SendableTo<[any Item]>
   /// A closure to modify an array of inspector bar ``Item``s.
-  typealias Modifications = @MainActor (_ context: Context, _ items: Modifier) throws -> Void
+  typealias Modifications = @Sendable @MainActor (_ context: Context, _ items: Modifier) throws -> Void
   /// A button inspector bar ``Item`` component.
   typealias Button = EditorComponents.Button
 }

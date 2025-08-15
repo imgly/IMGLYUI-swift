@@ -36,9 +36,9 @@ public extension NavigationBar {
   }
 
   /// A closure to build an array of navigation bar ``ItemGroup``s.
-  typealias Items = Context.To<[ItemGroup]>
+  typealias Items = Context.SendableTo<[ItemGroup]>
   /// A closure to modify an array of navigation bar ``Item``s grouped by their ``ItemPlacement``s..
-  typealias Modifications = @MainActor (_ context: Context, _ items: Modifier) throws -> Void
+  typealias Modifications = @Sendable @MainActor (_ context: Context, _ items: Modifier) throws -> Void
   /// A button navigation bar ``Item`` component.
   typealias Button = EditorComponents.Button
 

@@ -6,7 +6,7 @@ import SwiftUI
 /// messages and pictures.
 public struct PostcardEditor: View {
   /// Scene that will be loaded by the default implementation of the `onCreate` callback.
-  public nonisolated static let defaultScene = Bundle.module.url(forResource: "postcard-empty", withExtension: "scene")!
+  public static let defaultScene = Bundle.module.url(forResource: "postcard-empty", withExtension: "scene")!
 
   @Environment(\.imglyOnCreate) private var onCreate
   @Environment(\.imglyNavigationBarItems) private var navigationBarItems
@@ -38,8 +38,8 @@ public struct PostcardEditor: View {
             NavigationBar.Buttons.previousPage(
               label: { _ in NavigationLabel(
                 .imgly.localized("ly_img_editor_navigation_bar_button_design"),
-                direction: .backward,
-              ) },
+                direction: .backward
+              ) }
             )
           }
           NavigationBar.ItemGroup(placement: .principal) {
@@ -51,8 +51,8 @@ public struct PostcardEditor: View {
             NavigationBar.Buttons.nextPage(
               label: { _ in NavigationLabel(
                 .imgly.localized("ly_img_editor_navigation_bar_button_write"),
-                direction: .forward,
-              ) },
+                direction: .forward
+              ) }
             )
             NavigationBar.Buttons.export()
           }
@@ -62,7 +62,7 @@ public struct PostcardEditor: View {
         Dock.Buttons
           .assetLibrary(
             isVisible: { try $0.engine.scene.getPages().first == $0.engine.scene.getCurrentPage() },
-            modifier: { _ in Dock.Buttons.AssetLibraryModifier() },
+            modifier: { _ in Dock.Buttons.AssetLibraryModifier() }
           )
         Dock.Custom(id: "ly.img.component.dock.postcard.divider", content: { _ in
           Divider()

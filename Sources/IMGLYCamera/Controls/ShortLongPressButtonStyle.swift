@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A button style that handles taps and long press start/end events.
-struct ShortLongPressButtonStyle: ButtonStyle {
+struct ShortLongPressButtonStyle: ButtonStyle, @unchecked Sendable {
   let longPressTimeout: TimeInterval
 
   @Binding var isPressed: Bool
@@ -22,13 +22,11 @@ struct ShortLongPressButtonStyle: ButtonStyle {
           onShortPress()
         } else if isPressed == false, newValue == true {
           isPressed = true
-          let timer = Timer(timeInterval: 0.6, repeats: false) { _ in
-            MainActor.assumeIsolated {
-              longPressTimer = nil
-              isPressed = false
-              onLongPress()
-            }
-          }
+          let timer = Timer(timeInterval: 0.6, repeats: false, block: { _ in
+            longPressTimer = nil
+            isPressed = false
+            onLongPress()
+          })
           longPressTimer = timer
           RunLoop.main.add(timer, forMode: .common)
         } else {

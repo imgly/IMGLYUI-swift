@@ -14,7 +14,7 @@ struct TrackView: View {
         ClipView(
           clip: clip,
           isSelected: clip == timelineProperties.selectedClip,
-          clipSpacing: configuration.clipSpacing,
+          clipSpacing: configuration.clipSpacing
         )
         .onTapGesture(count: 1) {
           guard clip.allowsSelecting else {

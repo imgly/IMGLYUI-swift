@@ -63,12 +63,12 @@ import UIKit
     // Use `assetID` from return value because the id could have been changed in `addAsset`/`onUpload`.
     let assetID = try await interactor.addAsset(
       to: sourceID,
-      asset: .init(id: assetResult.url.absoluteString, meta: meta),
+      asset: .init(id: assetResult.url.absoluteString, meta: meta)
     ).id
 
     let result = try await interactor.findAssets(
       sourceID: sourceID,
-      query: .init(query: assetID, page: 0, perPage: 10),
+      query: .init(query: assetID, page: 0, perPage: 10)
     )
     guard result.assets.count == 1, let asset = result.assets.first else {
       throw Error(errorDescription: "Could not retrieve uploaded asset.")
@@ -79,17 +79,9 @@ import UIKit
   }
 }
 
-private struct SendableAVMetadataItem: @unchecked Sendable {
-  let value: AVMetadataItem?
-
-  init(_ value: AVMetadataItem?) {
-    self.value = value
-  }
-}
-
 private extension AssetLibraryInteractor {
-  nonisolated static func getMeta(url: URL, thumbURL: URL? = nil, blockKind: BlockKind,
-                                  fillType: FillType? = nil) async throws -> AssetMeta {
+  static func getMeta(url: URL, thumbURL: URL? = nil, blockKind: BlockKind,
+                      fillType: FillType? = nil) async throws -> AssetMeta {
     switch blockKind {
     case .key(.image), .key(.video):
       guard let fillType else {
@@ -118,17 +110,13 @@ private extension AssetLibraryInteractor {
         .duration: String(duration.seconds),
       ]
 
-      func parse(key: AVMetadataKey) -> SendableAVMetadataItem {
-        .init(AVMetadataItem.metadataItems(from: metadata, withKey: key, keySpace: AVMetadataKeySpace.common).first)
+      @Sendable func parse(key: AVMetadataKey) -> AVMetadataItem? {
+        AVMetadataItem.metadataItems(from: metadata, withKey: key, keySpace: AVMetadataKeySpace.common).first
       }
 
-      let titleItem = parse(key: .commonKeyTitle)
-      let artistItem = parse(key: .commonKeyArtist)
-      let artworkItem = parse(key: .commonKeyArtwork)
-
-      async let loadTitle = titleItem.value?.load(.stringValue)
-      async let loadArtist = artistItem.value?.load(.stringValue)
-      async let loadArtwork = artworkItem.value?.load(.dataValue)
+      async let loadTitle = parse(key: .commonKeyTitle)?.load(.stringValue)
+      async let loadArtist = parse(key: .commonKeyArtist)?.load(.stringValue)
+      async let loadArtwork = parse(key: .commonKeyArtwork)?.load(.dataValue)
 
       let (title, artist, artwork) = try await (loadTitle, loadArtist, loadArtwork)
 
@@ -156,7 +144,7 @@ private extension AssetLibraryInteractor {
   static func getSizeAndThumb(url: URL, thumbURL: URL?, fillType: FillType) async throws -> (CGSize, URL) {
     switch fillType {
     case .image:
-      let (data, _) = try await URLSession.shared.data(from: url)
+      let (data, _) = try await URLSession.shared.get(url)
       guard let image = UIImage(data: data) else {
         throw Error(errorDescription: "Unsupported image data.")
       }

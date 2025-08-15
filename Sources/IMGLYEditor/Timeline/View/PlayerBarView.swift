@@ -27,7 +27,7 @@ struct PlayerBarView: View {
         disabledIcon: Image("custom.video.repeat.slash", bundle: .module),
         changeCallback: {
           interactor.toggleIsLoopingPlaybackEnabled()
-        },
+        }
       )
       .accessibilityLabel(Text(.imgly.localized("ly_img_editor_timeline_button_loop")))
       .font(.system(size: 18))

@@ -4,12 +4,12 @@ struct AudioRecordButton: View {
   // MARK: - Constants
 
   private enum Localization {
-    static let buttonResume: LocalizedStringResource = "Resume"
-    static let buttonReplace: LocalizedStringResource = "Replace"
-    static let startHint: LocalizedStringResource = "Starts the recording"
-    static let pauseHint: LocalizedStringResource = "Pauses the recording"
-    static let resumeHint: LocalizedStringResource = "Resumes the recording"
-    static let replaceHint: LocalizedStringResource = "Replaces the current recording"
+    static let buttonResume: LocalizedStringKey = "Resume"
+    static let buttonReplace: LocalizedStringKey = "Replace"
+    static let startHint: LocalizedStringKey = "Starts the recording"
+    static let pauseHint: LocalizedStringKey = "Pauses the recording"
+    static let resumeHint: LocalizedStringKey = "Resumes the recording"
+    static let replaceHint: LocalizedStringKey = "Replaces the current recording"
   }
 
   private enum Images {
@@ -64,7 +64,7 @@ struct AudioRecordButton: View {
           RoundedRectangle(cornerRadius: Metrics.cornerRadius, style: .circular)
             .stroke(state.strokeColor, lineWidth: 2)
             .opacity(state.haveStroke ? 1 : 0)
-            .animation(state.haveStroke ? .snappy(extraBounce: 0.2) : .none, value: state),
+            .animation(state.haveStroke ? .snappy(extraBounce: 0.2) : .none, value: state)
         )
 
       // Content Overlay
@@ -102,7 +102,7 @@ struct AudioRecordButton: View {
   }
 
   // Accessibility
-  private func accessibilityLabel(for state: RecordingState) -> LocalizedStringResource {
+  private func accessibilityLabel(for state: RecordingState) -> LocalizedStringKey {
     switch state {
     case .start: Localization.startHint
     case .pause: Localization.pauseHint
@@ -111,7 +111,7 @@ struct AudioRecordButton: View {
     }
   }
 
-  private func accessibilityHint(for state: RecordingState) -> LocalizedStringResource {
+  private func accessibilityHint(for state: RecordingState) -> LocalizedStringKey {
     switch state {
     case .start: Localization.startHint
     case .pause: Localization.pauseHint

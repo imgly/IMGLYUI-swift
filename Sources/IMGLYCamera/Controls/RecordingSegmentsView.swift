@@ -29,7 +29,7 @@ struct RecordingSegmentsView: View {
           Circle()
             .trim(
               from: segmentsBackgroundStart,
-              to: segmentsBackgroundEnd,
+              to: segmentsBackgroundEnd
             )
             .rotation(.degrees(-90))
             .stroke(.white.opacity(0.5), lineWidth: state == .recording ? 0 : 2)
@@ -38,7 +38,7 @@ struct RecordingSegmentsView: View {
           Group {
             ForEach(
               Array(zip(normalizedSegmentPositions, normalizedSegmentPositions.indices)),
-              id: \.1,
+              id: \.1
             ) { position, index in
               let color = state == .recording && index != normalizedSegmentPositions.count - 1
                 ? .white

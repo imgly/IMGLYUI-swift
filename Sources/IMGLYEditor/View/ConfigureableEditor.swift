@@ -8,7 +8,6 @@ import SwiftUI
   @Entry var imglyOnUpload: OnUpload.Callback?
   @Entry var imglyOnClose: OnClose.Callback?
   @Entry var imglyOnError: OnError.Callback?
-  @Entry var imglyOnChanged: OnChanged.Callback?
 }
 
 struct ConfigureableEditor: ViewModifier {
@@ -18,7 +17,6 @@ struct ConfigureableEditor: ViewModifier {
   @Environment(\.imglyOnUpload) private var onUpload
   @Environment(\.imglyOnClose) private var onClose
   @Environment(\.imglyOnError) private var onError
-  @Environment(\.imglyOnChanged) private var onChanged
   @Environment(\.dismiss) private var dismiss
 
   @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
@@ -37,8 +35,7 @@ struct ConfigureableEditor: ViewModifier {
       onExport: onExport ?? OnExport.default,
       onUpload: onUpload ?? OnUpload.default,
       onClose: onClose ?? OnClose.default,
-      onError: onError ?? OnError.default,
-      onChanged: onChanged ?? OnChanged.default,
+      onError: onError ?? OnError.default
     )
     let config = EngineConfiguration(settings: settings, callbacks: callbacks)
     content
@@ -59,7 +56,7 @@ private struct InteractableEditor: ViewModifier {
       config: config,
       behavior: behavior,
       dismiss: dismiss,
-      assetLibrary: assetLibrary,
+      assetLibrary: assetLibrary
     ))
   }
 

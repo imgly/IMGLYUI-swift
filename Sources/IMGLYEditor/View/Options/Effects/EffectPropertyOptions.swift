@@ -19,7 +19,7 @@ struct EffectPropertyOptions: View {
               in: range,
               property: property.property,
               selection: property.id,
-              defaultValue: defaultValue,
+              defaultValue: defaultValue
             )
           } header: {
             Text(property.label)
@@ -31,7 +31,7 @@ struct EffectPropertyOptions: View {
               supportsOpacity: supportsOpacity,
               property: property.property,
               selection: property.id,
-              defaultValue: defaultValue,
+              defaultValue: defaultValue
             )
           }
         }

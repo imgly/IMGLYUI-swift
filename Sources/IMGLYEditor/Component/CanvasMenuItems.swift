@@ -65,7 +65,7 @@ public extension CanvasMenu.Buttons {
       }
     },
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.siblings.last != $0.selection.block },
-    isVisible: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.canMove },
+    isVisible: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.canMove }
   ) -> some CanvasMenu.Item {
     CanvasMenu.Button(id: ID.bringForward, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }
@@ -91,7 +91,7 @@ public extension CanvasMenu.Buttons {
       }
     },
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.siblings.first != $0.selection.block },
-    isVisible: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.canMove },
+    isVisible: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.canMove }
   ) -> some CanvasMenu.Item {
     CanvasMenu.Button(id: ID.sendBackward, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }
@@ -118,7 +118,7 @@ public extension CanvasMenu.Buttons {
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { _ in true },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/duplicate")
-    },
+    }
   ) -> some CanvasMenu.Item {
     CanvasMenu.Button(id: ID.duplicate, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }
@@ -145,7 +145,7 @@ public extension CanvasMenu.Buttons {
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { _ in true },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/destroy")
-    },
+    }
   ) -> some CanvasMenu.Item {
     CanvasMenu.Button(id: ID.delete, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }
@@ -181,7 +181,7 @@ public extension CanvasMenu.Buttons {
         }
       }
       return try isGrouped(context.selection.parentBlock)
-    },
+    }
   ) -> some CanvasMenu.Item {
     CanvasMenu.Button(id: ID.selectGroup, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
   }

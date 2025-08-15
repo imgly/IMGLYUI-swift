@@ -4,7 +4,7 @@ import SwiftUI
 
 /// An identifier for ``EditorComponent``s.
 /// - Note: Every unique ``EditorComponent`` must have a unique id suitable to be used with a SwiftUI `ForEach` view.
-public struct EditorComponentID: Hashable {
+public struct EditorComponentID: Hashable, Sendable {
   let value: String
   let isUnique: Bool
   var uniqueID: Int?
@@ -44,14 +44,7 @@ public extension EditorContext {
   /// A closure that provides access to the context and returns a value.
   typealias To<T> = @MainActor (_ context: Self) throws -> T
   /// A sendable closure that provides access to the context and returns a value.
-  /// - Note: Obsolete with Swift 6 ([SE-0434](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0434-global-actor-isolated-types-usability.md)).
-  @available(
-    *,
-    deprecated,
-    renamed: "To",
-    message: "With Swift 6 @Sendable is inferred for global-actor-isolated functions and closures."
-  )
-  typealias SendableTo<T> = To<T>
+  typealias SendableTo<T> = @Sendable @MainActor (_ context: Self) throws -> T
 }
 
 // MARK: - EditorError
@@ -112,7 +105,7 @@ extension EditorComponent {
     } catch {
       if let interactor = context.eventHandler as? Interactor {
         let error = EditorError(
-          "Could not create View for EditorComponent `\(id.value)`.\nReason:\n\(error.localizedDescription)",
+          "Could not create View for EditorComponent `\(id.value)`.\nReason:\n\(error.localizedDescription)"
         )
         interactor.handleErrorWithTask(error)
       }

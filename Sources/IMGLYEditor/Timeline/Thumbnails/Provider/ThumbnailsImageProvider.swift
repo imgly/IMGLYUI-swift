@@ -76,7 +76,7 @@ extension ThumbnailsImageProvider: ThumbnailsProvider {
             thumbHeight: thumbHeight,
             timeRange: timeRange,
             screenResolutionScaleFactor: screenResolutionScaleFactor,
-            numberOfFrames: numberOfFrames,
+            numberOfFrames: numberOfFrames
           ) {
           images.append(thumb.image)
         }

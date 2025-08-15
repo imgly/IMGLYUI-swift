@@ -1,13 +1,13 @@
 import SwiftUI
 
-@_spi(Internal) public typealias AssetGridPlaceholderCount = @MainActor (
+@_spi(Internal) public typealias AssetGridPlaceholderCount = @Sendable @MainActor (
   _ state: AssetLoader.Models.State,
   _ maxItemCount: Int
 ) -> Int
 
-@_spi(Internal) public typealias AssetGridItemIndex = @MainActor (_ asset: AssetLoader.Asset) -> AnyHashable?
+@_spi(Internal) public typealias AssetGridItemIndex = @Sendable @MainActor (_ asset: AssetLoader.Asset) -> AnyHashable?
 
-@_spi(Internal) public typealias AssetGridOnAppear = @MainActor (ScrollViewProxy) -> Void
+@_spi(Internal) public typealias AssetGridOnAppear = @Sendable @MainActor (ScrollViewProxy) -> Void
 
 extension EnvironmentValues {
   @Entry var imglyAssetGridAxis = Axis.vertical
@@ -53,7 +53,7 @@ extension EnvironmentValues {
   private var isAttributionPresented: Binding<Bool> {
     Binding(
       get: { selectedAsset != nil },
-      set: { if !$0 { selectedAsset = nil } },
+      set: { if !$0 { selectedAsset = nil } }
     )
   }
 

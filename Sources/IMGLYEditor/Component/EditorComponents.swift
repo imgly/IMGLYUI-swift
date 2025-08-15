@@ -53,7 +53,7 @@ public extension EditorComponents {
         } catch {
           if let interactor = context.eventHandler as? Interactor {
             let error = EditorError(
-              "Could not run action for EditorComponents.Button `\(id.value)`.\nReason:\n\(error.localizedDescription)",
+              "Could not run action for EditorComponents.Button `\(id.value)`.\nReason:\n\(error.localizedDescription)"
             )
             interactor.handleError(error)
           }

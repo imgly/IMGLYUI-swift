@@ -92,7 +92,7 @@ struct ClipTrimmingView: View {
             clip: clip,
             cornerRadius: cornerRadius,
             pointsTrimOffsetWidth: -timeline.convertToPoints(time: startTrimDurationDelta),
-            thumbnailsProvider: AnyThumbnailsProvider(erasing: thumbnailsProvider),
+            thumbnailsProvider: AnyThumbnailsProvider(erasing: thumbnailsProvider)
           )
           .padding(.leading, timeline.convertToPoints(time: startTrimOvershoot))
           // Dimming overlay where clip exceeds total duration
@@ -101,7 +101,7 @@ struct ClipTrimmingView: View {
             let overflow = timeline.convertToPoints(
               time: timeline.totalDuration
                 - timeOffset - duration - offsetDelta
-                - endTrimDurationDelta - endTrimOvershoot,
+                - endTrimDurationDelta - endTrimOvershoot
             )
             Rectangle()
               .fill(colorScheme == .dark
@@ -145,12 +145,12 @@ struct ClipTrimmingView: View {
           isMuted: clip.audioVolume == 0 || clip.isMuted,
           isSelectable: clip.allowsSelecting,
           cornerRadius: cornerRadius - 2,
-          isLooping: clip.isLooping,
+          isLooping: clip.isLooping
         )
         .padding(
           .leading,
           // Inset to keep the label from overlapping into the start overshoot, if there is any.
-          timeline.convertToPoints(time: startTrimOvershoot),
+          timeline.convertToPoints(time: startTrimOvershoot)
         )
       }
       // Left and right handle icons

@@ -63,8 +63,8 @@ struct CustomScrollIndicatorView: View {
       topPadding,
       min(
         visibleHeight - finalHandleHeight + topPadding,
-        topPadding + (visibleHeight - finalHandleHeight) * normalizedOffset,
-      ),
+        topPadding + (visibleHeight - finalHandleHeight) * normalizedOffset
+      )
     )
 
     self.handleHeight = finalHandleHeight
@@ -74,10 +74,8 @@ struct CustomScrollIndicatorView: View {
   private func flashScrollBar() {
     isScrollBarVisible = true
     transientLabelTimer?.invalidate()
-    transientLabelTimer = Timer.scheduledTimer(withTimeInterval: 1.15, repeats: false) { _ in
-      MainActor.assumeIsolated {
-        isScrollBarVisible = false
-      }
-    }
+    transientLabelTimer = Timer.scheduledTimer(withTimeInterval: 1.15, repeats: false, block: { _ in
+      isScrollBarVisible = false
+    })
   }
 }

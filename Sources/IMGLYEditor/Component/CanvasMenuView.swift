@@ -62,7 +62,7 @@ struct CanvasMenuView: View {
         }
     } catch {
       let error = EditorError(
-        "Could not create View for Canvas Menu.\nReason:\n\(error.localizedDescription)",
+        "Could not create View for Canvas Menu.\nReason:\n\(error.localizedDescription)"
       )
       interactor.handleErrorWithTask(error)
       return []
@@ -84,7 +84,7 @@ struct CanvasMenuView: View {
     .labelStyle(.imgly.canvasMenu(.iconOnly))
     .background(
       RoundedRectangle(cornerRadius: 8).fill(.bar)
-        .shadow(color: .black.opacity(0.2), radius: 10),
+        .shadow(color: .black.opacity(0.2), radius: 10)
     )
     .offset(y: -halfHeight - paddingFromSelectionBoundingBox)
   }

@@ -45,7 +45,7 @@ struct AssetFileUploader: ViewModifier {
                 url: url,
                 blockType: contentType.blockType(),
                 blockKind: contentType.blockKind(),
-                fillType: contentType.fillType(),
+                fillType: contentType.fillType()
               )
             }
             onCompletion(.success(asset))

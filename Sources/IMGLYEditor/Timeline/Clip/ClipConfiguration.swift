@@ -9,6 +9,6 @@ struct ClipConfiguration {
   static let `default`: ClipConfiguration = .init(
     color: .primary,
     backgroundColor: .accentColor,
-    icon: Image(systemName: "square.slash"),
+    icon: Image(systemName: "square.slash")
   )
 }

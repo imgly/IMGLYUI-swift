@@ -37,7 +37,7 @@ struct BlurOptions: View {
         BlurItem(asset: asset, selection: selection, sheetState: binding)
       },
       identifier: { $0.result.blurType },
-      sources: [.init(id: "ly.img.blur")],
+      sources: [.init(id: "ly.img.blur")]
     )
   }
 }

@@ -47,12 +47,12 @@ struct ClipBackgroundView: View {
         provider: thumbnailsAudioProvider,
         isZooming: timeline.isPinchingZoom,
         pointsTrimOffsetWidth: pointsTrimOffsetWidth,
-        color: clip.configuration.color,
+        color: clip.configuration.color
       )
     case let thumbnailsImageProvider as ThumbnailsImageProvider:
       ThumbnailsImageView(
         provider: thumbnailsImageProvider,
-        isZooming: timeline.isPinchingZoom,
+        isZooming: timeline.isPinchingZoom
       )
     default:
       EmptyView()

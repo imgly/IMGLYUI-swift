@@ -53,7 +53,7 @@ import SwiftUI
             .onFailure { _ in
               state = .error
             }
-            .fade(duration: 0.15),
+            .fade(duration: 0.15)
         )
         // `contentShape` ensures the tappable area is correctly defined on the asset when using `onTapGesture`
         .contentShape(Rectangle())

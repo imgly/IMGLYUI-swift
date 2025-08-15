@@ -82,7 +82,7 @@ extension CGColor: HSBAConvertible {
       format: "#%02lX%02lX%02lX",
       Int(Float(rgba.r * 255)),
       Int(Float(rgba.g * 255)),
-      Int(Float(rgba.b * 255)),
+      Int(Float(rgba.b * 255))
     )
     return hexString.lowercased()
   }

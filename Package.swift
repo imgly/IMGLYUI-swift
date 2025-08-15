@@ -29,14 +29,14 @@ let package = Package(
              ]),
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.58.0-rc.0"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.57.1-rc.0"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "1.1.2"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", "7.10.0" ..< "9.0.0"),
   ],
   targets: [
     .target(
       name: "IMGLYCore",
-      dependencies: [.product(name: "IMGLYEngine", package: "IMGLYEngine-swift")],
+      dependencies: [.product(name: "IMGLYEngine", package: "IMGLYEngine-swift")]
     ),
     .target(
       name: "IMGLYCoreUI",
@@ -44,40 +44,49 @@ let package = Package(
         .target(name: "IMGLYCore"),
         .product(name: "SwiftUIIntrospect", package: "SwiftUI-Introspect"),
         .product(name: "Kingfisher", package: "Kingfisher"),
-      ],
+      ]
     ),
     .target(
       name: "IMGLYCamera",
-      dependencies: [.target(name: "IMGLYCoreUI")],
+      dependencies: [.target(name: "IMGLYCoreUI")]
     ),
     .target(
       name: "IMGLYEditor",
-      dependencies: [.target(name: "IMGLYCamera")],
+      dependencies: [.target(name: "IMGLYCamera")]
     ),
     .target(
       name: "IMGLYDesignEditor",
       dependencies: [.target(name: "IMGLYEditor")],
-      resources: [.process("Resources")],
+      resources: [.process("Resources")]
     ),
     .target(
       name: "IMGLYVideoEditor",
       dependencies: [.target(name: "IMGLYEditor")],
-      resources: [.process("Resources")],
+      resources: [.process("Resources")]
     ),
     .target(
       name: "IMGLYPhotoEditor",
       dependencies: [.target(name: "IMGLYEditor")],
-      resources: [.process("Resources")],
+      resources: [.process("Resources")]
     ),
     .target(
       name: "IMGLYApparelEditor",
       dependencies: [.target(name: "IMGLYEditor")],
-      resources: [.process("Resources")],
+      resources: [.process("Resources")]
     ),
     .target(
       name: "IMGLYPostcardEditor",
       dependencies: [.target(name: "IMGLYEditor")],
-      resources: [.process("Resources")],
+      resources: [.process("Resources")]
     ),
   ],
+  swiftLanguageModes: [.v5]
 )
+
+for target in package.targets {
+  let settings = target.swiftSettings ?? []
+  // Use this for development
+  // var settings = target.swiftSettings ?? []
+  // settings.append(.enableExperimentalFeature("StrictConcurrency")) // Xcode 15, 16
+  target.swiftSettings = settings
+}

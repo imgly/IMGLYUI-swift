@@ -18,8 +18,8 @@ import SwiftUI
           id,
           property: .key(.fillSolidColor),
           default: [.imgly.black],
-          getter: backgroundColorGetter,
-        ),
+          getter: backgroundColorGetter
+        )
       )
     }
   }

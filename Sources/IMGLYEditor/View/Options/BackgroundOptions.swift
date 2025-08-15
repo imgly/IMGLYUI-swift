@@ -179,11 +179,11 @@ struct BackgroundColorOptions: View {
         default: .imgly.black,
         completion: Interactor.Completion.set(
           property: .key(.backgroundColorEnabled),
-          value: true,
-        ),
+          value: true
+        )
       ),
       addUndoStep: interactor.addUndoStep,
-      style: .fill,
+      style: .fill
     )
     .labelStyle(.iconOnly)
     .buttonStyle(.borderless)

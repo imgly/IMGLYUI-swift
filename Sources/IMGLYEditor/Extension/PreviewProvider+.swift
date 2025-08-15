@@ -16,7 +16,7 @@ extension PreviewProvider {
       getSecrets { secrets in
         let config = EngineConfiguration(
           settings: .init(license: secrets.licenseKey, userID: "swiftui-preview-user"),
-          callbacks: .init(onCreate: OnCreate.loadScene(from: url)),
+          callbacks: .init(onCreate: OnCreate.loadScene(from: url))
         )
         EditorPreview(config, sheet: sheet)
       }
@@ -40,7 +40,7 @@ private struct EditorPreview: View {
       config: config,
       behavior: .default,
       assetLibrary: DefaultAssetLibrary(),
-      sheet: sheet,
+      sheet: sheet
     ))
   }
 

@@ -35,13 +35,13 @@ struct ResizeOverlay: View {
             textField(
               title: .imgly.localized("ly_img_editor_dialog_resize_label_width \(viewModel.designUnit.abbreviation)"),
               textFieldTitle: "Width",
-              text: $viewModel.width,
+              text: $viewModel.width
             )
             .accessibilityLabel("Width")
             textField(
               title: .imgly.localized("ly_img_editor_dialog_resize_label_height \(viewModel.designUnit.abbreviation)"),
               textFieldTitle: "Height",
-              text: $viewModel.height,
+              text: $viewModel.height
             )
             .accessibilityLabel("Height")
           }
@@ -63,7 +63,7 @@ struct ResizeOverlay: View {
   @ViewBuilder private func textField(
     title: LocalizedStringResource,
     textFieldTitle: LocalizedStringResource,
-    text: Binding<CGFloat>,
+    text: Binding<CGFloat>
   ) -> some View {
     VStack(alignment: .leading, spacing: 4) {
       Text(title)
@@ -85,7 +85,7 @@ struct ResizeOverlay: View {
     ResizePicker(
       title: .imgly.localized("ly_img_editor_dialog_resize_label_unit"),
       data: data,
-      selection: $viewModel.designUnit,
+      selection: $viewModel.designUnit
     ) { element in
       Text(element.localizedStringResource)
     } label: { element in
@@ -104,7 +104,7 @@ struct ResizeOverlay: View {
       title: isPx ? .imgly.localized("ly_img_editor_dialog_resize_label_pixel_scale") : .imgly
         .localized("ly_img_editor_dialog_resize_label_resolution"),
       data: isPx ? viewModel.pixelScaleValues : viewModel.resolutionValues,
-      selection: isPx ? $viewModel.pixelScale : $viewModel.dpi,
+      selection: isPx ? $viewModel.pixelScale : $viewModel.dpi
     ) { element in
       Text(viewModel.formatValue(element) + formatExtension)
     } label: { element in

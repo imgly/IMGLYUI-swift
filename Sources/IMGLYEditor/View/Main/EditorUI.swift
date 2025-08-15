@@ -92,7 +92,7 @@ import SwiftUI
           zoomPadding: zoomPadding,
           canvasGeometry: canvasGeometry,
           sheetGeometry: sheetGeometryIfPresented,
-          layoutDirection: layoutDirection,
+          layoutDirection: layoutDirection
         )
         interactor.loadScene(with: zoom.insets)
       }
@@ -148,7 +148,7 @@ import SwiftUI
           CanvasMenu.Buttons.delete()
         }
       }
-      .modifier(NavigationBarView(items: navigationBarItems ?? { @MainActor _ in [] }, context: navigationBarContext))
+      .modifier(NavigationBarView(items: navigationBarItems ?? { _ in [] }, context: navigationBarContext))
   }
 
   private func updateZoom(for event: ZoomEvent, canvasGeometry: Geometry? = nil, sheetGeometry: Geometry? = nil) {
@@ -156,7 +156,7 @@ import SwiftUI
       zoomPadding,
       canvasGeometry ?? self.canvasGeometry,
       sheetGeometry ?? sheetGeometryIfPresented,
-      layoutDirection,
+      layoutDirection
     )
     interactor.updateZoom(for: event, with: zoom)
   }
@@ -174,7 +174,7 @@ import SwiftUI
           state: NavigationBar.State(
             isCreating: interactor.isCreating,
             isExporting: interactor.isExporting,
-            viewMode: interactor.viewMode,
+            viewMode: interactor.viewMode
           ),
           assetLibrary: assetLibrary)
   }
