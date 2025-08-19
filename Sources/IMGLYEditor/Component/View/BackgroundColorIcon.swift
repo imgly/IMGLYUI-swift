@@ -23,14 +23,14 @@ public struct BackgroundColorIcon: View {
     interactor.bind(
       id,
       property: .key(.backgroundColorColor),
-      default: .imgly.white
+      default: .imgly.white,
     )
   }
 
   public var body: some View {
     FillColorImage(
       isEnabled: isBackgroundEnabled,
-      color: backgroundColor
+      color: backgroundColor,
     )
     .imgly.selection(id)
   }

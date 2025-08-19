@@ -194,7 +194,7 @@ struct ReorderingThumbnailView: View {
 
                     HapticsHelper.shared.timelineReorderFinish()
                   }
-                }
+                },
             )
             .onChange(of: dragState) { value in
               withAnimation(.easeInOut(duration: 0.03)) {
@@ -224,7 +224,7 @@ struct ReorderingThumbnailView: View {
 }
 
 // This is a hack to detect the start of a long press gesture in a scroll view.
-private struct LongPressButtonStyle: ButtonStyle, @unchecked Sendable {
+private struct LongPressButtonStyle: ButtonStyle {
   @Binding var isPressed: Bool
 
   func makeBody(configuration: Configuration) -> some View {

@@ -8,7 +8,7 @@ struct FillStrokeOptionsSheet: View {
   var title: LocalizedStringResource {
     let showFill = interactor.isColorFill(id) && interactor.supportsFill(id) && interactor.isAllowed(
       id,
-      scope: .fillChange
+      scope: .fillChange,
     )
     let showStroke = interactor.supportsStroke(id) && interactor.isAllowed(id, scope: .strokeChange)
     if showFill, showStroke {

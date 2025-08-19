@@ -12,7 +12,7 @@ struct LoadingModifier: ViewModifier {
       .blur(radius: isLoading ? 3 : 0)
       .overlay(
         ProgressView()
-          .opacity(isLoading ? 1 : 0) // Set the opacity of the overlay.
+          .opacity(isLoading ? 1 : 0), // Set the opacity of the overlay.
       )
   }
 }

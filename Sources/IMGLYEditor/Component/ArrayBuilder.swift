@@ -7,7 +7,7 @@ public enum ArrayBuilder<Element> {
   public typealias Component = [Element]
 
   public static func buildBlock(_ components: Component...) -> Component {
-    components.flatMap { $0 }
+    components.flatMap(\.self)
   }
 
   public static func buildExpression(_ expression: Expression) -> Component {
@@ -31,7 +31,7 @@ public enum ArrayBuilder<Element> {
   }
 
   public static func buildArray(_ components: [Component]) -> Component {
-    components.flatMap { $0 }
+    components.flatMap(\.self)
   }
 }
 

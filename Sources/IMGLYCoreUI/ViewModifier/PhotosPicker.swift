@@ -197,7 +197,7 @@ private extension URL {
 
   /// Transcode to most compatible image format
   private func transcodeImage() async throws -> URL {
-    let (imageData, _) = try await URLSession.shared.get(self)
+    let (imageData, _) = try await URLSession.shared.data(from: self)
     guard let image = UIImage(data: imageData) else {
       throw Error(errorDescription: "Could not load image for transcoding.")
     }

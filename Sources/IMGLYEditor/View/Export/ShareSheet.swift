@@ -15,7 +15,7 @@ struct ShareSheet: ViewModifier {
   @MainActor
   func shareSheet(
     item: Binding<ShareItem?>,
-    onDismiss: (() -> Void)? = nil
+    onDismiss: (() -> Void)? = nil,
   ) -> some View {
     wrapped.sheet(item: item, onDismiss: onDismiss) { item in
       ShareView(item: item)
@@ -47,6 +47,6 @@ struct ShareView: UIViewControllerRepresentable {
 
   func updateUIViewController(
     _: UIActivityViewController,
-    context _: UIViewControllerRepresentableContext<ShareView>
+    context _: UIViewControllerRepresentableContext<ShareView>,
   ) {}
 }

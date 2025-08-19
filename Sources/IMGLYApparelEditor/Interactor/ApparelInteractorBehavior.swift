@@ -11,7 +11,7 @@ final class ApparelInteractorBehavior: InteractorBehavior {
   private func pageSetup(_ context: InteractorContext) throws {
     try context.engine.block.overrideAndRestore(
       context.engine.getPage(0),
-      scopes: [.key(.fillChange), .key(.layerClipping)]
+      scopes: [.key(.fillChange), .key(.layerClipping)],
     ) {
       try context.engine.editor.setSettingBool("page/dimOutOfPageAreas", value: false)
       try context.engine.block.setClipped($0, clipped: true)
@@ -39,10 +39,6 @@ final class ApparelInteractorBehavior: InteractorBehavior {
     try await context.engine.zoomToBackdrop(insets)
     try context.engine.block.deselectAll()
     try pageSetup(context)
-  }
-
-  func isGestureActive(_ context: InteractorContext, _ started: Bool) throws {
-    try context.engine.showOutline(started)
   }
 }
 

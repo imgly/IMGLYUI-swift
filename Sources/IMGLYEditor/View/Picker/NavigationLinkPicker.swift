@@ -17,7 +17,7 @@ struct NavigationLinkPicker<Data, ElementLabel: View, LinkLabel: View>: View whe
   private func isSelecetd(_ element: Data.Element.Element) -> Bool { selection == element.id }
 
   private var flatData: [Data.Element.Element] {
-    data.flatMap { $0 }
+    data.flatMap(\.self)
   }
 
   var body: some View {

@@ -25,7 +25,7 @@ import UIKit
       hue: currentHSBA.hue,
       saturation: currentHSBA.saturation,
       brightness: adjustment,
-      alpha: currentHSBA.alpha
+      alpha: currentHSBA.alpha,
     )
     return try UIColor(hsba: new).cgColor.rgba()
   }

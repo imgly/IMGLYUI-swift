@@ -32,7 +32,7 @@ struct PropertyColorPicker: View {
       propertyBlock,
       property: property,
       default: defaultValue ?? .imgly.black,
-      completion: nil
+      completion: nil,
     )
   }
 

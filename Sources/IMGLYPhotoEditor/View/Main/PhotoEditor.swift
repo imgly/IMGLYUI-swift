@@ -80,17 +80,10 @@ public extension OnCreate {
       try await engine.scene.create(fromImage: url)
       try await loadAssetSources(engine)
 
-      let graphics = try engine.block.find(byType: .graphic)
-      guard let image = graphics.first, graphics.count == 1 else {
-        throw Error(errorDescription: "No image found.")
-      }
       let pages = try engine.scene.getPages()
       guard let page = pages.first, pages.count == 1 else {
         throw Error(errorDescription: "No page found.")
       }
-
-      try engine.block.setFill(page, fill: engine.block.getFill(image))
-      try engine.block.destroy(image)
 
       if let size {
         try engine.block.setWidth(page, value: Float(size.width))

@@ -37,9 +37,9 @@ public extension CanvasMenu {
   }
 
   /// A closure to build an array of canvas menu ``Item``s.
-  typealias Items = Context.SendableTo<[any Item]>
+  typealias Items = Context.To<[any Item]>
   /// A closure to modify an array of canvas menu ``Item``s.
-  typealias Modifications = @Sendable @MainActor (_ context: Context, _ items: Modifier) throws -> Void
+  typealias Modifications = @MainActor (_ context: Context, _ items: Modifier) throws -> Void
   /// A button canvas menu ``Item`` component.
   typealias Button = EditorComponents.Button
 }

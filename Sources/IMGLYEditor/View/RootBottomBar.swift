@@ -69,19 +69,19 @@ struct RootBottomBar: View {
             HStack {
               LinearGradient(
                 gradient: Gradient(
-                  colors: [.black, .clear]
+                  colors: [.black, .clear],
                 ),
                 startPoint: UnitPoint(x: 0, y: 0.5),
-                endPoint: .trailing
+                endPoint: .trailing,
               )
               .frame(width: padding)
               Spacer()
               LinearGradient(
                 gradient: Gradient(
-                  colors: [.clear, .black]
+                  colors: [.clear, .black],
                 ),
                 startPoint: UnitPoint(x: 0.3, y: 0.5),
-                endPoint: .trailing
+                endPoint: .trailing,
               )
               .frame(width: padding)
             }

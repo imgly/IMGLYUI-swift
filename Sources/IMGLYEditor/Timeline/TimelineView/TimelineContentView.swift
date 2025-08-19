@@ -152,7 +152,7 @@ struct TimelineContentView: View {
         if pinchGestureRecognizer == nil {
           pinchGestureRecognizer = UIPinchGestureRecognizer(
             target: pinchDelegate,
-            action: #selector(TimelinePinchGestureRecognizerDelegate.pinched(_:))
+            action: #selector(TimelinePinchGestureRecognizerDelegate.pinched(_:)),
           )
         }
         if let pinchGestureRecognizer {
@@ -173,7 +173,7 @@ struct TimelineContentView: View {
           scrollViewContentOffsetY: verticalScrollView.contentOffset.y,
           scrollViewDelegate: verticalScrollViewDelegate,
           topPadding: configuration.timelineRulerHeight + 3,
-          bottomPadding: configuration.backgroundTrackHeight + configuration.trackSpacing * 2 + 3
+          bottomPadding: configuration.backgroundTrackHeight + configuration.trackSpacing * 2 + 3,
         )
       }
     }
@@ -204,7 +204,7 @@ struct TimelineContentView: View {
       TapGesture(count: 1)
         .onEnded { _ in
           timeline.interactor?.deselect()
-        }
+        },
     )
 
     .onChange(of: pinchDelegate.scale) { newValue in

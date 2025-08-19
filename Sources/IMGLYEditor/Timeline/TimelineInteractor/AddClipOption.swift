@@ -8,6 +8,7 @@ import SwiftUI
   case library
 
   /// The default configuration for the timeline add clip buttons
+  @MainActor
   @_spi(Internal) public static var defaultOptions: [AddClipOption] = [.camera, .gallery, .library]
 
   /// Display name for the option

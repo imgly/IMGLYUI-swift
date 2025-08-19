@@ -64,7 +64,7 @@ extension ResizeOverlay {
         height: height,
         designUnit: designUnit,
         dpi: dpi,
-        pixelScale: pixelScale
+        pixelScale: pixelScale,
       )
     }
 
@@ -87,7 +87,7 @@ extension ResizeOverlay {
       to: Interactor.DesignUnit,
       with dpi: CGFloat,
       and pixelScale: CGFloat,
-      value: CGFloat
+      value: CGFloat,
     ) -> CGFloat {
       let mm_per_in = 25.4
 

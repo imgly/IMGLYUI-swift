@@ -4,7 +4,7 @@ import SwiftUI
 struct HeightAnimationModifier: ViewModifier, Animatable {
   var targetHeight: CGFloat
 
-  var animatableData: CGFloat {
+  nonisolated var animatableData: CGFloat {
     get { targetHeight }
     set { targetHeight = newValue }
   }

@@ -7,7 +7,7 @@ enum ColorPropertyButtonStyle {
 }
 
 struct ColorPropertyButton: View {
-  let name: LocalizedStringKey
+  let name: LocalizedStringResource
   let color: CGColor
   let isEnabled: Bool
   @Binding var selection: CGColor
@@ -31,8 +31,12 @@ struct ColorPropertyButton: View {
           .foregroundColor(.secondary)
           .scaleEffect(1.05)
         if style == .fill {
-          Label(name, systemImage: "circle.fill")
-            .foregroundStyle(Color(cgColor: color))
+          Label {
+            Text(name)
+          } icon: {
+            Image(systemName: "circle.fill")
+          }
+          .foregroundStyle(Color(cgColor: color))
         } else {
           Image("custom.circle.circle.fill", bundle: .module)
             .foregroundColor(.secondary)
@@ -48,7 +52,7 @@ struct ColorPropertyButton: View {
       }
       .font(.title)
     }
-    .accessibilityLabel(name)
+    .accessibilityLabel(Text(name))
   }
 }
 

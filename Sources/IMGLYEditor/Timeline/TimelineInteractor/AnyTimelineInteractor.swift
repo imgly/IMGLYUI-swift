@@ -70,14 +70,14 @@ class AnyTimelineInteractor: TimelineInteractor {
     thumbHeight: CGFloat,
     timeRange: ClosedRange<Double>,
     screenResolutionScaleFactor: CGFloat,
-    numberOfFrames: Int
+    numberOfFrames: Int,
   ) async throws -> AsyncThrowingStream<VideoThumbnail, Swift.Error> {
     try await interactor.generateImagesThumbnails(
       clip: clip,
       thumbHeight: thumbHeight,
       timeRange: timeRange,
       screenResolutionScaleFactor: screenResolutionScaleFactor,
-      numberOfFrames: numberOfFrames
+      numberOfFrames: numberOfFrames,
     )
   }
 
@@ -90,7 +90,7 @@ class AnyTimelineInteractor: TimelineInteractor {
     try await interactor.generateAudioThumbnails(
       clip: clip,
       timeRange: timeRange,
-      numberOfSamples: numberOfSamples
+      numberOfSamples: numberOfSamples,
     )
   }
 
@@ -153,5 +153,5 @@ class AnyTimelineInteractor: TimelineInteractor {
       .eraseToAnyPublisher()
   }
 
-  let objectWillChange: AnyPublisher<Void, Never>
+  nonisolated let objectWillChange: AnyPublisher<Void, Never>
 }

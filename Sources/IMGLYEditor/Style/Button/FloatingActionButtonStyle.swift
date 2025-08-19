@@ -26,7 +26,7 @@ public struct AssetLibraryButtonStyle: PrimitiveButtonStyle {
               .inset(by: 0.25)
               .stroke(Color.accentColor, lineWidth: 0.5)
               .opacity(colorScheme == .light ? 0.16 : 0.25)
-          }
+          },
       )
   }
 }

@@ -48,7 +48,7 @@ struct FXEffectOptions: View {
         FXEffectItem(asset: asset, selection: selection, sheetState: binding)
       },
       identifier: { $0.result.effectType },
-      sources: [.init(id: "ly.img.effect")]
+      sources: [.init(id: "ly.img.effect")],
     )
   }
 }

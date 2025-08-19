@@ -260,7 +260,7 @@ public extension AssetLibraryGroup<TextPreview> {
   static func text(
     _ title: LocalizedStringResource,
     excludedPreviewSources: Set<String> = [],
-    @AssetLibraryBuilder content: () -> AssetLibraryContent
+    @AssetLibraryBuilder content: () -> AssetLibraryContent,
   ) -> Self {
     self.init(title, excludedPreviewSources: excludedPreviewSources, content: content) { Preview() }
   }

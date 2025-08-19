@@ -33,7 +33,7 @@ class AudioPreviewPlayer: ObservableObject, @unchecked Sendable {
       self,
       selector: #selector(stop),
       name: .AVPlayerItemDidPlayToEndTime,
-      object: nil
+      object: nil,
     )
   }
 
@@ -48,7 +48,7 @@ class AudioPreviewPlayer: ObservableObject, @unchecked Sendable {
     player = AVPlayer(playerItem: playerItem)
     timeObserver = player?.addPeriodicTimeObserver(
       forInterval: CMTime(seconds: 0.1, preferredTimescale: 10),
-      queue: DispatchQueue.main
+      queue: DispatchQueue.main,
     ) { [weak self] time in
       self?.playheadPosition = time
     }

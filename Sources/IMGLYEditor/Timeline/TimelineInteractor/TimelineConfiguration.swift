@@ -67,42 +67,42 @@ struct TimelineConfiguration {
   var audioClipConfiguration = ClipConfiguration(
     color: Color.purple,
     backgroundColor: Color.purple.opacity(0.16),
-    icon: Image(systemName: "music.note")
+    icon: Image(systemName: "music.note"),
   )
 
   var imageClipConfiguration = ClipConfiguration(
     color: Color.primary,
     backgroundColor: Color.secondary.opacity(0.5),
-    icon: Image(systemName: "photo")
+    icon: Image(systemName: "photo"),
   )
 
   var shapeClipConfiguration = ClipConfiguration(
     color: Color.primary,
     backgroundColor: Color.secondary.opacity(0.5),
-    icon: Image(systemName: "square.on.circle")
+    icon: Image(systemName: "square.on.circle"),
   )
 
   var stickerClipConfiguration = ClipConfiguration(
     color: Color.primary,
     backgroundColor: Color.secondary.opacity(0.5),
-    icon: Image(systemName: "face.smiling")
+    icon: Image(systemName: "face.smiling"),
   )
 
   var textClipConfiguration = ClipConfiguration(
     color: Color.primary,
     backgroundColor: Color.secondary.opacity(0.5),
-    icon: Image(systemName: "t.square")
+    icon: Image(systemName: "t.square"),
   )
 
   var videoClipConfiguration = ClipConfiguration(
     color: Color.primary,
     backgroundColor: Color.secondary.opacity(0.5),
-    icon: Image(systemName: "play.rectangle")
+    icon: Image(systemName: "play.rectangle"),
   )
 
   var voiceOverClipConfiguration = ClipConfiguration(
     color: Color.pink,
     backgroundColor: Color.pink.opacity(0.16),
-    icon: Image(systemName: "mic.fill")
+    icon: Image(systemName: "mic.fill"),
   )
 }

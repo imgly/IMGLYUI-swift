@@ -217,7 +217,7 @@ extension Interactor: TimelineInteractor {
             secondClipDurationOrRemainingTotalDuration >= timelineProperties.configuration.minClipDuration else {
         handleError(
           Error(errorDescription: String(localized: .imgly
-              .localized("ly_img_editor_timeline_error_split_short_duration")))
+              .localized("ly_img_editor_timeline_error_split_short_duration"))),
         )
         return
       }
@@ -258,7 +258,7 @@ extension Interactor: TimelineInteractor {
       }
     } else {
       handleError(
-        Error(errorDescription: String(localized: .imgly.localized("ly_img_editor_timeline_error_split_out_of_range")))
+        Error(errorDescription: String(localized: .imgly.localized("ly_img_editor_timeline_error_split_out_of_range"))),
       )
     }
   }
@@ -859,7 +859,7 @@ extension Interactor: TimelineInteractor {
     thumbHeight: CGFloat,
     timeRange: ClosedRange<Double>,
     screenResolutionScaleFactor: CGFloat,
-    numberOfFrames: Int
+    numberOfFrames: Int,
   ) async throws -> AsyncThrowingStream<VideoThumbnail, Swift.Error> {
     guard let engine else { throw Error(errorDescription: "Missing engine") }
     guard engine.block.isValid(clip.id) else { throw Error(errorDescription: "Block doesn’t exist") }
@@ -868,14 +868,14 @@ extension Interactor: TimelineInteractor {
       clip.id,
       thumbnailHeight: Int(thumbHeight * screenResolutionScaleFactor),
       timeRange: timeRange,
-      numberOfFrames: numberOfFrames
+      numberOfFrames: numberOfFrames,
     )
   }
 
   func generateAudioThumbnails(
     clip: Clip,
     timeRange: ClosedRange<Double>,
-    numberOfSamples: Int
+    numberOfSamples: Int,
   ) async throws -> AsyncThrowingStream<AudioThumbnail, Swift.Error> {
     guard let engine else { throw Error(errorDescription: "Missing engine") }
     guard engine.block.isValid(clip.id) else { throw Error(errorDescription: "Block doesn’t exist") }
@@ -1105,7 +1105,7 @@ extension Interactor: TimelineInteractor {
             rect: video.rect,
             duration: recording.duration,
             timeOffset: currentTimeOffset,
-            addToBackgroundTrack: index == 0
+            addToBackgroundTrack: index == 0,
           )
         }
         // swiftlint:disable:next shorthand_operator
@@ -1120,7 +1120,7 @@ extension Interactor: TimelineInteractor {
     rect: CGRect,
     duration: CMTime,
     timeOffset: CMTime,
-    addToBackgroundTrack: Bool
+    addToBackgroundTrack: Bool,
   ) async {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }

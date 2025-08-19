@@ -42,14 +42,14 @@ private struct Random: RandomNumberGenerator {
     includeUnnamed: Bool = false,
     includeDisabled: Bool = false,
     setDisabled: Bool = false,
-    ignoreScope: Bool = false
+    ignoreScope: Bool = false,
   ) throws -> SelectionColors {
     try selectionColors(
       getPage(index),
       includeUnnamed: includeUnnamed,
       includeDisabled: includeDisabled,
       setDisabled: setDisabled,
-      ignoreScope: ignoreScope
+      ignoreScope: ignoreScope,
     )
   }
 
@@ -132,7 +132,7 @@ private struct Random: RandomNumberGenerator {
     if setDisabled {
       print(
         // swiftlint:disable:next line_length
-        "Assigning colors of enabled properties to colors of disabled properties of the same block while collecting selection colors."
+        "Assigning colors of enabled properties to colors of disabled properties of the same block while collecting selection colors.",
       )
     }
     func traverse(_ id: DesignBlockID, selectionColors: inout SelectionColors) throws {
@@ -142,7 +142,7 @@ private struct Random: RandomNumberGenerator {
         includeDisabled: includeDisabled,
         setDisabled: setDisabled,
         ignoreScope: ignoreScope,
-        selectionColors: &selectionColors
+        selectionColors: &selectionColors,
       )
       let children = try engine.block.getChildren(id)
       for child in children {
@@ -171,7 +171,7 @@ private struct Random: RandomNumberGenerator {
     layout axis: LayoutAxis,
     spacing: Float? = nil,
     historyResetBehavior: HistoryResetBehavior = .never,
-    deselectAll: Bool = true
+    deselectAll: Bool = true,
   ) throws {
     if deselectAll {
       try engine.block.deselectAll()
@@ -223,7 +223,7 @@ private struct Random: RandomNumberGenerator {
       paddingLeft: Float(insets?.leading ?? 0),
       paddingTop: Float(insets?.top ?? 0),
       paddingRight: Float(insets?.trailing ?? 0),
-      paddingBottom: Float(insets?.bottom ?? 0)
+      paddingBottom: Float(insets?.bottom ?? 0),
     )
   }
 
@@ -265,7 +265,7 @@ private struct Random: RandomNumberGenerator {
     zoomToPage: Bool = false,
     clampOnly: Bool = false,
     pageIndex: Int,
-    zoomModel: ZoomModel
+    zoomModel: ZoomModel,
   ) async throws -> Float? {
     var updatedDefaultZoomLevel: Float?
 

@@ -178,8 +178,12 @@ import SwiftUI
     guard let engine else {
       return
     }
+
     do {
-      try behavior.isGestureActive(.init(engine, self), started)
+      try config.callbacks.onChanged(
+        .gestureActive(oldValue: !started, newValue: started),
+        .init(engine: engine, eventHandler: self),
+      )
     } catch {
       handleError(error)
     }
@@ -418,7 +422,7 @@ extension Interactor {
                 if let engine = self.engine, let colorStops: [GradientColorStop] = try? engine.block.get(
                   validBlock,
                   .fill,
-                  property: .key(.fillGradientColors)
+                  property: .key(.fillGradientColors),
                 ), let color = colorStops.first?.color.cgColor {
                   return color
                 }
@@ -577,6 +581,7 @@ extension Interactor {
     _ completion: PropertyCompletion?
   ) throws -> Bool
 
+  @MainActor
   enum Setter {
     static func set<T: MappedType>() -> Interactor.PropertySetter<T> {
       { engine, blocks, propertyBlock, property, value, completion in
@@ -605,6 +610,7 @@ extension Interactor {
     _ didChange: Bool
   ) throws -> Bool
 
+  @MainActor
   enum Completion {
     static let addUndoStep: PropertyCompletion = addUndoStep()
 
@@ -833,7 +839,7 @@ extension Interactor: AssetLibraryInteractor {
                 createBackgroundTrackIfNeeded()
                 guard let backgroundTrack = timelineProperties.backgroundTrack else {
                   handleError(
-                    Error(errorDescription: "No Background Track.")
+                    Error(errorDescription: "No Background Track."),
                   )
                   return
                 }
@@ -997,7 +1003,7 @@ extension Interactor {
 
         updateZoom(
           for: .pageSizeChanged,
-          with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding)
+          with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding),
         )
         isResizingPages = true
       }
@@ -1224,7 +1230,7 @@ extension Interactor {
       zoomPadding: zoom.zoomPadding,
       canvasGeometry: zoom.canvasGeometry,
       sheetGeometry: zoom.sheetGeometry,
-      layoutDirection: zoom.layoutDirection ?? .leftToRight
+      layoutDirection: zoom.layoutDirection ?? .leftToRight,
     )
     updateZoom(for: event, with: zoomParameters)
   }
@@ -1246,7 +1252,7 @@ extension Interactor {
       updateZoom(
         with: zoom.insets,
         canvasHeight: zoom.canvasHeight,
-        zoomToPage: previousEditMode != .text
+        zoomToPage: previousEditMode != .text,
       )
     case .pageChanged:
       let pageIndex = try? engine?.getCurrentPageIndex()
@@ -1265,7 +1271,7 @@ extension Interactor {
       updateZoom(
         with: zoom.insets,
         canvasHeight: zoom.canvasHeight,
-        clampOnly: sheet.isFloating
+        clampOnly: sheet.isFloating,
       )
     case let .textCursorChanged(value):
       zoomToText(with: zoom.insets, canvasHeight: zoom.canvasHeight, cursorPosition: value)
@@ -1281,7 +1287,7 @@ extension Interactor {
     with insets: EdgeInsets? = nil,
     canvasHeight: CGFloat = 0,
     zoomToPage: Bool = false,
-    clampOnly: Bool = false
+    clampOnly: Bool = false,
   ) {
     let lastTask = zoom.task
     lastTask?.cancel()
@@ -1304,7 +1310,7 @@ extension Interactor {
               and: canvasHeight,
               clampOnly: clampOnly,
               pageIndex: page,
-              zoomModel: zoomModel
+              zoomModel: zoomModel,
             )
           }
           if let zoomLevel {
@@ -1358,7 +1364,7 @@ extension Interactor {
     zoomPadding: CGFloat,
     canvasGeometry: Geometry?,
     sheetGeometry: Geometry?,
-    layoutDirection: LayoutDirection = .leftToRight
+    layoutDirection: LayoutDirection = .leftToRight,
     // swiftlint:disable:next large_tuple
   ) -> (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat) {
     let canvasHeight = canvasGeometry?.size.height ?? 0

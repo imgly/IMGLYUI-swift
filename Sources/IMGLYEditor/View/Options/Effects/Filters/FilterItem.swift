@@ -28,7 +28,7 @@ struct FilterItem: View {
           identifier: identifier,
           assetURL: asset.result.url?.absoluteString,
           metadata: asset.result.meta,
-          sourceID: asset.sourceID
+          sourceID: asset.sourceID,
         )
       }
     }, title: asset.result.label ?? "", selected: selected, properties: properties, asset: asset,

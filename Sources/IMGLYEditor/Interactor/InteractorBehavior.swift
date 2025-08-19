@@ -23,7 +23,6 @@ import SwiftUI
   func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws
   func enableEditMode(_ context: InteractorContext) throws
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws
-  func isGestureActive(_ context: InteractorContext, _ started: Bool) throws
   func isBottomBarEnabled(_ context: InteractorContext) throws -> Bool
   func pageChanged(_ context: InteractorContext) throws
   func historyChanged(_ context: InteractorContext) throws
@@ -50,7 +49,7 @@ import SwiftUI
 
     try context.engine.editor.setSettingString(
       "basePath",
-      value: context.interactor.config.settings.baseURL.absoluteString
+      value: context.interactor.config.settings.baseURL.absoluteString,
     )
 
     try [ScopeKey]([
@@ -106,7 +105,7 @@ import SwiftUI
     let zoomLevel = try await context.engine.zoomToPage(
       context.interactor.page,
       context.interactor.zoomModel.defaultInsets,
-      zoomModel: context.interactor.zoomModel
+      zoomModel: context.interactor.zoomModel,
     )
     if let zoomLevel {
       context.interactor.zoomModel.defaultZoomLevel = zoomLevel
@@ -139,8 +138,6 @@ import SwiftUI
     }
   }
 
-  func isGestureActive(_: InteractorContext, _: Bool) throws {}
-
   func isBottomBarEnabled(_: InteractorContext) throws -> Bool {
     true
   }
@@ -149,7 +146,7 @@ import SwiftUI
     try context.engine.showPage(
       context.interactor.page,
       historyResetBehavior: historyResetOnPageChange,
-      deselectAll: deselectOnPageChange
+      deselectAll: deselectOnPageChange,
     )
   }
 

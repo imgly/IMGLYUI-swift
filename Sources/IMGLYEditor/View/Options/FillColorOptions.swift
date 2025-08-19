@@ -27,7 +27,7 @@ struct FillColorOptions: View {
           default: .imgly.black,
           getter: temporaryColorGetter,
           setter: colorSetter,
-          completion: Interactor.Completion.set(property: .key(.fillEnabled), value: true)
+          completion: Interactor.Completion.set(property: .key(.fillEnabled), value: true),
         )
         ColorOptions(title: .imgly.localized("ly_img_editor_sheet_fill_stroke_color_picker_title_fill"),
                      isEnabled: interactor.bind(id, property: .key(.fillEnabled), default: false),
@@ -153,7 +153,7 @@ extension GradientOptions {
       property: .key(.fillGradientColors),
       default: defaultValue,
       getter: getter,
-      setter: setter
+      setter: setter,
     )
   }
 
@@ -200,7 +200,7 @@ extension GradientOptions {
       property: .key(.fillGradientColors),
       default: 0,
       getter: gradientAngleGetter,
-      setter: gradientAngleSetter
+      setter: gradientAngleSetter,
     )
     return gradientAngleBinding
   }

@@ -2,7 +2,7 @@ import Photos
 import SwiftUI
 
 /// Fetches a single asset
-@propertyWrapper
+@MainActor @propertyWrapper
 struct FetchAsset: DynamicProperty {
   @ObservedObject
   private(set) var observer: AssetObserver

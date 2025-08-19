@@ -20,7 +20,7 @@ final class VideoInteractorBehavior: InteractorBehavior {
     try context.engine.editor.setSettingBool("controlGizmo/showScaleHandles", value: false)
     try context.engine.editor.setSettingColor(
       "page/innerBorderColor",
-      color: .init(cgColor: UIColor.lightGray.withAlphaComponent(0.5).cgColor)!
+      color: .init(cgColor: UIColor.lightGray.withAlphaComponent(0.5).cgColor)!,
     )
 
     // Make sure to set all settings before calling `onCreate` callback so that the consumer can change them if needed!

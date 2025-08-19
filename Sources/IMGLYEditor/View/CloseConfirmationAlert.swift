@@ -7,7 +7,7 @@ struct CloseConfirmationAlert: ViewModifier {
     content
       .alert(
         Text(.imgly.localized("ly_img_editor_dialog_close_confirm_title")),
-        isPresented: $interactor.isCloseConfirmationAlertPresented
+        isPresented: $interactor.isCloseConfirmationAlertPresented,
       ) {
         Button(role: .cancel) {
           // nothing to do here
