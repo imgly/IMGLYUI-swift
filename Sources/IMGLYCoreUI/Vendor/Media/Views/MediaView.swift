@@ -99,49 +99,50 @@
       let isAlreadyPresented = presentedViewController != nil
       guard isAlreadyPresented != isPresented.wrappedValue, !isAlreadyPresented else { return }
 
-      if source == .camera {
-        let requiresMicrophone = media.contains { $0 == .movie }
+      Task {
+        if source == .camera {
+          guard UIImagePickerController.isSourceTypeAvailable(.camera) else { return }
 
-        func handleMicrophonePermission() {
-          guard requiresMicrophone else {
-            presentImagePicker()
-            return
+          let requiresMicrophone = media.contains { $0 == .movie }
+
+          let isCameraGranted = await ensurePermission(.camera)
+          guard isCameraGranted else { return presentCameraPermissionAlert() }
+
+          if requiresMicrophone {
+            let isMicrophoneGranted = await ensurePermission(.microphone)
+            guard isMicrophoneGranted else { return presentMicrophonePermissionAlert() }
           }
 
-          switch AVCaptureDevice.authorizationStatus(for: .audio) {
-          case .authorized:
-            presentImagePicker()
-          case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .audio) { micGranted in
-              DispatchQueue.main.async {
-                micGranted ? self.presentImagePicker() : self.presentMicrophonePermissionAlert()
-              }
-            }
-          case .denied, .restricted:
-            presentMicrophonePermissionAlert()
-          @unknown default:
-            presentMicrophonePermissionAlert()
-          }
+          presentImagePicker()
+        } else {
+          presentImagePicker()
         }
-
-        switch AVCaptureDevice.authorizationStatus(for: .video) {
-        case .authorized:
-          handleMicrophonePermission()
-        case .notDetermined:
-          AVCaptureDevice.requestAccess(for: .video) { cameraGranted in
-            DispatchQueue.main.async {
-              cameraGranted ? handleMicrophonePermission() : self.presentCameraPermissionAlert()
-            }
-          }
-        case .denied, .restricted:
-          presentCameraPermissionAlert()
-        @unknown default:
-          presentCameraPermissionAlert()
-        }
-      } else {
-        presentImagePicker()
       }
     }
+
+    // MARK: - Permissions
+
+    private enum MediaPermission {
+      case camera, microphone
+
+      var type: AVMediaType { self == .camera ? .video : .audio }
+    }
+
+    private func ensurePermission(_ permission: MediaPermission) async -> Bool {
+      let type = permission.type
+      switch AVCaptureDevice.authorizationStatus(for: type) {
+      case .authorized:
+        return true
+      case .notDetermined:
+        return await AVCaptureDevice.requestAccess(for: type)
+      case .denied, .restricted:
+        return false
+      @unknown default:
+        return false
+      }
+    }
+
+    // MARK: - UI
 
     private func presentCameraPermissionAlert() {
       let alert = UIAlertController(
@@ -195,25 +196,19 @@
 
     private func presentImagePicker() {
       let controller = UIImagePickerController()
-
       controller.sourceType = source
       controller.mediaTypes = media.map(\.identifier)
-      if FeatureFlags.isEnabled(.transcodePickerImageImports) {
-        controller.imageExportPreset = .compatible
-      } else {
-        controller.imageExportPreset = .current
-      }
-      if FeatureFlags.isEnabled(.transcodePickerVideoImports) {
-        controller.videoExportPreset = AVAssetExportPresetHighestQuality
-      } else {
-        controller.videoExportPreset = AVAssetExportPresetPassthrough
-      }
+      controller.imageExportPreset = FeatureFlags.isEnabled(.transcodePickerImageImports) ? .compatible : .current
+      controller.videoExportPreset = FeatureFlags
+        .isEnabled(.transcodePickerVideoImports) ? AVAssetExportPresetHighestQuality : AVAssetExportPresetPassthrough
       controller.delegate = self
       controller.presentationController?.delegate = self
       controller.modalPresentationStyle = .automatic
       controller.overrideUserInterfaceStyle = (colorScheme == .dark) ? .dark : .light
-      present(controller, animated: true, completion: nil)
+      present(controller, animated: true)
     }
+
+    // MARK: - Delegates
 
     func presentationControllerDidDismiss(_: UIPresentationController) {
       isPresented.wrappedValue = false
@@ -233,51 +228,53 @@
           complete(with: .failure(MediaError.imageNotAvailable), picker: picker)
           return
         }
-
-        DispatchQueue.global().async { [weak self] in
+        // swiftlint:disable:next task_detached
+        Task.detached(priority: .userInitiated) { [weak self] in
           do {
             let url = try FileManager.default.getUniqueCacheURL()
               .appendingPathExtension(videoURL.pathExtension)
 
             try FileManager.default.moveOrCopyItem(at: videoURL, to: url)
 
-            self?.complete(with: .success([(url, MediaType.movie)]), picker: picker)
+            await self?.complete(with: .success([(url, MediaType.movie)]), picker: picker)
           } catch {
-            self?.complete(with: .failure(error), picker: picker)
+            await self?.complete(with: .failure(error), picker: picker)
           }
         }
         return
       }
-      let imageURL = info[.imageURL] as? URL
 
-      DispatchQueue.global().async { [weak self] in
+      let imageURL = info[.imageURL] as? URL
+      // swiftlint:disable:next task_detached
+      Task.detached(priority: .userInitiated) { [weak self] in
         do {
           let url = try FileManager.default.getUniqueCacheURL()
             .appendingPathExtension(imageURL?.pathExtension ?? "jpg")
 
           if let imageURL {
             try FileManager.default.moveItem(at: imageURL, to: url)
+          } else if let data = image.jpegData(compressionQuality: 1) {
+            try data.write(to: url)
           } else {
-            let data = image.jpegData(compressionQuality: 1)
-            try data?.write(to: url)
+            throw MediaError.imageNotAvailable
           }
 
-          self?.complete(with: .success([(url, MediaType.image)]), picker: picker)
+          await self?.complete(with: .success([(url, MediaType.image)]), picker: picker)
         } catch {
-          self?.complete(with: .failure(error), picker: picker)
+          await self?.complete(with: .failure(error), picker: picker)
         }
       }
     }
 
-    private nonisolated func complete(
+    // MARK: - Completion
+
+    private func complete(
       with result: Result<[(URL, MediaType)], Swift.Error>,
       picker: UIImagePickerController,
     ) {
-      DispatchQueue.main.async {
-        self.isPresented.wrappedValue = false
-        picker.presentingViewController?.dismiss(animated: true) {
-          self.completion(result)
-        }
+      isPresented.wrappedValue = false
+      picker.presentingViewController?.dismiss(animated: true) {
+        self.completion(result)
       }
     }
   }
