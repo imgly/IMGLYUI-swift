@@ -1,9 +1,16 @@
+import IMGLYEngine
 import SwiftUI
+@_spi(Internal) import IMGLYCore
 
 struct ImageItem: View {
   @EnvironmentObject private var interactor: AnyAssetLibraryInteractor
 
   let asset: AssetItem
+
+  private var isVideo: Bool {
+    guard case let .asset(asset) = asset else { return false }
+    return asset.result.fillType == FillType.video.rawValue
+  }
 
   var body: some View {
     switch asset {
@@ -16,6 +23,11 @@ struct ImageItem: View {
           .clipped()
           .aspectRatio(1, contentMode: .fit)
           .cornerRadius(8)
+          .overlay(alignment: .bottomLeading) {
+            if isVideo, let duration = asset.result.duration {
+              VideoDurationOverlay(duration: duration)
+            }
+          }
       } onTap: {
         interactor.assetTapped(sourceID: asset.sourceID, asset: asset.result)
       }

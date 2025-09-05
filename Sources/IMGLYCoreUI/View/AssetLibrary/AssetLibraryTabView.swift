@@ -7,6 +7,8 @@ public struct AssetLibraryTabView<Content: View, Label: View>: View {
   @ViewBuilder private let content: () -> Content
   @ViewBuilder private let label: (_ title: LocalizedStringResource) -> Label
 
+  @StateObject private var configuration = AssetLibrarySectionConfiguration()
+
   /// Creates an asset library tab with any `content`.
   /// - Parameters:
   ///   - title: The title of the tab.
@@ -26,6 +28,7 @@ public struct AssetLibraryTabView<Content: View, Label: View>: View {
   @MainActor
   @ViewBuilder var tabContent: some View {
     TabContent(title: title, content: content)
+      .environmentObject(configuration)
   }
 
   @ViewBuilder var labelContent: some View {
@@ -61,6 +64,7 @@ private struct TabContent<Content: View>: View {
 
   @Environment(\.imglyDismissButtonView) private var dismissButtonView
   @EnvironmentObject private var searchState: AssetLibrarySearchState
+  @EnvironmentObject private var configuration: AssetLibrarySectionConfiguration
 
   var body: some View {
     content()
@@ -68,8 +72,13 @@ private struct TabContent<Content: View>: View {
       .toolbar {
         ToolbarItem {
           HStack(spacing: 16) {
-            SearchButton()
-            dismissButtonView
+            if configuration.isSearchAllowed {
+              SearchButton()
+              dismissButtonView
+            } else {
+              dismissButtonView
+                .buttonStyle(.plain)
+            }
           }
         }
       }

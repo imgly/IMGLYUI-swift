@@ -189,10 +189,22 @@ public extension EditorEvents.AddFrom {
     .movie: Engine.DemoAssetSource.videoUpload.rawValue,
   ] }
 
-  /// An event for adding assets from the photo roll.
+  /// An event for adding assets from the system photo roll.
+  @available(*, deprecated, message: """
+  Deprecated in v1.60.0. Please see the changelog for migration details:
+  https://img.ly/docs/cesdk/changelog/v1-60-0/
+  """)
   struct PhotoRoll: EditorEvent {
     let assetSourceIDs: [MediaType: String]
   }
+
+  /// An event for adding assets from the system photo roll.
+  struct SystemPhotoRoll: EditorEvent {
+    let assetSourceIDs: [MediaType: String]
+  }
+
+  /// An event for adding assets from the photo roll library sheet.
+  struct IMGLYPhotoRoll: EditorEvent {}
 
   /// An event for adding assets from the system camera.
   struct SystemCamera: EditorEvent {
@@ -288,15 +300,37 @@ public extension EditorEvent where Self == EditorEvents.Selection.SendBackward {
 }
 
 public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {
-  /// Creates an ``EditorEvent`` to add assets from the photo roll.
+  /// Creates an ``EditorEvent`` to add assets from the system photo roll.
   /// - Parameter assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
   /// ``MediaType``.
   /// - Returns: The created ``EditorEvents/AddFrom/PhotoRoll`` event.
+  @available(*, deprecated, message: """
+  Deprecated in v1.60.0. Please see the changelog for migration details:
+  https://img.ly/docs/cesdk/changelog/v1-60-0/
+  """)
   static func addFromPhotoRoll(
     to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
   ) -> Self {
     Self(assetSourceIDs: assetSourceIDs)
   }
+}
+
+public extension EditorEvent where Self == EditorEvents.AddFrom.SystemPhotoRoll {
+  /// Creates an ``EditorEvent`` to add assets from the system photo roll.
+  /// - Parameter assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
+  /// ``MediaType``.
+  /// - Returns: The created ``EditorEvents/AddFrom/SystemPhotoRoll`` event.
+  static func addFromSystemPhotoRoll(
+    to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
+  ) -> Self {
+    Self(assetSourceIDs: assetSourceIDs)
+  }
+}
+
+public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYPhotoRoll {
+  /// Creates an ``EditorEvent`` to add assets from the photo roll library sheet.
+  /// - Returns: The created ``EditorEvents/AddFrom/IMGLYPhotoRoll`` event.
+  static var addFromIMGLYPhotoRoll: Self { Self() }
 }
 
 public extension EditorEvent where Self == EditorEvents.AddFrom.SystemCamera {

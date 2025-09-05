@@ -10,7 +10,7 @@ struct UploadGridAddButton: View {
       Button {
         showUploader.toggle()
       } label: {
-        UploadAddLabel()
+        AddLabel()
           .padding([.leading, .trailing], 40)
           .padding([.top, .bottom], 6)
       }

@@ -60,7 +60,7 @@ public struct DesignEditor: View {
           try dockItems(context)
         } else {
           Dock.Buttons.elementsLibrary()
-          Dock.Buttons.photoRoll()
+          Dock.Buttons.imglyPhotoRoll()
           Dock.Buttons.systemCamera()
           Dock.Buttons.imagesLibrary()
           Dock.Buttons.textLibrary()

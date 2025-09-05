@@ -1777,7 +1777,10 @@ extension Interactor {
       if pageOverview.currentPage != currentPage {
         pageOverview.currentPage = currentPage
       }
-      try behavior.pageChanged(.init(engine, self))
+      try config.callbacks.onChanged(
+        .page(oldValue: oldValue, newValue: page),
+        .init(engine: engine, eventHandler: self),
+      )
       sheet.isPresented = false
     } catch {
       handleError(error)

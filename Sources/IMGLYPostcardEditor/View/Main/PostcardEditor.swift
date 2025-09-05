@@ -9,6 +9,7 @@ public struct PostcardEditor: View {
   public nonisolated static let defaultScene = Bundle.module.url(forResource: "postcard-empty", withExtension: "scene")!
 
   @Environment(\.imglyOnCreate) private var onCreate
+  @Environment(\.imglyOnChanged) private var onChanged
   @Environment(\.imglyNavigationBarItems) private var navigationBarItems
   private let settings: EngineSettings
 
@@ -78,6 +79,13 @@ public struct PostcardEditor: View {
         try $0.engine.scene.getPages().first == $0.engine.scene.getCurrentPage() ? .leading : .center
       }
       .imgly.dockScrollDisabled { _ in true }
+      .imgly.onChanged { update, context in
+        guard let onChanged else {
+          try Postcard.OnChanged.default(update, context)
+          return
+        }
+        try onChanged(update, context)
+      }
   }
 }
 

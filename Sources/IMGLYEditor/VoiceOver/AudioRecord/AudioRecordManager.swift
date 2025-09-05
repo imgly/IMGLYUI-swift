@@ -94,10 +94,13 @@ final class AudioRecordManager {
     Task {
       let audioSession = AVAudioSession.sharedInstance()
       do {
-        try audioSession.setCategory(
-          .playAndRecord,
-          options: [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP],
-        )
+        let options: AVAudioSession.CategoryOptions
+        #if swift(>=6.2)
+          options = [.defaultToSpeaker, .allowAirPlay, .allowBluetoothHFP, .allowBluetoothA2DP]
+        #else
+          options = [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP]
+        #endif
+        try audioSession.setCategory(.playAndRecord, options: options)
         try audioSession.setActive(true)
         await MainActor.run {
           self.configureAudioEngine()

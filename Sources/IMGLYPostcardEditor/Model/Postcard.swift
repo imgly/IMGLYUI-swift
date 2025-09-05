@@ -5,4 +5,7 @@ public enum Postcard {
 
   /// Sheet types used for the ``PostcardEditor``.
   public enum SheetType {}
+
+  /// A namespace for the default implementations of `OnChanged`.
+  enum OnChanged {}
 }
