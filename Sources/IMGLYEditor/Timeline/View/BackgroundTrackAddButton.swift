@@ -82,12 +82,10 @@ struct BackgroundTrackAddButton: View {
     switch option {
     case .camera:
       interactor.openCamera(EditorEvents.AddFrom.defaultAssetSourceIDs)
-    case .systemPhotoRoll:
+    case .gallery:
       interactor.openImagePicker(EditorEvents.AddFrom.defaultAssetSourceIDs)
     case .library:
       interactor.addAssetToBackgroundTrack()
-    case .imglyPhotoRoll:
-      interactor.openPhotoRoll()
     }
   }
 

@@ -26,7 +26,7 @@ public extension AssetLoader.SourceData {
 public struct DefaultAssetLibrary: AssetLibrary {
   /// A tab for a specific asset type.
   public enum Tab: CaseIterable {
-    case elements, photoRoll, videos, audio, images, text, shapes, stickers
+    case elements, uploads, videos, audio, images, text, shapes, stickers
   }
 
   /// Creates a default asset library with a selection of `tabs`.
@@ -127,24 +127,34 @@ public struct DefaultAssetLibrary: AssetLibrary {
     )
   }
 
-  static func photoRoll(_ sceneMode: SceneMode?)
-    -> AssetLibrarySource<PhotoRollDestination, PhotoRollPreview, PhotoRollAccessory> {
-    AssetLibrarySource.photoRoll(
-      .title(.imgly.localized("ly_img_editor_asset_library_section_photo_roll")),
-      source: .init(
-        id: PhotoRollAssetSource.id,
-        config: .init(groups: sceneMode == .video ? nil : [PhotoRollMediaType.image.rawValue]),
-      ),
+  @AssetLibraryBuilder func uploads(_ sceneMode: SceneMode?) -> AssetLibraryContent {
+    // Don't use upload strings here as it shouldn't state "Photo Roll" twice as this is already the parent.
+    AssetLibrarySource.imageUpload(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_images")),
+      source: .init(demoSource: .imageUpload),
     )
+    if sceneMode == .video {
+      AssetLibrarySource.videoUpload(
+        .title(.imgly.localized("ly_img_editor_asset_library_section_videos")),
+        source: .init(demoSource: .videoUpload),
+      )
+    }
   }
 
   @AssetLibraryBuilder var videosAndImages: AssetLibraryContent {
     AssetLibraryGroup.video(.imgly.localized("ly_img_editor_asset_library_section_videos")) { videos }
     AssetLibraryGroup.image(.imgly.localized("ly_img_editor_asset_library_section_images")) { images }
-    AssetLibrarySource.photoRoll(
-      .title(.imgly.localized("ly_img_editor_asset_library_section_photo_roll")),
-      source: .init(id: PhotoRollAssetSource.id),
-    )
+    AssetLibraryGroup.upload(.imgly.localized("ly_img_editor_asset_library_section_uploads")) {
+      // Don't use upload strings here as it shouldn't state "Photo Roll" twice as this is already the parent.
+      AssetLibrarySource.imageUpload(
+        .title(.imgly.localized("ly_img_editor_asset_library_section_images")),
+        source: .init(demoSource: .imageUpload),
+      )
+      AssetLibrarySource.videoUpload(
+        .title(.imgly.localized("ly_img_editor_asset_library_section_videos")),
+        source: .init(demoSource: .videoUpload),
+      )
+    }
   }
 
   /// The default video asset library content.
@@ -153,12 +163,9 @@ public struct DefaultAssetLibrary: AssetLibrary {
       .title(.imgly.localized("ly_img_editor_asset_library_section_videos")),
       source: .init(demoSource: .video),
     )
-    AssetLibrarySource.photoRoll(
-      .title(.imgly.localized("ly_img_editor_asset_library_section_photo_roll")),
-      source: .init(
-        id: PhotoRollAssetSource.id,
-        config: .init(groups: [PhotoRollMediaType.video.rawValue]),
-      ),
+    AssetLibrarySource.videoUpload(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_video_uploads")),
+      source: .init(demoSource: .videoUpload),
     )
   }
 
@@ -180,12 +187,9 @@ public struct DefaultAssetLibrary: AssetLibrary {
       .title(.imgly.localized("ly_img_editor_asset_library_section_images")),
       source: .init(demoSource: .image),
     )
-    AssetLibrarySource.photoRoll(
-      .title(.imgly.localized("ly_img_editor_asset_library_section_photo_roll")),
-      source: .init(
-        id: PhotoRollAssetSource.id,
-        config: .init(groups: [PhotoRollMediaType.image.rawValue]),
-      ),
+    AssetLibrarySource.imageUpload(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_image_uploads")),
+      source: .init(demoSource: .imageUpload),
     )
   }
 
@@ -294,7 +298,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   func tabContent(_ sceneMode: SceneMode?, _ tab: Tab) -> AssetLibraryContent {
     switch tab {
     case .elements: AssetLibraryGroup.empty
-    case .photoRoll: Self.photoRoll(sceneMode)
+    case .uploads: uploads(sceneMode)
     case .videos: videos
     case .audio: audio
     case .images: images
@@ -307,7 +311,8 @@ public struct DefaultAssetLibrary: AssetLibrary {
   func elementsContent(_ sceneMode: SceneMode?, _ tab: Tab) -> AssetLibraryContent {
     switch tab {
     case .elements: AssetLibraryGroup.empty
-    case .photoRoll: Self.photoRoll(sceneMode)
+    case .uploads: AssetLibraryGroup
+      .upload(.imgly.localized("ly_img_editor_asset_library_section_uploads")) { uploads(sceneMode) }
     case .videos: AssetLibraryGroup.video(.imgly.localized("ly_img_editor_asset_library_section_videos")) { videos }
     case .audio: AssetLibraryGroup.audio(.imgly.localized("ly_img_editor_asset_library_section_audio")) { audio }
     case .images: AssetLibraryGroup.image(.imgly.localized("ly_img_editor_asset_library_section_images")) { images }
@@ -331,7 +336,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @ViewBuilder func tabView(_ tab: Tab) -> some View {
     switch tab {
     case .elements: elementsTab
-    case .photoRoll: Self.photoRollTab
+    case .uploads: uploadsTab
     case .videos: videosTab
     case .audio: audioTab
     case .images: imagesTab
@@ -375,16 +380,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// The default label for the uploads tab.
-  @available(*, deprecated, message: """
-  Deprecated in v1.60.0. Please see the changelog for migration details:
-  https://img.ly/docs/cesdk/changelog/v1-60-0/
-  """)
   @ViewBuilder public static func uploadsLabel(_ title: LocalizedStringResource) -> some View {
-    photoRollLabel(title)
-  }
-
-  /// The default label for the photo roll tab.
-  @ViewBuilder public static func photoRollLabel(_ title: LocalizedStringResource) -> some View {
     Label {
       Text(title)
     } icon: {
@@ -447,12 +443,12 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
-  @_spi(Internal) @ViewBuilder public static var photoRollTab: some View {
+  @ViewBuilder var uploadsTab: some View {
     AssetLibrarySceneModeReader { sceneMode in
-      AssetLibraryTabView(.imgly.localized("ly_img_editor_asset_library_title_photo_roll")) {
-        photoRoll(sceneMode).content
+      AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_uploads")) {
+        uploads(sceneMode)
       } label: {
-        photoRollLabel($0)
+        Self.uploadsLabel($0)
       }
     }
   }
@@ -545,10 +541,10 @@ public struct DefaultAssetLibrary: AssetLibrary {
       AssetLibrarySceneModeReader { sceneMode in
         let activeTabs = activeTabs(sceneMode)
         if activeTabs.count > 5 {
-          if activeTabs.contains(.elements), activeTabs.contains(.photoRoll),
+          if activeTabs.contains(.elements), activeTabs.contains(.uploads),
              activeTabs.count == 6 {
-            let tabsWithoutPhotoRoll = activeTabs.filter { $0 != .photoRoll }
-            tabViews(tabsWithoutPhotoRoll)
+            let tabsWithoutUploads = activeTabs.filter { $0 != .uploads }
+            tabViews(tabsWithoutUploads)
           } else {
             let tabs = activeTabs.prefix(4)
             let moreTabs = activeTabs.dropFirst(4)

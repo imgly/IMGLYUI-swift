@@ -18,23 +18,6 @@
         }
       }
     },
-    "ly_img_editor_asset_library_button_change_permissions" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Berechtigungen ändern"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change Permissions"
-          }
-        }
-      }
-    },
     "ly_img_editor_asset_library_button_choose_photo" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -103,23 +86,6 @@
         }
       }
     },
-    "ly_img_editor_asset_library_button_permissions" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Berechtigungen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Permissions"
-          }
-        }
-      }
-    },
     "ly_img_editor_asset_library_button_retry" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -184,23 +150,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "See All"
-          }
-        }
-      }
-    },
-    "ly_img_editor_asset_library_button_select_more_photos" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weitere Fotos auswählen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select more Photos"
           }
         }
       }
@@ -388,23 +337,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cannot connect to service"
-          }
-        }
-      }
-    },
-    "ly_img_editor_asset_library_label_grant_permissions" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tippen, um Berechtigungen für die Anzeige von Medien zu gewähren"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap to grant permissions to show media"
           }
         }
       }
@@ -783,23 +715,6 @@
         }
       }
     },
-    "ly_img_editor_asset_library_section_photo_roll" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo Roll"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo Roll"
-          }
-        }
-      }
-    },
     "ly_img_editor_asset_library_section_plain_text" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -881,6 +796,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Text"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_uploads" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo Roll"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo Roll"
           }
         }
       }
@@ -1038,23 +970,6 @@
         }
       }
     },
-    "ly_img_editor_asset_library_title_photo_roll" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo Roll"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo Roll"
-          }
-        }
-      }
-    },
     "ly_img_editor_asset_library_title_shapes" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1119,6 +1034,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Text"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_title_uploads" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo Roll"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo Roll"
           }
         }
       }
@@ -1646,23 +1578,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Microphone permissions needed"
-          }
-        }
-      }
-    },
-    "ly_img_editor_dialog_photo_roll_importing" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importieren aus der Fotobibliothek"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importing from the Photo Library"
           }
         }
       }

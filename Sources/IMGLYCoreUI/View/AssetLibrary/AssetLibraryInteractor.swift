@@ -87,98 +87,100 @@ private struct SendableAVMetadataItem: @unchecked Sendable {
   }
 }
 
-private func getMeta(url: URL, thumbURL: URL? = nil, blockKind: BlockKind,
-                     fillType: FillType? = nil) async throws -> AssetMeta {
-  switch blockKind {
-  case .key(.image), .key(.video):
-    guard let fillType else {
-      throw Error(errorDescription: "Could not retrieve `fillType` of uploaded asset.")
-    }
-    let (size, thumbURL) = try await getSizeAndThumb(url: url, thumbURL: thumbURL, fillType: fillType)
-    let meta: AssetMeta = [
-      .uri: url.absoluteString,
-      .thumbUri: thumbURL.absoluteString,
-      .kind: blockKind.rawValue,
-      .width: String(Int(size.width)),
-      .height: String(Int(size.height)),
-      .blockType: DesignBlockType.graphic.rawValue,
-      .fillType: fillType.rawValue,
-    ]
-    return meta
-
-  case .key(.audio):
-    let asset = AVURLAsset(url: url)
-    let (duration, metadata) = try await asset.load(.duration, .commonMetadata)
-
-    var meta: AssetMeta = [
-      .uri: url.absoluteString,
-      .blockType: DesignBlockType.audio.rawValue,
-      .kind: blockKind.rawValue,
-      .duration: String(duration.seconds),
-    ]
-
-    func parse(key: AVMetadataKey) -> SendableAVMetadataItem {
-      .init(AVMetadataItem.metadataItems(from: metadata, withKey: key, keySpace: AVMetadataKeySpace.common).first)
-    }
-
-    let titleItem = parse(key: .commonKeyTitle)
-    let artistItem = parse(key: .commonKeyArtist)
-    let artworkItem = parse(key: .commonKeyArtwork)
-
-    async let loadTitle = titleItem.value?.load(.stringValue)
-    async let loadArtist = artistItem.value?.load(.stringValue)
-    async let loadArtwork = artworkItem.value?.load(.dataValue)
-
-    let (title, artist, artwork) = try await (loadTitle, loadArtist, loadArtwork)
-
-    if let title {
-      meta[.title] = title
-    }
-    if let artist {
-      meta[.artist] = artist
-    }
-    if let artwork, let image = UIImage(data: artwork) {
-      let data = image.jpegData(compressionQuality: 1)
-      guard let data else {
-        throw Error(errorDescription: "Could not save artwork thumbnail to data.")
+private extension AssetLibraryInteractor {
+  nonisolated static func getMeta(url: URL, thumbURL: URL? = nil, blockKind: BlockKind,
+                                  fillType: FillType? = nil) async throws -> AssetMeta {
+    switch blockKind {
+    case .key(.image), .key(.video):
+      guard let fillType else {
+        throw Error(errorDescription: "Could not retrieve `fillType` of uploaded asset.")
       }
-      let thumbURL = try data.writeToUniqueCacheURL(for: .jpeg)
-      meta[.thumbUri] = thumbURL.absoluteString
-    }
-    return meta
+      let (size, thumbURL) = try await getSizeAndThumb(url: url, thumbURL: thumbURL, fillType: fillType)
+      let meta: AssetMeta = [
+        .uri: url.absoluteString,
+        .thumbUri: thumbURL.absoluteString,
+        .kind: blockKind.rawValue,
+        .width: String(Int(size.width)),
+        .height: String(Int(size.height)),
+        .blockType: DesignBlockType.graphic.rawValue,
+        .fillType: fillType.rawValue,
+      ]
+      return meta
 
-  default:
-    throw Error(errorDescription: "Unsupported block type for upload.")
+    case .key(.audio):
+      let asset = AVURLAsset(url: url)
+      let (duration, metadata) = try await asset.load(.duration, .commonMetadata)
+
+      var meta: AssetMeta = [
+        .uri: url.absoluteString,
+        .blockType: DesignBlockType.audio.rawValue,
+        .kind: blockKind.rawValue,
+        .duration: String(duration.seconds),
+      ]
+
+      func parse(key: AVMetadataKey) -> SendableAVMetadataItem {
+        .init(AVMetadataItem.metadataItems(from: metadata, withKey: key, keySpace: AVMetadataKeySpace.common).first)
+      }
+
+      let titleItem = parse(key: .commonKeyTitle)
+      let artistItem = parse(key: .commonKeyArtist)
+      let artworkItem = parse(key: .commonKeyArtwork)
+
+      async let loadTitle = titleItem.value?.load(.stringValue)
+      async let loadArtist = artistItem.value?.load(.stringValue)
+      async let loadArtwork = artworkItem.value?.load(.dataValue)
+
+      let (title, artist, artwork) = try await (loadTitle, loadArtist, loadArtwork)
+
+      if let title {
+        meta[.title] = title
+      }
+      if let artist {
+        meta[.artist] = artist
+      }
+      if let artwork, let image = UIImage(data: artwork) {
+        let data = image.jpegData(compressionQuality: 1)
+        guard let data else {
+          throw Error(errorDescription: "Could not save artwork thumbnail to data.")
+        }
+        let thumbURL = try data.writeToUniqueCacheURL(for: .jpeg)
+        meta[.thumbUri] = thumbURL.absoluteString
+      }
+      return meta
+
+    default:
+      throw Error(errorDescription: "Unsupported block type for upload.")
+    }
   }
-}
 
-private func getSizeAndThumb(url: URL, thumbURL: URL?, fillType: FillType) async throws -> (CGSize, URL) {
-  switch fillType {
-  case .image:
-    let (data, _) = try await URLSession.shared.data(from: url)
-    guard let image = UIImage(data: data) else {
-      throw Error(errorDescription: "Unsupported image data.")
-    }
-    return (image.size, thumbURL ?? url)
-
-  case .video:
-    let asset = AVURLAsset(url: url)
-    let imageGenerator = AVAssetImageGenerator(asset: asset)
-    imageGenerator.appliesPreferredTrackTransform = true
-    let result = try await imageGenerator.image(at: .zero)
-    let image = UIImage(cgImage: result.image)
-    if let thumbURL {
-      return (image.size, thumbURL)
-    } else {
-      let data = image.jpegData(compressionQuality: 1)
-      guard let data else {
-        throw Error(errorDescription: "Could not save video thumbnail to data.")
+  static func getSizeAndThumb(url: URL, thumbURL: URL?, fillType: FillType) async throws -> (CGSize, URL) {
+    switch fillType {
+    case .image:
+      let (data, _) = try await URLSession.shared.data(from: url)
+      guard let image = UIImage(data: data) else {
+        throw Error(errorDescription: "Unsupported image data.")
       }
-      let thumbURL = try data.writeToUniqueCacheURL(for: .jpeg)
-      return (image.size, thumbURL)
-    }
+      return (image.size, thumbURL ?? url)
 
-  default:
-    throw Error(errorDescription: "Unsupported block type for upload.")
+    case .video:
+      let asset = AVURLAsset(url: url)
+      let imageGenerator = AVAssetImageGenerator(asset: asset)
+      imageGenerator.appliesPreferredTrackTransform = true
+      let result = try await imageGenerator.image(at: .zero)
+      let image = UIImage(cgImage: result.image)
+      if let thumbURL {
+        return (image.size, thumbURL)
+      } else {
+        let data = image.jpegData(compressionQuality: 1)
+        guard let data else {
+          throw Error(errorDescription: "Could not save video thumbnail to data.")
+        }
+        let thumbURL = try data.writeToUniqueCacheURL(for: .jpeg)
+        return (image.size, thumbURL)
+      }
+
+    default:
+      throw Error(errorDescription: "Unsupported block type for upload.")
+    }
   }
 }

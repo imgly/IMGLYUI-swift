@@ -22,14 +22,13 @@ class AssetLibraryInteractorMock: ObservableObject {
       let engine = try await Engine(license: secrets.licenseKey)
       self.engine = engine
       try engine.scene.createVideo()
-      let basePath = "https://cdn.img.ly/packages/imgly/cesdk-engine/1.60.0-rc.0/assets"
+      let basePath = "https://cdn.img.ly/packages/imgly/cesdk-engine/1.59.1/assets"
       try engine.editor.setSettingString("basePath", value: basePath)
       async let loadDefault: () = engine.addDefaultAssetSources()
       async let loadDemo: () = engine.addDemoAssetSources(sceneMode: engine.scene.getMode(),
                                                           withUploadAssetSources: true)
       _ = try await (loadDefault, loadDemo)
       try await engine.asset.addSource(TextAssetSource(engine: engine))
-      try engine.asset.addSource(PhotoRollAssetSource(engine: engine))
       sceneMode = try engine.scene.getMode()
     }
   }

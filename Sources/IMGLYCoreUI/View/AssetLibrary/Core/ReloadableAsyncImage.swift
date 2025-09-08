@@ -61,7 +61,6 @@ import SwiftUI
         // triggered the **Button**
         .onTapGesture(perform: onTap)
         .allowsHitTesting(state == .loaded)
-        .accessibilityElement(children: .combine)
         .accessibilityLabel(asset.result.label ?? "")
         .accessibilityAddTraits(.isButton)
       }
