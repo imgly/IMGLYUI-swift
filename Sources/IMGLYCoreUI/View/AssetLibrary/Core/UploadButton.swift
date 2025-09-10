@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A button that presents a menu to open the camera roll, the camera, or a file import dialog for specific `media`
+/// A button that presents a menu to open the photo roll, the camera, or a file import dialog for specific `media`
 /// types to add assets to an asset source.
 public struct UploadButton: View {
   private let media: [MediaType]
@@ -13,7 +13,7 @@ public struct UploadButton: View {
 
   public var body: some View {
     UploadMenu(media: media) {
-      UploadAddLabel()
+      AddLabel()
     }
   }
 }

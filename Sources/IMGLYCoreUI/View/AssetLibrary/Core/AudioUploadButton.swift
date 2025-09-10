@@ -12,7 +12,7 @@ public struct AudioUploadButton: View {
     Button {
       showFileImporter.toggle()
     } label: {
-      UploadAddLabel()
+      AddLabel()
     }
     .imgly.assetFileUploader(isPresented: $showFileImporter, allowedContentTypes: [.audio])
   }
