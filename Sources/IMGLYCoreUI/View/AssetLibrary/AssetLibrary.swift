@@ -66,7 +66,7 @@ public protocol AssetLibrary: View {
   var stickersAndShapesTab: StickersAndShapesTab { get }
 }
 
-public extension AssetLibrarySource<UploadGrid, AssetPreview<Message>, UploadButton> {
+public extension AssetLibrarySource<UploadGrid, AssetPreview, UploadButton> {
   /// Creates an ``AssetLibrarySource`` for image assets that supports uploads.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
@@ -115,7 +115,7 @@ public extension AssetLibrarySource<AudioUploadGrid, AudioPreview, AudioUploadBu
   }
 }
 
-public extension AssetLibrarySource<ImageGrid<Message, EmptyView>, AssetPreview<Message>, EmptyView> {
+public extension AssetLibrarySource<ImageGrid<Message, EmptyView>, AssetPreview, EmptyView> {
   /// Creates an ``AssetLibrarySource`` for image assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
@@ -132,23 +132,6 @@ public extension AssetLibrarySource<ImageGrid<Message, EmptyView>, AssetPreview<
   /// - Returns: The created `AssetLibrarySource`.
   static func video(_ mode: Mode, source: AssetLoader.SourceData) -> Self {
     self.init(mode, source: source) { Destination() } preview: { Preview.imageOrVideo }
-  }
-}
-
-public extension AssetLibrarySource<PhotoRollDestination, PhotoRollPreview, PhotoRollAccessory> {
-  /// Creates an ``AssetLibrarySource`` for the photo roll.
-  /// - Parameters:
-  ///   - mode: The display mode which defines the section title(s).
-  ///   - source: The asset source definition.
-  /// - Returns: The created `AssetLibrarySource`.
-  static func photoRoll(_ mode: Mode, source: AssetLoader.SourceData) -> Self {
-    self.init(mode, source: source) {
-      Destination()
-    } preview: {
-      Preview()
-    } accessory: {
-      Accessory()
-    }
   }
 }
 
@@ -174,7 +157,7 @@ public extension AssetLibrarySource<TextGrid, TextPreview, EmptyView> {
   }
 }
 
-public extension AssetLibrarySource<TextComponentGrid, AssetPreview<Message>, EmptyView> {
+public extension AssetLibrarySource<TextComponentGrid, AssetPreview, EmptyView> {
   /// Creates an ``AssetLibrarySource`` for text component assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
@@ -185,7 +168,7 @@ public extension AssetLibrarySource<TextComponentGrid, AssetPreview<Message>, Em
   }
 }
 
-public extension AssetLibrarySource<ShapeGrid, AssetPreview<Message>, EmptyView> {
+public extension AssetLibrarySource<ShapeGrid, AssetPreview, EmptyView> {
   /// Creates an ``AssetLibrarySource`` for shape assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
@@ -196,7 +179,7 @@ public extension AssetLibrarySource<ShapeGrid, AssetPreview<Message>, EmptyView>
   }
 }
 
-public extension AssetLibrarySource<StickerGrid, AssetPreview<Message>, EmptyView> {
+public extension AssetLibrarySource<StickerGrid, AssetPreview, EmptyView> {
   /// Creates an ``AssetLibrarySource`` for sticker assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
@@ -207,7 +190,7 @@ public extension AssetLibrarySource<StickerGrid, AssetPreview<Message>, EmptyVie
   }
 }
 
-public extension AssetLibraryGroup<AssetPreview<Message>> {
+public extension AssetLibraryGroup<AssetPreview> {
   /// Creates an ``AssetLibraryGroup`` for asset sources that support uploads.
   /// - Parameters:
   ///   - title: The displayed name of the group.
@@ -291,19 +274,11 @@ public extension AssetLibraryGroup<EmptyView> {
 }
 
 @MainActor
-public extension AssetPreview where Empty == Message {
+public extension AssetPreview {
   /// An ``AssetPreview`` for image, video, or text component assets.
-  static let imageOrVideo = imageOrVideo(empty: { Message.noElements })
+  static let imageOrVideo = Self(height: 96)
   /// An ``AssetPreview`` for shape or sticker assets.
   static let shapeOrSticker = Self(height: 80)
-}
-
-@MainActor
-public extension AssetPreview {
-  /// An ``AssetPreview`` for image, video, or text component assets, with a custom empty view.
-  static func imageOrVideo(@ViewBuilder empty: @escaping () -> Empty) -> Self {
-    Self(height: 96, empty: empty)
-  }
 }
 
 struct AssetLibrary_Previews: PreviewProvider {

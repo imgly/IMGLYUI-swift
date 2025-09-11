@@ -19,10 +19,6 @@ import SwiftUI
   private var sheetGeometryIfPresented: Geometry? { interactor.sheet.isPresented ? sheetGeometry : nil }
   private let zoomPadding: CGFloat
 
-  // Debounce task to prevent excessive updateZoom calls during sheet resizing on iOS 26+.
-  // Without debouncing, rapid zoom updates during sheet drag gestures cause UI lag.
-  @State private var zoomDebounceTask: Task<Void, Never>?
-
   @State private var interactivePopGestureRecognizer: UIGestureRecognizer?
 
   @_spi(Internal) public var body: some View {
@@ -63,7 +59,6 @@ import SwiftUI
         updateZoom(for: .textCursorChanged(newValue))
       }
       .sheet(isPresented: $interactor.sheet.isPresented) {
-        zoomDebounceTask?.cancel()
         updateZoom(for: .sheetClosed)
         // Reset sheet state to prevent memory leaks from retain cycles in view references
         interactor.sheet = SheetState()
@@ -80,14 +75,7 @@ import SwiftUI
           }
           .onChange(of: sheetGeometry) { newValue in
             if newValue?.frame == .zero { return }
-
-            zoomDebounceTask?.cancel()
-            zoomDebounceTask = Task {
-              try? await Task.sleep(for: .milliseconds(100))
-              if !Task.isCancelled {
-                updateZoom(for: .sheetGeometryChanged, sheetGeometry: newValue)
-              }
-            }
+            updateZoom(for: .sheetGeometryChanged, sheetGeometry: newValue)
           }
           .imgly.errorAlert(isSheet: true)
           // We're setting color scheme and interactor environment object here inside sheet
@@ -114,7 +102,6 @@ import SwiftUI
       .onDisappear {
         interactor.onDisappear()
         interactivePopGestureRecognizer?.isEnabled = true
-        zoomDebounceTask?.cancel()
       }
       .imgly.inspectorBarItems { context in
         if let inspectorBarItems {

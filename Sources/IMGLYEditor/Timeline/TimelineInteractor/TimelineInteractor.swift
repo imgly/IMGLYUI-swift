@@ -47,5 +47,4 @@ protocol TimelineInteractor: ObservableObject {
   func openVoiceOver(style: SheetStyle)
   func openCamera(_ assetSourceIDs: [MediaType: String])
   func openImagePicker(_ assetSourceIDs: [MediaType: String])
-  func openPhotoRoll()
 }

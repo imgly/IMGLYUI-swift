@@ -1,5 +1,5 @@
 import Foundation
-@_spi(Internal) import IMGLYCoreUI
+import SwiftUICore
 import UniformTypeIdentifiers
 @_spi(Internal) import struct IMGLYCore.Error
 import IMGLYEngine
@@ -34,7 +34,6 @@ public enum OnCreate {
                                                         withUploadAssetSources: true)
     _ = try await (loadDefault, loadDemo)
     try await engine.asset.addSource(TextAssetSource(engine: engine))
-    try engine.asset.addSource(PhotoRollAssetSource(engine: engine))
   }
 }
 
@@ -211,20 +210,8 @@ public enum OnError {
     _ context: OnChanged.Context
   ) throws -> Void
 
-  /// The default callback.
-  ///
-  /// The following state updates are handled by default:
-  /// - `EditorStateChange.page`: Sets the new page visible unless `features/pageCarouselEnabled` is enabled.
-  @_spi(Internal) public static let `default`: Callback = { update, context in
-    switch update {
-    case let .page(_, page):
-      if try !context.engine.editor.getSettingBool("features/pageCarouselEnabled") {
-        try context.engine.showPage(page, historyResetBehavior: .ifNeeded, deselectAll: false)
-      }
-    default:
-      break
-    }
-  }
+  /// The default empty callback.
+  @_spi(Internal) public static let `default`: Callback = { _, _ in }
 
   /// The context of the ``OnChanged/Callback``.
   @_spi(Internal) public struct Context {
@@ -241,11 +228,6 @@ public enum OnError {
     ///   - oldValue: The old value before the state change.
     ///   - newValue: The new value after the state change.
     case gestureActive(oldValue: Bool, newValue: Bool)
-    /// The current page index changed.
-    /// - Parameters:
-    ///   - oldValue: The old value before the state change.
-    ///   - newValue: The new value after the state change.
-    case page(oldValue: Int, newValue: Int)
   }
 }
 

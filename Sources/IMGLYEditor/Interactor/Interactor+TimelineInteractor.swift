@@ -223,10 +223,34 @@ extension Interactor: TimelineInteractor {
       }
 
       do {
-        _ = try engine.block.split(
-          clip.id,
-          atTime: firstClipDuration.seconds,
-        )
+        // Adjust the first clip.
+        try engine.block.setDuration(clip.id, duration: firstClipDuration.seconds)
+
+        // Adjust the second clip.
+        let secondClipID = try engine.block.duplicate(clip.id)
+
+        let firstClipTimeOffset = try engine.block.getTimeOffset(clip.id)
+        try engine.block.setTimeOffset(secondClipID, offset: firstClipTimeOffset + firstClipDuration.seconds)
+
+        if clip.allowsTrimming, !clip.isLooping {
+          // We need to set the trim to the fill on videos but to the block itself for everything else.
+          let secondClipTrimmableID = clip.clipType == .video ? try engine.block.getFill(secondClipID) : secondClipID
+
+          // Get the existing trim offset and add the duration of the first clip, then assign it to the second clip.
+          let oldTrimOffset = try engine.block.getTrimOffset(secondClipTrimmableID)
+          try engine.block.setTrimOffset(secondClipTrimmableID, offset: oldTrimOffset + firstClipDuration.seconds)
+        }
+
+        if let originalClipDuration = clip.duration {
+          let secondClipDuration = originalClipDuration - firstClipDuration
+          try engine.block.setDuration(secondClipID, duration: secondClipDuration.seconds)
+        }
+
+        // Select the second clip.
+        Task {
+          try await Task.sleep(for: .milliseconds(100))
+          self.select(id: secondClipID)
+        }
 
         addUndoStep()
       } catch {
@@ -1145,26 +1169,6 @@ extension Interactor: TimelineInteractor {
     uploadAssetSourceIDs = assetSourceIDs
     isImagePickerShown = true
     sheet.content = .clip // Set to clip to add to background track
-  }
-
-  // MARK: - Photo Roll
-
-  func openPhotoRoll() {
-    pause()
-    Task { @MainActor in
-      if PhotoLibraryAuthorizationManager.shared.authorizationStatus == .notDetermined {
-        await PhotoLibraryAuthorizationManager.shared.requestPermission()
-      }
-      do {
-        try engine?.block.deselectAll()
-        // Ensure that the deselect event comes before opening the sheet, otherwise the sheet closes immediately.
-        try await Task.sleep(for: .milliseconds(100))
-        let content = SheetContent.clip
-        sheet = .init(.libraryAdd { DefaultAssetLibrary.photoRollTab }, content)
-      } catch {
-        handleError(error)
-      }
-    }
   }
 
   func addAssetsFromImagePicker(_ assets: [(URL, MediaType)]) {

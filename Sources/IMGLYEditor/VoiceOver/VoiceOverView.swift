@@ -141,8 +141,6 @@ struct VoiceOverView<ViewModel: VoiceOverViewModelProtocol>: View {
       }
     } label: {
       Text(Localization.buttonCancel)
-        .fixedSize(horizontal: true, vertical: false)
-        .padding(.horizontal, usesLegacyDesign ? 0 : 4)
     }
     .confirmationDialog(
       Text(viewModel.mode == .new ?

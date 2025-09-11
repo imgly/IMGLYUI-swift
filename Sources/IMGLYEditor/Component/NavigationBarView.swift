@@ -48,7 +48,7 @@ struct NavigationBarView: ViewModifier {
 private extension [NavigationBar.ItemPlacement: [any NavigationBar.Item]] {
   @ToolbarContentBuilder
   func toolbarContent(_ context: NavigationBar.Context, placement: NavigationBar.ItemPlacement) -> some ToolbarContent {
-    if let items = self[placement], !items.isEmpty {
+    if let items = self[placement] {
       ToolbarItemGroup(placement: placement.toolbarItemPlacement) {
         // 1) For `.principal` placement a HStack is required otherwise just the first item is displayed.
         // 2) HStack breaks automatic overflow menu (...) for `.topBarTrailing` placement but enables us to apply
@@ -64,7 +64,7 @@ private extension [NavigationBar.ItemPlacement: [any NavigationBar.Item]] {
           if fixTrailing {
             Button {} label: { EmptyView() }
               // `.buttonStyle(.automatic)` should be the default. Other styles don't do the trick.
-              .frame(width: 0)
+              .padding(.trailing, -7)
           }
           ForEach(items, id: \.id) { item in
             AnyView(item.nonThrowingBody(context))
@@ -72,7 +72,7 @@ private extension [NavigationBar.ItemPlacement: [any NavigationBar.Item]] {
           if fixLeading {
             Button {} label: { EmptyView() }
               // `.buttonStyle(.automatic)` should be the default. Other styles don't do the trick.
-              .frame(width: 0)
+              .padding(.leading, -7)
           }
         }
       }

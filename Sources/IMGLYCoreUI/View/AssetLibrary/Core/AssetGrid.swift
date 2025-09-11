@@ -11,7 +11,7 @@ import SwiftUI
 
 extension EnvironmentValues {
   @Entry var imglyAssetGridAxis = Axis.vertical
-  @Entry var imglyAssetGridItems = AssetGridItems(gridItems: [GridItem(.flexible())])
+  @Entry var imglyAssetGridItems = [GridItem(.flexible())]
   @Entry var imglyAssetGridSpacing: CGFloat?
   @Entry var imglyAssetGridEdges = Edge.Set.all
   @Entry var imglyAssetGridPadding: CGFloat?
@@ -85,7 +85,7 @@ extension EnvironmentValues {
     case .horizontal:
       ScrollViewReader { proxy in
         AssetLibraryScrollView(axis: .horizontal, showsIndicators: false) {
-          LazyHGrid(rows: items.gridItems, spacing: spacing) {
+          LazyHGrid(rows: items, spacing: spacing) {
             content()
           }
           .padding(edges, padding)
@@ -97,7 +97,7 @@ extension EnvironmentValues {
     case .vertical:
       ScrollViewReader { proxy in
         AssetLibraryScrollView(axis: .vertical, showsIndicators: true) {
-          LazyVGrid(columns: items.gridItems, spacing: spacing) {
+          LazyVGrid(columns: items, spacing: spacing) {
             content()
           }
           .padding(edges, padding)

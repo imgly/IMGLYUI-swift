@@ -110,7 +110,7 @@ public extension IMGLY where Wrapped: View {
   /// DesignEditor(settings)
   ///   .imgly.dockItems { context in
   ///     Dock.Buttons.elementsLibrary()
-  ///     Dock.Buttons.imglyPhotoRoll()
+  ///     Dock.Buttons.photoRoll()
   ///     Dock.Buttons.systemCamera()
   ///     Dock.Buttons.imagesLibrary()
   ///     Dock.Buttons.textLibrary()
@@ -133,7 +133,7 @@ public extension IMGLY where Wrapped: View {
   ///
   /// VideoEditor(settings)
   ///   .imgly.dockItems { context in
-  ///     Dock.Buttons.imglyPhotoRoll()
+  ///     Dock.Buttons.photoRoll()
   ///     Dock.Buttons.imglyCamera()
   ///     Dock.Buttons.overlaysLibrary()
   ///     Dock.Buttons.textLibrary()

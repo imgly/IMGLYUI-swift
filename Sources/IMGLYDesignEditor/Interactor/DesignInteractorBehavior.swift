@@ -36,6 +36,7 @@ final class DesignInteractorBehavior: InteractorBehavior {
   func enableEditMode(_: InteractorContext) throws {}
   func enablePreviewMode(_: InteractorContext, _: EdgeInsets?) async throws {}
 
+  func pageChanged(_: InteractorContext) throws {}
   func updateState(_: InteractorContext) throws {}
 }
 

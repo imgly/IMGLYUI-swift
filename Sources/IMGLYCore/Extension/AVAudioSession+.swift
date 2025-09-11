@@ -45,13 +45,10 @@ private enum AudioSessionStateError: Swift.Error {
   }
 
   static func prepareForRecording() throws {
-    let options: AVAudioSession.CategoryOptions
-    #if swift(>=6.2)
-      options = [.defaultToSpeaker, .allowAirPlay, .allowBluetoothHFP, .allowBluetoothA2DP]
-    #else
-      options = [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP]
-    #endif
-    try session.setCategory(.playAndRecord, options: options)
+    try session.setCategory(
+      .playAndRecord,
+      options: [.defaultToSpeaker, .allowAirPlay, .allowBluetooth, .allowBluetoothA2DP],
+    )
   }
 
   static func prepareForPlayback() throws {

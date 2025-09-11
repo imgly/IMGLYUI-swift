@@ -3,21 +3,14 @@ import IMGLYEngine
 import SwiftUI
 
 /// A grid of assets for preview.
-public struct AssetPreview<Empty: View>: View {
+public struct AssetPreview: View {
   @Environment(\.imglySeeAllView) private var seeAllView
   private let height: CGFloat?
-  @ViewBuilder private let empty: () -> Empty
 
   /// Creates a grid of assets for preview.
-  /// - Parameters:
-  ///   - height: The height of the frame.
-  ///   - empty: A view to display when the grid is empty.
-  public init(
-    height: CGFloat?,
-    @ViewBuilder empty: @escaping () -> Empty = { Message.noElements }
-  ) {
+  /// - Parameter height: The height of the frame.
+  public init(height: CGFloat?) {
     self.height = height
-    self.empty = empty
   }
 
   @MainActor
@@ -70,7 +63,7 @@ public struct AssetPreview<Empty: View>: View {
     AssetGrid { asset in
       item(asset)
     } empty: { _ in
-      empty()
+      Message.noElements
     } more: {
       seeAllView
     }

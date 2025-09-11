@@ -46,7 +46,7 @@ public struct VideoEditor: View {
         if let dockItems {
           try dockItems(context)
         } else {
-          Dock.Buttons.imglyPhotoRoll()
+          Dock.Buttons.photoRoll()
           Dock.Buttons.imglyCamera()
           Dock.Buttons.overlaysLibrary()
           Dock.Buttons.textLibrary()

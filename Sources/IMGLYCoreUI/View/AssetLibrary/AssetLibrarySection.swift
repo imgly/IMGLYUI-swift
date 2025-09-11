@@ -1,29 +1,19 @@
 import SwiftUI
 
-@_spi(Internal) public struct AssetLibrarySection<
-  Destination: View,
-  Preview: View,
-  Accessory: View,
-  Action: View,
->: View {
+@_spi(Internal) public struct AssetLibrarySection<Destination: View, Preview: View, Accessory: View>: View {
   private let title: LocalizedStringResource
   @ViewBuilder private let destination: () -> Destination
   @ViewBuilder private let preview: () -> Preview
   @ViewBuilder private let accessory: () -> Accessory
-  @ViewBuilder private let action: () -> Action
-
-  @StateObject private var configuration = AssetLibrarySectionConfiguration()
 
   @_spi(Internal) public init(_ title: LocalizedStringResource,
                               @ViewBuilder destination: @escaping () -> Destination,
                               @ViewBuilder preview: @escaping () -> Preview,
-                              @ViewBuilder accessory: @escaping () -> Accessory = { EmptyView() },
-                              @ViewBuilder action: @escaping () -> Action = { EmptyView() }) {
+                              @ViewBuilder accessory: @escaping () -> Accessory = { EmptyView() }) {
     self.title = title
     self.destination = destination
     self.preview = preview
     self.accessory = accessory
-    self.action = action
   }
 
   @State var totalResults: Int?
@@ -44,20 +34,12 @@ import SwiftUI
   @MainActor
   @ViewBuilder var content: some View {
     destination()
-      .environmentObject(configuration)
       .navigationTitle(Text(title))
       .toolbar {
-        if !searchState.isPresented {
-          ToolbarItem {
-            HStack(spacing: 16) {
-              if configuration.isSearchAllowed {
-                SearchButton()
-                dismissButtonView
-              } else {
-                dismissButtonView
-                  .buttonStyle(.plain)
-              }
-            }
+        ToolbarItem {
+          HStack(spacing: 16) {
+            SearchButton()
+            dismissButtonView
           }
         }
       }
@@ -80,18 +62,13 @@ import SwiftUI
         Spacer()
         accessory()
           .font(.subheadline)
-        action()
-          .font(.subheadline.weight(.semibold).monospacedDigit())
-        if configuration.isNavigationAllowed {
-          NavigationLink {
-            content
-          } label: {
-            label
-              .font(.subheadline.weight(.semibold).monospacedDigit())
-          }
+        NavigationLink {
+          content
+        } label: {
+          label
+            .font(.subheadline.weight(.semibold).monospacedDigit())
         }
       }
-      .environmentObject(configuration)
       .padding(.top, 16)
       .padding([.leading, .trailing], 16)
     }

@@ -36,10 +36,9 @@ extension TransformOptions {
     func loadGroups() {
       Task {
         let groups = try? await withThrowingTaskGroup(of: [String].self) { group in
-          let interactor = self.interactor
           for source in sources {
             group.addTask {
-              try await interactor.getGroups(sourceID: source.id)
+              try await self.interactor.getGroups(sourceID: source.id)
             }
           }
 
@@ -75,10 +74,9 @@ extension TransformOptions {
     private func updateAssetGrid(for id: String) {
       Task {
         let height: CGFloat = try await withThrowingTaskGroup(of: AssetLoader.Asset?.self) { group in
-          let interactor = self.interactor
           for source in sources {
             group.addTask {
-              let assets = try await interactor.findAssets(
+              let assets = try await self.interactor.findAssets(
                 sourceID: source.id,
                 query: .init(query: nil, page: 1, groups: [id], perPage: 1),
               )
