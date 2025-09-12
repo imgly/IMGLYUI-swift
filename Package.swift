@@ -29,7 +29,7 @@ let package = Package(
              ]),
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.59.2-rc.0"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.59.2"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "1.1.2"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", "7.10.0" ..< "9.0.0"),
   ],
