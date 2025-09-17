@@ -306,6 +306,7 @@ struct Canvas: View {
     .imgly.camera(isPresented: $interactor.isSystemCameraShown, media: media, onComplete: mediaCompletion)
     .imgly.photoRoll(isPresented: $interactor.isImagePickerShown, media: media,
                      maxSelectionCount: maxSelectionCount, onComplete: mediaCompletion)
+    .imgly.photoRollImportOverlay(onError: interactor.handleError)
   }
 
   private var media: [MediaType] {

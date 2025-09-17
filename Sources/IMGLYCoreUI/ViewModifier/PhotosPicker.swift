@@ -162,6 +162,7 @@ private struct PhotosPicker: ViewModifier {
         }
       }
       .publisher(for: \.fractionCompleted)
+      .receive(on: DispatchQueue.main)
       .sink { fractionCompleted in
         importingProgress[selection] = fractionCompleted
       }
@@ -180,47 +181,14 @@ private extension MediaType {
 }
 
 private extension URL {
-  func moveOrCopyToUniqueCacheURL() throws -> URL {
-    let manager = FileManager.default
-    let url = try manager.getUniqueCacheURL().appendingPathExtension(pathExtension)
-    try manager.moveOrCopyItem(at: self, to: url)
-    return url
-  }
-
-  /// Transcode to most compatible format
+  /// Transcode to most compatible format using MediaTranscoder
   func transcode(mediaType: MediaType) async throws -> URL {
     switch mediaType {
-    case .image: try await transcodeImage()
-    case .movie: try await transcodeMovie()
+    case .image:
+      try await MediaTranscoder.transcodeImageToJPEG(from: self)
+    case .movie:
+      try await MediaTranscoder.transcodeVideoToMOV(from: self)
     }
-  }
-
-  /// Transcode to most compatible image format
-  private func transcodeImage() async throws -> URL {
-    let (imageData, _) = try await URLSession.shared.data(from: self)
-    guard let image = UIImage(data: imageData) else {
-      throw Error(errorDescription: "Could not load image for transcoding.")
-    }
-    guard let jpegData = image.jpegData(compressionQuality: 1) else {
-      throw Error(errorDescription: "Could not save image for transcoding.")
-    }
-    return try jpegData.writeToUniqueCacheURL(for: .jpeg)
-  }
-
-  /// Transcode to most compatible movie format
-  private func transcodeMovie() async throws -> URL {
-    guard let session = AVAssetExportSession(asset: AVAsset(url: self),
-                                             presetName: AVAssetExportPresetHighestQuality) else {
-      throw Error(errorDescription: "Could not create asset export session for transcoding.")
-    }
-    let outputURL = try FileManager.default.getUniqueCacheURL().appendingPathExtension(for: .quickTimeMovie)
-    session.outputURL = outputURL
-    session.outputFileType = .mov
-    await session.export()
-    if let error = session.error {
-      throw error
-    }
-    return outputURL
   }
 }
 

@@ -69,6 +69,9 @@
     fileprivate var colorScheme: ColorScheme
     fileprivate var completion: MediaCompletion
 
+    // Keep a strong reference to self to prevent deallocation during navigation
+    private var strongSelfReference: CameraWrapper?
+
     init(
       isPresented: Binding<Bool>,
       source: UIImagePickerController.SourceType,
@@ -111,12 +114,31 @@
           if requiresMicrophone {
             let isMicrophoneGranted = await ensurePermission(.microphone)
             guard isMicrophoneGranted else { return presentMicrophonePermissionAlert() }
+
+            do {
+              AVAudioSession.push()
+              try AVAudioSession.prepareForRecording()
+            } catch {
+              print("Couldn't prepare session for recording")
+            }
           }
 
           presentImagePicker()
         } else {
           presentImagePicker()
         }
+      }
+    }
+
+    private func popAudioSessionIfNeeded() {
+      let requiresMicrophone = media.contains { $0 == .movie }
+      guard source == .camera, requiresMicrophone else {
+        return
+      }
+      do {
+        try AVAudioSession.pop()
+      } catch {
+        print("Couldn't return session to previous mode \(error)")
       }
     }
 
@@ -205,16 +227,22 @@
       controller.presentationController?.delegate = self
       controller.modalPresentationStyle = .automatic
       controller.overrideUserInterfaceStyle = (colorScheme == .dark) ? .dark : .light
+
+      strongSelfReference = self
       present(controller, animated: true)
     }
 
     // MARK: - Delegates
 
     func presentationControllerDidDismiss(_: UIPresentationController) {
+      strongSelfReference = nil
       isPresented.wrappedValue = false
     }
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+      popAudioSessionIfNeeded()
+
+      strongSelfReference = nil
       isPresented.wrappedValue = false
       picker.presentingViewController?.dismiss(animated: true)
     }
@@ -223,6 +251,8 @@
       _ picker: UIImagePickerController,
       didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any],
     ) {
+      popAudioSessionIfNeeded()
+
       guard let image = info[.originalImage] as? UIImage else {
         guard let videoURL = info[.mediaURL] as? URL else {
           complete(with: .failure(MediaError.imageNotAvailable), picker: picker)
@@ -272,6 +302,7 @@
       with result: Result<[(URL, MediaType)], Swift.Error>,
       picker: UIImagePickerController,
     ) {
+      strongSelfReference = nil
       isPresented.wrappedValue = false
       picker.presentingViewController?.dismiss(animated: true) {
         self.completion(result)

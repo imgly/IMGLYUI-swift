@@ -1,4 +1,5 @@
 import SwiftUI
+@_spi(Internal) import IMGLYCoreUI
 
 /// A  label that looks like the original navigation back button.
 public struct NavigationLabel: View {
@@ -26,13 +27,13 @@ public struct NavigationLabel: View {
       case .backward:
         Image(systemName: direction.rawValue)
           .font(.headline)
-          .padding(.leading, -8)
+          .padding(.leading, usesLegacyDesign ? -8 : 0)
         Text(title)
       case .forward:
         Text(title)
         Image(systemName: direction.rawValue)
           .font(.headline)
-          .padding(.trailing, -8)
+          .padding(.trailing, usesLegacyDesign ? -8 : 0)
       }
     }
     .padding(.bottom, 0.5)

@@ -11,6 +11,11 @@ struct SelectableAssetItem<Content: View>: View {
 
   @EnvironmentObject private var interactor: Interactor
 
+  // Since we still don't support localization in asset sources, this allows customers to localize titles directly
+  private var localizedTitle: String {
+    String(localized: LocalizedStringResource(stringLiteral: title))
+  }
+
   private var image: Image {
     if #available(iOS 17.0, *) {
       Image(systemName: "slider.horizontal.2.square")
@@ -28,7 +33,7 @@ struct SelectableAssetItem<Content: View>: View {
     }
     .onTapGesture {
       let propertyState = AssetProperties(
-        title: title,
+        title: localizedTitle,
         backTitle: .imgly.localized("ly_img_editor_sheet_button_back"),
         properties: properties,
       )
@@ -46,7 +51,7 @@ struct SelectableAssetItem<Content: View>: View {
   }
 
   var body: some View {
-    SelectableEffectItem(title: title, selected: selected) {
+    SelectableEffectItem(title: localizedTitle, selected: selected) {
       ZStack {
         content
         overlay

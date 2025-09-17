@@ -16,22 +16,17 @@ import SwiftUI
 
 @MainActor
 @_spi(Internal) public protocol InteractorBehavior: Sendable {
-  var historyResetOnPageChange: HistoryResetBehavior { get }
-  var deselectOnPageChange: Bool { get }
   var unselectedPageCrop: Bool { get }
 
   func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws
   func enableEditMode(_ context: InteractorContext) throws
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws
   func isBottomBarEnabled(_ context: InteractorContext) throws -> Bool
-  func pageChanged(_ context: InteractorContext) throws
   func historyChanged(_ context: InteractorContext) throws
   func updateState(_ context: InteractorContext) throws
 }
 
 @_spi(Internal) public extension InteractorBehavior {
-  var historyResetOnPageChange: HistoryResetBehavior { .ifNeeded }
-  var deselectOnPageChange: Bool { false }
   var unselectedPageCrop: Bool { false }
 
   func loadSettings(_ context: InteractorContext) throws {
@@ -140,14 +135,6 @@ import SwiftUI
 
   func isBottomBarEnabled(_: InteractorContext) throws -> Bool {
     true
-  }
-
-  func pageChanged(_ context: InteractorContext) throws {
-    try context.engine.showPage(
-      context.interactor.page,
-      historyResetBehavior: historyResetOnPageChange,
-      deselectAll: deselectOnPageChange,
-    )
   }
 
   func historyChanged(_: InteractorContext) throws {}

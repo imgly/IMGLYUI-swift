@@ -12,6 +12,16 @@ public extension View {
 
 // MARK: - Internal interface
 
+@_spi(Internal) public extension View {
+  var usesLegacyDesign: Bool {
+    if #available(iOS 26.0, *) {
+      Bundle.main.object(forInfoDictionaryKey: "UIDesignRequiresCompatibility") as? Bool ?? false
+    } else {
+      true
+    }
+  }
+}
+
 @_spi(Internal) public extension IMGLY where Wrapped: View {
   @MainActor
   func assetLibrary(interactor: some AssetLibraryInteractor) -> some View {
@@ -52,7 +62,10 @@ public extension View {
   }
 
   func assetGrid(axis: Axis) -> some View { wrapped.environment(\.imglyAssetGridAxis, axis) }
-  func assetGrid(items: [GridItem]) -> some View { wrapped.environment(\.imglyAssetGridItems, items) }
+  func assetGrid(items: [GridItem]) -> some View { wrapped.environment(
+    \.imglyAssetGridItems,
+    AssetGridItems(gridItems: items),
+  ) }
   func assetGrid(spacing: CGFloat?) -> some View { wrapped.environment(\.imglyAssetGridSpacing, spacing) }
   func assetGrid(edges: Edge.Set) -> some View { wrapped.environment(\.imglyAssetGridEdges, edges) }
   func assetGrid(padding: CGFloat?) -> some View { wrapped.environment(\.imglyAssetGridPadding, padding) }
