@@ -21,13 +21,18 @@ struct GenericPropertyButton<T: Equatable, Label: View>: View {
   private var isSelected: Bool { selection == property }
   private var isDisabled: Bool { selection == nil }
 
+  private var foregroundColor: Color {
+    if isDisabled { return .secondary }
+    return isSelected ? .accentColor : .primary
+  }
+
   var body: some View {
     Button {
       selection = isSelected ? nil : property
     } label: {
       label()
     }
-    .foregroundColor(isSelected || isDisabled ? .accentColor : .primary)
+    .foregroundColor(foregroundColor)
     .disabled(isDisabled)
   }
 }

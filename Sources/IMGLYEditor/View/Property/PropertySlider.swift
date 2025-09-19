@@ -17,6 +17,7 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
 
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
+  @State private var localValue: T?
 
   init(_ title: LocalizedStringResource, in bounds: ClosedRange<T>, property: Property,
        mapping: @escaping Mapping = { value, _ in value },
@@ -48,13 +49,27 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
     )
   }
 
+  private var sliderBinding: Binding<T> {
+    Binding(
+      get: {
+        localValue ?? binding.wrappedValue
+      },
+      set: { newValue in
+        localValue = newValue
+        binding.wrappedValue = newValue
+      },
+    )
+  }
+
   var body: some View {
-    Slider(value: mapping(binding, bounds),
+    Slider(value: mapping(sliderBinding, bounds),
            in: bounds) { started in
       if !started {
+        localValue = nil
         interactor.addUndoStep()
       }
     }
     .accessibilityLabel(Text(title))
+    .onAppear { localValue = nil }
   }
 }
