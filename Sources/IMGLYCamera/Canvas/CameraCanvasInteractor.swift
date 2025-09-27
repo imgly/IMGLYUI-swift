@@ -29,6 +29,9 @@ class CameraCanvasInteractor: ObservableObject {
   init(settings: EngineSettings, videoSize: CGSize) async throws {
     let engine = try await Engine(license: settings.license, userID: settings.userID)
     try engine.editor.setSettingString("basePath", value: settings.baseURL.absoluteString)
+
+    // Workaround to have the audio output device started before any recording
+    try engine.editor.startAudioOutputDevice()
     self.engine = engine
 
     canvasWidth = Float(videoSize.width)

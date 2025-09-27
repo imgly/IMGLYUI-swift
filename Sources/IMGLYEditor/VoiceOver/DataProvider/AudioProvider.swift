@@ -78,6 +78,7 @@ final class AudioProvider {
 
   required init(interactor: AudioInteractor) {
     self.interactor = interactor
+    try? self.interactor.startAudioOutputDevice()
   }
 
   // MARK: - Methods

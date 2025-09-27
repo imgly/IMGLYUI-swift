@@ -23,7 +23,6 @@ import SwiftUI
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws
   func isBottomBarEnabled(_ context: InteractorContext) throws -> Bool
   func historyChanged(_ context: InteractorContext) throws
-  func updateState(_ context: InteractorContext) throws
 }
 
 @_spi(Internal) public extension InteractorBehavior {
@@ -138,16 +137,6 @@ import SwiftUI
   }
 
   func historyChanged(_: InteractorContext) throws {}
-
-  func updateState(_ context: InteractorContext) throws {
-    guard !context.interactor.isCreating else {
-      return
-    }
-    let selectionColors = try context.engine.selectionColors(forPage: context.interactor.page)
-    if context.interactor.selectionColors != selectionColors {
-      context.interactor.selectionColors = selectionColors
-    }
-  }
 }
 
 @_spi(Internal) public final class DefaultInteractorBehavior: InteractorBehavior {}

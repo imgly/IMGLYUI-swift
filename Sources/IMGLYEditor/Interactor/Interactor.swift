@@ -1677,12 +1677,6 @@ extension Interactor {
         handleError(error)
       }
     }
-
-    do {
-      try behavior.updateState(.init(engine, self))
-    } catch {
-      handleErrorWithTask(error)
-    }
   }
 
   func observeState() -> Task<Void, Never> {

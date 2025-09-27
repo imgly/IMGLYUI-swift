@@ -23,6 +23,8 @@ protocol AudioInteractor {
   /// - Parameter audioBlock: The identifier of the audio block.
   /// - Returns: The audio file URL.
   func getAudioBlockURL(for audioBlock: DesignBlockID) throws -> URL?
+  /// Workaround to have the audio output device started before any recording
+  func startAudioOutputDevice() throws
   /// Sets the URL for an audio block.
   /// - Parameters:
   ///   - audioBlock: The identifier of the audio block.

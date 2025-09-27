@@ -35,8 +35,6 @@ final class DesignInteractorBehavior: InteractorBehavior {
 
   func enableEditMode(_: InteractorContext) throws {}
   func enablePreviewMode(_: InteractorContext, _: EdgeInsets?) async throws {}
-
-  func updateState(_: InteractorContext) throws {}
 }
 
 extension InteractorBehavior where Self == DesignInteractorBehavior {

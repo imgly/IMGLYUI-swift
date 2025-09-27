@@ -26,8 +26,6 @@ final class VideoInteractorBehavior: InteractorBehavior {
     // Make sure to set all settings before calling `onCreate` callback so that the consumer can change them if needed!
     try await context.interactor.config.callbacks.onCreate(context.engine)
   }
-
-  func updateState(_: InteractorContext) throws {}
 }
 
 extension InteractorBehavior where Self == VideoInteractorBehavior {

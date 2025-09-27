@@ -21,8 +21,6 @@ final class PostcardInteractorBehavior: InteractorBehavior {
     try await context.engine.zoomToScene(insets)
     try context.engine.block.deselectAll()
   }
-
-  func updateState(_: InteractorContext) throws {}
 }
 
 extension InteractorBehavior where Self == PostcardInteractorBehavior {

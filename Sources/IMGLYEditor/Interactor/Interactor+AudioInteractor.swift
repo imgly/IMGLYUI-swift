@@ -12,6 +12,10 @@ extension Interactor: AudioInteractor {
     }
   }
 
+  func startAudioOutputDevice() throws {
+    try _engine.editor.startAudioOutputDevice()
+  }
+
   func createAudioBlock() throws -> DesignBlockID {
     guard let pageID = timelineProperties.currentPage else {
       throw Error(errorDescription: "Theres no current page")
