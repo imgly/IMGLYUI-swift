@@ -21,8 +21,6 @@ import SwiftUI
   func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws
   func enableEditMode(_ context: InteractorContext) throws
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws
-  func isBottomBarEnabled(_ context: InteractorContext) throws -> Bool
-  func historyChanged(_ context: InteractorContext) throws
 }
 
 @_spi(Internal) public extension InteractorBehavior {
@@ -131,12 +129,6 @@ import SwiftUI
       try context.engine.scene.unstable_disableCameraPositionClamping()
     }
   }
-
-  func isBottomBarEnabled(_: InteractorContext) throws -> Bool {
-    true
-  }
-
-  func historyChanged(_: InteractorContext) throws {}
 }
 
 @_spi(Internal) public final class DefaultInteractorBehavior: InteractorBehavior {}

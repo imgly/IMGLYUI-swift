@@ -246,6 +246,11 @@ public enum OnError {
     ///   - oldValue: The old value before the state change.
     ///   - newValue: The new value after the state change.
     case page(oldValue: Int, newValue: Int)
+    /// The current edit mode changed.
+    /// - Parameters:
+    ///   - oldValue: The old value before the state change.
+    ///   - newValue: The new value after the state change.
+    case editMode(oldValue: EditMode, newValue: EditMode)
   }
 }
 

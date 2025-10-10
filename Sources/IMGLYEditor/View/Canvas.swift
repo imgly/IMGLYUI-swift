@@ -8,6 +8,7 @@ struct Canvas: View {
   @Environment(\.imglySelection) private var id
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.imglyIsPageNavigationEnabled) private var isPageNavigationEnabled: Bool
+  @Environment(\.imglyInspectorBarEnabled) private var isInspectorBarEnabled
 
   let zoomPadding: CGFloat
 
@@ -109,6 +110,23 @@ struct Canvas: View {
     }
   }
 
+  private var inspectorBarContext: InspectorBar.Context? {
+    // Use the current page as selection when in the page overview.
+    let selectedBlockId = interactor.viewMode == .pages ? (try? interactor.engine?.getPage(interactor.page)) : id
+    guard let engine = interactor.engine, let selectedBlockId, engine.block.isValid(selectedBlockId) else { return nil }
+
+    do {
+      return try .init(engine: engine, eventHandler: interactor, assetLibrary: assetLibrary,
+                       selection: .init(block: selectedBlockId, engine: engine))
+    } catch {
+      let error = EditorError(
+        "Could not create InspectorBar.Context.\nReason:\n\(error.localizedDescription)",
+      )
+      interactor.handleErrorWithTask(error)
+      return nil
+    }
+  }
+
   @ViewBuilder var canvas: some View {
     ZStack {
       if viewDebugging {
@@ -156,6 +174,18 @@ struct Canvas: View {
         Color.clear
           .preference(key: CanvasGeometryKey.self, value: Geometry(safeCanvas, .local))
       }
+    }
+  }
+
+  @ViewBuilder var inspectorBar: some View {
+    if let content = interactor.sheetContentForBottomBar, let inspectorBarContext,
+       let isInspectorBarEnabled = try? isInspectorBarEnabled(inspectorBarContext), isInspectorBarEnabled {
+      Group {
+        bottomBar(content: content)
+          .zIndex(1)
+          .transition(.move(edge: .bottom))
+      }
+      .animation(.easeInOut(duration: 0.2), value: interactor.sheetContentForBottomBar)
     }
   }
 
@@ -238,14 +268,7 @@ struct Canvas: View {
               .onPreferenceChange(BottomBarContentGeometryKey.self) { newValue in
                 barContentGeometry = newValue
               }
-            Group {
-              if let content = interactor.sheetContentForBottomBar {
-                bottomBar(content: content)
-                  .zIndex(1)
-                  .transition(.move(edge: .bottom))
-              }
-            }
-            .animation(.easeInOut(duration: 0.2), value: interactor.sheetContentForBottomBar)
+            inspectorBar
           }
           .transition(.move(edge: .bottom))
         }

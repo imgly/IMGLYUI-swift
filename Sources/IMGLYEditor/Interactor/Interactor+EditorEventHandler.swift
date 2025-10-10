@@ -175,13 +175,9 @@ extension Interactor: EditorEventHandler {
       cropSheetTypeEvent = sheet
       if behavior.unselectedPageCrop, try engine?.block.getType(sheet.id) == DesignBlockType.page.rawValue {
         // Enter crop mode action
-        try engine?.block.overrideAndRestore(sheet.id, scope: .key(.editorSelect)) {
-          try engine?.block.select($0)
-        }
         zoomToPage(withAdditionalPadding: 24)
         exitCropModeAction = { [weak self] in
           self?.zoomToPage(withAdditionalPadding: 0)
-          try self?.engine?.block.setSelected(sheet.id, selected: false)
         }
         Task {
           try await Task.sleep(for: .milliseconds(50))

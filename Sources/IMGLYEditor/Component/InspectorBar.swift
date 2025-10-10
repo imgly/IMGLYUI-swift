@@ -4,6 +4,7 @@ import SwiftUI
 @_spi(Internal) public extension EnvironmentValues {
   @Entry var imglyInspectorBarItems: InspectorBar.Items?
   @Entry var imglyInspectorBarModifications: InspectorBar.Modifications?
+  @Entry var imglyInspectorBarEnabled: InspectorBar.Enabled = { _ in true }
 }
 
 /// A namespace for the inspector bar component.
@@ -69,4 +70,8 @@ public extension InspectorBar.Context {
       kind = try engine.block.getKind(block)
     }
   }
+}
+
+@_spi(Internal) public extension InspectorBar {
+  typealias Enabled = Context.To<Bool>
 }

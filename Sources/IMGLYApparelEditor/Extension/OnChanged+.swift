@@ -1,6 +1,6 @@
 @_spi(Internal) import IMGLYEditor
 
-extension Apparel.OnChanged {
+extension OnChanged {
   /// The default callback that handles editor state updates.
   ///
   /// The following state updates are handled:
@@ -8,7 +8,7 @@ extension Apparel.OnChanged {
   /// - `EditorStateChange.page`: Sets the new page visible.
   ///
   /// All other updates are forwarded to `OnChanged.default`.
-  static let `default`: IMGLYEditor.OnChanged.Callback = { update, context in
+  static let apparelEditorDefault: IMGLYEditor.OnChanged.Callback = { update, context in
     switch update {
     case let .gestureActive(_, newValue):
       try context.engine.showOutline(newValue)

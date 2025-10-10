@@ -127,22 +127,7 @@ import SwiftUI
   }
 
   var sheetContentForBottomBar: SheetContent? {
-    guard isBottomBarEnabled else {
-      return nil
-    }
-    return isPagesMode ? .pageOverview : sheetContentForSelection
-  }
-
-  var isBottomBarEnabled: Bool {
-    guard let engine else {
-      return false
-    }
-    do {
-      return try behavior.isBottomBarEnabled(.init(engine, self))
-    } catch {
-      handleErrorWithTask(error)
-      return false
-    }
+    isPagesMode ? .pageOverview : sheetContentForSelection
   }
 
   func sheetContent(_ id: BlockID?) -> SheetContent? {
@@ -1860,6 +1845,7 @@ extension Interactor {
     updateTimelineSelectionFromCanvas()
   }
 
+  // swiftlint:disable:next cyclomatic_complexity
   func editModeChanged(_ oldValue: EditMode) {
     guard oldValue != editMode else {
       return
@@ -1910,6 +1896,13 @@ extension Interactor {
       }
       cropSheetTypeEvent = nil
     }
+
+    if let engine {
+      try? config.callbacks.onChanged(
+        .editMode(oldValue: oldValue, newValue: editMode),
+        .init(engine: engine, eventHandler: self),
+      )
+    }
   }
 
   func zoomLevelChanged(_ zoom: Float? = nil, forceUpdate: Bool = false) {
@@ -1957,11 +1950,6 @@ extension Interactor {
     self.canUndo = canUndo // Keep this as it is used to trigger UI updates
     let canRedo = (try? engine.editor.canRedo()) ?? false
     self.canRedo = canRedo // Keep this as it is used to trigger UI updates
-    do {
-      try behavior.historyChanged(.init(engine, self))
-    } catch {
-      handleError(error)
-    }
   }
 }
 

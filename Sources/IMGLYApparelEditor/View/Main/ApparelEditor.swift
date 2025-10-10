@@ -55,7 +55,7 @@ public struct ApparelEditor: View {
       .imgly.dockScrollDisabled { _ in true }
       .imgly.onChanged { update, context in
         guard let onChanged else {
-          try Apparel.OnChanged.default(update, context)
+          try OnChanged.apparelEditorDefault(update, context)
           return
         }
         try onChanged(update, context)

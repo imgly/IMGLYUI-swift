@@ -90,7 +90,7 @@ extension TextAssetSource: AssetSource {
     )
   }
 
-  public func fetchAsset(id: String) async throws -> AssetResult? {
+  public func fetchAsset(id: String, options _: FetchAssetOptions) async throws -> AssetResult? {
     assets.first { $0.id == id }
   }
 

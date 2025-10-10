@@ -12,31 +12,20 @@ final class PhotoInteractorBehavior: InteractorBehavior {
 
     let page = try context.engine.getSinglePage()
 
-    try context.engine.block.setScopeEnabled(page, scope: .key(.editorSelect), enabled: false)
+    // Disable this for the initial state.
+    try context.engine.editor.setHighlightingEnabled(page, enabled: false)
+    try context.engine.block.setScopeEnabled(page, scope: .key(.layerResize), enabled: false)
+    try context.engine.block.setScopeEnabled(page, scope: .key(.editorSelect), enabled: true)
     try context.engine.block.setScopeEnabled(page, scope: .key(.layerMove), enabled: false)
-    try context.engine.block.setScopeEnabled(page, scope: .key(.layerResize), enabled: true)
-    try context.engine.block.setScopeEnabled(page, scope: .key(.layerRotate), enabled: true)
+    try context.engine.block.setScopeEnabled(page, scope: .key(.layerRotate), enabled: false)
 
     try context.engine.editor.setSettingBool("page/allowCropInteraction", value: true)
     try context.engine.editor.setSettingBool("page/allowMoveInteraction", value: true)
     try context.engine.editor.setSettingBool("page/allowResizeInteraction", value: true)
     try context.engine.editor.setSettingBool("page/restrictResizeInteractionToFixedAspectRatio", value: false)
     try context.engine.editor.setSettingBool("page/allowRotateInteraction", value: false)
-  }
-
-  func isBottomBarEnabled(_ context: InteractorContext) throws -> Bool {
-    let selected = context.engine.block.findAllSelected()
-    guard let block = selected.first, selected.count == 1 else {
-      return false
-    }
-    return try context.engine.block.getType(block) != DesignBlockType.page.rawValue
-  }
-
-  func historyChanged(_ context: InteractorContext) throws {
-    let page = try context.engine.getSinglePage(withImageFill: false)
-    if try context.engine.block.isSelected(page), context.engine.editor.getEditMode() != .crop {
-      try context.engine.block.setSelected(page, selected: false)
-    }
+    try context.engine.editor.setSettingBool("page/selectWhenNoBlocksSelected", value: true)
+    try context.engine.editor.setSettingBool("doubleClickToCropEnabled", value: false)
   }
 }
 

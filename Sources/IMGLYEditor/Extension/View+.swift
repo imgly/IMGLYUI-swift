@@ -385,6 +385,10 @@ public extension IMGLY where Wrapped: View {
   func dockScrollDisabled(_ disabled: @escaping Dock.ScrollDisabled) -> some View {
     wrapped.environment(\.imglyDockScrollDisabled, disabled)
   }
+
+  func inspectorBarEnabled(_ enabled: @escaping InspectorBar.Enabled) -> some View {
+    wrapped.environment(\.imglyInspectorBarEnabled, enabled)
+  }
 }
 
 extension IMGLY where Wrapped: View {

@@ -1,4 +1,5 @@
 @_spi(Internal) import IMGLYEditor
+import IMGLYEngine
 @_spi(Internal) import struct IMGLYCore.Error
 import SwiftUI
 
@@ -8,6 +9,8 @@ public struct PhotoEditor: View {
   public static let defaultImage = Bundle.module.url(forResource: "photo-ui-empty", withExtension: "png")!
 
   @Environment(\.imglyOnCreate) private var onCreate
+  @Environment(\.imglyOnLoaded) private var onLoaded
+  @Environment(\.imglyOnChanged) private var onChanged
   @Environment(\.imglyOnExport) private var onExport
   @Environment(\.imglyNavigationBarItems) private var navigationBarItems
   @Environment(\.imglyDockItems) private var dockItems
@@ -29,6 +32,20 @@ public struct PhotoEditor: View {
           return
         }
         try await onCreate(engine)
+      }
+      .imgly.onLoaded { context in
+        guard let onLoaded else {
+          try await OnLoaded.photoEditorDefault(context)
+          return
+        }
+        try await onLoaded(context)
+      }
+      .imgly.onChanged { update, context in
+        guard let onChanged else {
+          try OnChanged.photoEditorDefault(update, context)
+          return
+        }
+        try onChanged(update, context)
       }
       .imgly.onExport { engine, eventHandler in
         guard let onExport else {
@@ -65,6 +82,9 @@ public struct PhotoEditor: View {
           Dock.Buttons.shapesLibrary()
           Dock.Buttons.stickersLibrary()
         }
+      }
+      .imgly.inspectorBarEnabled {
+        try $0.engine.block.getType($0.selection.block) != DesignBlockType.page.rawValue
       }
   }
 }
