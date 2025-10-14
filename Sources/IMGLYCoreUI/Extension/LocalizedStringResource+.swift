@@ -38,7 +38,7 @@ public extension IMGLY where Wrapped == LocalizedStringResource {
 
 @_spi(Internal) public extension IMGLY where Wrapped == LocalizedStringResource {
   /// Creates a localized string resource with the same `keyAndValue` and performs localization
-  /// ``lookup(table:bundle:locale:)`` at different locations.
+  /// ``lookup(table:bundle:)`` at different locations.
   /// - Parameters:
   ///   - keyAndValue: The key for an entry in the specified table.
   ///   - tableAndBundle: The name of the table and bundle containing the key-value pairs as last resort.
@@ -50,8 +50,8 @@ public extension IMGLY where Wrapped == LocalizedStringResource {
   /// Resolves a localized string resource that was created with the same `keyAndValue` by performing localization
   /// lookup at different locations.
   ///
-  /// The resource for the first found localization for the provided `locale` is returned. The lookup is performed in
-  /// the following order:
+  /// The resource for the first found localization for the current locale is returned. The lookup is performed in the
+  /// following order:
   /// 1. Default `"Localizable"` table in `.main` bundle.
   /// 2. Given `table` in `.main` bundle.
   /// 3. Given `table` in given `bundle`.
@@ -59,35 +59,21 @@ public extension IMGLY where Wrapped == LocalizedStringResource {
   ///   - table: The name of the table containing the key-value pairs. If `nil`, or an empty string, this value defaults
   /// to `"Localizable"`.
   ///   - bundle: The bundle that indicates where to locate the `table`’s strings file.
-  ///   - locale: The locale for the resource to use.
   /// - Returns: The resolved localized string resource.
-  func lookup(table: String?, bundle: Bundle, locale: Locale = .current) -> LocalizedStringResource {
-    let notLocalized = LocalizedStringResource(
-      wrapped.defaultValue, // Unfortunately, `wrapped.key` cannot be used as it is not exposed as a `StaticString`
-      table: nil, // Assume there is no Localizable.xcstrings in IMGLYCoreUI
-      locale: locale,
-      bundle: .atURL(Bundle.module.bundleURL),
-    )
-    let notLocalizedString = String(localized: notLocalized)
-
-    let mainLocalized = LocalizedStringResource(wrapped.defaultValue, table: nil, locale: locale, bundle: .main)
-    let mainLocalizedString = String(localized: mainLocalized)
-    if notLocalizedString != mainLocalizedString {
-      return mainLocalized
+  func lookup(table: String?, bundle: Bundle) -> LocalizedStringResource {
+    /// Don't use `Bundle.main.localizedString(forKey:value:table:localizations:)` it is as slow as
+    /// `String(localized:)`!
+    if Bundle.main.localizedString(forKey: wrapped.key, value: nil, table: nil) != wrapped.key {
+      return LocalizedStringResource(wrapped.defaultValue, table: nil, bundle: .main)
     }
 
-    let mainTableLocalized = LocalizedStringResource(wrapped.defaultValue, table: table, locale: locale, bundle: .main)
-    let mainTableLocalizedString = String(localized: mainTableLocalized)
-    if notLocalizedString != mainTableLocalizedString {
-      return mainTableLocalized
+    if Bundle.main.localizedString(forKey: wrapped.key, value: nil, table: table) != wrapped.key {
+      return LocalizedStringResource(wrapped.defaultValue, table: table, bundle: .main)
     }
 
-    let bundle = LocalizedStringResource.BundleDescription.atURL(bundle.bundleURL)
-    let defaultLocalized = LocalizedStringResource(wrapped.defaultValue, table: table, locale: locale, bundle: bundle)
-    let defaultLocalizedString = String(localized: defaultLocalized)
-    if notLocalizedString == defaultLocalizedString {
+    if bundle.localizedString(forKey: wrapped.key, value: nil, table: table) == wrapped.key {
       print("WARNING: Found unlocalized string resource: \(wrapped).")
     }
-    return defaultLocalized
+    return LocalizedStringResource(wrapped.defaultValue, table: table, bundle: .atURL(bundle.bundleURL))
   }
 }
