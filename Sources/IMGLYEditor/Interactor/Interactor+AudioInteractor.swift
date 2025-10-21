@@ -37,7 +37,11 @@ extension Interactor: AudioInteractor {
   }
 
   func createAudioBlockData(from audioBlock: DesignBlockID) async throws -> Blob {
-    for try await event in try await _engine.block.unstable_exportAudio(audioBlock) {
+    for try await event in try await _engine.block.exportAudio(
+      audioBlock,
+      mimeType: .wav,
+      options: .init(skipEncoding: true),
+    ) {
       if case let .finished(audio: data) = event {
         return data
       }

@@ -15,7 +15,7 @@ public struct AssetLibraryMoreTab<Content: View>: View {
   @Environment(\.imglyDismissButtonView) private var dismissButtonView
 
   public var body: some View {
-    NavigationView {
+    NavigationStack {
       MoreList(content: content)
         .navigationTitle(Text(title))
         .toolbar {
@@ -25,7 +25,6 @@ public struct AssetLibraryMoreTab<Content: View>: View {
         }
         .navigationBarTitleDisplayMode(.inline)
     }
-    .navigationViewStyle(.stack)
     .imgly.searchableAssetLibraryTab()
     .tabItem {
       Label {

@@ -60,8 +60,7 @@ import SwiftUI
       }
       .sheet(isPresented: $interactor.sheet.isPresented) {
         updateZoom(for: .sheetClosed)
-        // Reset sheet state to prevent memory leaks from retain cycles in view references
-        interactor.sheet = SheetState()
+        interactor.onSheetDismissed()
       } content: {
         Sheet()
           .background {

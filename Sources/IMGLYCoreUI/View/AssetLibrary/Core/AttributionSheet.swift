@@ -59,7 +59,7 @@ struct Attribution: View {
   }
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       ScrollView {
         VStack(alignment: .leading, spacing: 0) {
           if let label {
@@ -96,7 +96,6 @@ struct Attribution: View {
         }
       }
     }
-    .navigationViewStyle(.stack)
     .presentationDetents([.custom(AttributionPresentationDetent.self)])
     .preferredColorScheme(colorScheme)
   }

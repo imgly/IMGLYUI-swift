@@ -41,6 +41,14 @@ import SwiftUI
 
   @Published var error = AlertState()
   @Published var sheet = SheetState() { didSet { sheetChanged(oldValue) } }
+  private var nextSheet: SheetState? {
+    didSet {
+      if sheet.isPresented {
+        sheet.isPresented = false
+      }
+    }
+  }
+
   @Published var shareItem: ShareItem?
   @Published var isCloseConfirmationAlertPresented = false
   var export = ExportSheetState()
@@ -1486,6 +1494,17 @@ extension Interactor {
     sheet.isPresented = false
   }
 
+  /// Called when sheet dismissal is complete - presents next sheet if queued
+  func onSheetDismissed() {
+    guard let nextSheet else {
+      // Reset sheet state to prevent memory leaks from retain cycles in view references
+      sheet = SheetState()
+      return
+    }
+    self.nextSheet = nil
+    sheet = nextSheet
+  }
+
   func onClose() {
     guard let engine else { return }
 
@@ -1823,22 +1842,14 @@ extension Interactor {
     }
     if oldValue?.blocks != selection?.blocks,
        let content = placeholderContent(for: selection) {
-      func showReplaceSheet() {
-        sheet = .init(.libraryReplace {
-          AssetLibrarySheet(content: content)
-        }, content)
-      }
+      let replaceSheet = SheetState(.libraryReplace {
+        AssetLibrarySheet(content: content)
+      }, content)
 
       if wasPresented, !sheet.isReplacing, sheet.content != content {
-        if sheet.isPresented {
-          sheet.isPresented = false
-        }
-        Task {
-          try? await Task.sleep(nanoseconds: NSEC_PER_MSEC * 200)
-          showReplaceSheet()
-        }
+        nextSheet = replaceSheet
       } else {
-        showReplaceSheet()
+        sheet = replaceSheet
       }
     }
 
@@ -1866,23 +1877,17 @@ extension Interactor {
       }
     }
     if editMode == .crop, !(sheet.isPresented && sheet.type is SheetTypes.Crop) {
-      func showCropSheet() {
-        do {
-          let sheetType = try cropSheetTypeEvent ?? .crop(id: nonNil(selection?.blocks.first))
-          sheet = .init(sheetType, .image)
-        } catch {
-          handleError(error)
-        }
-      }
+      do {
+        let sheetType = try cropSheetTypeEvent ?? .crop(id: nonNil(selection?.blocks.first))
+        let cropSheet = SheetState(sheetType, .image)
 
-      if sheet.isPresented {
-        sheet.isPresented = false
-        Task {
-          try? await Task.sleep(nanoseconds: NSEC_PER_MSEC * 200)
-          showCropSheet()
+        if sheet.isPresented {
+          nextSheet = cropSheet
+        } else {
+          sheet = cropSheet
         }
-      } else {
-        showCropSheet()
+      } catch {
+        handleError(error)
       }
     }
     if oldValue == .crop {

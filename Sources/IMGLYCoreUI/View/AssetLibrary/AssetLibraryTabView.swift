@@ -44,11 +44,10 @@ public struct AssetLibraryTabView<Content: View, Label: View>: View {
           .symbolVariant(.fill)
       }
     } else {
-      NavigationView {
+      NavigationStack {
         tabContent
           .navigationBarTitleDisplayMode(titleDisplayMode)
       }
-      .navigationViewStyle(.stack)
       .imgly.searchableAssetLibraryTab()
       .tabItem {
         labelContent
