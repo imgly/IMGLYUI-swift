@@ -36,6 +36,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
     videos = Self.videos
     audio = Self.audio
     images = Self.images
+    text = Self.text
     shapes = Self.shapes
     stickers = Self.stickers
   }
@@ -44,18 +45,20 @@ public struct DefaultAssetLibrary: AssetLibrary {
                videos: AssetLibraryContent,
                audio: AssetLibraryContent,
                images: AssetLibraryContent,
+               text: AssetLibraryContent,
                shapes: AssetLibraryContent,
                stickers: AssetLibraryContent) {
     self.tabs = tabs
     self.videos = videos
     self.audio = audio
     self.images = images
+    self.text = text
     self.shapes = shapes
     self.stickers = stickers
   }
 
   let tabs: [Tab]
-  let videos, audio, images, shapes, stickers: AssetLibraryContent
+  let videos, audio, images, text, shapes, stickers: AssetLibraryContent
 
   /// Modify the video asset library content.
   /// - Parameter videos: The video asset library content.
@@ -66,6 +69,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
       videos: videos(),
       audio: audio,
       images: images,
+      text: text,
       shapes: shapes,
       stickers: stickers,
     )
@@ -80,6 +84,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
       videos: videos,
       audio: audio(),
       images: images,
+      text: text,
       shapes: shapes,
       stickers: stickers,
     )
@@ -94,6 +99,22 @@ public struct DefaultAssetLibrary: AssetLibrary {
       videos: videos,
       audio: audio,
       images: images(),
+      text: text,
+      shapes: shapes,
+      stickers: stickers,
+    )
+  }
+
+  /// Modify the text asset library content.
+  /// - Parameter text: The text asset library content.
+  /// - Returns: The modified ``DefaultAssetLibrary``.
+  public func text(@AssetLibraryBuilder text: @MainActor () -> AssetLibraryContent) -> Self {
+    .init(
+      tabs: tabs,
+      videos: videos,
+      audio: audio,
+      images: images,
+      text: text(),
       shapes: shapes,
       stickers: stickers,
     )
@@ -108,6 +129,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
       videos: videos,
       audio: audio,
       images: images,
+      text: text,
       shapes: shapes(),
       stickers: stickers,
     )
@@ -122,6 +144,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
       videos: videos,
       audio: audio,
       images: images,
+      text: text,
       shapes: shapes,
       stickers: stickers(),
     )
@@ -180,20 +203,8 @@ public struct DefaultAssetLibrary: AssetLibrary {
     )
   }
 
-  @AssetLibraryBuilder public func text(_ sceneMode: SceneMode?) -> AssetLibraryContent {
-    if sceneMode == .video {
-      plainText
-    } else {
-      textAndTextComponents
-    }
-  }
-
-  let plainText = AssetLibrarySource.text(
-    .title(.imgly.localized("ly_img_editor_asset_library_section_text")),
-    source: .init(id: TextAssetSource.id),
-  )
-
-  @AssetLibraryBuilder public var textAndTextComponents: AssetLibraryContent {
+  /// The default text asset library content.
+  @AssetLibraryBuilder public static var text: AssetLibraryContent {
     AssetLibrarySource.text(
       .title(.imgly.localized("ly_img_editor_asset_library_section_plain_text")),
       source: .init(id: TextAssetSource.id),
@@ -289,7 +300,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
     case .videos: videos
     case .audio: audio
     case .images: images
-    case .text: text(sceneMode)
+    case .text: text
     case .shapes: shapes
     case .stickers: stickers
     }
@@ -303,15 +314,11 @@ public struct DefaultAssetLibrary: AssetLibrary {
     case .audio: AssetLibraryGroup.audio(.imgly.localized("ly_img_editor_asset_library_section_audio")) { audio }
     case .images: AssetLibraryGroup.image(.imgly.localized("ly_img_editor_asset_library_section_images")) { images }
     case .text:
-      if sceneMode == .video {
-        plainText
-      } else {
-        AssetLibraryGroup.text(
-          .imgly.localized("ly_img_editor_asset_library_section_text"),
-          excludedPreviewSources: [Engine.DemoAssetSource.textComponents.rawValue],
-        ) {
-          textAndTextComponents
-        }
+      AssetLibraryGroup.text(
+        .imgly.localized("ly_img_editor_asset_library_section_text"),
+        excludedPreviewSources: [Engine.DemoAssetSource.textComponents.rawValue],
+      ) {
+        text
       }
     case .shapes: AssetLibraryGroup.shape(.imgly.localized("ly_img_editor_asset_library_section_shapes")) { shapes }
     case .stickers: AssetLibraryGroup
@@ -477,20 +484,8 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   @ViewBuilder public var textTab: some View {
-    AssetLibrarySceneModeReader { sceneMode in
-      if sceneMode == .video {
-        AssetLibraryTabView(.imgly.localized("ly_img_editor_asset_library_title_text")) {
-          plainText.content
-        } label: {
-          Self.textLabel($0)
-        }
-      } else {
-        AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_text")) {
-          textAndTextComponents
-        } label: {
-          Self.textLabel($0)
-        }
-      }
+    AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_text")) { text } label: {
+      Self.textLabel($0)
     }
   }
 

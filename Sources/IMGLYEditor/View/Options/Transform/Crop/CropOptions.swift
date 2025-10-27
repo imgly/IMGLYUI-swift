@@ -9,6 +9,8 @@ struct CropOptions: View {
   @State var minScaleRatio: Float = 1
   @State var isStraighteningOrRotating = false
 
+  let sources: [String]
+
   @ViewBuilder var cropOptions: some View {
     let cropScaleRatio: Binding<Float> = interactor.bind(id, property: .key(.cropScaleRatio), default: 1)
     let completion: Interactor.PropertyCompletion = { engine, blocks, didChange in
@@ -17,7 +19,7 @@ struct CropOptions: View {
           isStraighteningOrRotating = true
           let oldCropScaleRatio = try engine.block.getCropScaleRatio($0)
           let contentFillMode = try engine.block.getContentFillMode($0)
-          if contentFillMode != .contain {
+          if contentFillMode == .crop {
             try engine.block.adjustCropToFillFrame($0, minScaleRatio: minScaleRatio)
           }
           let newCropScaleRatio = try engine.block.getCropScaleRatio($0)
@@ -103,22 +105,11 @@ struct CropOptions: View {
         TransformOptions(interactor: interactor, item: { asset in
           TransformItem(asset: asset)
         },
-        sources: sources,
+        sources: sources.map { AssetLoader.SourceData(id: $0) },
         mode: transformMode)
       }
     }
     .background(Color(.systemGroupedBackground))
-  }
-
-  private var sources: [AssetLoader.SourceData] {
-    switch (isPage, interactor.behavior.unselectedPageCrop) {
-    case (true, true):
-      [.init(defaultSource: .cropPresets), .init(defaultSource: .pagePresets)]
-    case (true, false):
-      [.init(defaultSource: .pagePresets)]
-    case (false, _):
-      [.init(defaultSource: .cropPresets)]
-    }
   }
 
   private var transformMode: TransformMode {

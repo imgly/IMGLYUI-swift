@@ -276,7 +276,6 @@ import SwiftUI
 
   private var previousEditMode: EditMode?
   var cropSheetTypeEvent: SheetTypes.Crop?
-  var exitCropModeAction: (() throws -> Void)?
 
   private var stateTask: Task<Void, Never>?
   private var eventTask: Task<Void, Never>?
@@ -1856,7 +1855,6 @@ extension Interactor {
     updateTimelineSelectionFromCanvas()
   }
 
-  // swiftlint:disable:next cyclomatic_complexity
   func editModeChanged(_ oldValue: EditMode) {
     guard oldValue != editMode else {
       return
@@ -1891,14 +1889,6 @@ extension Interactor {
       }
     }
     if oldValue == .crop {
-      if let exitCropModeAction {
-        do {
-          try exitCropModeAction()
-        } catch {
-          handleError(error)
-        }
-        self.exitCropModeAction = nil
-      }
       cropSheetTypeEvent = nil
     }
 

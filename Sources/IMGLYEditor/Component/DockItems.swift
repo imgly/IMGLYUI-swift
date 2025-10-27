@@ -645,7 +645,7 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the crop sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/crop(style:id:)`` for the current page.
+  /// event is invoked with sheet type ``SheetType/crop(style:id:assetSourceIDs:)`` for the current page.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_crop` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/crop``  is used.
@@ -655,7 +655,11 @@ public extension Dock.Buttons {
   /// - Returns: The created button.
   static func crop(
     action: @escaping Dock.Context.To<Void> = {
-      try $0.eventHandler.send(.openSheet(type: .crop(id: nonNil($0.engine.scene.getCurrentPage()))))
+      try $0.eventHandler.send(.openSheet(type: .crop(
+        id: nonNil($0.engine.scene.getCurrentPage()),
+        assetSourceIDs: [Engine.DefaultAssetSource.cropPresets.rawValue,
+                         Engine.DefaultAssetSource.pagePresets.rawValue],
+      )))
     },
     @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
       Text(.imgly.localized("ly_img_editor_dock_button_crop"))

@@ -12,6 +12,7 @@ enum ClipType {
   case text
   case video
   case voiceOver
+  case group
 }
 
 extension ClipType: CustomStringConvertible {
@@ -25,6 +26,7 @@ extension ClipType: CustomStringConvertible {
     case .text: "Text"
     case .video: "Video Clip"
     case .voiceOver: "Voiceover"
+    case .group: "Group"
     }
   }
 }

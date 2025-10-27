@@ -342,6 +342,9 @@ extension Interactor: TimelineInteractor {
       case DesignBlockType.text.rawValue:
         clip.clipType = .text
         clip.configuration = timelineProperties.configuration.textClipConfiguration
+      case DesignBlockType.group.rawValue:
+        clip.clipType = .group
+        clip.configuration = timelineProperties.configuration.groupClipConfiguration
       case DesignBlockType.page.rawValue:
         // The page block should not appear in the timeline.
         return
