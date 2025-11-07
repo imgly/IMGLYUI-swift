@@ -45,8 +45,6 @@ extension Interactor: EditorEventHandler {
       case .pages:
         try enablePagesMode()
       }
-    case let event as EditorEvents.SetExtraCanvasInsets:
-      zoomToPage(withAdditionalPadding: event.insets)
 
     // MARK: - Export
     case is EditorEvents.Export.Start:
@@ -175,7 +173,19 @@ extension Interactor: EditorEventHandler {
     case let sheet as SheetTypes.Crop:
       clampPlayheadPositionToSelectedClip()
       cropSheetTypeEvent = sheet
-      setEditMode(.crop)
+      if behavior.unselectedPageCrop, try engine?.block.getType(sheet.id) == DesignBlockType.page.rawValue {
+        // Enter crop mode action
+        zoomToPage(withAdditionalPadding: 24)
+        exitCropModeAction = { [weak self] in
+          self?.zoomToPage(withAdditionalPadding: 0)
+        }
+        Task {
+          try await Task.sleep(for: .milliseconds(50))
+          setEditMode(.crop)
+        }
+      } else {
+        setEditMode(.crop)
+      }
     case let sheet as SheetTypes.Resize:
       clampPlayheadPositionToSelectedClip()
       self.sheet = .init(sheet)

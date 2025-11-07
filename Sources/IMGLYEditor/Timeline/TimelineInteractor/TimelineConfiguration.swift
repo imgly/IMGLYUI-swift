@@ -105,10 +105,4 @@ struct TimelineConfiguration {
     backgroundColor: Color.pink.opacity(0.16),
     icon: Image(systemName: "mic.fill"),
   )
-
-  var groupClipConfiguration = ClipConfiguration(
-    color: Color.primary,
-    backgroundColor: Color.secondary.opacity(0.5),
-    icon: Image(systemName: "square.dashed"),
-  )
 }

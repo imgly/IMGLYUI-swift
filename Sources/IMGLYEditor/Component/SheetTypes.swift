@@ -72,7 +72,6 @@ public extension SheetTypes {
   struct Crop: SheetTypeForDesignBlock {
     public let style: SheetStyle
     let id: DesignBlockID
-    let assetSourceIDs: [String]
   }
 
   /// A sheet that is used to resize pages.
@@ -241,14 +240,12 @@ public extension SheetType where Self == SheetTypes.Crop {
   ///   - style: The style of the sheet. By default, the ``SheetStyle/only(detent:)`` style is
   /// used.
   ///   - id: The id of the design block to apply the crop.
-  ///   - assetSourceIDs: The ids of the asset sources. By default, the crop presets asset source is used.
   /// - Returns: The created ``SheetTypes/Crop`` sheet type.
   static func crop(
     style: SheetStyle = .only(detent: .imgly.medium),
     id: DesignBlockID,
-    assetSourceIDs: [String] = [Engine.DefaultAssetSource.cropPresets.rawValue],
   ) -> Self {
-    Self(style: style, id: id, assetSourceIDs: assetSourceIDs)
+    Self(style: style, id: id)
   }
 }
 

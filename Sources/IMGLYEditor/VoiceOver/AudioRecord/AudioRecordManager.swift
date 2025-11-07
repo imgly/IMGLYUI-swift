@@ -133,6 +133,7 @@ final class AudioRecordManager {
   /// Configures the audio engine for recording.
   private func configureAudioEngine() {
     let inputNode = audioEngine.inputNode
+    let inputFormat = inputNode.inputFormat(forBus: inputBus)
 
     do {
       try inputNode.setVoiceProcessingEnabled(true)
@@ -152,8 +153,8 @@ final class AudioRecordManager {
     let output = audioEngine.outputNode
     let mainMixer = audioEngine.mainMixerNode
 
+    audioEngine.connect(mainMixer, to: output, format: inputFormat)
     audioEngine.connect(inputNode, to: resampler, format: desiredFormat)
-    audioEngine.connect(mainMixer, to: output, format: mainMixer.outputFormat(forBus: 0))
 
     resampler
       .installTap(onBus: 0, bufferSize: bufferSize, format: desiredFormat) { @Sendable [weak self] buffer, when in

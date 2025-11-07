@@ -41,11 +41,6 @@ public extension EditorEvents {
     let viewMode: EditorViewMode
   }
 
-  /// An event for setting extra zoom insets on the canvas.
-  struct SetExtraCanvasInsets: EditorEvent {
-    let insets: CGFloat
-  }
-
   /// A namespace for ``EditorEvent``s related to export.
   enum Export {}
 }
@@ -116,13 +111,6 @@ public extension EditorEvent where Self == EditorEvents.SetViewMode {
   /// - Parameter viewMode: The view mode to set.
   /// - Returns: The created ``EditorEvents/SetViewMode`` event.
   static func setViewMode(_ viewMode: EditorViewMode) -> Self { Self(viewMode: viewMode) }
-}
-
-public extension EditorEvent where Self == EditorEvents.SetExtraCanvasInsets {
-  /// Creates an ``EditorEvent`` to set extra zoom insets for the canvas..
-  /// - Parameter insets: The extra insets to set.
-  /// - Returns: The created ``EditorEvents/SetExtraCanvasInsets`` event.
-  static func setExtraCanvasInsets(_ insets: CGFloat) -> Self { Self(insets: insets) }
 }
 
 public extension EditorEvent where Self == EditorEvents.Export.Start {

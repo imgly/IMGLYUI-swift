@@ -342,9 +342,6 @@ extension Interactor: TimelineInteractor {
       case DesignBlockType.text.rawValue:
         clip.clipType = .text
         clip.configuration = timelineProperties.configuration.textClipConfiguration
-      case DesignBlockType.group.rawValue:
-        clip.clipType = .group
-        clip.configuration = timelineProperties.configuration.groupClipConfiguration
       case DesignBlockType.page.rawValue:
         // The page block should not appear in the timeline.
         return
@@ -469,16 +466,10 @@ extension Interactor: TimelineInteractor {
   private func setClipTrimOffsetProperties(_ clip: Clip) throws {
     guard let engine else { return }
 
-    // Voiceovers are not meant to be trimmed, skip all trim operations
-    guard clip.clipType != .voiceOver else {
-      clip.allowsTrimming = false
-      return
-    }
-
     clip.allowsTrimming = try engine.block.supportsTrim(clip.trimmableID)
     if clip.allowsTrimming {
       // Create the clip even if the trimOffset is not available yet
-      // Important: Don't throw here; we want to create the clip even if we don't know if it has a trim.
+      // Important: Don't throw here; we want to create the clip even if we don’t know if it has a trim.
       let trimOffsetSeconds = (try? engine.block.getTrimOffset(clip.trimmableID)) ?? 0
       clip.trimOffset = CMTime(seconds: trimOffsetSeconds)
     }

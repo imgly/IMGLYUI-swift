@@ -44,7 +44,6 @@ struct CropModePicker: View {
           icon(for: selection)
             .foregroundColor(.primary)
           Text(selection.localizedStringResource)
-            .fixedSize()
         }
         .transaction { transaction in
           transaction.animation = nil

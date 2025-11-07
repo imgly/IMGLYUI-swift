@@ -5,11 +5,9 @@ struct CropOptionsSheet: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  let sources: [String]
-
   var body: some View {
     CustomizableTitledSheet(.imgly.localized("ly_img_editor_sheet_crop_title")) {
-      CropOptions(sources: sources)
+      CropOptions()
     } leading: {
       // Do not use ActionButton here as placing it inside toolbar
       // will hide the title of the label.
