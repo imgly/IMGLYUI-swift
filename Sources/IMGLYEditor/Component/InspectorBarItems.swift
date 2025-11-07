@@ -307,7 +307,7 @@ public extension InspectorBar.Buttons {
   /// Creates a ``InspectorBar/Button`` that opens the crop sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/crop(style:id:)`` for the selected design block.
+  /// event is invoked with sheet type ``SheetType/crop(style:id:assetSourceIDs:)`` for the selected design block.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_inspector_bar_button_crop` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/crop``  is used.
@@ -318,7 +318,10 @@ public extension InspectorBar.Buttons {
   /// - Returns: The created button.
   static func crop(
     action: @escaping InspectorBar.Context.To<Void> = {
-      $0.eventHandler.send(.openSheet(type: .crop(id: $0.selection.block)))
+      $0.eventHandler.send(.openSheet(type: .crop(
+        id: $0.selection.block,
+        assetSourceIDs: [Engine.DefaultAssetSource.cropPresets.rawValue],
+      )))
     },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
       Text(.imgly.localized("ly_img_editor_inspector_bar_button_crop"))

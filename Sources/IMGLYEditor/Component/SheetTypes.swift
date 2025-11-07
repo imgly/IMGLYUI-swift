@@ -9,15 +9,21 @@ public protocol SheetType {
   var style: SheetStyle { get }
 }
 
+protocol SheetTypeWithEditMode: SheetType {
+  /// The edit mode associated with this sheet. It will be automatically applied.
+  var associatedEditMode: IMGLYEngine.EditMode? { get }
+}
+
 protocol SheetTypeForDesignBlock: SheetType {
   var id: DesignBlockID { get }
 }
 
 /// A namespace for ``SheetType``s.
 public enum SheetTypes {
-  struct Custom: SheetType {
+  struct Custom: SheetTypeWithEditMode {
     let style: SheetStyle
     let content: () -> any View
+    let associatedEditMode: IMGLYEngine.EditMode?
   }
 }
 
@@ -69,9 +75,11 @@ public extension SheetTypes {
   }
 
   /// A sheet that is used to crop design blocks with image and video fills.
-  struct Crop: SheetTypeForDesignBlock {
+  struct Crop: SheetTypeForDesignBlock, SheetTypeWithEditMode {
     public let style: SheetStyle
     let id: DesignBlockID
+    let assetSourceIDs: [String]
+    let associatedEditMode: IMGLYEngine.EditMode? = .crop
   }
 
   /// A sheet that is used to resize pages.
@@ -240,12 +248,14 @@ public extension SheetType where Self == SheetTypes.Crop {
   ///   - style: The style of the sheet. By default, the ``SheetStyle/only(detent:)`` style is
   /// used.
   ///   - id: The id of the design block to apply the crop.
+  ///   - assetSourceIDs: The ids of the asset sources. By default, the crop presets asset source is used.
   /// - Returns: The created ``SheetTypes/Crop`` sheet type.
   static func crop(
     style: SheetStyle = .only(detent: .imgly.medium),
     id: DesignBlockID,
+    assetSourceIDs: [String] = [Engine.DefaultAssetSource.cropPresets.rawValue],
   ) -> Self {
-    Self(style: style, id: id)
+    Self(style: style, id: id, assetSourceIDs: assetSourceIDs)
   }
 }
 

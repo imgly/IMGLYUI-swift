@@ -1,3 +1,4 @@
+import IMGLYEngine
 import SwiftUI
 
 private extension SheetType {
@@ -27,6 +28,10 @@ struct SheetState: BatchMutable, Equatable {
 
   var isReplacing: Bool {
     type is SheetTypes.LibraryReplace
+  }
+
+  var associatedEditMode: IMGLYEngine.EditMode? {
+    (type as? SheetTypeWithEditMode)?.associatedEditMode
   }
 
   /// Hide sheet.

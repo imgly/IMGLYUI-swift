@@ -43,7 +43,7 @@ import SwiftUI
   @Published var sheet = SheetState() { didSet { sheetChanged(oldValue) } }
   private var nextSheet: SheetState? {
     didSet {
-      if sheet.isPresented {
+      if nextSheet != nil, sheet.isPresented {
         sheet.isPresented = false
       }
     }
@@ -91,6 +91,8 @@ import SwiftUI
 
   @Published var isLoopingPlaybackEnabled = true
   @Published var isSelectionVisible = true
+
+  @Published var forceCropState: ForceCropState?
 
   var uploadAssetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
   var imageUploadAssetSourceID: String { uploadAssetSourceIDs[.image] ?? Engine.DemoAssetSource.imageUpload.rawValue }
@@ -192,7 +194,7 @@ import SwiftUI
   /// Stores Combine subscriptions
   var cancellables = Set<AnyCancellable>()
 
-  private var isResizingPages = false
+  var isResizingPages = false
 
   // MARK: - Life cycle
 
@@ -275,8 +277,6 @@ import SwiftUI
   private var _engine: Engine?
 
   private var previousEditMode: EditMode?
-  var cropSheetTypeEvent: SheetTypes.Crop?
-  var exitCropModeAction: (() throws -> Void)?
 
   private var stateTask: Task<Void, Never>?
   private var eventTask: Task<Void, Never>?
@@ -978,21 +978,7 @@ extension Interactor {
           }
         }
 
-        switch asset.payload?.transformPreset {
-        case let .fixedSize(width, height, designUnit):
-          let dpi: Float = designUnit == .px ? 72 : 300
-          try engine.block.setFloat(scene, property: "scene/pageDimensions/width", value: width)
-          try engine.block.setFloat(scene, property: "scene/pageDimensions/height", value: height)
-          try engine.block.setFloat(scene, property: "scene/dpi", value: dpi)
-        case .fixedAspectRatio:
-          if let id {
-            let width = try engine.block.getWidth(id)
-            let height = try engine.block.getHeight(id)
-            try engine.block.setFloat(scene, property: "scene/pageDimensions/width", value: width)
-            try engine.block.setFloat(scene, property: "scene/pageDimensions/height", value: height)
-          }
-        default: break
-        }
+        try applyTransformPresetSceneProperties(engine: engine, scene: scene, asset: asset, blockID: id)
 
         updateZoom(
           for: .pageSizeChanged,
@@ -1039,6 +1025,30 @@ extension Interactor {
 
     isResizingPages = true
     try engine?.editor.addUndoStep()
+  }
+
+  /// Applies transform preset scene properties after applying an asset.
+  /// This is shared logic used by both crop preset application and force crop.
+  func applyTransformPresetSceneProperties(
+    engine: Engine,
+    scene: DesignBlockID,
+    asset: AssetResult,
+    blockID: DesignBlockID?,
+  ) throws {
+    switch asset.payload?.transformPreset {
+    case let .fixedSize(width, height, designUnit):
+      try engine.block.setFloat(scene, property: "scene/pageDimensions/width", value: width)
+      try engine.block.setFloat(scene, property: "scene/pageDimensions/height", value: height)
+      try engine.block.setFloat(scene, property: "scene/dpi", value: designUnit == .px ? 72 : 300)
+    case .fixedAspectRatio:
+      guard let blockID else { return }
+
+      let width = try engine.block.getWidth(blockID)
+      let height = try engine.block.getHeight(blockID)
+      try engine.block.setFloat(scene, property: "scene/pageDimensions/width", value: width)
+      try engine.block.setFloat(scene, property: "scene/pageDimensions/height", value: height)
+    default: break
+    }
   }
 
   private func disableCameraClamping() throws {
@@ -1228,9 +1238,9 @@ extension Interactor {
     updateZoom(for: event, with: zoomParameters)
   }
 
-  private func updateZoom(for event: ZoomEvent,
-                          // swiftlint:disable:next large_tuple
-                          with zoom: (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat)) {
+  func updateZoom(for event: ZoomEvent,
+                  // swiftlint:disable:next large_tuple
+                  with zoom: (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat)) {
     if zoomModel.defaultPadding != zoom.padding {
       zoomModel.defaultPadding = zoom.padding
     }
@@ -1495,14 +1505,10 @@ extension Interactor {
   }
 
   /// Called when sheet dismissal is complete - presents next sheet if queued
+  /// If no next sheet is queued, resets to a clean `SheetState` to avoid retain cycles.
   func onSheetDismissed() {
-    guard let nextSheet else {
-      // Reset sheet state to prevent memory leaks from retain cycles in view references
-      sheet = SheetState()
-      return
-    }
-    self.nextSheet = nil
-    sheet = nextSheet
+    sheet = nextSheet ?? SheetState()
+    nextSheet = nil
   }
 
   func onClose() {
@@ -1816,7 +1822,7 @@ extension Interactor {
     guard oldValue != sheet else {
       return
     }
-    if !sheet.isPresented, oldValue.isPresented, oldValue.type is SheetTypes.Crop {
+    if !sheet.isPresented, oldValue.isPresented, oldValue.associatedEditMode == .crop {
       setEditMode(.transform)
     }
   }
@@ -1856,7 +1862,6 @@ extension Interactor {
     updateTimelineSelectionFromCanvas()
   }
 
-  // swiftlint:disable:next cyclomatic_complexity
   func editModeChanged(_ oldValue: EditMode) {
     guard oldValue != editMode else {
       return
@@ -1876,30 +1881,19 @@ extension Interactor {
         sheet.isPresented = false
       }
     }
-    if editMode == .crop, !(sheet.isPresented && sheet.type is SheetTypes.Crop) {
+    if editMode == .crop, !(sheet.isPresented && sheet.associatedEditMode == .crop) {
       do {
-        let sheetType = try cropSheetTypeEvent ?? .crop(id: nonNil(selection?.blocks.first))
-        let cropSheet = SheetState(sheetType, .image)
+        let sheetType: SheetType = try .crop(id: nonNil(selection?.blocks.first))
+        let doubleClickCropSheet = SheetState(sheetType, .image)
 
         if sheet.isPresented {
-          nextSheet = cropSheet
+          nextSheet = doubleClickCropSheet
         } else {
-          sheet = cropSheet
+          sheet = doubleClickCropSheet
         }
       } catch {
         handleError(error)
       }
-    }
-    if oldValue == .crop {
-      if let exitCropModeAction {
-        do {
-          try exitCropModeAction()
-        } catch {
-          handleError(error)
-        }
-        self.exitCropModeAction = nil
-      }
-      cropSheetTypeEvent = nil
     }
 
     if let engine {

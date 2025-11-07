@@ -45,6 +45,8 @@ extension Interactor: EditorEventHandler {
       case .pages:
         try enablePagesMode()
       }
+    case let event as EditorEvents.SetExtraCanvasInsets:
+      zoomToPage(withAdditionalPadding: event.insets)
 
     // MARK: - Export
     case is EditorEvents.Export.Start:
@@ -120,6 +122,16 @@ extension Interactor: EditorEventHandler {
       try setPage(page - 1)
     case is EditorEvents.Navigation.ToNextPage:
       try setPage(page + 1)
+
+    // MARK: - Force Crop
+    case let event as EditorEvents.ApplyForceCrop:
+      Task {
+        try await applyForceCrop(
+          to: event.blockID,
+          presetCandidates: event.presetCandidates,
+          mode: event.mode,
+        )
+      }
     default:
       print("Unhandled event \(event)")
     }
@@ -133,6 +145,9 @@ extension Interactor: EditorEventHandler {
     case let sheet as SheetTypes.Custom:
       let content = sheetContentForSelection
       self.sheet = .init(sheet, content)
+      if let associatedEditMode = sheet.associatedEditMode {
+        setEditMode(associatedEditMode)
+      }
     case let sheet as SheetTypes.LibraryAdd:
       try engine?.block.deselectAll()
       self.sheet = .init(sheet)
@@ -172,19 +187,11 @@ extension Interactor: EditorEventHandler {
       }
     case let sheet as SheetTypes.Crop:
       clampPlayheadPositionToSelectedClip()
-      cropSheetTypeEvent = sheet
-      if behavior.unselectedPageCrop, try engine?.block.getType(sheet.id) == DesignBlockType.page.rawValue {
-        // Enter crop mode action
-        zoomToPage(withAdditionalPadding: 24)
-        exitCropModeAction = { [weak self] in
-          self?.zoomToPage(withAdditionalPadding: 0)
-        }
-        Task {
-          try await Task.sleep(for: .milliseconds(50))
-          setEditMode(.crop)
-        }
-      } else {
-        setEditMode(.crop)
+      if let content = sheetContent(sheet.id) ?? sheetContentForSelection {
+        self.sheet = .init(sheet, content)
+      }
+      if let associatedEditMode = sheet.associatedEditMode {
+        setEditMode(associatedEditMode)
       }
     case let sheet as SheetTypes.Resize:
       clampPlayheadPositionToSelectedClip()

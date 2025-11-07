@@ -16,16 +16,12 @@ import SwiftUI
 
 @MainActor
 @_spi(Internal) public protocol InteractorBehavior: Sendable {
-  var unselectedPageCrop: Bool { get }
-
   func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws
   func enableEditMode(_ context: InteractorContext) throws
   func enablePreviewMode(_ context: InteractorContext, _ insets: EdgeInsets?) async throws
 }
 
 @_spi(Internal) public extension InteractorBehavior {
-  var unselectedPageCrop: Bool { false }
-
   func loadSettings(_ context: InteractorContext) throws {
     // Set role first as it affects other settings
     try context.engine.editor.setRole("Adopter")

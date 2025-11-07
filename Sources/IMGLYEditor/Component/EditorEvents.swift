@@ -41,6 +41,11 @@ public extension EditorEvents {
     let viewMode: EditorViewMode
   }
 
+  /// An event for setting extra zoom insets on the canvas.
+  struct SetExtraCanvasInsets: EditorEvent {
+    let insets: CGFloat
+  }
+
   /// A namespace for ``EditorEvent``s related to export.
   enum Export {}
 }
@@ -111,6 +116,13 @@ public extension EditorEvent where Self == EditorEvents.SetViewMode {
   /// - Parameter viewMode: The view mode to set.
   /// - Returns: The created ``EditorEvents/SetViewMode`` event.
   static func setViewMode(_ viewMode: EditorViewMode) -> Self { Self(viewMode: viewMode) }
+}
+
+public extension EditorEvent where Self == EditorEvents.SetExtraCanvasInsets {
+  /// Creates an ``EditorEvent`` to set extra zoom insets for the canvas..
+  /// - Parameter insets: The extra insets to set.
+  /// - Returns: The created ``EditorEvents/SetExtraCanvasInsets`` event.
+  static func setExtraCanvasInsets(_ insets: CGFloat) -> Self { Self(insets: insets) }
 }
 
 public extension EditorEvent where Self == EditorEvents.Export.Start {
@@ -235,10 +247,15 @@ public extension EditorEvent where Self == EditorEvents.Sheet.Open {
   /// - Attention: `List` or `NavigationView` must be used as `content` for non-floating sheet `style`s.
   /// - Parameters:
   ///   - style: The style of the sheet.
+  ///   - associatedEditMode: The edit mode associated with this sheet. It will be automatically applied.
   ///   - content: The content of the sheet.
   /// - Returns: The created ``EditorEvents/Sheet/Open`` event.
-  static func openSheet(style: SheetStyle, @ViewBuilder content: @escaping () -> some View) -> Self {
-    Self(type: SheetTypes.Custom(style: style, content: content))
+  static func openSheet(
+    style: SheetStyle,
+    associatedEditMode: IMGLYEngine.EditMode? = nil,
+    @ViewBuilder content: @escaping () -> some View,
+  ) -> Self {
+    Self(type: SheetTypes.Custom(style: style, content: content, associatedEditMode: associatedEditMode))
   }
 }
 
@@ -365,4 +382,29 @@ public extension EditorEvent where Self == EditorEvents.Navigation.ToPreviousPag
 public extension EditorEvent where Self == EditorEvents.Navigation.ToNextPage {
   /// Creates an ``EditorEvent`` to navigate to the next page.
   static var navigateToNextPage: Self { Self() }
+}
+
+public extension EditorEvents {
+  /// An event for applying a force crop preset to a block.
+  struct ApplyForceCrop: EditorEvent {
+    let blockID: DesignBlockID
+    let presetCandidates: [ForceCropPreset]
+    let mode: ForceCropMode
+  }
+}
+
+public extension EditorEvent where Self == EditorEvents.ApplyForceCrop {
+  /// Creates an ``EditorEvent`` to apply a force crop preset to a design block.
+  /// - Parameters:
+  ///   - blockID: The ID of the block to apply the crop to.
+  ///   - presetCandidates: Array of crop preset candidates. The best matching preset will be automatically selected.
+  ///   - mode: Defines the behavior - `.silent`, `.always`, or `.ifNeeded`.
+  /// - Returns: The created ``EditorEvents/ApplyForceCrop`` event.
+  static func applyForceCrop(
+    to blockID: DesignBlockID,
+    with presetCandidates: [ForceCropPreset],
+    mode: ForceCropMode,
+  ) -> Self {
+    Self(blockID: blockID, presetCandidates: presetCandidates, mode: mode)
+  }
 }

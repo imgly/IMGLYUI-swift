@@ -1,4 +1,5 @@
 @_spi(Internal) import IMGLYEditor
+import IMGLYEngine
 
 extension OnChanged {
   /// The default callback that handles editor state updates for the ``PhotoEditor``.
@@ -14,6 +15,10 @@ extension OnChanged {
       guard oldValue != newValue else { return }
 
       let isCrop = newValue == .crop
+      if let selection = context.engine.block.findAllSelected().first,
+         let type = try? context.engine.block.getType(selection), type == DesignBlockType.page.rawValue {
+        context.eventHandler.send(.setExtraCanvasInsets(isCrop ? 24 : 0))
+      }
       if let page = try context.engine.scene.getPages().first {
         try context.engine.editor.setHighlightingEnabled(page, enabled: isCrop)
         try context.engine.block.setScopeEnabled(page, scope: .key(.layerResize), enabled: isCrop)

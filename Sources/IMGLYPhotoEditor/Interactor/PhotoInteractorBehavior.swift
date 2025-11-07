@@ -5,8 +5,6 @@ import IMGLYEngine
 import SwiftUI
 
 final class PhotoInteractorBehavior: InteractorBehavior {
-  var unselectedPageCrop: Bool { true }
-
   func loadScene(_ context: InteractorContext, with insets: EdgeInsets?) async throws {
     try await DefaultInteractorBehavior.default.loadScene(context, with: insets)
 
