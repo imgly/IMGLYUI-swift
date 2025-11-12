@@ -14,12 +14,11 @@ public extension View {
 
 @_spi(Internal) public extension View {
   var usesLegacyDesign: Bool {
-    #if swift(>=6.2)
-      if #available(iOS 26.0, *) {
-        return Bundle.main.object(forInfoDictionaryKey: "UIDesignRequiresCompatibility") as? Bool ?? false
-      }
-    #endif
-    return true
+    if #available(iOS 26.0, *) {
+      Bundle.main.object(forInfoDictionaryKey: "UIDesignRequiresCompatibility") as? Bool ?? false
+    } else {
+      true
+    }
   }
 }
 

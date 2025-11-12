@@ -9,21 +9,15 @@ public protocol SheetType {
   var style: SheetStyle { get }
 }
 
-protocol SheetTypeWithEditMode: SheetType {
-  /// The edit mode associated with this sheet. It will be automatically applied.
-  var associatedEditMode: IMGLYEngine.EditMode? { get }
-}
-
 protocol SheetTypeForDesignBlock: SheetType {
   var id: DesignBlockID { get }
 }
 
 /// A namespace for ``SheetType``s.
 public enum SheetTypes {
-  struct Custom: SheetTypeWithEditMode {
+  struct Custom: SheetType {
     let style: SheetStyle
     let content: () -> any View
-    let associatedEditMode: IMGLYEngine.EditMode?
   }
 }
 
@@ -75,11 +69,10 @@ public extension SheetTypes {
   }
 
   /// A sheet that is used to crop design blocks with image and video fills.
-  struct Crop: SheetTypeForDesignBlock, SheetTypeWithEditMode {
+  struct Crop: SheetTypeForDesignBlock {
     public let style: SheetStyle
     let id: DesignBlockID
     let assetSourceIDs: [String]
-    let associatedEditMode: IMGLYEngine.EditMode? = .crop
   }
 
   /// A sheet that is used to resize pages.

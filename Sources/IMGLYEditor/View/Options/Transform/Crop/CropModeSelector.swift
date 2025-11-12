@@ -6,19 +6,10 @@ struct CropModeSelector: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  private var groups: [[ContentFillMode]] {
-    var groups: [[ContentFillMode]] = [[.Crop, .Cover]]
-    if let id, let isCropAspectRatioLocked = try? interactor.engine?.block.isCropAspectRatioLocked(id),
-       !isCropAspectRatioLocked || !interactor.isForceCropActive(for: id) {
-      groups.append([.Contain])
-    }
-    return groups
-  }
-
   var body: some View {
     let selection: Binding<ContentFillMode?> = interactor.bind(id, property: .key(.contentFillMode))
 
-    CropModePicker(groups: groups, selection: selection)
+    CropModePicker(groups: [[.Crop, .Cover], [.Contain]], selection: selection)
       .accessibilityLabel("Crop Mode")
   }
 }

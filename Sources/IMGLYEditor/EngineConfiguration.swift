@@ -183,22 +183,23 @@ public enum OnError {
 }
 
 /// A namespace for `onLoaded` callbacks.
-public enum OnLoaded {
+@_spi(Internal) public enum OnLoaded {
   /// The callback type.
-  public typealias Callback = @MainActor (_ context: OnLoaded.Context) async throws -> Void
+  @_spi(Internal) public typealias Callback = @MainActor (_ context: OnLoaded.Context) async throws
+    -> Void
 
   /// The default empty callback.
   @_spi(Internal) public static let `default`: Callback = { _ in }
 
   /// The context of the ``OnLoaded/Callback``.
   @MainActor
-  public struct Context {
+  @_spi(Internal) public struct Context {
     /// The engine of the current editor.
-    public let engine: Engine
+    @_spi(Internal) public let engine: Engine
     /// The event handler of the current editor.
-    public let eventHandler: EditorEventHandler
+    @_spi(Internal) public let eventHandler: EditorEventHandler
     /// The asset library configured with the ``IMGLY/assetLibrary(_:)`` view modifier.
-    public let assetLibrary: any AssetLibrary
+    @_spi(Internal) public let assetLibrary: any AssetLibrary
   }
 }
 

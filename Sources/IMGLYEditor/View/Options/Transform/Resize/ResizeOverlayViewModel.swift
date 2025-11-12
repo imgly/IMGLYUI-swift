@@ -1,4 +1,3 @@
-@_spi(Internal) import IMGLYEngine
 import SwiftUI
 
 extension ResizeOverlay {
@@ -14,7 +13,7 @@ extension ResizeOverlay {
     @Published private(set) var aspect: CGFloat?
     @Published var dpi: CGFloat
     @Published var pixelScale: CGFloat
-    @Published var designUnit: DesignUnit {
+    @Published var designUnit: Interactor.DesignUnit {
       didSet {
         designUnitChanged(from: oldValue, to: designUnit)
       }
@@ -83,6 +82,38 @@ extension ResizeOverlay {
 
     // MARK: - Private
 
+    private func convertUnit(
+      from: Interactor.DesignUnit,
+      to: Interactor.DesignUnit,
+      with dpi: CGFloat,
+      and pixelScale: CGFloat,
+      value: CGFloat,
+    ) -> CGFloat {
+      let mm_per_in = 25.4
+
+      let valueInInches: CGFloat = switch from {
+      case .in:
+        value
+      case .mm:
+        value / mm_per_in
+      case .px:
+        value / (dpi * pixelScale)
+      default: value
+      }
+
+      let convertedValue: CGFloat = switch to {
+      case .in:
+        valueInInches
+      case .mm:
+        valueInInches * mm_per_in
+      case .px:
+        valueInInches * dpi * pixelScale
+      default: value
+      }
+
+      return convertedValue
+    }
+
     private func widthChanged(_ newValue: CGFloat) {
       if let aspect {
         guard editingField != .height else { return }
@@ -103,21 +134,9 @@ extension ResizeOverlay {
       editingField = nil
     }
 
-    private func designUnitChanged(from oldValue: DesignUnit, to newValue: DesignUnit) {
-      let newWidth = DesignUnit.convert(
-        width,
-        from: oldValue,
-        to: newValue,
-        dpi: dpi,
-        pixelScale: pixelScale,
-      )
-      let newHeight = DesignUnit.convert(
-        height,
-        from: oldValue,
-        to: newValue,
-        dpi: dpi,
-        pixelScale: pixelScale,
-      )
+    private func designUnitChanged(from oldValue: Interactor.DesignUnit, to newValue: Interactor.DesignUnit) {
+      let newWidth = convertUnit(from: oldValue, to: newValue, with: dpi, and: pixelScale, value: width)
+      let newHeight = convertUnit(from: oldValue, to: newValue, with: dpi, and: pixelScale, value: height)
       width = newWidth
       height = newHeight
     }
