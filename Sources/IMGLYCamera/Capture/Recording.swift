@@ -29,3 +29,11 @@ public struct Recording: Equatable, Sendable {
     self.duration = duration
   }
 }
+
+public struct RecordingTest: Equatable, Sendable {
+    public let test: String
+
+    public init(test: String) {
+        self.test = test
+    }
+}
