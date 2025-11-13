@@ -1,0 +1,33 @@
+{
+  "originHash" : "66b84f2fd904dc29c5e789e57555ac91803039f385dfe76f93348d8552926617",
+  "pins" : [
+    {
+      "identity" : "imglyengine-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/imgly/IMGLYEngine-swift.git",
+      "state" : {
+        "revision" : "da931ee89a3015da80dee6c6a3419d6ac15569fb",
+        "version" : "1.63.1"
+      }
+    },
+    {
+      "identity" : "kingfisher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/onevcat/Kingfisher.git",
+      "state" : {
+        "revision" : "4d75de347da985a70c63af4d799ed482021f6733",
+        "version" : "8.6.1"
+      }
+    },
+    {
+      "identity" : "swiftui-introspect",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/siteline/SwiftUI-Introspect.git",
+      "state" : {
+        "revision" : "807f73ce09a9b9723f12385e592b4e0aaebd3336",
+        "version" : "1.3.0"
+      }
+    }
+  ],
+  "version" : 3
+}

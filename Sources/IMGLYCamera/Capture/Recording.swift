@@ -7,8 +7,14 @@ public struct Recording: Equatable, Sendable {
   public struct Video: Equatable, Sendable {
     /// The URL of the recorded video file.
     public let url: URL
+
     /// The position and size of the video.
     public let rect: CGRect
+
+    public init(url: URL, rect: CGRect) {
+      self.url = url
+      self.rect = rect
+    }
   }
 
   /// Contains one or two `Video`s, for single camera mode or video that was reacted to and dual camera mode
@@ -17,4 +23,9 @@ public struct Recording: Equatable, Sendable {
 
   /// The duration of the recording.
   public let duration: CMTime
+
+  public init(videos: [Video], duration: CMTime) {
+    self.videos = videos
+    self.duration = duration
+  }
 }
