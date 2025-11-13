@@ -30,7 +30,7 @@ public struct Recording: Equatable, Sendable {
   }
 }
 
-public struct RecordingTest: Equatable, Sendable {
+@_spi(Fork) public struct RecordingTest: Equatable, Sendable {
     public let test: String
 
     public init(test: String) {
