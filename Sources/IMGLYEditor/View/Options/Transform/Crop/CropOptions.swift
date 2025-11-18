@@ -105,11 +105,18 @@ struct CropOptions: View {
         TransformOptions(interactor: interactor, item: { asset in
           TransformItem(asset: asset)
         },
-        sources: sources.map { AssetLoader.SourceData(id: $0) },
+        sources: effectiveSources.map { AssetLoader.SourceData(id: $0) },
         mode: transformMode)
       }
     }
     .background(Color(.systemGroupedBackground))
+  }
+
+  private var effectiveSources: [String] {
+    if let forceCropState = interactor.forceCropState, forceCropState.blockID == id {
+      return [forceCropState.sourceID]
+    }
+    return sources
   }
 
   private var transformMode: TransformMode {

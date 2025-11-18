@@ -122,6 +122,16 @@ extension Interactor: EditorEventHandler {
       try setPage(page - 1)
     case is EditorEvents.Navigation.ToNextPage:
       try setPage(page + 1)
+
+    // MARK: - Force Crop
+    case let event as EditorEvents.ApplyForceCrop:
+      Task {
+        try await applyForceCrop(
+          to: event.blockID,
+          presetCandidates: event.presetCandidates,
+          mode: event.mode,
+        )
+      }
     default:
       print("Unhandled event \(event)")
     }
@@ -135,6 +145,9 @@ extension Interactor: EditorEventHandler {
     case let sheet as SheetTypes.Custom:
       let content = sheetContentForSelection
       self.sheet = .init(sheet, content)
+      if let associatedEditMode = sheet.associatedEditMode {
+        setEditMode(associatedEditMode)
+      }
     case let sheet as SheetTypes.LibraryAdd:
       try engine?.block.deselectAll()
       self.sheet = .init(sheet)
@@ -174,8 +187,12 @@ extension Interactor: EditorEventHandler {
       }
     case let sheet as SheetTypes.Crop:
       clampPlayheadPositionToSelectedClip()
-      cropSheetTypeEvent = sheet
-      setEditMode(.crop)
+      if let content = sheetContent(sheet.id) ?? sheetContentForSelection {
+        self.sheet = .init(sheet, content)
+      }
+      if let associatedEditMode = sheet.associatedEditMode {
+        setEditMode(associatedEditMode)
+      }
     case let sheet as SheetTypes.Resize:
       clampPlayheadPositionToSelectedClip()
       self.sheet = .init(sheet)

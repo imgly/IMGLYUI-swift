@@ -168,23 +168,25 @@ extension EnvironmentValues {
         .filter { !excludedSources.contains($0.sourceID) }
         .prefix(maxItemCount)
         .enumerated())
-      ForEach(items, id: \.element.id) { index, asset in
-        let padding: CGFloat = {
-          if index > 0 {
-            return asset.sourceID != data.model.assets[index - 1].sourceID ? sourcePadding : 0
-          }
-          return 0
-        }()
+      if items.count > 1 {
+        ForEach(items, id: \.element.id) { index, asset in
+          let padding: CGFloat = {
+            if index > 0 {
+              return asset.sourceID != data.model.assets[index - 1].sourceID ? sourcePadding : 0
+            }
+            return 0
+          }()
 
-        item(.asset(asset))
-          .modifier(AttributionSheet(asset: asset) {
-            selectedAsset = asset
-          })
-          .id(itemIndex(asset) ?? asset.id as AnyHashable)
-          .onAppear {
-            loadMoreContentIfNeeded(currentItem: asset)
-          }
-          .padding(EdgeInsets(top: 0, leading: padding, bottom: 0, trailing: 0))
+          item(.asset(asset))
+            .modifier(AttributionSheet(asset: asset) {
+              selectedAsset = asset
+            })
+            .id(itemIndex(asset) ?? asset.id as AnyHashable)
+            .onAppear {
+              loadMoreContentIfNeeded(currentItem: asset)
+            }
+            .padding(EdgeInsets(top: 0, leading: padding, bottom: 0, trailing: 0))
+        }
       }
       if case .loading = data.model.state {
         item(.placeholder)

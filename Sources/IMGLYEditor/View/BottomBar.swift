@@ -51,7 +51,11 @@ struct BottomBar: View {
       return []
     }
 
-    var modes: [SheetMode] = [.editPage, .addPage, .moveUp, .moveDown, .duplicate, .resize]
+    var modes: [SheetMode] = [.editPage, .addPage, .moveUp, .moveDown, .duplicate]
+    // Hide resize option when force crop is active to maintain forced dimensions
+    if !interactor.isForceCropActive(for: id) {
+      modes.append(.resize)
+    }
     if interactor.pageCount > 1 {
       modes += [.delete]
     }
