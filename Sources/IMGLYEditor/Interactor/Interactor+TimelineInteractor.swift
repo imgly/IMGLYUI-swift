@@ -1164,6 +1164,7 @@ extension Interactor: TimelineInteractor {
       if PhotoLibraryAuthorizationManager.shared.authorizationStatus == .notDetermined {
         await PhotoLibraryAuthorizationManager.shared.requestPermission()
       }
+
       do {
         try engine?.block.deselectAll()
         // Ensure that the deselect event comes before opening the sheet, otherwise the sheet closes immediately.

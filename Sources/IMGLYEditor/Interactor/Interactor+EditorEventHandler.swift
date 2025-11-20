@@ -49,6 +49,8 @@ extension Interactor: EditorEventHandler {
       zoomToPage(withAdditionalPadding: event.insets)
 
     // MARK: - Export
+    case is EditorEvents.Export.CheckDurationLimitations:
+      checkDurationBeforeExport()
     case is EditorEvents.Export.Start:
       exportScene()
     case is EditorEvents.Export.Cancel:

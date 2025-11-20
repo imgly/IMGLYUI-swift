@@ -3,6 +3,7 @@ import SwiftUI
 
 @_spi(Internal) public extension EnvironmentValues {
   @Entry var imglyOnCreate: OnCreate.Callback?
+  @Entry var imglyOnCheck: OnCheck.Callback?
   @Entry var imglyOnLoaded: OnLoaded.Callback?
   @Entry var imglyOnExport: OnExport.Callback?
   @Entry var imglyOnUpload: OnUpload.Callback?
@@ -13,6 +14,7 @@ import SwiftUI
 
 struct ConfigureableEditor: ViewModifier {
   @Environment(\.imglyOnCreate) private var onCreate
+  @Environment(\.imglyOnCheck) private var onCheck
   @Environment(\.imglyOnLoaded) private var onLoaded
   @Environment(\.imglyOnExport) private var onExport
   @Environment(\.imglyOnUpload) private var onUpload
@@ -35,6 +37,7 @@ struct ConfigureableEditor: ViewModifier {
       onCreate: onCreate ?? OnCreate.default,
       onLoaded: onLoaded ?? OnLoaded.default,
       onExport: onExport ?? OnExport.default,
+      onCheck: onCheck ?? OnCheck.default,
       onUpload: onUpload ?? OnUpload.default,
       onClose: onClose ?? OnClose.default,
       onError: onError ?? OnError.default,

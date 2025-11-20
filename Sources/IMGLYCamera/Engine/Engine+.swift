@@ -49,15 +49,18 @@ private extension Engine {
             throw Error(errorDescription: "Tried creating a scene with an empty recording.")
         }
 
-        let rect: CGRect
+        var rect = recordings.unionRect()
         if let size {
             rect = .init(origin: .zero, size: size)
-        } else {
-            rect = recordings.unionRect()
+        }
+
+        var duration = firstRecording.duration.seconds
+        if let maxTrimmingDuration {
+            duration = min(maxTrimmingDuration, duration)
         }
 
         // Create a scene with the first video on the background track
-        try await createScene(with: firstVideo, frame: rect)
+        try await createScene(with: firstVideo, frame: rect, duration: duration)
         guard let pageID = try scene.getCurrentPage() else {
             throw Error(errorDescription: "Failed to get current page.")
         }
@@ -72,6 +75,7 @@ private extension Engine {
             useBackgroundTrack: backgroundTrack,
             page: pageID,
             skipFirstVideoBecauseItWasAddedToTheSceneAlready: true,
+            maxTrimmingDuration: maxTrimmingDuration
         )
     }
 
@@ -87,7 +91,12 @@ private extension Engine {
 
         // Create a scene with the video being reacted to.
         let sceneFrame = (recordings + [video]).unionRect()
-        let (video, fill) = try await createScene(with: reactionVideo, frame: sceneFrame)
+        let (video, fill) = try await createScene(
+            with: reactionVideo,
+            frame: sceneFrame,
+            duration: video.duration.seconds
+        )
+
         guard let pageID = try scene.getCurrentPage() else {
             throw Error(errorDescription: "Failed to get current page.")
         }
@@ -116,6 +125,7 @@ private extension Engine {
     func createScene(
         with video: Recording.Video,
         frame: CGRect,
+        duration: Double
     ) async throws -> (video: DesignBlockID, videoFill: DesignBlockID) {
         // Create a scene with the video being reacted to.
         try await scene.create(fromVideo: video.url)
@@ -130,6 +140,14 @@ private extension Engine {
 
         let fillBlock = try block.getFill(videoBlock)
         try block.setFrame(videoBlock, value: video.rect)
+
+        if
+            let isTrimSupported = try? block.supportsTrim(fillBlock), isTrimSupported,
+            let isDurationSupported = try? block.supportsDuration(videoBlock), isDurationSupported
+        {
+            try block.setTrimLength(fillBlock, length: duration)
+            try block.setDuration(videoBlock, duration: duration)
+        }
 
         return (videoBlock, fillBlock)
     }
@@ -213,7 +231,14 @@ private extension Engine {
 
         try block.set(fillBlock, property: .key(.fillVideoFileURI), value: video.url)
         try block.setFill(rootBlock, fill: fillBlock)
-        try block.setDuration(rootBlock, duration: duration)
+
+        if
+            let isTrimSupported = try? block.supportsTrim(fillBlock), isTrimSupported,
+            let isDurationSupported = try? block.supportsDuration(rootBlock), isDurationSupported
+        {
+            try block.setTrimLength(fillBlock, length: duration)
+            try block.setDuration(rootBlock, duration: duration)
+        }
     }
 }
 

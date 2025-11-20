@@ -59,6 +59,9 @@ public enum ExportProgress {
 }
 
 public extension EditorEvents.Export {
+  /// An event for checking if  an export is ready to start.
+  struct CheckDurationLimitations: EditorEvent {}
+
   /// An event for starting an export process.
   struct Start: EditorEvent {}
 
@@ -123,6 +126,11 @@ public extension EditorEvent where Self == EditorEvents.SetExtraCanvasInsets {
   /// - Parameter insets: The extra insets to set.
   /// - Returns: The created ``EditorEvents/SetExtraCanvasInsets`` event.
   static func setExtraCanvasInsets(_ insets: CGFloat) -> Self { Self(insets: insets) }
+}
+
+public extension EditorEvent where Self == EditorEvents.Export.CheckDurationLimitations {
+  /// Creates an ``EditorEvent`` to check if duration is not exceed the limit.  This event triggers the ``IMGLY/onCheck(_:)`` callback.
+  static var checkDurationLimitations: Self { Self() }
 }
 
 public extension EditorEvent where Self == EditorEvents.Export.Start {

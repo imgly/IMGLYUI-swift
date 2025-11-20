@@ -4,6 +4,8 @@ import UniformTypeIdentifiers
 @_spi(Internal) import struct IMGLYCore.Error
 import IMGLYEngine
 
+import SwiftUI
+
 // MARK: - Callbacks
 
 /// A namespace for `onCreate` callbacks.
@@ -36,6 +38,69 @@ public enum OnCreate {
     try await engine.asset.addSource(TextAssetSource(engine: engine))
     try engine.asset.addSource(PhotoRollAssetSource(engine: engine))
   }
+}
+
+/// A namespace for `OnCheck` callbacks.
+public enum OnCheck {
+    /// The callback type.
+    public typealias Callback = @MainActor (_ engine: Engine, _ eventHandler: EditorEventHandler) async throws -> Void
+
+    /// The default callback which calls `BlockAPI.export` or `BlockAPI.exportVideo`
+    /// based on the engine's `SceneMode`, displays a progress indicator for video exports, writes the content into a
+    /// temporary file, and opens a system dialog for sharing the exported file.
+    public static let `default`: Callback = { engine, eventHandler in
+        try await checkPageDurationLimitations()(engine, eventHandler)
+    }
+
+    /// Creates the default callback which calls `BlockAPI.export` or `BlockAPI.exportVideo`
+    /// based on the engine's `SceneMode`, displays a progress indicator for video exports, writes the content into a
+    /// temporary file, and opens a system dialog for sharing the exported file.
+    /// - Parameter mimeType: Optional mime type of the export. If `nil` the default is used based on the `SceneMode`.
+    /// - Returns: The callback.
+    public static func checkPageDurationLimitations(
+        minDuration: Double? = nil,
+        maxDuration: Double? = nil,
+        sheetHeight: CGFloat = 240,
+        sheetContent: @MainActor @Sendable @escaping () -> any View = { EmptyView() }
+    ) -> Callback {
+        { engine, eventHandler in
+            guard let pages = try? engine.scene.getPages() else {
+                return
+            }
+
+            var resultDuration: Double = 0
+            for page in pages {
+                if let isDurationSupports = try? await engine.block.supportsDuration(page), isDurationSupports {
+                    resultDuration += try await engine.block.getDuration(page)
+                }
+            }
+
+            switch (minDuration, maxDuration) {
+            case (.none, .none):
+                return eventHandler.send(.startExport)
+
+            case (.some(let minDuration), .none) where resultDuration >= minDuration:
+                return eventHandler.send(.startExport)
+
+            case (.none, .some(let maxDuration)) where resultDuration <= maxDuration:
+                return eventHandler.send(.startExport)
+
+            case (.some(let minDuration), .some(let maxDuration)):
+                guard resultDuration >= minDuration && resultDuration <= maxDuration else {
+                    break
+                }
+
+                return eventHandler.send(.startExport)
+
+            default:
+                break
+            }
+
+            eventHandler.send(.openSheet(
+                type: SheetTypes.Custom(style: .default(detents: [.height(sheetHeight)]), content: sheetContent)
+            ))
+        }
+    }
 }
 
 /// A namespace for `onExport` callbacks.
@@ -250,7 +315,7 @@ public enum OnError {
     /// - Parameters:
     ///   - oldValue: The old value before the state change.
     ///   - newValue: The new value after the state change.
-    case editMode(oldValue: EditMode, newValue: EditMode)
+    case editMode(oldValue: IMGLYEngine.EditMode, newValue: IMGLYEngine.EditMode)
   }
 }
 
@@ -260,6 +325,7 @@ public enum OnError {
   @_spi(Internal) public let onCreate: OnCreate.Callback
   let onLoaded: OnLoaded.Callback
   let onExport: OnExport.Callback
+  let onCheck: OnCheck.Callback
   let onUpload: OnUpload.Callback
   let onClose: OnClose.Callback
   let onError: OnError.Callback
@@ -269,6 +335,7 @@ public enum OnError {
     onCreate: @escaping OnCreate.Callback = OnCreate.default,
     onLoaded: @escaping OnLoaded.Callback = OnLoaded.default,
     onExport: @escaping OnExport.Callback = OnExport.default,
+    onCheck: @escaping OnCheck.Callback = OnCheck.default,
     onUpload: @escaping OnUpload.Callback = OnUpload.default,
     onClose: @escaping OnClose.Callback = OnClose.default,
     onError: @escaping OnError.Callback = OnError.default,
@@ -277,6 +344,7 @@ public enum OnError {
     self.onCreate = onCreate
     self.onLoaded = onLoaded
     self.onExport = onExport
+    self.onCheck = onCheck
     self.onUpload = onUpload
     self.onClose = onClose
     self.onError = onError

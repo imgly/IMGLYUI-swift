@@ -1522,6 +1522,39 @@ extension Interactor {
     handleErrorAndDismiss(error, onDismiss)
   }
 
+    func checkDurationBeforeExport() {
+      pause()
+      let lastTask = exportTask
+      lastTask?.cancel()
+      isExporting = true
+      exportTask = Task(priority: .userInitiated) {
+        _ = await lastTask?.result
+        if Task.isCancelled {
+          return
+        }
+
+        guard let engine else {
+          return
+        }
+
+        do {
+          try await config.callbacks.onCheck(engine, self)
+        } catch is CancellationError {
+          hideExportSheet()
+        } catch {
+          if export.isPresented {
+            showExportSheet(.error(error) { [weak self] in
+              self?.hideExportSheet()
+            })
+          } else {
+            handleError(error)
+          }
+        }
+
+        isExporting = false
+      }
+    }
+
   func exportScene() {
     pause()
     let lastTask = exportTask
