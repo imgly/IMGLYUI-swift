@@ -83,18 +83,20 @@ extension Interactor {
       case .ifNeeded: try await isPresetNeeded(engine: engine, cropPreset: bestMatch.preset, blockID: blockID)
       }
 
-      if shouldApply {
-        try await applyCropPreset(
-          sourceID: bestMatch.sourceID,
-          cropPreset: bestMatch.preset,
-          to: blockID,
-          updateZoom: mode == .silent,
-        )
+      if !shouldApply {
+        return
+      }
 
-        if mode != .silent {
-          try await Task.sleep(for: .milliseconds(100))
-          send(.openSheet(type: .crop(id: blockID, assetSourceIDs: [bestMatch.sourceID])))
-        }
+      try await applyCropPreset(
+        sourceID: bestMatch.sourceID,
+        cropPreset: bestMatch.preset,
+        to: blockID,
+        updateZoom: mode == .silent,
+      )
+
+      if mode != .silent {
+        try await Task.sleep(for: .milliseconds(100))
+        send(.openSheet(type: .crop(id: blockID, assetSourceIDs: [bestMatch.sourceID])))
       }
 
       forceCropState = ForceCropState(blockID: blockID, sourceID: bestMatch.sourceID)

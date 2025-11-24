@@ -40,13 +40,38 @@ extension Interactor: TimelineInteractor {
           sceneMode == .video,
           let pageID = timelineProperties.currentPage else { return }
     do {
-      // Create the Background Track if it doesn’t exist yet
+      // Create the Background Track if it doesn't exist yet
       let backgroundTrack = try engine.block.create(DesignBlockType.track)
       try engine.block.appendChild(to: pageID, child: backgroundTrack)
       try engine.block.setAlwaysOnBottom(backgroundTrack, enabled: true)
       try engine.block.fillParent(backgroundTrack)
       try engine.block.setScopeEnabled(backgroundTrack, scope: .key(.editorSelect), enabled: false)
+      if try engine.block.supportsPageDurationSource(pageID, id: backgroundTrack) {
+        try engine.block.setPageDurationSource(pageID, id: backgroundTrack)
+      }
       timelineProperties.backgroundTrack = backgroundTrack
+    } catch {
+      handleError(error)
+    }
+  }
+
+  /// Cleans up empty tracks to prevent clutter in the timeline.
+  private func cleanUpEmptyTracks() {
+    guard let engine,
+          let page = timelineProperties.currentPage else { return }
+    do {
+      let children = try engine.block.getChildren(page)
+      for block in children where engine.block.isValid(block) {
+        let type = try engine.block.getType(block)
+        if type == DesignBlockType.track.rawValue || type == DesignBlockType.captionTrack.rawValue,
+           try engine.block.getChildren(block).isEmpty {
+          // Clear background track reference if we're destroying it
+          if block == timelineProperties.backgroundTrack {
+            timelineProperties.backgroundTrack = nil
+          }
+          try engine.block.destroy(block)
+        }
+      }
     } catch {
       handleError(error)
     }
@@ -59,8 +84,11 @@ extension Interactor: TimelineInteractor {
           !timelineProperties.isScrubbing,
           let page = timelineProperties.currentPage else { return }
 
-    // If the events list contains only the page and we’re currently playing back, we can skip evaluating the events,
-    // because it’s most likely only the update of the playback position
+    // Clean up empty tracks before processing events
+    cleanUpEmptyTracks()
+
+    // If the events list contains only the page and we're currently playing back, we can skip evaluating the events,
+    // because it's most likely only the update of the playback position
     if timelineProperties.player.isPlaying,
        events.count == 1, events.first?.block == page {
       return
@@ -554,7 +582,7 @@ extension Interactor: TimelineInteractor {
       blocks.insert(contentsOf: audioBlocks.reversed(), at: 0)
 
       let tracks = try engine.block.find(byType: .track)
-      for backgroundTrack in tracks where try engine.block.isAlwaysOnBottom(backgroundTrack) {
+      for backgroundTrack in tracks where try engine.block.isPageDurationSource(backgroundTrack) {
         timelineProperties.backgroundTrack = backgroundTrack
       }
 
@@ -582,29 +610,17 @@ extension Interactor: TimelineInteractor {
     }
   }
 
-  /// Updates the total duration of the page by looking at the page’s contents.
+  /// Updates the total duration of the page by reading it from the engine.
   private func updateDurations() {
     guard let engine,
           let timeline = timelineProperties.timeline,
           let pageID = timelineProperties.currentPage else { return }
 
-    var totalDuration = CMTime(seconds: 0)
-
-    if timelineProperties.dataSource.backgroundTrack.clips.count > 0 {
-      totalDuration = timelineProperties.dataSource.backgroundTrack.clips.reduce(CMTime.zero) { partialResult, clip in
-        partialResult + (clip.duration ?? CMTime(seconds: 0))
-      }
-    } else {
-      // If there are no videos, iterate over all clips and make sure they’re all accessible.
-      totalDuration = timelineProperties.dataSource.allClips().reduce(CMTime.zero) { partialResult, clip in
-        max(partialResult, clip.timeOffset + (clip.duration ?? .zero))
-      }
-    }
-
     do {
-      // This check is important to avoid an infinite loop through the update events.
+      let pageDuration = try engine.block.getDuration(pageID)
+      let totalDuration = CMTime(seconds: pageDuration)
+
       if totalDuration != CMTime(seconds: timeline.totalDuration.seconds) {
-        try engine.block.setDuration(pageID, duration: totalDuration.seconds)
         timelineProperties.timeline?.setTotalDuration(totalDuration)
         // update clip elements that require to match duration of timeline
         timelineProperties.dataSource.foregroundClips()

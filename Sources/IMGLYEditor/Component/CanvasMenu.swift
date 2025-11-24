@@ -77,7 +77,7 @@ public extension CanvasMenu.Context {
       @MainActor func isBackgroundTrack(_ id: DesignBlockID?) throws -> Bool {
         if let id {
           try engine.block.getType(id) == DesignBlockType.track.rawValue &&
-            engine.block.isAlwaysOnBottom(id)
+            engine.block.isPageDurationSource(id)
         } else {
           false
         }
