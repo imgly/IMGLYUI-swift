@@ -503,7 +503,7 @@ public extension Dock.Buttons {
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { context in
       let backgroundTrack = try context.engine.block.find(byType: .track).filter {
-        try context.engine.block.isAlwaysOnBottom($0)
+        try context.engine.block.isPageDurationSource($0)
       }.first
       guard let backgroundTrack else {
         return false

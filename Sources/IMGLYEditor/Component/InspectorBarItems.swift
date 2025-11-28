@@ -113,12 +113,13 @@ public extension InspectorBar.Buttons {
       @MainActor func isBackgroundTrack(_ id: DesignBlockID?) throws -> Bool {
         if let id {
           try context.engine.block.getType(id) == DesignBlockType.track.rawValue &&
-            context.engine.block.isAlwaysOnBottom(id)
+            context.engine.block.isPageDurationSource(id)
         } else {
           false
         }
       }
       return if let backgroundTrack = context.selection.parentBlock,
+                try context.engine.block.isValid(backgroundTrack),
                 try context.engine.block.getChildren(backgroundTrack).count > 1,
                 try isBackgroundTrack(backgroundTrack) {
         true
@@ -398,7 +399,7 @@ public extension InspectorBar.Buttons {
       @MainActor func isBackgroundTrack(_ id: DesignBlockID?) throws -> Bool {
         if let id {
           try context.engine.block.getType(id) == DesignBlockType.track.rawValue &&
-            context.engine.block.isAlwaysOnBottom(id)
+            context.engine.block.isPageDurationSource(id)
         } else {
           false
         }
@@ -528,7 +529,7 @@ public extension InspectorBar.Buttons {
       @MainActor func isBackgroundTrack(_ id: DesignBlockID?) throws -> Bool {
         if let id {
           try context.engine.block.getType(id) == DesignBlockType.track.rawValue &&
-            context.engine.block.isAlwaysOnBottom(id)
+            context.engine.block.isPageDurationSource(id)
         } else {
           false
         }
@@ -569,7 +570,7 @@ public extension InspectorBar.Buttons {
       @MainActor func isBackgroundTrack(_ id: DesignBlockID?) throws -> Bool {
         if let id {
           try context.engine.block.getType(id) == DesignBlockType.track.rawValue &&
-            context.engine.block.isAlwaysOnBottom(id)
+            context.engine.block.isPageDurationSource(id)
         } else {
           false
         }

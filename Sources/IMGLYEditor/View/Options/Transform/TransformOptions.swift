@@ -2,6 +2,7 @@
 import SwiftUI
 
 struct TransformOptions<Item: View>: View {
+  @Environment(\.imglySelection) private var id
   @StateObject private var searchState = AssetLibrarySearchState()
   @StateObject private var viewModel: ViewModel
 
@@ -9,6 +10,10 @@ struct TransformOptions<Item: View>: View {
   let mode: TransformMode
   let interactor: Interactor
   @ViewBuilder var item: (AssetItem) -> Item
+
+  private var isForceCropActive: Bool {
+    interactor.isForceCropActive(for: id)
+  }
 
   init(
     interactor: Interactor,
@@ -64,7 +69,7 @@ struct TransformOptions<Item: View>: View {
   }
 
   @ViewBuilder private var categorySelection: some View {
-    if viewModel.groups.count <= 1 {
+    if isForceCropActive || viewModel.groups.count <= 1 {
       HStack {
         Spacer()
         CropModeSelector()
@@ -78,7 +83,7 @@ struct TransformOptions<Item: View>: View {
             if interactor.editMode == .crop {
               CropModeSelector()
             }
-            if mode != .crop {
+            if mode != .crop, !isForceCropActive {
               HStack {
                 Image("custom.arrow.down.left.and.arrow.up.right", bundle: .module)
                 Text("\(Int(dimensions.width)) × \(Int(dimensions.height)) \(dimensions.designUnit.abbreviation)")

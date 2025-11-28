@@ -1,6 +1,6 @@
 @_spi(Internal) import IMGLYEditor
 
-extension OnLoaded {
+public extension OnLoaded {
   /// The default callback implementation for the `OnLoaded.Callback` for the ``PhotoEditor``.
   ///
   /// Subscribes to the `EditorAPI.onHistoryUpdated` and shows or hides the outline and crop handles and modifies the

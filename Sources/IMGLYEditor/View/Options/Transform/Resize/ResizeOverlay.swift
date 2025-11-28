@@ -4,6 +4,12 @@ import SwiftUI
 struct ResizeOverlay: View {
   @Environment(\.dismiss) var dismiss
   @StateObject private var viewModel: ViewModel
+  @FocusState private var focusedField: Field?
+
+  enum Field {
+    case width
+    case height
+  }
 
   init(interactor: Interactor, dimensions: PageDimensions) {
     _viewModel = .init(wrappedValue: .init(interactor: interactor, dimensions: dimensions))
@@ -16,6 +22,7 @@ struct ResizeOverlay: View {
         VStack(alignment: .leading) {
           Button {
             viewModel.updateAspect()
+            focusedField = nil
           } label: {
             Label(title: {
               Text(.imgly.localized("ly_img_editor_dialog_resize_button_resize_proportionally"))
@@ -36,12 +43,14 @@ struct ResizeOverlay: View {
               title: .imgly.localized("ly_img_editor_dialog_resize_label_width \(viewModel.designUnit.abbreviation)"),
               textFieldTitle: "Width",
               text: $viewModel.width,
+              field: .width,
             )
             .accessibilityLabel("Width")
             textField(
               title: .imgly.localized("ly_img_editor_dialog_resize_label_height \(viewModel.designUnit.abbreviation)"),
               textFieldTitle: "Height",
               text: $viewModel.height,
+              field: .height,
             )
             .accessibilityLabel("Height")
           }
@@ -64,6 +73,7 @@ struct ResizeOverlay: View {
     title: LocalizedStringResource,
     textFieldTitle: LocalizedStringResource,
     text: Binding<CGFloat>,
+    field: Field,
   ) -> some View {
     VStack(alignment: .leading, spacing: 4) {
       Text(title)
@@ -73,6 +83,7 @@ struct ResizeOverlay: View {
         Text(textFieldTitle)
       }
       .keyboardType(.decimalPad)
+      .focused($focusedField, equals: field)
       .padding(.horizontal, 10)
       .frame(height: 34)
       .background(Color(.tertiarySystemFill))
@@ -95,6 +106,9 @@ struct ResizeOverlay: View {
         ""
       }
     }
+    .onLongPressGesture(minimumDuration: 0) {
+      focusedField = nil
+    }
   }
 
   @ViewBuilder private func pixelScaleView() -> some View {
@@ -109,6 +123,9 @@ struct ResizeOverlay: View {
       Text(viewModel.formatValue(element) + formatExtension)
     } label: { element in
       "\(viewModel.formatValue(element ?? 0) + formatExtension)"
+    }
+    .onLongPressGesture(minimumDuration: 0) {
+      focusedField = nil
     }
   }
 }

@@ -66,7 +66,7 @@ public extension IMGLY where Wrapped: View {
   ///              cancel them when the editor closes to avoid memory leaks.
   /// - Parameter onLoaded: The callback.
   /// - Returns: A view that has the given callback set.
-  @_spi(Internal) func onLoaded(_ onLoaded: @escaping OnLoaded.Callback) -> some View {
+  func onLoaded(_ onLoaded: @escaping OnLoaded.Callback) -> some View {
     wrapped.environment(\.imglyOnLoaded, onLoaded)
   }
 
