@@ -97,7 +97,11 @@ public enum OnCheck {
             }
 
             eventHandler.send(.openSheet(
-                type: SheetTypes.Custom(style: .default(detents: [.height(sheetHeight)]), content: sheetContent)
+                type: SheetTypes.Custom(
+                    style: .default(detents: [.height(sheetHeight)]),
+                    content: sheetContent,
+                    associatedEditMode: nil
+                )
             ))
         }
     }
