@@ -37,6 +37,7 @@ import SwiftUI
   var isPreviewMode: Bool { viewMode == .preview }
   var isPagesMode: Bool { viewMode == .pages }
   @Published private(set) var isExporting = false
+  var exportCanceled = false
   @Published @_spi(Internal) public private(set) var isAddingAsset = false
 
   @Published var error = AlertState()
@@ -1212,6 +1213,7 @@ extension Interactor {
   }
 
   func cancelExport() {
+    exportCanceled = true
     exportTask?.cancel()
   }
 

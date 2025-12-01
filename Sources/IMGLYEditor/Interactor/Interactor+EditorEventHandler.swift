@@ -56,11 +56,16 @@ extension Interactor: EditorEventHandler {
     case is EditorEvents.Export.Cancel:
       cancelExport()
     case let event as EditorEvents.Export.Progress:
+      exportCanceled = false
       showExportSheet(.exporting(event.progress) { [weak self] in
         self?.cancelExport()
         self?.hideExportSheet()
       })
     case let event as EditorEvents.Export.Completed:
+        guard !exportCanceled else {
+          return
+        }
+
       showExportSheet(.completed { [weak self] in
         event.action()
         self?.hideExportSheet() // Must be run after `action()` in case action contains `.shareFile` event!
