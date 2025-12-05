@@ -12,6 +12,7 @@ import SwiftUI
   /// By default, the `DesignEditor` will export PDFs.
   /// If this flag is set, it will export PNGs instead.
   case exportPNGInDesignEditor
+  case photoRollOptIn
 
   fileprivate var isInitiallyEnabled: Bool {
     switch self {

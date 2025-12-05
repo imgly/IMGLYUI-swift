@@ -6847,23 +6847,6 @@
         }
       }
     },
-    "ly_img_editor_timeline_add_clip_option_photo_roll" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo Roll"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photo Roll"
-          }
-        }
-      }
-    },
     "ly_img_editor_timeline_button_add_audio" : {
       "extractionState" : "manual",
       "localizations" : {

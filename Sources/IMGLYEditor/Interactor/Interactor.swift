@@ -1950,6 +1950,41 @@ extension Interactor {
     let canRedo = (try? engine.editor.canRedo()) ?? false
     self.canRedo = canRedo // Keep this as it is used to trigger UI updates
   }
+
+  func openImagePicker(_ assetSourceIDs: [MediaType: String]) {
+    pause()
+    uploadAssetSourceIDs = assetSourceIDs
+    isImagePickerShown = true
+    sheet.content = .clip // Set to clip to add to background track
+  }
+
+  func openPhotoRoll() {
+    pause()
+    if isPhotoRollFullLibraryAccessEnabled {
+      Task { @MainActor in
+        if PhotoLibraryAuthorizationManager.shared.authorizationStatus == .notDetermined {
+          await PhotoLibraryAuthorizationManager.shared.requestPermission()
+        }
+        do {
+          try engine?.block.deselectAll()
+          // Ensure that the deselect event comes before opening the sheet, otherwise the sheet closes immediately.
+          try await Task.sleep(for: .milliseconds(100))
+          let content = SheetContent.clip
+          sheet = .init(.libraryAdd { DefaultAssetLibrary.photoRollTab }, content)
+        } catch {
+          handleError(error)
+        }
+      }
+    } else {
+      pause()
+      uploadAssetSourceIDs = [
+        .image: PhotoRollAssetSource.id,
+        .movie: PhotoRollAssetSource.id,
+      ]
+      isImagePickerShown = true
+      sheet.content = .clip // Set to clip to add to background track
+    }
+  }
 }
 
 // Keep extension private or move to IMGLYCore(UI) with all dependencies.

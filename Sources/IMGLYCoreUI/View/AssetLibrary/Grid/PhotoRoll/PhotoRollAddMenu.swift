@@ -4,7 +4,6 @@ import SwiftUI
 import UIKit
 
 struct PhotoRollAddMenu<Label: View>: View {
-  @Environment(\.imglyAssetLibrarySources) private var sources
   @EnvironmentObject private var interactor: AnyAssetLibraryInteractor
   @State private var showCamera = false
   @State private var showLimitedLibraryPicker = false
@@ -29,8 +28,6 @@ struct PhotoRollAddMenu<Label: View>: View {
 
   private var mediaCompletion: MediaCompletion {
     { result in
-      guard let source = sources.first else { return }
-
       Task {
         let results = try result.get()
         guard let (url, mediaType) = results.first else { return }
@@ -38,10 +35,9 @@ struct PhotoRollAddMenu<Label: View>: View {
         let assetResult = try await PhotoRollAssetService.default.saveMediaAndConvert(
           url: url,
           mediaType: mediaType.photoRollMediaType.phAssetMediaType,
-          sourceID: source.id,
         )
 
-        interactor.assetTapped(sourceID: source.id, asset: assetResult)
+        interactor.assetTapped(sourceID: PhotoRollAssetSource.id, asset: assetResult)
       }
     }
   }

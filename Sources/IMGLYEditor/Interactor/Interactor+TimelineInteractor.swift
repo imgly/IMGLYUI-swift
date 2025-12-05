@@ -1156,40 +1156,11 @@ extension Interactor: TimelineInteractor {
     }
   }
 
-  // MARK: - Photo Roll
-
   func openSystemCamera(_ assetSourceIDs: [MediaType: String]) {
     pause()
     uploadAssetSourceIDs = assetSourceIDs
     isSystemCameraShown = true
     sheet.content = .clip // Set to clip to add to background track
-  }
-
-  func openImagePicker(_ assetSourceIDs: [MediaType: String]) {
-    pause()
-    uploadAssetSourceIDs = assetSourceIDs
-    isImagePickerShown = true
-    sheet.content = .clip // Set to clip to add to background track
-  }
-
-  // MARK: - Photo Roll
-
-  func openPhotoRoll() {
-    pause()
-    Task { @MainActor in
-      if PhotoLibraryAuthorizationManager.shared.authorizationStatus == .notDetermined {
-        await PhotoLibraryAuthorizationManager.shared.requestPermission()
-      }
-      do {
-        try engine?.block.deselectAll()
-        // Ensure that the deselect event comes before opening the sheet, otherwise the sheet closes immediately.
-        try await Task.sleep(for: .milliseconds(100))
-        let content = SheetContent.clip
-        sheet = .init(.libraryAdd { DefaultAssetLibrary.photoRollTab }, content)
-      } catch {
-        handleError(error)
-      }
-    }
   }
 
   func addAssetsFromImagePicker(_ assets: [(URL, MediaType)]) {

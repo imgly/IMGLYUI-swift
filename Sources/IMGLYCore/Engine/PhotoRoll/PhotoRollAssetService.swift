@@ -12,6 +12,9 @@ import IMGLYEngine
   private var assetResultCacheStorage = [String: AssetResult]()
   private var assetResultCacheOrder = [String]()
 
+  /// Storage for uploaded assets when in photos picker mode (opted-out)
+  private nonisolated(unsafe) var uploadedAssets: [AssetDefinition] = []
+
   @_spi(Internal) public init(
     maxCacheSize: Int = 500,
     thumbnailTargetSize: CGSize = .init(width: 250, height: 250)
@@ -20,13 +23,26 @@ import IMGLYEngine
     self.thumbnailTargetSize = thumbnailTargetSize
   }
 
-  @_spi(Internal) public func saveMediaAndConvert(url: URL, mediaType: PHAssetMediaType,
-                                                  sourceID: String) async throws -> AssetResult {
-    let savedAsset = try await photoLibraryService.saveMediaAndFetch(url: url, mediaType: mediaType)
-    return try await convertToAssetResult(savedAsset, sourceID: sourceID)
+  /// Add an uploaded asset to storage (for photos picker mode)
+  @_spi(Internal) public nonisolated func addUploadedAsset(_ asset: AssetDefinition) {
+    uploadedAssets.append(asset)
   }
 
-  @_spi(Internal) public func findAssets(queryData: AssetQueryData, sourceID: String) async throws -> AssetQueryResult {
+  @_spi(Internal) public func saveMediaAndConvert(url: URL, mediaType: PHAssetMediaType) async throws -> AssetResult {
+    let savedAsset = try await photoLibraryService.saveMediaAndFetch(url: url, mediaType: mediaType)
+    return try await convertToAssetResult(savedAsset)
+  }
+
+  @_spi(Internal) public func findAssets(
+    queryData: AssetQueryData,
+    mode: PhotoRollAssetSourceMode,
+  ) async throws -> AssetQueryResult {
+    // If photos picker mode, return uploaded assets instead of PHAssets
+    if mode == .photosPicker {
+      return await findUploadedAssets(queryData: queryData)
+    }
+
+    // Full photo library mode - return PHAssets
     let authorizationStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
     guard authorizationStatus == .authorized || authorizationStatus == .limited else {
       return AssetQueryResult(
@@ -64,7 +80,7 @@ import IMGLYEngine
 
     let assetSubset = assets.objects(at: IndexSet(integersIn: startIndex ..< endIndex))
     let assetResults = try await assetSubset.concurrentMap { asset in
-      try await self.convertToAssetResult(asset, sourceID: sourceID)
+      try await self.convertToAssetResult(asset)
     }
 
     return AssetQueryResult(
@@ -117,7 +133,7 @@ import IMGLYEngine
     }
   }
 
-  private func convertToAssetResult(_ phAsset: PHAsset, sourceID: String) async throws -> AssetResult {
+  private func convertToAssetResult(_ phAsset: PHAsset) async throws -> AssetResult {
     if let cachedResult = assetResultCacheStorage[phAsset.localIdentifier] {
       return cachedResult
     }
@@ -148,7 +164,7 @@ import IMGLYEngine
       locale: "en",
       label: "\(phAsset.mediaType == .image ? "Photo" : "Video") from \(dateFormatter.string(from: creationDate))",
       meta: meta,
-      context: .init(sourceID: sourceID),
+      context: .init(sourceID: PhotoRollAssetSource.id),
     )
 
     addAssetResultToCache(result, with: phAsset.localIdentifier)
@@ -183,5 +199,62 @@ import IMGLYEngine
       assetResultCacheStorage.removeValue(forKey: oldest)
       assetResultCacheOrder.removeFirst()
     }
+  }
+
+  // Return uploaded assets when in photos picker mode (opted-out)
+  private func findUploadedAssets(queryData: AssetQueryData) async -> AssetQueryResult {
+    var assets = [AssetDefinition]()
+    var totalCount = 0
+
+    // If querying for a specific asset by ID, don't filter by media type.
+    // This is used by the upload flow (AssetLibraryInteractor.uploadAsset) which adds an asset
+    // and immediately retrieves it using findAssets with the asset ID as the query parameter.
+    if let query = queryData.query, !query.isEmpty {
+      if let uploadedAsset = uploadedAssets.first(where: { $0.id == query }) {
+        assets.append(uploadedAsset)
+      }
+      totalCount = assets.count
+    } else {
+      // Filter by media types if groups are specified
+      var filteredAssets = uploadedAssets
+      if let groups = queryData.groups {
+        let mediaTypes = PhotoRollMediaType.from(strings: groups)
+        filteredAssets = uploadedAssets.filter { asset in
+          guard let kind = asset.meta?["kind"] else { return false }
+          return mediaTypes.contains { $0.rawValue == kind }
+        }
+      }
+
+      totalCount = filteredAssets.count
+
+      // Apply pagination
+      let page = queryData.page
+      let perPage = queryData.perPage
+      let startIndex = page * perPage
+      let endIndex = min(startIndex + perPage, totalCount)
+
+      assets = startIndex < filteredAssets.count ? Array(filteredAssets[startIndex ..< endIndex]) : []
+    }
+
+    let page = queryData.page
+    let perPage = queryData.perPage
+    let totalPages = totalCount > 0 ? Int(ceil(Double(totalCount) / Double(perPage))) : 0
+    let nextPage = (page + 1) >= totalPages ? -1 : page + 1
+
+    // Convert AssetDefinition to AssetResult
+    let assetResults = assets.map { definition -> AssetResult in
+      AssetResult(
+        id: definition.id,
+        meta: definition.meta,
+        context: .init(sourceID: PhotoRollAssetSource.id),
+      )
+    }
+
+    return AssetQueryResult(
+      assets: assetResults,
+      currentPage: page,
+      nextPage: nextPage,
+      total: totalCount,
+    )
   }
 }

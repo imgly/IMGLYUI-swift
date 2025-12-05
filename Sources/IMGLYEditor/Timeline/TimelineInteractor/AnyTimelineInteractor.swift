@@ -138,14 +138,6 @@ class AnyTimelineInteractor: TimelineInteractor {
     interactor.openCamera(assetSourceIDs)
   }
 
-  func openImagePicker(_ assetSourceIDs: [MediaType: String]) {
-    interactor.openImagePicker(assetSourceIDs)
-  }
-
-  func openPhotoRoll() {
-    interactor.openPhotoRoll()
-  }
-
   private let interactor: any TimelineInteractor
 
   init(erasing interactor: some TimelineInteractor) {

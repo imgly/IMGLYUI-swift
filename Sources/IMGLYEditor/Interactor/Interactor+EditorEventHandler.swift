@@ -107,7 +107,7 @@ extension Interactor: EditorEventHandler {
 
     // MARK: - AddFrom
     case let event as EditorEvents.AddFrom.PhotoRoll:
-      openImagePicker(event.assetSourceIDs)
+      openPhotoRoll()
     case let event as EditorEvents.AddFrom.SystemPhotoRoll:
       openImagePicker(event.assetSourceIDs)
     case is EditorEvents.AddFrom.IMGLYPhotoRoll:

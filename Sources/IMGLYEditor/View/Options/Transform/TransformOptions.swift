@@ -47,6 +47,7 @@ struct TransformOptions<Item: View>: View {
       }
       .imgly.assetGrid(messageTextOnly: true)
       .imgly.assetGrid(sourcePadding: 16)
+      .imgly.assetGrid(shouldShowSingleItem: false)
       .imgly.assetLoader(sources: viewModel.sources, search: $viewModel.query, order: .sorted, perPage: 65)
       .environmentObject(searchState)
       .frame(height: viewModel.assetGridHeight)

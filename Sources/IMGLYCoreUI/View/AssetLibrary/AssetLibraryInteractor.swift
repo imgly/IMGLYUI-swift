@@ -182,3 +182,11 @@ private func getSizeAndThumb(url: URL, thumbURL: URL?, fillType: FillType) async
     throw Error(errorDescription: "Unsupported block type for upload.")
   }
 }
+
+// MARK: - PhotoRoll
+
+@_spi(Internal) public extension AssetLibraryInteractor {
+  var isPhotoRollFullLibraryAccessEnabled: Bool {
+    getCredits(sourceID: PhotoRollAssetSource.id)?.photoRollAssetSourceMode == .fullLibraryAccess
+  }
+}

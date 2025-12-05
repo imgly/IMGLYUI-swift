@@ -201,21 +201,26 @@ public extension EditorEvents.AddFrom {
     .movie: Engine.DemoAssetSource.videoUpload.rawValue,
   ] }
 
-  /// An event for adding assets from the system photo roll.
-  @available(*, deprecated, message: """
-  Deprecated in v1.60.0. Please see the changelog for migration details:
-  https://img.ly/docs/cesdk/changelog/v1-60-0/
-  """)
-  struct PhotoRoll: EditorEvent {
-    let assetSourceIDs: [MediaType: String]
-  }
+  /// An event for adding assets from the photo roll.
+  /// The behavior depends on the mode passed to ``PhotoRollAssetSource``:
+  /// - `photosPicker` (default): Opens system photos picker (no permissions required)
+  /// - `fullLibraryAccess`: Opens full photo library (requires permissions)
+  struct PhotoRoll: EditorEvent {}
 
   /// An event for adding assets from the system photo roll.
+  @available(*, deprecated, message: """
+  Deprecated in v1.66.0. Please see the changelog for migration details:
+  https://img.ly/docs/cesdk/changelog/v1-66-0/
+  """)
   struct SystemPhotoRoll: EditorEvent {
     let assetSourceIDs: [MediaType: String]
   }
 
   /// An event for adding assets from the photo roll library sheet.
+  @available(*, deprecated, message: """
+  Deprecated in v1.66.0. Please see the changelog for migration details:
+  https://img.ly/docs/cesdk/changelog/v1-66-0/
+  """)
   struct IMGLYPhotoRoll: EditorEvent {}
 
   /// An event for adding assets from the system camera.
@@ -317,19 +322,14 @@ public extension EditorEvent where Self == EditorEvents.Selection.SendBackward {
 }
 
 public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {
-  /// Creates an ``EditorEvent`` to add assets from the system photo roll.
-  /// - Parameter assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
-  /// ``MediaType``.
+  /// Creates an ``EditorEvent`` to add assets from the photo roll.
+  ///
+  /// The behavior depends on the mode passed to ``PhotoRollAssetSource``:
+  /// - `photosPicker` (default): Opens system photos picker (no permissions required)
+  /// - `fullLibraryAccess`: Opens full photo library (requires permissions)
+  ///
   /// - Returns: The created ``EditorEvents/AddFrom/PhotoRoll`` event.
-  @available(*, deprecated, message: """
-  Deprecated in v1.60.0. Please see the changelog for migration details:
-  https://img.ly/docs/cesdk/changelog/v1-60-0/
-  """)
-  static func addFromPhotoRoll(
-    to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
-  ) -> Self {
-    Self(assetSourceIDs: assetSourceIDs)
-  }
+  static var addFromPhotoRoll: Self { Self() }
 }
 
 public extension EditorEvent where Self == EditorEvents.AddFrom.SystemPhotoRoll {
@@ -337,6 +337,10 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.SystemPhotoRoll 
   /// - Parameter assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
   /// ``MediaType``.
   /// - Returns: The created ``EditorEvents/AddFrom/SystemPhotoRoll`` event.
+  @available(*, deprecated, message: """
+  Deprecated in v1.66.0. Please see the changelog for migration details:
+  https://img.ly/docs/cesdk/changelog/v1-66-0/
+  """)
   static func addFromSystemPhotoRoll(
     to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
   ) -> Self {
@@ -347,6 +351,10 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.SystemPhotoRoll 
 public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYPhotoRoll {
   /// Creates an ``EditorEvent`` to add assets from the photo roll library sheet.
   /// - Returns: The created ``EditorEvents/AddFrom/IMGLYPhotoRoll`` event.
+  @available(*, deprecated, message: """
+  Deprecated in v1.66.0. Please see the changelog for migration details:
+  https://img.ly/docs/cesdk/changelog/v1-66-0/
+  """)
   static var addFromIMGLYPhotoRoll: Self { Self() }
 }
 

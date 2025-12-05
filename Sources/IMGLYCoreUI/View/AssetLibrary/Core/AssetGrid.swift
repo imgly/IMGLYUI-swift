@@ -25,6 +25,7 @@ extension EnvironmentValues {
   @Entry var imglyAssetGridItemIndex: AssetGridItemIndex = { _ in nil }
   @Entry var imglyAssetGridOnAppear: AssetGridOnAppear = { _ in }
   @Entry var imglyAssetGridExcludedSources = Set<String>()
+  @Entry var imglyAssetGridShouldShowSingleItem: Bool = true
 }
 
 @_spi(Internal) public struct AssetGrid<Item: View, Empty: View, First: View, More: View>: View {
@@ -42,6 +43,7 @@ extension EnvironmentValues {
   @Environment(\.imglyAssetGridItemIndex) private var itemIndex
   @Environment(\.imglyAssetGridOnAppear) private var onAppear
   @Environment(\.imglyAssetGridExcludedSources) private var excludedSources
+  @Environment(\.imglyAssetGridShouldShowSingleItem) private var shouldShowSingleItem
 
   @ViewBuilder private let item: (AssetItem) -> Item
   @ViewBuilder private let empty: (_ search: String) -> Empty
@@ -168,7 +170,7 @@ extension EnvironmentValues {
         .filter { !excludedSources.contains($0.sourceID) }
         .prefix(maxItemCount)
         .enumerated())
-      if items.count > 1 {
+      if items.count != 1 || shouldShowSingleItem {
         ForEach(items, id: \.element.id) { index, asset in
           let padding: CGFloat = {
             if index > 0 {

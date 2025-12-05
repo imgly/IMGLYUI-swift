@@ -4,6 +4,7 @@ import SwiftUI
 /// An accessory view for photo roll assets that displays either an add menu button when photo library access is
 /// authorized, or a permissions request button when access is not yet granted.
 public struct PhotoRollAccessory: View {
+  @EnvironmentObject private var interactor: AnyAssetLibraryInteractor
   @StateObject private var photoLibraryManager = PhotoLibraryAuthorizationManager.shared
   @EnvironmentObject private var configuration: AssetLibrarySectionConfiguration
   private let media: [PhotoRollMediaType]
@@ -16,12 +17,18 @@ public struct PhotoRollAccessory: View {
 
   public var body: some View {
     HStack {
-      if photoLibraryManager.isAuthorized {
-        PhotoRollAddMenu(media: media) {
-          AddLabel()
+      if interactor.isPhotoRollFullLibraryAccessEnabled {
+        if photoLibraryManager.isAuthorized {
+          PhotoRollAddMenu(media: media) {
+            AddLabel()
+          }
+        } else {
+          PhotoRollPermissionsButton()
         }
       } else {
-        PhotoRollPermissionsButton()
+        UploadMenu(media: media.map(\.mediaType)) {
+          AddLabel()
+        }
       }
     }
     .onAppear(perform: updateConfiguration)
@@ -31,6 +38,7 @@ public struct PhotoRollAccessory: View {
   }
 
   func updateConfiguration() {
-    configuration.isNavigationAllowed = photoLibraryManager.isAuthorized
+    configuration.isNavigationAllowed = interactor.isPhotoRollFullLibraryAccessEnabled ? photoLibraryManager
+      .isAuthorized : true
   }
 }

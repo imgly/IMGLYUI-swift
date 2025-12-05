@@ -13,6 +13,8 @@ import SwiftUI
 
   @ViewBuilder private let label: () -> Label
 
+  @Feature(.photosPickerMultiSelect) private var isPhotosPickerMultiSelectEnabled: Bool
+
   @_spi(Internal) public init(media: [MediaType], @ViewBuilder label: @escaping () -> Label) {
     self.media = media
     self.label = label
@@ -34,6 +36,10 @@ import SwiftUI
         }
       }
     }
+  }
+
+  private var maxSelectionCount: Int? {
+    isPhotosPickerMultiSelectEnabled ? nil : 1
   }
 
   private enum Action {
@@ -95,7 +101,12 @@ import SwiftUI
     } label: {
       label()
     }
-    .imgly.photoRoll(isPresented: $showImagePicker, media: media, maxSelectionCount: 1, onComplete: mediaCompletion)
+    .imgly.photoRoll(
+      isPresented: $showImagePicker,
+      media: media,
+      maxSelectionCount: maxSelectionCount,
+      onComplete: mediaCompletion,
+    )
     .imgly.camera(isPresented: $showCamera, media: media, onComplete: mediaCompletion)
     .imgly.assetFileUploader(isPresented: $showFileImporter, allowedContentTypes: media.map(\.contentType))
   }

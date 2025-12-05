@@ -31,14 +31,18 @@ public extension Dock.Buttons.ID {
   static var stickersAndShapesLibrary: EditorComponentID { "ly.img.component.dock.button.stickersAndShapesLibrary" }
 
   /// The id of the ``Dock/Buttons/photoRoll(action:title:icon:isEnabled:isVisible:)`` button.
-  @available(*, deprecated, message: """
-  Deprecated in v1.60.0. Please see the changelog for migration details:
-  https://img.ly/docs/cesdk/changelog/v1-60-0/
-  """)
   static var photoRoll: EditorComponentID { "ly.img.component.dock.button.photoRoll" }
   /// The id of the ``Dock/Buttons/systemPhotoRoll(action:title:icon:isEnabled:isVisible:)`` button.
+  @available(*, deprecated, message: """
+  Deprecated in v1.66.0. Please see the changelog for migration details:
+  https://img.ly/docs/cesdk/changelog/v1-66-0/
+  """)
   static var systemPhotoRoll: EditorComponentID { "ly.img.component.dock.button.systemPhotoRoll" }
   /// The id of the ``Dock/Buttons/imglyPhotoRoll(action:title:icon:isEnabled:isVisible:)`` button.
+  @available(*, deprecated, message: """
+  Deprecated in v1.66.0. Please see the changelog for migration details:
+  https://img.ly/docs/cesdk/changelog/v1-66-0/
+  """)
   static var imglyPhotoRoll: EditorComponentID { "ly.img.component.dock.button.imglyPhotoRoll" }
   /// The id of the ``Dock/Buttons/systemCamera(action:title:icon:isEnabled:isVisible:)`` button.
   static var systemCamera: EditorComponentID { "ly.img.component.dock.button.systemCamera" }
@@ -301,23 +305,25 @@ public extension Dock.Buttons {
     }, isEnabled: isEnabled, isVisible: isVisible)
   }
 
-  /// Creates a ``Dock/Button`` that opens the system photo roll.
+  /// Creates a ``Dock/Button`` that opens the photo roll.
+  ///
+  /// By default, this button opens a system photos picker (no permissions required).
+  /// To enable full photo library access, use ``PhotoRollAssetSource`` with `mode: .fullLibraryAccess`
+  /// in your ``OnCreate`` callback.
+  ///
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
-  /// ``EditorEvent/addFromPhotoRoll(to:)`` event is invoked.
+  ///   invokes ``EditorEvent/addFromPhotoRoll`` which internally determines behavior based on the
+  ///   ``PhotoRollAssetSourceMode`` used when creating the ``PhotoRollAssetSource``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_dock_button_photo_roll` is used.
+  ///   `ly_img_editor_dock_button_photo_roll` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
-  /// ``IMGLY/addPhotoRollForeground``  or ``IMGLY/addPhotoRollBackground`` is used depending on the scene mode.
+  ///   ``IMGLY/addPhotoRollForeground``  or ``IMGLY/addPhotoRollBackground`` is used depending on the scene mode.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
-  @available(*, deprecated, message: """
-  Deprecated in v1.60.0. Please see the changelog for migration details:
-  https://img.ly/docs/cesdk/changelog/v1-60-0/
-  """)
   static func photoRoll(
-    action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.addFromPhotoRoll()) },
+    action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.addFromPhotoRoll) },
     @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
       Text(.imgly.localized("ly_img_editor_dock_button_photo_roll"))
     },
@@ -346,6 +352,10 @@ public extension Dock.Buttons {
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
+  @available(*, deprecated, message: """
+  Deprecated in v1.66.0. Please see the changelog for migration details:
+  https://img.ly/docs/cesdk/changelog/v1-66-0/
+  """)
   static func systemPhotoRoll(
     action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.addFromSystemPhotoRoll()) },
     @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
@@ -377,6 +387,10 @@ public extension Dock.Buttons {
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
+  @available(*, deprecated, message: """
+  Deprecated in v1.66.0. Please see the changelog for migration details:
+  https://img.ly/docs/cesdk/changelog/v1-66-0/
+  """)
   static func imglyPhotoRoll(
     action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.addFromIMGLYPhotoRoll) },
     @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in

@@ -83,7 +83,8 @@ public extension View {
     -> some View { wrapped.environment(\.imglyAssetGridOnAppear, onAppear) }
   func assetGrid(excludedSources: Set<String>)
     -> some View { wrapped.environment(\.imglyAssetGridExcludedSources, excludedSources) }
-
+  func assetGrid(shouldShowSingleItem: Bool)
+    -> some View { wrapped.environment(\.imglyAssetGridShouldShowSingleItem, shouldShowSingleItem) }
   @MainActor
   func buildInfo(ciBuildsHost: String, githubRepo: String) -> some View {
     wrapped.safeAreaInset(edge: .bottom, spacing: 0) {

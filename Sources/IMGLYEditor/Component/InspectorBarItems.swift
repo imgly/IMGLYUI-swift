@@ -119,7 +119,7 @@ public extension InspectorBar.Buttons {
         }
       }
       return if let backgroundTrack = context.selection.parentBlock,
-                try context.engine.block.isValid(backgroundTrack),
+                context.engine.block.isValid(backgroundTrack),
                 try context.engine.block.getChildren(backgroundTrack).count > 1,
                 try isBackgroundTrack(backgroundTrack) {
         true

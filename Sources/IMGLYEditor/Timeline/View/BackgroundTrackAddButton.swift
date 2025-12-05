@@ -1,4 +1,5 @@
 import SwiftUI
+@_spi(Internal) import IMGLYCore
 
 /// A call-to-action button that sits next to the timeline and opens a menu.
 struct BackgroundTrackAddButton: View {
@@ -82,12 +83,8 @@ struct BackgroundTrackAddButton: View {
     switch option {
     case .camera:
       interactor.openCamera(EditorEvents.AddFrom.defaultAssetSourceIDs)
-    case .systemPhotoRoll:
-      interactor.openImagePicker(EditorEvents.AddFrom.defaultAssetSourceIDs)
     case .library:
       interactor.addAssetToBackgroundTrack()
-    case .imglyPhotoRoll:
-      interactor.openPhotoRoll()
     }
   }
 
