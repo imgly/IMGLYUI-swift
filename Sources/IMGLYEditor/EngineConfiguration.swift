@@ -10,6 +10,10 @@ import SwiftUI
 
 /// A namespace for `onCreate` callbacks.
 public enum OnCreate {
+
+  @MainActor
+  public static var sceneCreatingTracker: SceneCreatingTracker = .idle
+
   /// The callback type.
   public typealias Callback = @MainActor (_ engine: Engine) async throws -> Void
 
@@ -358,4 +362,10 @@ public enum OnLoaded {
 @_spi(Internal) public struct EngineConfiguration {
   @_spi(Internal) public let settings: EngineSettings
   @_spi(Internal) public let callbacks: EngineCallbacks
+}
+
+public enum SceneCreatingTracker: Sendable {
+    case idle
+    case inProgress
+    case created
 }

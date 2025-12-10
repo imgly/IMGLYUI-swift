@@ -1231,6 +1231,10 @@ extension Interactor {
                                                     canvasGeometry: Geometry?,
                                                     sheetGeometry: Geometry?,
                                                     layoutDirection: LayoutDirection?)) {
+    guard OnCreate.sceneCreatingTracker != .inProgress else {
+        return
+    }
+
     let zoomParameters = zoomParameters(
       zoomPadding: zoom.zoomPadding,
       canvasGeometry: zoom.canvasGeometry,
