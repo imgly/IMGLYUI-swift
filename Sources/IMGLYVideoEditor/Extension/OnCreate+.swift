@@ -27,13 +27,9 @@ public extension OnCreate {
         size: CGSize? = nil,
         maxTrimmingDuration: Double? = nil
     ) -> Callback {
-        Task { @MainActor in OnCreate.sceneCreatingTracker = .inProgress }
-
         return { engine in
             try await engine.createScene(from: result, size: size, maxTrimmingDuration: maxTrimmingDuration)
             try await loadAssetSources(engine)
-
-            Task { @MainActor in OnCreate.sceneCreatingTracker = .created }
         }
     }
 }
