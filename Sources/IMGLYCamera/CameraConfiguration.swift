@@ -15,9 +15,9 @@ public struct CameraConfiguration {
   public init(
     recordingColor: Color = .pink,
     highlightColor: Color = .pink,
-    maxTotalDuration: TimeInterval = .infinity,
+    maxTotalDuration: TimeInterval = 60,
     allowExceedingMaxDuration: Bool = false,
-    allowModeSwitching: Bool = true
+    allowModeSwitching: Bool = false
   ) {
     self.recordingColor = recordingColor
     self.highlightColor = highlightColor
