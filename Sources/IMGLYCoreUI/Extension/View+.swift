@@ -102,6 +102,12 @@ public extension View {
   func shimmer() -> some View {
     wrapped.modifier(Shimmer())
   }
+
+  /// Calls the given closure when the view is truly dismissed (not just covered by another view).
+  @MainActor
+  func onDismiss(_ perform: @escaping () -> Void) -> some View {
+    wrapped.background(DismissHandler(onDismiss: perform))
+  }
 }
 
 extension IMGLY where Wrapped: View {

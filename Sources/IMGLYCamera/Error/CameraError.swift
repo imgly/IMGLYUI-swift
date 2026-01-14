@@ -11,7 +11,7 @@ extension CameraError: LocalizedError {
   public var errorDescription: String? {
     switch self {
     case .cancelled:
-      "The user has cancelled the camera."
+      "The user has cancelled the camera or it was programmatically dismissed."
     case .permissionsMissing:
       "The user has denied camera or microphone access."
     case .failedToLoadVideo:

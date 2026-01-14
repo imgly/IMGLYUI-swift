@@ -186,6 +186,9 @@ public struct Camera: View {
       await camera.updatePermissions()
       camera.startStreaming()
     }
+    .imgly.onDismiss {
+      camera.cancel(error: .cancelled)
+    }
     .imgly.alert($camera.alertState)
   }
 

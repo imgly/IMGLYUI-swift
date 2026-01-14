@@ -26,14 +26,6 @@ private extension Font {
     regularFont ?? boldFont ?? italicFont ?? boldItalicFont ?? fonts.first
   }
 
-  @MainActor
-  var previewFontName: String? {
-    guard let previewFont else {
-      return nil
-    }
-    return FontImporter.registeredFonts[previewFont.uri]
-  }
-
   func font(for properties: FontProperties) -> IMGLYEngine.Font? {
     fonts.first { font in
       switch properties {

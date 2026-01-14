@@ -12,9 +12,12 @@ import SwiftUI
     let text = interactor.bindTextState(id, resetFontProperties: true)
 
     if let assetID = text.wrappedValue.assetID,
-       let typeface = fontLibrary.typefaceFor(id: assetID),
-       let fontName = typeface.previewFontName {
-      FontImage(font: .custom(fontName, size: 28))
+       let typeface = fontLibrary.typefaceFor(id: assetID) {
+      FontLoader(fontURL: typeface.previewFont?.uri) { fontName in
+        FontImage(font: .custom(fontName, size: 28))
+      } placeholder: {
+        FontImage(font: .custom("", size: 28))
+      }
     }
   }
 }

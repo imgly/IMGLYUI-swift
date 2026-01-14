@@ -25,36 +25,5 @@ class FontLibrary {
     ).assets.map {
       .init(sourceID: sourceID, result: $0)
     }
-
-    let unregisteredFonts = assets.compactMap {
-      if let url = $0.result.payload?.typeface?.previewFont?.uri, FontImporter.registeredFonts[url] == nil {
-        url
-      } else {
-        nil
-      }
-    }
-    let previewFontData = await Self.loadFontData(urls: unregisteredFonts)
-    _ = FontImporter.importFonts(previewFontData)
-  }
-
-  private static func loadFontData(urls: [URL]) async -> [URL: Data] {
-    await withThrowingTaskGroup(of: (URL, Data).self) { group -> [URL: Data] in
-      for url in urls {
-        group.addTask {
-          let (data, _) = try await URLSession.shared.data(from: url)
-          return (url, data)
-        }
-      }
-
-      var downloads = [URL: Data]()
-
-      while let result = await group.nextResult() {
-        if let download = try? result.get() {
-          downloads[download.0] = download.1
-        }
-      }
-
-      return downloads
-    }
   }
 }

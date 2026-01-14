@@ -101,6 +101,9 @@ final class CameraModel: ObservableObject {
 
   private var cancellables: Set<AnyCancellable> = []
 
+  // Property to track if dismissal is already in progress (prevents double cleanup)
+  private var isDismissalInProgress = false
+
   // MARK: - Lifecycle
 
   init(
@@ -145,6 +148,9 @@ final class CameraModel: ObservableObject {
   // MARK: - Callback
 
   func done() {
+    guard !isDismissalInProgress else { return }
+    isDismissalInProgress = true
+
     let cameraMode = cameraMode
     let reactionVideoDuration = reactionVideoDuration
     let clips = recordingsManager.clips
@@ -156,6 +162,9 @@ final class CameraModel: ObservableObject {
   }
 
   func cancel(error: CameraError? = nil) {
+    guard !isDismissalInProgress else { return }
+    isDismissalInProgress = true
+
     cleanUp()
     do {
       try recordingsManager.deleteAll()

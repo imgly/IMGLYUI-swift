@@ -35,9 +35,13 @@ struct TextFormatOptions: View {
       data: [fontLibrary.assets],
       selection: textReset.assetID,
     ) { asset, isSelected in
-      Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
-        .labelStyle(.icon(hidden: !isSelected,
-                          titleFont: .custom(asset.result.payload?.typeface?.previewFontName ?? "", size: 17)))
+      FontLoader(fontURL: asset.result.payload?.typeface?.previewFont?.uri) { fontName in
+        Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
+          .labelStyle(.icon(hidden: !isSelected, titleFont: .custom(fontName, size: 17)))
+      } placeholder: {
+        Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
+          .labelStyle(.icon(hidden: !isSelected, titleFont: .custom("", size: 17)))
+      }
     } linkLabel: { selection in
       Text(selection?.labelOrTypefaceName ?? "Unnamed Typeface")
     }
