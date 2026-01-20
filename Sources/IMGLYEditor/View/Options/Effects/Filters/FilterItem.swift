@@ -37,7 +37,8 @@ struct FilterItem: View {
 
   private var identifier: String? {
     if asset.sourceID == AssetSource.filterLut.rawValue {
-      return asset.result.url?.absoluteString
+      // Use asset.id for LUT filters - this matches the filterId stored in the engine
+      return asset.result.id
     }
     if let lightColor = asset.result.meta?["lightColor"], let darkColor = asset.result.meta?["darkColor"] {
       return "ly.filter.duotone.\(lightColor.lowercased()).\(darkColor.lowercased())"

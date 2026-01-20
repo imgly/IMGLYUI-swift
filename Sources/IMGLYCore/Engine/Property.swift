@@ -72,6 +72,7 @@ import Foundation
   case type
 
   case filterLUTFileURI = "effect/lut_filter/lutFileURI"
+  case filterLUTFilterId = "effect/lut_filter/filterId"
   case filterLUTVerticalTileCount = "effect/lut_filter/verticalTileCount"
   case filterLUTHorizontalTileCount = "effect/lut_filter/horizontalTileCount"
   case filterLUTIntensity = "effect/lut_filter/intensity"

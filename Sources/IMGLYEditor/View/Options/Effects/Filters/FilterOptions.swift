@@ -12,7 +12,15 @@ struct FilterOptions: View {
       let type = try? engine.block.getType(effect)
       return type?.isFilter ?? false
     }) {
-      if let sourceURL: String = try? engine.block.get(filter, property: .key(.filterLUTFileURI)) {
+      // For LUT filters, first try matching by filterId (works after archive load),
+      // fall back to lutFileURI for backwards compatibility
+      if let filterId: String = try? engine.block.get(filter, property: .key(.filterLUTFilterId)),
+         !filterId.isEmpty {
+        // Use filterId as the identifier - this is the asset ID that persists through archiving
+        let sourceURL: String? = try? engine.block.get(filter, property: .key(.filterLUTFileURI))
+        return AssetSelection(identifier: filterId, assetURL: sourceURL, id: filter)
+      } else if let sourceURL: String = try? engine.block.get(filter, property: .key(.filterLUTFileURI)) {
+        // Fallback to lutFileURI for filters created before filterId was added
         return AssetSelection(identifier: sourceURL, assetURL: sourceURL, id: filter)
       } else if let lightColor: CGColor = try? engine.block.get(filter, property: .key(.filterDuoToneLightColor)),
                 let darkColor: CGColor = try? engine.block.get(filter, property: .key(.filterDuoToneDarkColor)),
@@ -111,7 +119,8 @@ struct FilterOptions: View {
       }
       return "ly.filter.duotone.\(lightColor).\(darkColor)"
     } else {
-      return asset.result.url?.absoluteString
+      // Use asset.id for LUT filters - this matches the filterId stored in the engine
+      return asset.result.id
     }
   }
 }
