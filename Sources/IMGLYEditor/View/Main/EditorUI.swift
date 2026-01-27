@@ -99,8 +99,10 @@ import SwiftUI
         interactor.onWillDisappear()
       }
       .onDisappear {
-        interactor.onDisappear()
         interactivePopGestureRecognizer?.isEnabled = true
+      }
+      .imgly.onDismiss {
+        interactor.onDismiss()
       }
       .imgly.inspectorBarItems { context in
         if let inspectorBarItems {

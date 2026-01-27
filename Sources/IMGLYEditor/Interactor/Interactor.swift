@@ -249,10 +249,7 @@ import SwiftUI
     sheet.isPresented = false
   }
 
-  func onDisappear() {
-    guard !isSystemCameraShown else {
-      return
-    }
+  func onDismiss() {
     stateTask?.cancel()
     eventTask?.cancel()
     sceneTask?.cancel()
