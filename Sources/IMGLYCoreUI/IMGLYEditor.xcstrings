@@ -5028,6 +5028,23 @@
         }
       }
     },
+    "ly_img_editor_sheet_format_text_alignment_horizontal_option_auto" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richtung an Sprache anpassen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match Language Direction"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_format_text_alignment_horizontal_option_center" : {
       "extractionState" : "manual",
       "localizations" : {
