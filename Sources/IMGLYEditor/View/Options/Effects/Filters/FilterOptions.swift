@@ -12,16 +12,10 @@ struct FilterOptions: View {
       let type = try? engine.block.getType(effect)
       return type?.isFilter ?? false
     }) {
-      // For LUT filters, first try matching by filterId (works after archive load),
-      // fall back to lutFileURI for backwards compatibility
       if let filterId: String = try? engine.block.get(filter, property: .key(.filterLUTFilterId)),
          !filterId.isEmpty {
-        // Use filterId as the identifier - this is the asset ID that persists through archiving
         let sourceURL: String? = try? engine.block.get(filter, property: .key(.filterLUTFileURI))
         return AssetSelection(identifier: filterId, assetURL: sourceURL, id: filter)
-      } else if let sourceURL: String = try? engine.block.get(filter, property: .key(.filterLUTFileURI)) {
-        // Fallback to lutFileURI for filters created before filterId was added
-        return AssetSelection(identifier: sourceURL, assetURL: sourceURL, id: filter)
       } else if let lightColor: CGColor = try? engine.block.get(filter, property: .key(.filterDuoToneLightColor)),
                 let darkColor: CGColor = try? engine.block.get(filter, property: .key(.filterDuoToneDarkColor)),
                 let lightHex = try? lightColor.hex(),
@@ -44,6 +38,11 @@ struct FilterOptions: View {
       }
       let filter = try engine.block.createEffect(.lutFilter)
       try engine.block.set(filter, property: .key(.filterLUTFileURI), value: source)
+      // Set the filterId immediately so the UI can highlight the selected filter
+      // before the engine downloads the LUT file
+      if let filterId = value.identifier {
+        try engine.block.set(filter, property: .key(.filterLUTFilterId), value: filterId)
+      }
       let horizontalTileCount = Int(value.metadata?[.horizontalTileCount] ?? "5") ?? 5
       let verticalTileCount = Int(value.metadata?[.verticalTileCount] ?? "5") ?? 5
       try engine.block.set(filter, property: .key(.filterLUTHorizontalTileCount), value: horizontalTileCount)
@@ -119,7 +118,6 @@ struct FilterOptions: View {
       }
       return "ly.filter.duotone.\(lightColor).\(darkColor)"
     } else {
-      // Use asset.id for LUT filters - this matches the filterId stored in the engine
       return asset.result.id
     }
   }
