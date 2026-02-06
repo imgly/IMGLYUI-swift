@@ -116,16 +116,34 @@ struct TextFormatOptions: View {
 
   @ViewBuilder var alignmentSelection: some View {
     Section {
-      HStack(spacing: 32) {
+      HStack {
         let alignmentX: Binding<HorizontalAlignment?> = interactor.bind(id, property: .key(.textHorizontalAlignment))
-        PropertyButton(property: .left, selection: alignmentX)
-        PropertyButton(property: .center, selection: alignmentX)
-        PropertyButton(property: .right, selection: alignmentX)
+        let effectiveAlignmentX: HorizontalAlignment? = id.flatMap { blockID in
+          interactor.get(blockID) { engine, block in
+            let alignmentString = try engine.block.getTextEffectiveHorizontalAlignment(block)
+            return HorizontalAlignment(rawValue: alignmentString) ?? .left
+          }
+        }
+        HStack(spacing: 16) {
+          PropertyButton(property: .left, selection: alignmentX)
+          PropertyButton(property: .center, selection: alignmentX)
+          PropertyButton(property: .right, selection: alignmentX)
+          GenericPropertyButton(property: HorizontalAlignment.auto, selection: alignmentX) {
+            Label {
+              Text(HorizontalAlignment.auto.localizedStringResource)
+            } icon: {
+              Image(HorizontalAlignment.auto.autoImageName(forEffectiveAlignment: effectiveAlignmentX), bundle: .module)
+            }
+            .symbolRenderingMode(.monochrome)
+          }
+        }
         Spacer()
-        let alignmentY: Binding<VerticalAlignment?> = interactor.bind(id, property: .key(.textVerticalAlignment))
-        PropertyButton(property: .top, selection: alignmentY)
-        PropertyButton(property: .center, selection: alignmentY)
-        PropertyButton(property: .bottom, selection: alignmentY)
+        HStack(spacing: 16) {
+          let alignmentY: Binding<VerticalAlignment?> = interactor.bind(id, property: .key(.textVerticalAlignment))
+          PropertyButton(property: .top, selection: alignmentY)
+          PropertyButton(property: .center, selection: alignmentY)
+          PropertyButton(property: .bottom, selection: alignmentY)
+        }
       }
       .padding([.leading, .trailing], 16)
       .labelStyle(.iconOnly)

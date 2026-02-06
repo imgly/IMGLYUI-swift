@@ -101,7 +101,7 @@ extension TextAssetSource: AssetSource {
     }
 
     try engine.block.setString(id, property: "text/text", value: asset.label ?? "Text")
-    try engine.block.setEnum(id, property: "text/horizontalAlignment", value: "Center")
+    try engine.block.setEnum(id, property: "text/horizontalAlignment", value: "Auto")
     try engine.block.setHeightMode(id, mode: .auto)
     try engine.block.setWidthMode(id, mode: .absolute)
     try engine.block.setBool(id, property: "text/clipLinesOutsideOfFrame", value: false)

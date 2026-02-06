@@ -20,7 +20,21 @@ import Foundation
     case .left: "text.alignleft"
     case .center: "text.aligncenter"
     case .right: "text.alignright"
-    case .auto: "text.alignleft" // Auto uses left-align icon as fallback
+    case .auto: "custom.text.align.left.auto"
     }
+  }
+
+  @_spi(Internal) public var isSystemImage: Bool {
+    switch self {
+    case .auto: false
+    default: true
+    }
+  }
+
+  /// Returns the appropriate image name for Auto alignment based on the effective alignment.
+  /// - Parameter effectiveAlignment: The resolved alignment (Left or Right) for Auto alignment.
+  /// - Returns: The image name for the dynamic Auto icon.
+  @_spi(Internal) public func autoImageName(forEffectiveAlignment effectiveAlignment: HorizontalAlignment?) -> String {
+    effectiveAlignment == .right ? "custom.text.align.right.auto" : "custom.text.align.left.auto"
   }
 }
