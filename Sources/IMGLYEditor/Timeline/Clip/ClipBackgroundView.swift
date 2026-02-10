@@ -12,14 +12,22 @@ struct ClipBackgroundView: View {
   private let clip: Clip
   private let cornerRadius: CGFloat
   private let pointsTrimOffsetWidth: CGFloat
+  private let labelWidth: CGFloat
 
   // MARK: - Initializers
 
-  init(clip: Clip, cornerRadius: CGFloat, pointsTrimOffsetWidth: CGFloat, thumbnailsProvider: AnyThumbnailsProvider) {
+  init(
+    clip: Clip,
+    cornerRadius: CGFloat,
+    pointsTrimOffsetWidth: CGFloat,
+    thumbnailsProvider: AnyThumbnailsProvider,
+    labelWidth: CGFloat = 0
+  ) {
     self.clip = clip
     self.cornerRadius = cornerRadius
     self.pointsTrimOffsetWidth = pointsTrimOffsetWidth
     self.thumbnailsProvider = thumbnailsProvider
+    self.labelWidth = labelWidth
   }
 
   // MARK: - View
@@ -29,7 +37,6 @@ struct ClipBackgroundView: View {
       .fill(clip.configuration.backgroundColor)
       .overlay(alignment: .bottomLeading) {
         thumbnailView
-          .offset(x: pointsTrimOffsetWidth)
           .allowsHitTesting(false)
       }
       .mask {
@@ -42,18 +49,32 @@ struct ClipBackgroundView: View {
   @ViewBuilder
   private var thumbnailView: some View {
     switch thumbnailsProvider.provider {
-    case let thumbnailsAudioProvider as ThumbnailsAudioProvider:
+    case let provider as ThumbnailsAudioProvider:
+      // Audio needs additional offset to stay at its loaded time position.
+      // Outer offset (pointsTrimOffsetWidth) is already applied, so we add the difference.
+      let loadedTrimOffsetPoints = timeline.convertToPoints(time: provider.loadedTrimOffset)
+      let currentTrimOffsetPoints = timeline.convertToPoints(time: clip.trimOffset)
+      let audioOffset = loadedTrimOffsetPoints - currentTrimOffsetPoints + pointsTrimOffsetWidth
       ThumbnailsAudioView(
-        provider: thumbnailsAudioProvider,
+        provider: provider,
         isZooming: timeline.isPinchingZoom,
-        pointsTrimOffsetWidth: pointsTrimOffsetWidth,
         color: clip.configuration.color,
       )
-    case let thumbnailsImageProvider as ThumbnailsImageProvider:
-      ThumbnailsImageView(
-        provider: thumbnailsImageProvider,
+      .offset(x: audioOffset)
+    case let provider as ThumbnailsTextProvider:
+      ThumbnailsTextView(
+        provider: provider,
         isZooming: timeline.isPinchingZoom,
+        labelWidth: labelWidth,
       )
+    case let provider as ThumbnailsImageProvider:
+      ThumbnailsImageView(
+        provider: provider,
+        isZooming: timeline.isPinchingZoom,
+        labelWidth: labelWidth,
+        trimOffset: pointsTrimOffsetWidth,
+      )
+      .offset(x: pointsTrimOffsetWidth)
     default:
       EmptyView()
     }

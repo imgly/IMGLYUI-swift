@@ -19,6 +19,7 @@ struct ClipView: View {
   @State private var pointsDurationWidth: CGFloat = 0
   @State private var pointsTimeOffsetWidth: CGFloat = 0
   @State private var pointsTrimOffsetWidth: CGFloat = 0
+  @State private var labelWidth: CGFloat = 0
 
   private let clipSpacing: CGFloat
 
@@ -41,6 +42,7 @@ struct ClipView: View {
             cornerRadius: cornerRadius,
             pointsTrimOffsetWidth: 0,
             thumbnailsProvider: AnyThumbnailsProvider(erasing: thumbnailsProvider),
+            labelWidth: labelWidth,
           )
           .overlay {
             RoundedRectangle(cornerRadius: cornerRadius - 1)
@@ -57,7 +59,7 @@ struct ClipView: View {
         }
       }
       .opacity(clip.allowsSelecting ? 1 : 0.3)
-      .overlay(alignment: .topLeading) {
+      .overlay {
         if !isSelected {
           ClipLabelView(
             duration: nil,
@@ -68,6 +70,12 @@ struct ClipView: View {
             cornerRadius: cornerRadius - 2,
             isLooping: clip.isLooping,
           )
+        }
+      }
+      .onPreferenceChange(ClipLabelWidthKey.self) { width in
+        // Only update if changed to avoid unnecessary re-renders
+        if labelWidth != width {
+          labelWidth = width
         }
       }
       .clipped()
@@ -145,11 +153,11 @@ struct ClipView: View {
         RoundedRectangle(cornerRadius: configuration.cornerRadius)
           .stroke(configuration.clipSelectionColor, lineWidth: Metrics.borderWidthClip),
       )
-      .overlay(alignment: .topLeading) {
+      .overlay {
         ClipLabelView(
           duration: nil,
           icon: clip.configuration.icon,
-          title: clip.title.isEmpty ? clip.clipType.description : clip.title,
+          title: clip.clipType == .text ? "" : (clip.title.isEmpty ? clip.clipType.description : clip.title),
           isMuted: clip.audioVolume == 0 || clip.isMuted,
           isSelectable: clip.allowsSelecting,
           cornerRadius: configuration.cornerRadius,

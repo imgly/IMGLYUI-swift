@@ -19,8 +19,10 @@ struct KeyboardToolbar: View {
           .navigationBarTitleDisplayMode(.inline)
           .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-              Button("Done") {
+              Button {
                 interactor.keyboardBarDismissButtonTapped()
+              } label: {
+                Text(.imgly.localized("ly_img_editor_common_button_done"))
               }
               .font(.body.weight(.bold))
             }

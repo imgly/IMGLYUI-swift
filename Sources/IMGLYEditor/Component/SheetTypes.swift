@@ -112,6 +112,11 @@ public extension SheetTypes {
     public let style: SheetStyle
   }
 
+  /// A sheet that is used to control playback speed of clips.
+  struct ClipSpeed: SheetType {
+    public let style: SheetStyle
+  }
+
   /// A sheet that is used to control the text background properties.
   struct TextBackground: SheetType {
     public let style: SheetStyle
@@ -305,6 +310,13 @@ public extension SheetType where Self == SheetTypes.Volume {
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/Volume`` sheet
   static func volume(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self { Self(style: style) }
+}
+
+public extension SheetType where Self == SheetTypes.ClipSpeed {
+  /// Creates a ``SheetType`` that is used to control the playback speed of clips.
+  /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(detent:)`` style is used.
+  /// - Returns: The created ``SheetTypes/ClipSpeed`` sheet type.
+  static func clipSpeed(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self { Self(style: style) }
 }
 
 public extension SheetType where Self == SheetTypes.TextBackground {

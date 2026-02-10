@@ -65,6 +65,10 @@ class AnyTimelineInteractor: TimelineInteractor {
     try interactor.getAspectRatio(clip: clip)
   }
 
+  func getTextContent(id: DesignBlockID) throws -> String {
+    try interactor.getTextContent(id: id)
+  }
+
   func generateImagesThumbnails(
     clip: Clip,
     thumbHeight: CGFloat,

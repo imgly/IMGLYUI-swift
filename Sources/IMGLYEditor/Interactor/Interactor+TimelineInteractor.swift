@@ -387,6 +387,7 @@ extension Interactor: TimelineInteractor {
       }
 
       try setClipTimingProperties(clip)
+      try setClipPlaybackSpeedProperties(clip)
       try setClipTrimOffsetProperties(clip)
 
       try setClipAVResourceProperties(clip)
@@ -491,6 +492,18 @@ extension Interactor: TimelineInteractor {
        type == FillType.video.rawValue {
       let isLooping = try engine.block.isLooping(fill)
       clip.isLooping = isLooping
+    }
+  }
+
+  private func setClipPlaybackSpeedProperties(_ clip: Clip) throws {
+    guard let engine else { return }
+
+    if try engine.block.supportsPlaybackControl(clip.trimmableID) {
+      clip.playbackSpeed = try engine.block.getPlaybackSpeed(clip.trimmableID)
+    } else if try engine.block.supportsPlaybackControl(clip.id) {
+      clip.playbackSpeed = try engine.block.getPlaybackSpeed(clip.id)
+    } else {
+      clip.playbackSpeed = 1
     }
   }
 
@@ -664,7 +677,7 @@ extension Interactor: TimelineInteractor {
 
     timelineProperties.isScrubbing = true
     guard clip.clipType == .video, clip.allowsTrimming else { return }
-    guard let footageDuration = clip.footageDuration else { return }
+    guard let footageDuration = clip.effectiveFootageDuration else { return }
 
     addScrubbingPreviewLayer()
     guard let scrubbingPreviewLayer = timelineProperties.scrubbingPreviewLayer else { return }
@@ -689,7 +702,7 @@ extension Interactor: TimelineInteractor {
     guard let engine else { return }
     guard let scrubbingPreviewLayer = timelineProperties.scrubbingPreviewLayer else { return }
 
-    guard let footageDuration = clip.footageDuration else { return }
+    guard let footageDuration = clip.effectiveFootageDuration else { return }
     let clampedTime = time.clamped(to: CMTime(seconds: 0) ... footageDuration)
     guard clip.clipType == .video else { return }
 
@@ -844,6 +857,12 @@ extension Interactor: TimelineInteractor {
       aspectRatio = 1
     }
     return aspectRatio
+  }
+
+  func getTextContent(id: DesignBlockID) throws -> String {
+    guard let engine else { throw Error(errorDescription: "Missing engine") }
+
+    return try engine.block.getString(id, property: "text/text")
   }
 
   /// Generate thumbnails from a clip.

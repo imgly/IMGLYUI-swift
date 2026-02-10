@@ -653,7 +653,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Schriftkombinationen"
+            "value" : "Textdesigns"
           }
         },
         "en" : {
@@ -1221,6 +1221,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Send Backward"
+          }
+        }
+      }
+    },
+    "ly_img_editor_common_button_done" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fertig"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
           }
         }
       }
@@ -2381,6 +2398,23 @@
         }
       }
     },
+    "ly_img_editor_inspector_bar_button_clip_speed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clip-Geschwindigkeit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clip Speed"
+          }
+        }
+      }
+    },
     "ly_img_editor_inspector_bar_button_close" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3001,6 +3035,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Write"
+          }
+        }
+      }
+    },
+    "ly_img_editor_notification_speed_no_audio_at_speed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Ton bei dieser Geschwindigkeit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No audio at this speed"
           }
         }
       }
@@ -3647,6 +3698,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_clip_speed_duration_label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dauer"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duration"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_clip_speed_speed_label" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geschwindigkeit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speed"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_clip_speed_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clip-Geschwindigkeit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clip Speed"
           }
         }
       }

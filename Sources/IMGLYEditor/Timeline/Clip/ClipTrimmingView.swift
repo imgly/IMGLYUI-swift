@@ -72,6 +72,8 @@ struct ClipTrimmingView: View {
     }
   }
 
+  @State private var labelWidth: CGFloat = 0
+
   var duration: CMTime {
     let duration = clip.duration ?? timeline.totalDuration - clip.timeOffset
     return duration
@@ -93,6 +95,7 @@ struct ClipTrimmingView: View {
             cornerRadius: cornerRadius,
             pointsTrimOffsetWidth: -timeline.convertToPoints(time: startTrimDurationDelta),
             thumbnailsProvider: AnyThumbnailsProvider(erasing: thumbnailsProvider),
+            labelWidth: labelWidth,
           )
           .padding(.leading, timeline.convertToPoints(time: startTrimOvershoot))
           // Dimming overlay where clip exceeds total duration
@@ -115,7 +118,9 @@ struct ClipTrimmingView: View {
 
       // Marching Ants placeholder
       .background {
-        if isDragging, draggingType != .move, let footageDuration = clip.footageDuration, !clip.isLooping {
+        if isDragging, draggingType != .move,
+           let footageDuration = clip.effectiveFootageDuration,
+           !clip.isLooping {
           ZStack {
             ClipSelectionShape(cornerRadius: cornerRadius, trimHandleWidth: trimHandleWidth)
               .fill(configuration.clipSelectionActiveColor.opacity(0.2))
@@ -136,8 +141,8 @@ struct ClipTrimmingView: View {
               - endTrimOvershoot))
         }
       }
-      // Label
-      .overlay(alignment: .topLeading) {
+      // Label with pinning behavior
+      .overlay {
         ClipLabelView(
           duration: clip.isLoading ? nil : duration - startTrimDurationDelta + endTrimDurationDelta,
           icon: icon,
@@ -146,12 +151,14 @@ struct ClipTrimmingView: View {
           isSelectable: clip.allowsSelecting,
           cornerRadius: cornerRadius - 2,
           isLooping: clip.isLooping,
+          basePadding: timeline.convertToPoints(time: startTrimOvershoot),
         )
-        .padding(
-          .leading,
-          // Inset to keep the label from overlapping into the start overshoot, if there is any.
-          timeline.convertToPoints(time: startTrimOvershoot),
-        )
+      }
+      .onPreferenceChange(ClipLabelWidthKey.self) { width in
+        // Only update if changed to avoid unnecessary re-renders
+        if labelWidth != width {
+          labelWidth = width
+        }
       }
       // Left and right handle icons
       .overlay(alignment: .leading) {
@@ -162,7 +169,7 @@ struct ClipTrimmingView: View {
           .offset(x: -11)
       }
       .overlay(alignment: .trailing) {
-        let footageDuration = clip.footageDuration ?? CMTime(seconds: 0)
+        let footageDuration = clip.effectiveFootageDuration ?? CMTime(seconds: 0)
         let hasTrailingOvershoot = clip
           .isLooping || (footageDuration - clip.trimOffset - duration - endTrimDurationDelta).seconds > 0
         ClipTrimHandleIconView(style: hasTrailingOvershoot || !clip.allowsTrimming ? .right : .neutral,
@@ -285,7 +292,7 @@ struct ClipTrimmingView: View {
       let maxNegativeDelta: CMTime
       let maxPositiveDelta: CMTime
 
-      if clip.footageDuration != nil {
+      if clip.effectiveFootageDuration != nil {
         maxNegativeDelta = clip.isLooping ? .negativeInfinity : clip.trimOffset.imgly.makeNegative()
       } else {
         maxNegativeDelta = clip.isInBackgroundTrack ? .negativeInfinity : clip.timeOffset.imgly.makeNegative()
@@ -338,7 +345,7 @@ struct ClipTrimmingView: View {
       let maxNegativeDelta: CMTime
       let maxPositiveDelta: CMTime
 
-      if let footageDuration = clip.footageDuration, !clip.isLooping {
+      if let footageDuration = clip.effectiveFootageDuration, !clip.isLooping {
         maxNegativeDelta = (duration - configuration.minClipDuration).imgly.makeNegative()
         maxPositiveDelta = footageDuration - clip.trimOffset - duration
       } else {

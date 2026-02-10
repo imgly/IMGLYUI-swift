@@ -139,6 +139,7 @@ struct TimelineContentView: View {
         }
       }
     }
+    .coordinateSpace(name: "timeline")
     .introspect(.scrollView, on: .iOS(.v16...)) { horizontalScrollView in
       guard horizontalScrollView !== self.horizontalScrollView else { return }
 

@@ -26,6 +26,8 @@ public extension InspectorBar.Buttons.ID {
   static var blur: EditorComponentID { "ly.img.component.inspectorBar.button.blur" }
   /// The id of the ``InspectorBar/Buttons/volume(action:title:icon:isEnabled:isVisible:)`` button.
   static var volume: EditorComponentID { "ly.img.component.inspectorBar.button.volume" }
+  /// The id of the ``InspectorBar/Buttons/clipSpeed(action:title:icon:isEnabled:isVisible:)`` button.
+  static var clipSpeed: EditorComponentID { "ly.img.component.inspectorBar.button.clipSpeed" }
   /// The id of the ``InspectorBar/Buttons/crop(action:title:icon:isEnabled:isVisible:)`` button.
   static var crop: EditorComponentID { "ly.img.component.inspectorBar.button.crop" }
   /// The id of the ``InspectorBar/Buttons/duplicate(action:title:icon:isEnabled:isVisible:)`` button.
@@ -282,7 +284,8 @@ public extension InspectorBar.Buttons {
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_inspector_bar_button_volume` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/volume``  is used.
-  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isEnabled: Whether the button is enabled. By default, it is enabled if the selected block has no video fill,
+  ///   neither the block nor its fill supports playback control, or the playback speed is not more than 3.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
   /// `DesignBlockType.audio` or its fill type is `FillType.video`, and its engine scope `"fill/change"` is allowed.
   /// - Returns: The created button.
@@ -292,13 +295,71 @@ public extension InspectorBar.Buttons {
       Text(.imgly.localized("ly_img_editor_inspector_bar_button_volume"))
     },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.volume },
-    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { context in
+      guard context.selection.fillType == .video else { return true }
+      let playbackBlock: DesignBlockID
+      if try context.engine.block.supportsPlaybackControl(context.selection.block) {
+        playbackBlock = context.selection.block
+      } else if try context.engine.block.supportsFill(context.selection.block) {
+        let fill = try context.engine.block.getFill(context.selection.block)
+        guard try context.engine.block.supportsPlaybackControl(fill) else { return true }
+        playbackBlock = fill
+      } else {
+        return true
+      }
+      return try context.engine.block.getPlaybackSpeed(playbackBlock) <= 3
+    },
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try ($0.selection.type == .audio || $0.selection.fillType == .video) &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change")
     },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.volume, action: action, label: { context in
+      let title = try title(context)
+      let icon = try icon(context)
+      Label { title } icon: { icon }
+    }, isEnabled: isEnabled, isVisible: isVisible)
+  }
+
+  /// Creates a ``InspectorBar/Button`` that opens the clip speed sheet.
+  /// - Parameters:
+  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  /// event is invoked with sheet type ``SheetType/clipSpeed(style:)``.
+  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
+  /// `ly_img_editor_inspector_bar_button_clip_speed` is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/clipSpeed``  is used.
+  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block or its
+  /// fill supports playback control and its engine scope `"fill/change"` is allowed.
+  /// - Returns: The created button.
+  static func clipSpeed(
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .clipSpeed())) },
+    @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
+      Text(.imgly.localized("ly_img_editor_inspector_bar_button_clip_speed"))
+    },
+    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.clipSpeed },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
+      let playbackBlock: DesignBlockID
+      if try context.engine.block.supportsPlaybackControl(context.selection.block) {
+        playbackBlock = context.selection.block
+      } else if try context.engine.block.supportsFill(context.selection.block) {
+        let fill = try context.engine.block.getFill(context.selection.block)
+        guard try context.engine.block.supportsPlaybackControl(fill) else { return false }
+        playbackBlock = fill
+      } else {
+        return false
+      }
+      let playbackFillType = try? FillType(rawValue: context.engine.block.getType(playbackBlock))
+      let selectionFillType = context.selection.fillType
+      let isAudio = context.selection.type == .audio
+      let isVideoScene = try context.engine.scene.getMode() == .video
+      return try isVideoScene &&
+        (isAudio || selectionFillType == .video || playbackFillType == .video) &&
+        context.engine.block.isAllowedByScope(context.selection.block, key: "fill/change")
+    },
+  ) -> some InspectorBar.Item {
+    InspectorBar.Button(id: ID.clipSpeed, action: action, label: { context in
       let title = try title(context)
       let icon = try icon(context)
       Label { title } icon: { icon }

@@ -59,6 +59,9 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   /// always know the duration of an asset before it has been loaded.
   @Published var footageDuration: CMTime?
 
+  /// The playback speed multiplier for this clip.
+  @Published var playbackSpeed: Float = 1
+
   /// The footage URI is used to detect changes when replacing the asset.
   @Published var footageURLString: String?
 
@@ -98,6 +101,12 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   @Published var isLooping: Bool = false
 
   // MARK: -
+
+  var effectiveFootageDuration: CMTime? {
+    guard let footageDuration else { return nil }
+    guard playbackSpeed > 0 else { return footageDuration }
+    return CMTime(seconds: footageDuration.seconds / Double(playbackSpeed))
+  }
 
   init(id: DesignBlockID) {
     self.id = id

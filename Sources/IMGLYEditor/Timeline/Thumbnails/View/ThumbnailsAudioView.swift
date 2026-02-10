@@ -14,7 +14,6 @@ struct ThumbnailsAudioView: View {
   @ObservedObject var provider: ThumbnailsAudioProvider
 
   let isZooming: Bool
-  let pointsTrimOffsetWidth: CGFloat
   let color: Color
 
   var body: some View {
@@ -25,10 +24,8 @@ struct ThumbnailsAudioView: View {
     }
     .blur(radius: isZooming ? 10 : 0)
     .foregroundColor(color)
-    .frame(height: provider.thumbHeight * Metrics.variableHeightPercentage)
-    .offset(x: pointsTrimOffsetWidth)
+    .frame(width: provider.availableWidth, height: provider.thumbHeight * Metrics.variableHeightPercentage)
     .padding(.vertical, 4)
-    .padding(.horizontal, 1)
   }
 
   /// Calculates the height for a waveform bar based on the audio value.
