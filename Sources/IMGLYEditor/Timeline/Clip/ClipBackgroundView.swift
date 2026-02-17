@@ -7,6 +7,7 @@ struct ClipBackgroundView: View {
 
   @EnvironmentObject var timeline: Timeline
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
+  @Environment(\.colorScheme) private var colorScheme
   @ObservedObject var thumbnailsProvider: AnyThumbnailsProvider
 
   private let clip: Clip
@@ -32,9 +33,21 @@ struct ClipBackgroundView: View {
 
   // MARK: - View
 
+  private var backgroundStyle: AnyShapeStyle {
+    switch clip.clipType {
+    case .audio, .voiceOver:
+      return AnyShapeStyle(clip.configuration.backgroundColor)
+    default:
+      let colors: [Color] = colorScheme == .dark
+        ? [Color(uiColor: .systemFill), Color(uiColor: .quaternarySystemFill)]
+        : [Color(uiColor: .quaternarySystemFill), Color(uiColor: .systemFill)]
+      return AnyShapeStyle(.linearGradient(.init(colors: colors), startPoint: .top, endPoint: .bottom))
+    }
+  }
+
   var body: some View {
     RoundedRectangle(cornerRadius: cornerRadius)
-      .fill(clip.configuration.backgroundColor)
+      .fill(backgroundStyle)
       .overlay(alignment: .bottomLeading) {
         thumbnailView
           .allowsHitTesting(false)

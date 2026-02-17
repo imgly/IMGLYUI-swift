@@ -3,7 +3,7 @@ import SwiftUI
 /// Displays a sequence of thumbnail preview images that the `ThumbnailsProvider` fetches.
 struct ThumbnailsImageView: View {
   private enum Metrics {
-    static let horizontalMargin: CGFloat = 2
+    static let horizontalMargin: CGFloat = 4
   }
 
   @ObservedObject var provider: ThumbnailsImageProvider

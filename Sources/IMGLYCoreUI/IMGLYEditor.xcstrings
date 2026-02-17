@@ -2404,13 +2404,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clip-Geschwindigkeit"
+            "value" : "Geschwindigkeit"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clip Speed"
+            "value" : "Speed"
           }
         }
       }
@@ -3742,13 +3742,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clip-Geschwindigkeit"
+            "value" : "Geschwindigkeit"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clip Speed"
+            "value" : "Speed"
           }
         }
       }

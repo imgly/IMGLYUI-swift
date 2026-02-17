@@ -356,6 +356,7 @@ public extension InspectorBar.Buttons {
       let isVideoScene = try context.engine.scene.getMode() == .video
       return try isVideoScene &&
         (isAudio || selectionFillType == .video || playbackFillType == .video) &&
+        context.selection.kind != "voiceover" &&
         context.engine.block.isAllowedByScope(context.selection.block, key: "fill/change")
     },
   ) -> some InspectorBar.Item {
