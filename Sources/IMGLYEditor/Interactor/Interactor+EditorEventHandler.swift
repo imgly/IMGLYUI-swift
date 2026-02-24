@@ -47,6 +47,13 @@ extension Interactor: EditorEventHandler {
       }
     case let event as EditorEvents.SetExtraCanvasInsets:
       zoomToPage(withAdditionalPadding: event.insets)
+    case let event as EditorEvents.SetVideoDurationConstraints:
+      setVideoDurationConstraints(
+        minimumDuration: event.minimumVideoDuration,
+        maximumDuration: event.maximumVideoDuration,
+      )
+    case let event as EditorEvents.ShowVideoMinLengthAlert:
+      showVideoMinLengthAlert(minimumDuration: event.minimumVideoDuration)
 
     // MARK: - Export
     case is EditorEvents.Export.Start:

@@ -9,6 +9,7 @@ public struct VideoEditor: View {
   @Environment(\.imglyOnCreate) private var onCreate
   @Environment(\.imglyNavigationBarItems) private var navigationBarItems
   @Environment(\.imglyDockItems) private var dockItems
+  @Environment(\.imglyBottomPanel) private var bottomPanel
   private let settings: EngineSettings
 
   /// Creates a video editor with settings.
@@ -21,6 +22,12 @@ public struct VideoEditor: View {
     EditorUI(zoomPadding: 1)
       .navigationTitle("")
       .imgly.editor(settings, behavior: .video)
+      .imgly.bottomPanel { context in
+        guard let bottomPanel else {
+          return DefaultTimelineComponent(context: context)
+        }
+        return try bottomPanel(context)
+      }
       .imgly.onCreate { engine in
         guard let onCreate else {
           try await OnCreate.loadScene(from: Self.defaultScene)(engine)

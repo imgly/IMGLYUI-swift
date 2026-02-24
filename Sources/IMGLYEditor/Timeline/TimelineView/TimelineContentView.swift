@@ -31,6 +31,17 @@ struct TimelineContentView: View {
   @State var needsRestoreVerticalOffset = true
 
   var body: some View {
+    let scrollOffsetX = horizontalScrollViewDelegate.contentOffset.x
+    let maxPlaybackPoints = timelineProperties.player.maxPlaybackDuration.map { timeline.convertToPoints(time: $0) }
+    let isPlayheadStickyToMax = maxPlaybackPoints.map { scrollOffsetX >= $0 } ?? false
+    let playheadOffset: CGFloat = if let maxPlaybackPoints, scrollOffsetX >= maxPlaybackPoints {
+      maxPlaybackPoints - scrollOffsetX
+    } else if horizontalScrollViewDelegate.isDraggingOrDecelerating {
+      0
+    } else {
+      timeline.convertToPoints(time: player.playheadPosition) - scrollOffsetX
+    }
+
     ScrollView(.horizontal, showsIndicators: false) {
       ScrollView(.vertical, showsIndicators: false) {
         ScrollViewReader { proxy in
@@ -108,6 +119,13 @@ struct TimelineContentView: View {
       }
       .overlay(alignment: .bottomLeading) {
         ZStack(alignment: .leading) {
+          let maxDuration = timelineProperties.videoDurationConstraints.maximumTime
+          let maxOverlayWidth: CGFloat = if let maxDuration,
+                                            timeline.totalDuration.seconds > maxDuration.seconds {
+            max(0, timeline.totalWidth - timeline.convertToPoints(time: maxDuration))
+          } else {
+            0
+          }
           Rectangle()
             .fill(colorScheme == .dark
               ? Color(uiColor: .systemBackground)
@@ -120,6 +138,19 @@ struct TimelineContentView: View {
                 .alignmentGuide(.trailing) { _ in 0 }
             }
             .padding(.horizontal, viewportWidth / 2)
+          if maxOverlayWidth > 0,
+             let maxDuration {
+            let overlayColor = colorScheme == .dark
+              ? Color(uiColor: .systemBackground).opacity(0.6)
+              : Color(uiColor: .secondarySystemBackground).opacity(0.8)
+            Rectangle()
+              .fill(overlayColor)
+              .frame(width: maxOverlayWidth, height: configuration.backgroundTrackHeight)
+              .clipShape(TrailingRoundedRectangle(radius: configuration.cornerRadius))
+              .offset(x: timeline.convertToPoints(time: maxDuration) + viewportWidth / 2)
+              .zIndex(1)
+              .allowsHitTesting(false)
+          }
         }
         .overlay(alignment: .top) {
           // Line above background track
@@ -180,6 +211,13 @@ struct TimelineContentView: View {
     }
 
     .overlay {
+      TimelineDurationConstraintsView(
+        scrollOffset: scrollOffsetX,
+        showMaxTooltipWhileSticky: isPlayheadStickyToMax,
+      )
+    }
+
+    .overlay {
       // Playhead marker line
       let isSnappingToPlayhead = timeline.snapIndicatorLinePositions.contains(player.playheadPosition)
       RoundedRectangle(cornerRadius: 1)
@@ -193,6 +231,7 @@ struct TimelineContentView: View {
             .inset(by: -1)
             .fill(Color.black.opacity(0.1))
         }
+        .offset(x: playheadOffset)
         .padding(.top, configuration.timelineRulerHeight - 1)
         .padding(.bottom, 1)
     }
@@ -321,5 +360,18 @@ private struct TimelineOverflowSizeKey: PreferenceKey {
   static let defaultValue: CGFloat = .zero
   static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
     value += nextValue()
+  }
+}
+
+private struct TrailingRoundedRectangle: Shape {
+  let radius: CGFloat
+
+  func path(in rect: CGRect) -> Path {
+    let path = UIBezierPath(
+      roundedRect: rect,
+      byRoundingCorners: [.topRight, .bottomRight],
+      cornerRadii: CGSize(width: radius, height: radius),
+    )
+    return Path(path.cgPath)
   }
 }

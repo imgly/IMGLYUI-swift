@@ -9,6 +9,8 @@ struct Canvas: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.imglyIsPageNavigationEnabled) private var isPageNavigationEnabled: Bool
   @Environment(\.imglyInspectorBarEnabled) private var isInspectorBarEnabled
+  @Environment(\.imglyBottomPanel) private var bottomPanel
+  @Environment(\.imglyBottomPanelAnimation) private var bottomPanelAnimation
 
   let zoomPadding: CGFloat
 
@@ -33,44 +35,6 @@ struct Canvas: View {
     isPageNavigationEnabled && interactor.pageCount > 1 ? 32 : 0
   }
 
-  private var dynamicTimelineHeight: CGFloat {
-    let configuration = interactor.timelineProperties.configuration
-    let trackHeight = configuration.trackHeight
-    let backgroundTrackHeight = interactor.timelineProperties.configuration.backgroundTrackHeight
-    let trackSpacing = configuration.trackSpacing
-    let tracksCount = CGFloat(interactor.timelineProperties.dataSource.tracks.count)
-    let rulerHeight = configuration.timelineRulerHeight
-
-    // Show at least one foreground track, even if it’s empty.
-    let tracksHeight = max(1, tracksCount + 1) * (trackHeight + trackSpacing) + backgroundTrackHeight
-    let totalHeight = timelinePlayerBarHeight + tracksHeight + rulerHeight + trackSpacing * 3
-
-    // Limit timeline height
-    let clampedHeight = min(260, totalHeight)
-    return clampedHeight
-  }
-
-  private let timelinePlayerBarHeight: CGFloat = 56
-
-  private var safeAreaInsetHeight: CGFloat {
-    if interactor.editMode != .text {
-      var height = bottomBarHeight + pageNavigationHeight
-      if interactor.sceneMode == .video {
-        if isTimelineMinimized || (interactor.sheet.isPresented
-          && !interactor.sheet.isFloating
-          && interactor.sheet.content != .voiceover
-          && !interactor.sheet.isReplacing) {
-          height += timelinePlayerBarHeight
-        } else {
-          height += dynamicTimelineHeight
-        }
-      }
-      return height
-    } else {
-      return keyboardToolbarHeight
-    }
-  }
-
   private var isPageNavigationHidden: Bool {
     !isPageNavigationEnabled || interactor.selection?.blocks.isEmpty != nil || !interactor
       .isDefaultZoomLevel || interactor.pageCount < 2 || interactor.isPreviewMode || interactor.isPagesMode
@@ -80,8 +44,34 @@ struct Canvas: View {
   @State private var topSafeAreaInset: CGFloat = 0
   @State private var bottomSafeAreaInset: CGFloat = 0
   @State private var keyboardToolbarHeight: CGFloat = 0
-  @State private var isTimelineMinimized = false
-  @State private var isTimelineAnimating = false
+  @State private var fullBottomPanelHeight: CGFloat = 0
+  @State private var isBottomPanelAnimating = false
+  @State private var isBottomPanelMinimized = false
+  @State private var bottomPanelHeight: CGFloat = 0
+  @State private var animatedSafeAreaInsetHeight: CGFloat = 0
+  @State private var wasInTextMode = false
+  @State private var hasCompletedInitialSetup = false
+  @State private var wasSheetPresented = false
+
+  private var safeAreaInsetHeight: CGFloat {
+    // In text mode, the keyboard covers the bottom panel.
+    // Use keyboard toolbar height for canvas safe area so the canvas
+    // doesn't reserve space for the hidden-behind-keyboard bottom panel.
+    if interactor.editMode == .text {
+      return keyboardToolbarHeight
+    }
+
+    var height = bottomBarHeight + pageNavigationHeight
+
+    let shouldUseMinimizedHeight = isBottomPanelMinimized
+      || (interactor.sheet.isPresented
+        && !interactor.sheet.isFloating
+        && interactor.sheet.content != .voiceover
+        && !interactor.sheet.isReplacing)
+
+    height += shouldUseMinimizedHeight ? bottomPanelHeight : fullBottomPanelHeight
+    return height
+  }
 
   @ViewBuilder func bottomBar(content: SheetContent?) -> some View {
     BottomBar(content: content, id: id, height: bottomBarHeight, bottomSafeAreaInset: bottomSafeAreaInset)
@@ -127,6 +117,19 @@ struct Canvas: View {
     }
   }
 
+  private var bottomPanelContext: BottomPanel.Context? {
+    guard let engine = interactor.engine else { return nil }
+    return BottomPanel.Context(
+      engine: engine,
+      eventHandler: interactor,
+      state: BottomPanel.State(
+        isCreating: interactor.isCreating,
+        isExporting: interactor.isExporting,
+        viewMode: interactor.viewMode,
+      ),
+    )
+  }
+
   @ViewBuilder var canvas: some View {
     ZStack {
       if viewDebugging {
@@ -135,29 +138,13 @@ struct Canvas: View {
       interactor.canvas
         .imgly.canvasAction(anchor: .top,
                             topSafeAreaInset: topSafeAreaInset,
-                            bottomSafeAreaInset: safeAreaInsetHeight,
-                            isVisible: !isTimelineAnimating) {
+                            bottomSafeAreaInset: animatedSafeAreaInsetHeight,
+                            isVisible: !isBottomPanelAnimating) {
           if let canvasMenuItems, let canvasMenuContext {
             CanvasMenuView(items: canvasMenuItems, context: canvasMenuContext)
           }
         }
     }
-  }
-
-  @ViewBuilder func playerBar() -> some View {
-    if let timeline = interactor.timelineProperties.timeline {
-      PlayerBarView(isTimelineMinimized: $isTimelineMinimized,
-                    isTimelineAnimating: $isTimelineAnimating)
-        .environmentObject(AnyTimelineInteractor(erasing: interactor))
-        .environmentObject(interactor.timelineProperties.player)
-        .environmentObject(timeline)
-    }
-  }
-
-  @ViewBuilder func timeline() -> some View {
-    TimelineView()
-      .environmentObject(AnyTimelineInteractor(erasing: interactor))
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
   @ViewBuilder var measureGeometry: some View {
@@ -199,6 +186,9 @@ struct Canvas: View {
       .safeAreaInset(edge: .leading, spacing: 0) { Color.clear.frame(width: zoomPadding) }
       .safeAreaInset(edge: .trailing, spacing: 0) { Color.clear.frame(width: zoomPadding) }
     }
+    .onAppear {
+      animatedSafeAreaInsetHeight = safeAreaInsetHeight
+    }
     .safeAreaInset(edge: .top, spacing: 0) { Color.clear.frame(height: zoomPadding) }
     .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: zoomPadding) }
     .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -210,7 +200,7 @@ struct Canvas: View {
             Color.clear
           }
         }
-        .modifier(HeightAnimationModifier(targetHeight: safeAreaInsetHeight))
+        .modifier(HeightAnimationModifier(targetHeight: animatedSafeAreaInsetHeight))
         .transition(.move(edge: .bottom))
       }
     }
@@ -221,41 +211,38 @@ struct Canvas: View {
       }
     }
     .overlay(alignment: .bottom) {
-      if !interactor.isCreating, interactor.sceneMode == .video, interactor.editMode != .text {
+      // Keep bottom panel visible during text editing (like Android).
+      // The keyboard appears on top of it rather than replacing it.
+      if !interactor.isCreating, let bottomPanel, let bottomPanelContext,
+         let panel = try? bottomPanel(bottomPanelContext) {
         VStack(spacing: 0) {
-          VStack(spacing: 0) {
-            playerBar()
-              .frame(height: timelinePlayerBarHeight)
-            if !isTimelineMinimized,
-               !interactor.sheet.isPresented || interactor.sheet.isFloating || interactor.sheet.isReplacing {
-              timeline()
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+          Spacer()
+          AnyView(panel)
+            .background {
+              GeometryReader { geometry in
+                let currentHeight = geometry.size.height
+                Color.clear
+                  .task {
+                    if bottomPanelHeight == 0 {
+                      fullBottomPanelHeight = currentHeight
+                      bottomPanelHeight = currentHeight
+                    }
+                  }
+                  .onChange(of: geometry.size.height) { newHeight in
+                    // Save full height when no sheet is presented
+                    if !interactor.sheet.isPresented, !isBottomPanelMinimized {
+                      fullBottomPanelHeight = newHeight
+                    }
+                    bottomPanelHeight = newHeight
+                  }
+              }
             }
-          }
-          .background {
-            Rectangle()
-              .fill(colorScheme == .dark
-                ? Color(uiColor: .systemBackground)
-                : Color(uiColor: .secondarySystemBackground))
-          }
-          .frame(maxHeight: isTimelineMinimized || (interactor.sheet.isPresented
-              && !interactor.sheet.isFloating
-              && !interactor.sheet.isReplacing)
-            ? timelinePlayerBarHeight
-            : dynamicTimelineHeight)
-          .animation(.imgly.timelineMinimizeMaximize, value: interactor.sheet.isPresented)
-        }
-        .overlay(alignment: .bottom) {
-          // Line between player bar and bottom bar when timeline is collapsed
-          Group {
-            if isTimelineMinimized, interactor.selection == nil {
-              Divider()
-                .transition(.opacity)
-            }
-          }
-          .animation(.linear, value: interactor.selection)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: bottomBarHeight) }
+        .onPreferenceChange(BottomPanelIsMinimizedKey.self) { newValue in
+          isBottomPanelMinimized = newValue
+        }
+        .ignoresSafeArea(.keyboard)
       }
     }
     .overlay(alignment: .bottom) {
@@ -309,8 +296,56 @@ struct Canvas: View {
     }
     .onChange(of: verticalSizeClass) { newValue in
       interactor.verticalSizeClass = newValue
+    }
+    .onChange(of: safeAreaInsetHeight) { newValue in
+      // Skip animation during initial setup
+      if !hasCompletedInitialSetup {
+        hasCompletedInitialSetup = true
+        animatedSafeAreaInsetHeight = newValue
+        return
+      }
 
-      isTimelineMinimized = true
+      // Check if we're entering or exiting text mode
+      let isInTextMode = interactor.editMode == .text
+      let isTextModeTransition = wasInTextMode != isInTextMode
+      wasInTextMode = isInTextMode
+
+      // Never animate when transitioning to/from text mode to avoid glitches
+      // with keyboard appearance. The bottom panel stays visible but the
+      // canvas safe area adjusts instantly.
+      if isTextModeTransition || isInTextMode {
+        animatedSafeAreaInsetHeight = newValue
+        return
+      }
+
+      // Check if sheet presentation state is changing (opening or closing).
+      // When sheet opens, the timeline hides. When sheet closes, the timeline returns.
+      // In both cases, skip the canvas animation to avoid visual glitches.
+      let isSheetPresented = interactor.sheet.isPresented
+      let isSheetStateChanging = wasSheetPresented != isSheetPresented
+      wasSheetPresented = isSheetPresented
+
+      if isSheetStateChanging {
+        animatedSafeAreaInsetHeight = newValue
+        return
+      }
+
+      // Animate height changes when not in text mode (bottom panel minimize/expand)
+      isBottomPanelAnimating = true
+      if #available(iOS 17.0, *) {
+        withAnimation(bottomPanelAnimation) {
+          animatedSafeAreaInsetHeight = newValue
+        } completion: {
+          isBottomPanelAnimating = false
+        }
+      } else {
+        withAnimation(bottomPanelAnimation) {
+          animatedSafeAreaInsetHeight = newValue
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+          isBottomPanelAnimating = false
+        }
+      }
     }
     .fullScreenCover(isPresented: $interactor.isCameraSheetShown) {
       Camera(interactor.config.settings) { result in
@@ -359,6 +394,13 @@ private struct CanvasSafeAreaInsetsKey: PreferenceKey {
   static let defaultValue: EdgeInsets? = nil
   static func reduce(value: inout EdgeInsets?, nextValue: () -> EdgeInsets?) {
     value = value ?? nextValue()
+  }
+}
+
+@_spi(Internal) public struct BottomPanelIsMinimizedKey: PreferenceKey {
+  @_spi(Internal) public static let defaultValue: Bool = false
+  @_spi(Internal) public static func reduce(value: inout Bool, nextValue: () -> Bool) {
+    value = nextValue()
   }
 }
 

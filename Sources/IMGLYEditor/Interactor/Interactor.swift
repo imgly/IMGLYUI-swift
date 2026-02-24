@@ -1302,7 +1302,11 @@ extension Interactor {
       do {
         if !isPreviewMode {
           if sheet.isFloating, sheet.isPresented { return }
-          let zoomLevel: Float? = if zoomToPage {
+          // Re-check edit mode at execution time - if we're in text mode now, never zoom to page
+          // even if it was requested earlier. This handles race conditions where the edit mode
+          // changes between when the task was created and when it executes.
+          let effectiveZoomToPage = zoomToPage && editMode != .text
+          let zoomLevel: Float? = if effectiveZoomToPage {
             try await engine?.zoomToPage(page, insets, zoomModel: zoomModel)
           } else {
             try await engine?.updateZoom(
@@ -1524,6 +1528,16 @@ extension Interactor {
 
   func showErrorAlert(_ error: Swift.Error, _ onDismiss: @escaping () -> Void) {
     handleErrorAndDismiss(error, onDismiss)
+  }
+
+  func showVideoMinLengthAlert(minimumDuration: TimeInterval) {
+    let durationString = CMTime(seconds: minimumDuration).imgly.formattedDurationStringForClip()
+    let title = String(localized: .imgly.localized("ly_img_editor_dialog_video_min_length_title"))
+    let message = String(
+      localized: .imgly.localized("ly_img_editor_dialog_video_min_length_text \(durationString)"),
+    )
+    let buttonTitle = String(localized: .imgly.localized("ly_img_editor_dialog_video_min_length_button"))
+    error = AlertState(title, message: message, dismiss: false, dismissTitle: buttonTitle)
   }
 
   func exportScene() {
@@ -2054,5 +2068,11 @@ extension PageOverviewState {
       return nil
     }
     return getPage(currentPageIndex - 1)
+  }
+}
+
+extension Interactor: VideoDurationConstraintsProviding {
+  var videoDurationConstraints: VideoDurationConstraints {
+    timelineProperties.videoDurationConstraints
   }
 }

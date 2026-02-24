@@ -100,9 +100,10 @@ struct ClipTrimmingView: View {
           .padding(.leading, timeline.convertToPoints(time: startTrimOvershoot))
           // Dimming overlay where clip exceeds total duration
           .overlay(alignment: .trailing) {
+            let overlayDuration = player.maxPlaybackDuration ?? timeline.totalDuration
             let timeOffset = clip.isInBackgroundTrack ? .zero : clip.timeOffset
             let overflow = timeline.convertToPoints(
-              time: timeline.totalDuration
+              time: overlayDuration
                 - timeOffset - duration - offsetDelta
                 - endTrimDurationDelta - endTrimOvershoot,
             )

@@ -210,11 +210,11 @@ final class CameraModel: ObservableObject {
     var isAudioAuthorized = audioStatus == .authorized
 
     if videoStatus == .notDetermined {
-      isVideoAuthorized = await AVCaptureDevice.requestAccess(for: .video)
+      isVideoAuthorized = await AVCaptureDevice.imgly.requestAccess(for: .video)
     }
 
     if audioStatus == .notDetermined {
-      isAudioAuthorized = await AVCaptureDevice.requestAccess(for: .audio)
+      isAudioAuthorized = await AVCaptureDevice.imgly.requestAccess(for: .audio)
     }
 
     hasVideoPermissions = isVideoAuthorized

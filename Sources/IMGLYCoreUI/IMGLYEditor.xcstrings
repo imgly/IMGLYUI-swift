@@ -1888,6 +1888,57 @@
         }
       }
     },
+    "ly_img_editor_dialog_video_min_length_button" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_video_min_length_text %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Video muss mindestens %@ lang sein."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The video must be at least %@ long."
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_video_min_length_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video zu kurz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video too short"
+          }
+        }
+      }
+    },
     "ly_img_editor_dialog_voiceover_delete_button_confirm" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7115,6 +7166,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Can't split because one of the clips would become too short."
+          }
+        }
+      }
+    },
+    "ly_img_editor_timeline_maximum_video_length" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximale Videolänge"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximum video length"
+          }
+        }
+      }
+    },
+    "ly_img_editor_timeline_minimum_video_length" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimale Videolänge"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minimum video length"
+          }
+        }
+      }
+    },
+    "ly_img_editor_timeline_video_length_too_short" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videolänge zu kurz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video length too short"
           }
         }
       }

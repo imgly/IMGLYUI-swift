@@ -1,5 +1,6 @@
 import AVFoundation
 import Foundation
+@_spi(Internal) import IMGLYCore
 
 class VideoRecorder: @unchecked Sendable {
   private var assetWriter: AVAssetWriter?
@@ -65,7 +66,8 @@ class VideoRecorder: @unchecked Sendable {
     }
 
     self.assetWriter = nil
-    await assetWriter.finishWriting()
+
+    await assetWriter.imgly.finishWriting()
 
     let recordedDuration = recordedDuration ?? .zero
     isRecording = false

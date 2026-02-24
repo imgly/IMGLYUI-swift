@@ -1,8 +1,6 @@
 import SwiftUI
 @_spi(Internal) import IMGLYCore
 
-extension Animation: IMGLYCompatible {}
-
 /// The custom animation curves.
 extension IMGLY where Wrapped == Animation {
   static let flip =

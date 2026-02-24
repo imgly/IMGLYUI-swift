@@ -58,13 +58,37 @@ public enum OnExport {
   /// - Returns: The callback.
   public static func `default`(mimeType: MIMEType? = nil) -> Callback {
     { engine, eventHandler in
-      let data: Data, contentType: UTType
+      var result: (Data, UTType)?
       switch try engine.scene.getMode() {
-      case .design: (data, contentType) = try await export(engine, mimeType: mimeType)
-      case .video: (data, contentType) = try await exportVideo(engine, eventHandler, mimeType: mimeType)
+      case .design:
+        result = try await export(engine, mimeType: mimeType)
+      case .video:
+        guard let page = try engine.scene.getCurrentPage() else {
+          throw Error(errorDescription: "No page found.")
+        }
+        let pageDuration = try engine.block.getDuration(page)
+        let constraints = (eventHandler as? VideoDurationConstraintsProviding)?
+          .videoDurationConstraints
+          .normalized()
+        let minimumDuration = constraints?.minimumDuration
+        let maximumDuration = constraints?.maximumDuration
+        if let minimumDuration, pageDuration < minimumDuration {
+          eventHandler.send(.showVideoMinLengthAlert(minimumVideoDuration: minimumDuration))
+          return
+        }
+        let exportDuration = maximumDuration.map { min(pageDuration, $0) }
+        result = try await exportVideo(
+          engine,
+          eventHandler,
+          mimeType: mimeType,
+          duration: exportDuration,
+        )
       @unknown default:
         throw Error(errorDescription: "Unknown scene mode.")
       }
+
+      guard let (data, contentType) = result else { return }
+
       let url = FileManager.default.temporaryDirectory.appendingPathComponent("Export", conformingTo: contentType)
       try data.write(to: url, options: [.atomic])
       switch try engine.scene.getMode() {
@@ -101,16 +125,19 @@ public enum OnExport {
   ///   - engine: The used engine.
   ///   - eventHandler: The used event handler.
   ///   - mimeType: Optional mime type of the export. If `nil` `MIMEType.mp4` is used.
+  ///   - duration: Optional duration in seconds used to clamp the export length.
   /// - Returns: The exported data and type.
   @MainActor
   public static func exportVideo(_ engine: Engine, _ eventHandler: EditorEventHandler,
-                                 mimeType: MIMEType? = nil) async throws -> (Data, UTType) {
+                                 mimeType: MIMEType? = nil,
+                                 duration: TimeInterval? = nil) async throws -> (Data, UTType) {
     guard let page = try engine.scene.getCurrentPage() else {
       throw Error(errorDescription: "No page found.")
     }
     eventHandler.send(.exportProgress(.relative(0)))
     let mimeType = mimeType ?? .mp4
-    let stream = try await engine.block.exportVideo(page, mimeType: mimeType) { _ in }
+    let options = VideoExportOptions(duration: duration ?? 0)
+    let stream = try await engine.block.exportVideo(page, mimeType: mimeType, options: options) { _ in }
 
     var lastReportedProgress = 0
     for try await export in stream {
@@ -199,6 +226,20 @@ public enum OnLoaded {
     public let eventHandler: EditorEventHandler
     /// The asset library configured with the ``IMGLY/assetLibrary(_:)`` view modifier.
     public let assetLibrary: any AssetLibrary
+
+    /// Updates the minimum and maximum video duration constraints at runtime.
+    /// - Parameters:
+    ///   - minimumVideoDuration: The minimum duration in seconds. Set to `nil` to disable.
+    ///   - maximumVideoDuration: The maximum duration in seconds. Set to `nil` to disable.
+    public func setVideoDurationConstraints(
+      minimumVideoDuration: TimeInterval?,
+      maximumVideoDuration: TimeInterval?,
+    ) {
+      eventHandler.send(.setVideoDurationConstraints(
+        minimumVideoDuration: minimumVideoDuration,
+        maximumVideoDuration: maximumVideoDuration,
+      ))
+    }
   }
 }
 

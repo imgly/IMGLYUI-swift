@@ -8,7 +8,6 @@ struct PlayerBarView: View {
   @EnvironmentObject var player: Player
 
   @Binding var isTimelineMinimized: Bool
-  @Binding var isTimelineAnimating: Bool
 
   var body: some View {
     CenteredLeadingTrailing {
@@ -69,23 +68,8 @@ struct PlayerBarView: View {
   }
 
   private func toggleTimeline() {
-    if #available(iOS 17.0, *) {
-      isTimelineAnimating = true
-      withAnimation(.imgly.timelineMinimizeMaximize) {
-        isTimelineMinimized.toggle()
-      } completion: {
-        isTimelineAnimating = false
-      }
-    } else {
-      isTimelineAnimating = true
-      withAnimation(.imgly.timelineMinimizeMaximize) {
-        isTimelineMinimized.toggle()
-      }
-      // Estimate the duration of the animation
-      let animationDuration: TimeInterval = 0.5
-      DispatchQueue.main.asyncAfter(deadline: .now() + animationDuration) {
-        isTimelineAnimating = false
-      }
+    withAnimation(.imgly.timelineMinimizeMaximize) {
+      isTimelineMinimized.toggle()
     }
   }
 }

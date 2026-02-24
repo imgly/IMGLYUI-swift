@@ -1,4 +1,5 @@
 import AVFoundation
+@_spi(Internal) import IMGLYCore
 
 /// Enum to represent the possible states of audio recording permissions.
 enum AudioRecordPermission {
@@ -17,7 +18,7 @@ enum AudioRecordPermissionsManager {
     case .authorized:
       return .granted
     case .notDetermined:
-      return await AVCaptureDevice.requestAccess(for: .audio) == true ? .granted : .denied
+      return await AVCaptureDevice.imgly.requestAccess(for: .audio) ? .granted : .denied
     case .denied, .restricted:
       return .denied
     @unknown default:

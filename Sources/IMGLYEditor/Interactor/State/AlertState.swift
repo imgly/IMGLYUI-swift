@@ -62,6 +62,20 @@ struct AlertState: BatchMutable, Equatable {
     details = Details(title: title, message: message, shouldDismiss: dismiss)
   }
 
+  /// Show alert for `message` with custom dismiss title.
+  init(_ title: String,
+       message: String,
+       dismiss: Bool,
+       dismissTitle: String,
+       dismissCallback: (() -> Void)? = nil) {
+    isPresented = true
+    details = Details(title: title,
+                      message: message,
+                      shouldDismiss: dismiss,
+                      dismissTitle: dismissTitle,
+                      dismissCallback: dismissCallback)
+  }
+
   /// Show alert for `message` with custom titles and callback
   init(_ title: String,
        message: String,

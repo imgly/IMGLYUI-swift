@@ -46,6 +46,17 @@ public extension EditorEvents {
     let insets: CGFloat
   }
 
+  /// An event for setting minimum and maximum video duration constraints.
+  struct SetVideoDurationConstraints: EditorEvent {
+    let minimumVideoDuration: TimeInterval?
+    let maximumVideoDuration: TimeInterval?
+  }
+
+  /// An event for showing an alert when the video is below the minimum duration.
+  struct ShowVideoMinLengthAlert: EditorEvent {
+    let minimumVideoDuration: TimeInterval
+  }
+
   /// A namespace for ``EditorEvent``s related to export.
   enum Export {}
 }
@@ -123,6 +134,29 @@ public extension EditorEvent where Self == EditorEvents.SetExtraCanvasInsets {
   /// - Parameter insets: The extra insets to set.
   /// - Returns: The created ``EditorEvents/SetExtraCanvasInsets`` event.
   static func setExtraCanvasInsets(_ insets: CGFloat) -> Self { Self(insets: insets) }
+}
+
+public extension EditorEvent where Self == EditorEvents.SetVideoDurationConstraints {
+  /// Creates an ``EditorEvent`` to set minimum and maximum video duration constraints.
+  /// - Parameters:
+  ///   - minimumVideoDuration: The minimum duration in seconds. Set to `nil` to disable.
+  ///   - maximumVideoDuration: The maximum duration in seconds. Set to `nil` to disable.
+  /// - Returns: The created ``EditorEvents/SetVideoDurationConstraints`` event.
+  static func setVideoDurationConstraints(
+    minimumVideoDuration: TimeInterval?,
+    maximumVideoDuration: TimeInterval?,
+  ) -> Self {
+    Self(minimumVideoDuration: minimumVideoDuration, maximumVideoDuration: maximumVideoDuration)
+  }
+}
+
+public extension EditorEvent where Self == EditorEvents.ShowVideoMinLengthAlert {
+  /// Creates an ``EditorEvent`` to show an alert when the video is below the minimum duration.
+  /// - Parameter minimumVideoDuration: The minimum duration in seconds.
+  /// - Returns: The created ``EditorEvents/ShowVideoMinLengthAlert`` event.
+  static func showVideoMinLengthAlert(minimumVideoDuration: TimeInterval) -> Self {
+    Self(minimumVideoDuration: minimumVideoDuration)
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Export.Start {

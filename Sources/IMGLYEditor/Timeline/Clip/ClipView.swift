@@ -87,7 +87,9 @@ struct ClipView: View {
       .frame(width: pointsDurationWidth)
       // Dimming overlay where clip exceeds total duration
       .overlay(alignment: .trailing) {
-        let overflow = timeline.totalWidth - pointsTimeOffsetWidth - pointsDurationWidth
+        let maxDuration = timelineProperties.player.maxPlaybackDuration ?? timeline.totalDuration
+        let maxWidth = timeline.convertToPoints(time: maxDuration)
+        let overflow = maxWidth - pointsTimeOffsetWidth - pointsDurationWidth
         Rectangle()
           .fill(colorScheme == .dark
             ? Color(uiColor: .systemBackground).opacity(0.6)

@@ -13,5 +13,7 @@ final class Player: ObservableObject {
     }
   }
 
+  @Published var maxPlaybackDuration: CMTime?
+
   @Published private(set) var formattedPlayheadPosition = CMTime(seconds: 0).imgly.formattedDurationStringForPlayer()
 }

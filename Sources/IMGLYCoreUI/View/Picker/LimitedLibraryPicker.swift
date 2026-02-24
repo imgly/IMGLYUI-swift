@@ -26,7 +26,7 @@ private struct LimitedLibraryPicker: UIViewControllerRepresentable {
     guard isPresented, !isPickerVisible else { return }
 
     Task {
-      await PHPhotoLibrary.shared().presentLimitedLibraryPicker(from: uiViewController)
+      _ = await PHPhotoLibrary.shared().imgly.presentLimitedLibraryPicker(from: uiViewController)
       isPresented = false
       onComplete()
     }

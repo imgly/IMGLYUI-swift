@@ -156,8 +156,48 @@ extension Interactor: TimelineInteractor {
     guard let seconds = try? engine.block.getPlaybackTime(pageID) else { return }
 
     let position = CMTime(seconds: seconds)
+    if let maxDuration = timelineProperties.player.maxPlaybackDuration,
+       position > maxDuration {
+      let resolvedPosition: CMTime
+      if isPlaying {
+        if isLoopingPlaybackEnabled {
+          resolvedPosition = CMTime(seconds: 0)
+          setPlayheadPosition(resolvedPosition)
+        } else {
+          pause()
+          timelineProperties.player.isPlaying = false
+          resolvedPosition = maxDuration
+          setPlayheadPosition(resolvedPosition)
+        }
+      } else {
+        resolvedPosition = maxDuration
+        setPlayheadPosition(resolvedPosition)
+      }
+      timelineProperties.player.playheadPosition = resolvedPosition
+      return
+    }
     if position != timelineProperties.player.playheadPosition {
       timelineProperties.player.playheadPosition = position
+    }
+  }
+
+  // MARK: Duration Constraints
+
+  func setVideoDurationConstraints(
+    minimumDuration: TimeInterval?,
+    maximumDuration: TimeInterval?,
+  ) {
+    let constraints = VideoDurationConstraints(
+      minimumDuration: minimumDuration,
+      maximumDuration: maximumDuration,
+    ).normalized()
+    timelineProperties.videoDurationConstraints = constraints
+    timelineProperties.player.maxPlaybackDuration = constraints.maximumTime
+
+    if let maxDuration = constraints.maximumTime,
+       timelineProperties.player.playheadPosition > maxDuration {
+      setPlayheadPosition(maxDuration)
+      timelineProperties.player.playheadPosition = maxDuration
     }
   }
 
@@ -916,8 +956,11 @@ extension Interactor: TimelineInteractor {
     do {
       let playbackTime = try engine.block.getPlaybackTime(pageID)
       let pageDuration = try engine.block.getDuration(pageID)
+      let maxDuration = timelineProperties.player.maxPlaybackDuration?.seconds ?? pageDuration
 
-      if CMTime(seconds: playbackTime) >= CMTime(seconds: pageDuration) {
+      guard maxDuration > 0 else { return }
+
+      if CMTime(seconds: playbackTime) >= CMTime(seconds: maxDuration) {
         setPlayheadPosition(CMTime(seconds: 0))
       }
 
@@ -949,7 +992,9 @@ extension Interactor: TimelineInteractor {
   func togglePlayback() {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }
-    guard ((try? engine.block.getDuration(pageID)) ?? 0) > 0 else { return }
+    let pageDuration = (try? engine.block.getDuration(pageID)) ?? 0
+    let maxDuration = timelineProperties.player.maxPlaybackDuration?.seconds ?? pageDuration
+    guard maxDuration > 0 else { return }
     if timelineProperties.player.isPlaying {
       pause()
     } else {
@@ -963,8 +1008,12 @@ extension Interactor: TimelineInteractor {
           let timeline = timelineProperties.timeline,
           let pageID = timelineProperties.currentPage else { return }
     do {
-      let time = min(time, timeline.totalDuration)
-      try engine.block.setPlaybackTime(pageID, time: time.seconds)
+      let maxTimelineSeconds = timeline.totalDuration.seconds
+      var clampedSeconds = min(time.seconds, maxTimelineSeconds)
+      if let maxPlaybackSeconds = timelineProperties.player.maxPlaybackDuration?.seconds {
+        clampedSeconds = min(clampedSeconds, maxPlaybackSeconds)
+      }
+      try engine.block.setPlaybackTime(pageID, time: clampedSeconds)
     } catch {
       handleError(error)
     }
@@ -975,7 +1024,8 @@ extension Interactor: TimelineInteractor {
           let totalDuration = timelineProperties.timeline?.totalDuration,
           let pageID = timelineProperties.currentPage else { return }
     do {
-      try engine.block.setPlaybackTime(pageID, time: totalDuration.seconds)
+      let maxDuration = timelineProperties.player.maxPlaybackDuration ?? totalDuration
+      try engine.block.setPlaybackTime(pageID, time: maxDuration.seconds)
     } catch {
       handleError(error)
     }
@@ -1007,7 +1057,13 @@ extension Interactor: TimelineInteractor {
         return
       }
 
-      try engine.block.setPlaybackTime(pageID, time: clampedTime.seconds)
+      let maxDuration = timelineProperties.player.maxPlaybackDuration
+      let resolvedTime = if let maxDuration, clampedTime > maxDuration {
+        maxDuration
+      } else {
+        clampedTime
+      }
+      try engine.block.setPlaybackTime(pageID, time: resolvedTime.seconds)
     } catch {
       handleError(error)
     }

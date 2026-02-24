@@ -156,7 +156,7 @@
       case .authorized:
         return true
       case .notDetermined:
-        return await AVCaptureDevice.requestAccess(for: type)
+        return await AVCaptureDevice.imgly.requestAccess(for: type)
       case .denied, .restricted:
         return false
       @unknown default:

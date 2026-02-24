@@ -391,6 +391,25 @@ public extension IMGLY where Wrapped: View {
   func inspectorBarEnabled(_ enabled: @escaping InspectorBar.Enabled) -> some View {
     wrapped.environment(\.imglyInspectorBarEnabled, enabled)
   }
+
+  /// Sets a custom bottom panel for the editor.
+  ///
+  /// The canvas automatically measures the bottom panel's height using a `GeometryReader` and
+  /// handles the animation internally when the height changes.
+  ///
+  /// - Parameters:
+  ///   - animation: The animation to use for resizing the canvas when the bottom panel changes size.
+  ///   Defaults to `.imgly.timelineMinimizeMaximize`.
+  ///   - content: A closure that returns the custom view to display in the bottom panel area.
+  /// - Returns: A view with the custom bottom panel configured.
+  func bottomPanel(
+    animation: Animation = .imgly.timelineMinimizeMaximize,
+    @ViewBuilder _ content: @escaping BottomPanel.Content,
+  ) -> some View {
+    wrapped
+      .environment(\.imglyBottomPanel, content)
+      .environment(\.imglyBottomPanelAnimation, animation)
+  }
 }
 
 extension IMGLY where Wrapped: View {

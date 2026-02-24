@@ -38,6 +38,9 @@ class TimelineProperties: ObservableObject {
   /// The clip that is currently selected in the timeline.
   @Published var selectedClip: Clip?
 
+  /// Video duration constraints for the current timeline.
+  @Published var videoDurationConstraints = VideoDurationConstraints()
+
   // MARK: - Methods
 
   func resetClips() {
