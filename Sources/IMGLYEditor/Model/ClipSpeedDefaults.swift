@@ -8,7 +8,6 @@ enum ClipSpeedDefaults {
   static let audioMaxSpeed: Float = 3
   static let speedInputDecimals = 2
   static let durationInputDecimals = 2
-  static let speedSuffix = "×"
   static let audioSpeedCutoff: Float = 3
   static let durationInputWidth: CGFloat = 96
   static let speedInputWidth: CGFloat = 83

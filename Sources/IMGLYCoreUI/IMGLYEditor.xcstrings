@@ -3770,6 +3770,23 @@
         }
       }
     },
+    "ly_img_editor_sheet_clip_speed_duration_suffix" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "s"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "s"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_clip_speed_speed_label" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3783,6 +3800,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Speed"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_clip_speed_speed_suffix" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "×"
           }
         }
       }
