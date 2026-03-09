@@ -49,6 +49,8 @@ public extension IMGLY where Wrapped == Image {
   static let volume = Wrapped(systemName: "speaker.wave.3.fill")
   /// An icon image for clip speed.
   static let clipSpeed = Wrapped(systemName: "hare")
+  /// An icon image for animation.
+  static let animation = Wrapped("custom.circle.dotted.and.circle", bundle: .module)
   /// An icon image for crop.
   static let crop = Wrapped(systemName: "crop.rotate")
   /// An icon image for resize.

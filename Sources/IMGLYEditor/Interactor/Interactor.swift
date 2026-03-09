@@ -83,6 +83,7 @@ import SwiftUI
   @Published private(set) var textCursorPosition: CGPoint?
   @Published private(set) var canUndo = false
   @Published private(set) var canRedo = false
+  @Published private(set) var historyVersion = 0
   @Published private var isKeyboardPresented = false
   @Published private(set) var isDefaultZoomLevel = false
   @Published var isCameraSheetShown = false
@@ -1960,6 +1961,7 @@ extension Interactor {
     self.canUndo = canUndo // Keep this as it is used to trigger UI updates
     let canRedo = (try? engine.editor.canRedo()) ?? false
     self.canRedo = canRedo // Keep this as it is used to trigger UI updates
+    historyVersion &+= 1
   }
 
   func openImagePicker(_ assetSourceIDs: [MediaType: String]) {

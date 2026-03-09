@@ -5,6 +5,7 @@ import SwiftUI
 struct BlurOptions: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
+  @State private var sheetState: EffectSheetState = .selection
 
   let getter: Interactor.RawGetter<AssetSelection> = { engine, block in
     if let currentBlur = try? engine.block.getBlur(block), let type = try? engine.block.getType(currentBlur) {
@@ -38,6 +39,7 @@ struct BlurOptions: View {
       },
       identifier: { $0.result.blurType },
       sources: [.init(id: "ly.img.blur")],
+      sheetState: $sheetState,
     )
   }
 }

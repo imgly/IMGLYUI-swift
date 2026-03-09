@@ -5,6 +5,7 @@ import SwiftUI
 struct FXEffectOptions: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
+  @State private var sheetState: EffectSheetState = .selection
 
   let getter: Interactor.RawGetter<AssetSelection> = { engine, block in
     let effects = try? engine.block.getEffects(block)
@@ -49,6 +50,7 @@ struct FXEffectOptions: View {
       },
       identifier: { $0.result.effectType },
       sources: [.init(id: "ly.img.effect")],
+      sheetState: $sheetState,
     )
   }
 }

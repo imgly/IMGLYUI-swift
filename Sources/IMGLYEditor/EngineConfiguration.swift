@@ -29,9 +29,17 @@ public enum OnCreate {
 
   /// A callback that loads the default and demo asset sources.
   public static let loadAssetSources: Callback = { engine in
-    async let loadDefault: () = engine.addDefaultAssetSources()
-    async let loadDemo: () = engine.addDemoAssetSources(sceneMode: engine.scene.getMode(),
-                                                        withUploadAssetSources: true)
+    let basePath = try engine.editor.getSettingString("basePath")
+    guard let baseURL = URL(string: basePath) else {
+      throw Error(errorDescription: "Invalid basePath URL: \(basePath)")
+    }
+
+    async let loadDefault: () = engine.addDefaultAssetSources(baseURL: baseURL)
+    async let loadDemo: () = engine.addDemoAssetSources(
+      baseURL: baseURL,
+      sceneMode: engine.scene.getMode(),
+      withUploadAssetSources: true,
+    )
     _ = try await (loadDefault, loadDemo)
     try await engine.asset.addSource(TextAssetSource(engine: engine))
     try engine.asset.addSource(PhotoRollAssetSource(engine: engine))

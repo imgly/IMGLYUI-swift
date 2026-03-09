@@ -100,6 +100,9 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   /// Whether the clip has looping enabled.
   @Published var isLooping: Bool = false
 
+  /// Whether the clip has any animation applied (in, loop, or out).
+  @Published var hasAnimation: Bool = false
+
   // MARK: -
 
   var effectiveFootageDuration: CMTime? {

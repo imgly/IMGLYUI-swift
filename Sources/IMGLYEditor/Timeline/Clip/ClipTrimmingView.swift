@@ -152,6 +152,7 @@ struct ClipTrimmingView: View {
           isSelectable: clip.allowsSelecting,
           cornerRadius: cornerRadius - 2,
           isLooping: clip.isLooping,
+          hasAnimation: clip.hasAnimation,
           basePadding: timeline.convertToPoints(time: startTrimOvershoot),
         )
       }
