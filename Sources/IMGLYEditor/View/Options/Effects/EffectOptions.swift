@@ -6,9 +6,10 @@ struct EffectOptions<Item: View>: View {
   @ViewBuilder var item: (AssetLoader.Asset, Binding<EffectSheetState>) -> Item
   let identifier: ((AssetLoader.Asset) -> AnyHashable?)?
   let sources: [AssetLoader.SourceData]
+  @Binding var sheetState: EffectSheetState
 
+  @EnvironmentObject private var interactor: Interactor
   @StateObject private var searchState = AssetLibrarySearchState()
-  @State private var sheetState: EffectSheetState = .selection
 
   @ViewBuilder private var grid: some View {
     VStack {
@@ -56,9 +57,33 @@ struct EffectOptions<Item: View>: View {
     case let .properties(asset):
       EffectPropertyOptions(
         title: asset.title,
-        properties: asset.properties,
+        properties: refreshedProperties(from: asset),
         backTitle: asset.backTitle,
+        previousDetent: asset.previousDetent,
         sheetState: $sheetState,
+      )
+    }
+  }
+
+  private func refreshedProperties(from asset: AssetProperties) -> [EffectProperty] {
+    guard let engine = interactor.engine else { return asset.properties }
+    return asset.properties.map { property in
+      guard let assetContext = property.assetContext,
+            let blockID = property.id else { return property }
+      let refreshed = AnimationPropertyDefinitions.refreshedAssetProperty(
+        assetContext.assetProperty,
+        from: engine,
+        blockID: blockID,
+      )
+      guard let refreshed else { return property }
+      var updatedContext = assetContext
+      updatedContext.assetProperty = refreshed
+      return EffectProperty(
+        label: property.label,
+        value: property.value,
+        property: property.property,
+        id: property.id,
+        assetContext: updatedContext,
       )
     }
   }

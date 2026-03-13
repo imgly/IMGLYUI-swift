@@ -5,6 +5,7 @@ import SwiftUI
 struct FilterOptions: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
+  @State private var sheetState: EffectSheetState = .selection
 
   let getter: Interactor.RawGetter<AssetSelection> = { engine, block in
     let effects = try? engine.block.getEffects(block)
@@ -106,6 +107,7 @@ struct FilterOptions: View {
       item: { asset, binding in FilterItem(asset: asset, selection: selection, sheetState: binding) },
       identifier: { identifier(for: $0) },
       sources: [.init(id: "ly.img.filter.duotone"), .init(id: "ly.img.filter.lut")],
+      sheetState: $sheetState,
     )
   }
 

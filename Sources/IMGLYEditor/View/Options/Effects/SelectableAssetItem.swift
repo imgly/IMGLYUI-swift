@@ -32,10 +32,12 @@ struct SelectableAssetItem<Content: View>: View {
         .font(.largeTitle)
     }
     .onTapGesture {
+      let currentDetent = interactor.sheet.style.detent
       let propertyState = AssetProperties(
         title: localizedTitle,
         backTitle: .imgly.localized("ly_img_editor_sheet_button_back"),
         properties: properties,
+        previousDetent: currentDetent,
       )
       sheetState = .properties(propertyState)
       var detent = PresentationDetent.imgly.tiny
