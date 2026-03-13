@@ -48,7 +48,6 @@ struct Sheet: View {
     case is SheetTypes.TextBackground: BackgroundOptionsSheet()
     case is SheetTypes.Volume: VolumeOptionsSheet()
     case is SheetTypes.ClipSpeed: ClipSpeedOptionsSheet()
-    case is SheetTypes.Animation: AnimationOptionsSheet()
     case is SheetTypes.Resize: ResizeOptionsSheet()
     case is SheetTypes.DesignColors: SelectionColorsSheet()
     case is SheetTypes.GreetingSize: FontSizeSheet()

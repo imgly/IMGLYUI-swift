@@ -69,7 +69,6 @@ struct ClipView: View {
             isSelectable: clip.allowsSelecting,
             cornerRadius: cornerRadius - 2,
             isLooping: clip.isLooping,
-            hasAnimation: clip.hasAnimation,
           )
         }
       }
@@ -165,7 +164,6 @@ struct ClipView: View {
           isSelectable: clip.allowsSelecting,
           cornerRadius: configuration.cornerRadius,
           isLooping: clip.isLooping,
-          hasAnimation: clip.hasAnimation,
         )
       }
   }

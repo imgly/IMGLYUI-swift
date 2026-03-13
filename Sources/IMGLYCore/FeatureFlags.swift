@@ -2,7 +2,6 @@ import Foundation
 import SwiftUI
 
 @_spi(Internal) public enum FeatureFlag: String, CaseIterable {
-  case remoteAssets
   case designEditor
   case sceneUpload
   case photosPicker

@@ -121,11 +121,6 @@ public extension SheetTypes {
   struct TextBackground: SheetType {
     public let style: SheetStyle
   }
-
-  /// A sheet that is used to configure animations on design blocks.
-  struct Animation: SheetType {
-    public let style: SheetStyle
-  }
 }
 
 public extension SheetType where Self == SheetTypes.LibraryAdd {
@@ -329,13 +324,6 @@ public extension SheetType where Self == SheetTypes.TextBackground {
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/TextBackground`` sheet
   static func textBackground(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
-}
-
-public extension SheetType where Self == SheetTypes.Animation {
-  /// Creates a ``SheetType`` that is used to configure animations on design blocks.
-  /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(detent:)`` style is used.
-  /// - Returns: The created ``SheetTypes/Animation`` sheet type.
-  static func animation(style: SheetStyle = .only(detent: .imgly.small)) -> Self { Self(style: style) }
 }
 
 // MARK: - Postcard

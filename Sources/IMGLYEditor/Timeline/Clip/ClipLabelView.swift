@@ -20,7 +20,6 @@ struct ClipLabelView: View {
   let isSelectable: Bool
   let cornerRadius: CGFloat
   let isLooping: Bool
-  let hasAnimation: Bool
   /// When true, the label pins to stay visible when the clip scrolls off-screen
   var pinning: Bool = true
   /// Additional base padding added before pinning calculation (e.g., for trim overshoot)
@@ -28,7 +27,7 @@ struct ClipLabelView: View {
 
   /// Whether this label has any visible content
   private var hasContent: Bool {
-    duration != nil || isMuted || isLooping || hasAnimation || !isSelectable || icon != nil || !title.isEmpty
+    duration != nil || isMuted || isLooping || !isSelectable || icon != nil || !title.isEmpty
   }
 
   var body: some View {
@@ -82,7 +81,6 @@ struct ClipLabelView: View {
       isMuted: isMuted,
       isSelectable: isSelectable,
       isLooping: isLooping,
-      hasAnimation: hasAnimation,
     )
   }
 }
@@ -105,15 +103,13 @@ private struct LabelContentView: View, Equatable {
   let isMuted: Bool
   let isSelectable: Bool
   let isLooping: Bool
-  let hasAnimation: Bool
 
   nonisolated static func == (lhs: LabelContentView, rhs: LabelContentView) -> Bool {
     lhs.duration?.seconds == rhs.duration?.seconds &&
       lhs.title == rhs.title &&
       lhs.isMuted == rhs.isMuted &&
       lhs.isSelectable == rhs.isSelectable &&
-      lhs.isLooping == rhs.isLooping &&
-      lhs.hasAnimation == rhs.hasAnimation
+      lhs.isLooping == rhs.isLooping
     // Note: icon comparison omitted as Image isn't Equatable, but icons rarely change
   }
 
@@ -129,10 +125,6 @@ private struct LabelContentView: View, Equatable {
       }
       if isLooping {
         Image(systemName: "infinity.circle")
-          .frame(width: Metrics.iconSize, height: Metrics.iconSize)
-      }
-      if hasAnimation {
-        Image("custom.circle.dotted.and.circle", bundle: .module)
           .frame(width: Metrics.iconSize, height: Metrics.iconSize)
       }
       if !isSelectable {
@@ -207,16 +199,14 @@ struct ClipLabelView_Previews: PreviewProvider {
                     isMuted: true,
                     isSelectable: true,
                     cornerRadius: 8,
-                    isLooping: true,
-                    hasAnimation: true)
+                    isLooping: true)
       ClipLabelView(duration: CMTime(seconds: 1.5),
                     icon: Image(systemName: "music.note"),
                     title: "Audio",
                     isMuted: false,
                     isSelectable: false,
                     cornerRadius: 8,
-                    isLooping: false,
-                    hasAnimation: false)
+                    isLooping: false)
     }
   }
 }

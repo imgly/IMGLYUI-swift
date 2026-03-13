@@ -4,24 +4,13 @@ import Kingfisher
 import SwiftUI
 
 @_spi(Internal) public struct ReloadableAsyncImage<Content: View>: View {
-  private let url: URL?
-  private let accessibilityLabel: String
+  let asset: AssetLoader.Asset
   @ViewBuilder let content: (KFImage) -> Content
   let onTap: () -> Void
 
   @_spi(Internal) public init(asset: AssetLoader.Asset, content: @escaping (KFImage) -> Content,
                               onTap: @escaping () -> Void) {
-    url = asset.thumbURLorURL
-    accessibilityLabel = asset.result.label ?? ""
-    self.content = content
-    self.onTap = onTap
-  }
-
-  @_spi(Internal) public init(url: URL?, accessibilityLabel: String,
-                              content: @escaping (KFImage) -> Content,
-                              onTap: @escaping () -> Void) {
-    self.url = url
-    self.accessibilityLabel = accessibilityLabel
+    self.asset = asset
     self.content = content
     self.onTap = onTap
   }
@@ -54,9 +43,9 @@ import SwiftUI
         background
       }
 
-      if state != .error, let url {
+      if state != .error {
         content(
-          KFImage(url)
+          KFImage(asset.thumbURLorURL)
             .retry(maxCount: 3)
             .onSuccess { _ in
               state = .loaded
@@ -73,7 +62,7 @@ import SwiftUI
         .onTapGesture(perform: onTap)
         .allowsHitTesting(state == .loaded)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(accessibilityLabel)
+        .accessibilityLabel(asset.result.label ?? "")
         .accessibilityAddTraits(.isButton)
       }
     }

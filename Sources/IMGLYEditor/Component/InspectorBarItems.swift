@@ -1,4 +1,3 @@
-@_spi(Internal) import IMGLYCore
 import IMGLYEngine
 import SwiftUI
 
@@ -59,8 +58,6 @@ public extension InspectorBar.Buttons.ID {
   static var shape: EditorComponentID { "ly.img.component.inspectorBar.button.shape" }
   /// The id of the ``InspectorBar/Buttons/textBackground(action:title:icon:isEnabled:isVisible:)`` button.
   static var textBackground: EditorComponentID { "ly.img.component.inspectorBar.button.textBackground" }
-  /// The id of the ``InspectorBar/Buttons/animation(action:title:icon:isEnabled:isVisible:)`` button.
-  static var animation: EditorComponentID { "ly.img.component.inspectorBar.button.animation" }
 }
 
 @MainActor
@@ -929,40 +926,6 @@ public extension InspectorBar.Buttons {
     },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.textBackground, action: action, label: { context in
-      let title = try title(context)
-      let icon = try icon(context)
-      Label { title } icon: { icon }
-    }, isEnabled: isEnabled, isVisible: isVisible)
-  }
-
-  /// Creates a ``InspectorBar/Button`` that opens the animation sheet.
-  /// - Parameters:
-  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/animation(style:)``.
-  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
-  /// `ly_img_editor_inspector_bar_button_animations` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/animation`` is used.
-  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
-  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type
-  /// is not `DesignBlockType.page` or `.audio`, and the block supports animation.
-  /// - Returns: The created button.
-  static func animation(
-    action: @escaping InspectorBar.Context.To<Void> = {
-      $0.eventHandler.send(.openSheet(type: .animation()))
-    },
-    @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
-      Text(.imgly.localized("ly_img_editor_inspector_bar_button_animations"))
-    },
-    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.animation },
-    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
-    isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
-      try context.engine.scene.getMode() == .video &&
-        context.selection.type != .page &&
-        context.selection.type != .audio &&
-        context.engine.block.supportsAnimation(context.selection.block)
-    },
-  ) -> some InspectorBar.Item {
-    InspectorBar.Button(id: ID.animation, action: action, label: { context in
       let title = try title(context)
       let icon = try icon(context)
       Label { title } icon: { icon }

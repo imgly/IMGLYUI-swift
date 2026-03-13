@@ -533,13 +533,6 @@ extension Interactor: TimelineInteractor {
       let isLooping = try engine.block.isLooping(fill)
       clip.isLooping = isLooping
     }
-
-    if (try? engine.block.supportsAnimation(clip.id)) == true {
-      let hasInAnimation = (try? engine.block.getInAnimation(clip.id)).map { engine.block.isValid($0) } ?? false
-      let hasLoopAnimation = (try? engine.block.getLoopAnimation(clip.id)).map { engine.block.isValid($0) } ?? false
-      let hasOutAnimation = (try? engine.block.getOutAnimation(clip.id)).map { engine.block.isValid($0) } ?? false
-      clip.hasAnimation = hasInAnimation || hasLoopAnimation || hasOutAnimation
-    }
   }
 
   private func setClipPlaybackSpeedProperties(_ clip: Clip) throws {

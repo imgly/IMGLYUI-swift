@@ -1,33 +1,17 @@
 import Foundation
 @_spi(Internal) import IMGLYCore
-import IMGLYEngine
 import SwiftUI
 
 struct EffectProperty: Identifiable {
-  struct EnumOption: Identifiable {
-    let id: String
-    let label: LocalizedStringResource
-  }
-
-  struct AssetContext {
-    let sourceID: String
-    let assetResult: AssetResult
-    var assetProperty: AssetProperty
-  }
-
   enum Value {
     case float(range: ClosedRange<Float>, defaultValue: Float?)
-    case double(range: ClosedRange<Double>, defaultValue: Double?)
     case color(supportsOpacity: Bool, defaultValue: CGColor?)
-    case boolean(defaultValue: Bool)
-    case `enum`(options: [EnumOption], defaultValue: String?)
   }
 
   let label: LocalizedStringResource
   let value: Value
   let property: Property
   let id: Interactor.BlockID?
-  var assetContext: AssetContext?
 
   static func properties(for filter: Filter, and selection: Interactor.BlockID?) -> [EffectProperty] {
     let isLUT = filter == .lut

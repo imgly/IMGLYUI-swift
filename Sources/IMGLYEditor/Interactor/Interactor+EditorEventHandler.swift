@@ -192,11 +192,6 @@ extension Interactor: EditorEventHandler {
       if let content = sheetContent(sheet.id) ?? sheetContentForSelection {
         self.sheet = .init(sheet, content)
       }
-    case let sheet as SheetTypes.Animation:
-      clampPlayheadPositionToSelectedClip()
-      if let content = sheetContentForSelection {
-        self.sheet = .init(sheet, content)
-      }
     case let sheet as SheetTypes.Crop:
       clampPlayheadPositionToSelectedClip()
       if let content = sheetContent(sheet.id) ?? sheetContentForSelection {

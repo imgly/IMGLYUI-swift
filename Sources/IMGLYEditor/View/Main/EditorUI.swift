@@ -123,7 +123,6 @@ import SwiftUI
           InspectorBar.Buttons.filter() // Video, Image
           InspectorBar.Buttons.effect() // Video, Image
           InspectorBar.Buttons.blur() // Video, Image
-          InspectorBar.Buttons.animation() // Video, Image, Sticker, Shape, Text (video scenes only, feature flag)
           InspectorBar.Buttons.shape() // Video, Image, Shape
 
           InspectorBar.Buttons.selectGroup() // Video, Image, Sticker, Shape, Text

@@ -51,7 +51,7 @@ struct PhotoRollAddMenu<Label: View>: View {
           SwiftUI.Label {
             Text(.imgly.localized("ly_img_editor_asset_library_button_select_more_photos"))
           } icon: {
-            Image("custom.photo.badge.plus", bundle: .module)
+            Image(systemName: "photo.badge.plus")
           }
         }
 
