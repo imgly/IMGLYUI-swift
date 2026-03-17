@@ -4025,6 +4025,40 @@
         }
       }
     },
+    "ly_img_editor_sheet_animations_label_easing_duration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ease-Dauer"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Easing Duration"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_animations_label_end_scale" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endskalierung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End Scale"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_animations_label_fade" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4038,6 +4072,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fade"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_animations_label_hold_duration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haltedauer"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold Duration"
           }
         }
       }
@@ -4089,6 +4140,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scale Factor"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_animations_label_start_delay" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Startverzögerung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Delay"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_animations_label_start_scale" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Startskalierung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Scale"
           }
         }
       }
