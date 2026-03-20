@@ -2,6 +2,11 @@ import CoreMedia
 import IMGLYEngine
 import SwiftUI
 
+struct TimelineScrollTargetRequest: Equatable {
+  let id: DesignBlockID
+  private let token = UUID()
+}
+
 @MainActor
 class TimelineProperties: ObservableObject {
   // MARK: - Timeline
@@ -38,6 +43,9 @@ class TimelineProperties: ObservableObject {
   /// The clip that is currently selected in the timeline.
   @Published var selectedClip: Clip?
 
+  /// A transient clip target used when the timeline should scroll without changing the visible selection state.
+  @Published var scrollTargetRequest: TimelineScrollTargetRequest?
+
   /// Video duration constraints for the current timeline.
   @Published var videoDurationConstraints = VideoDurationConstraints()
 
@@ -46,5 +54,15 @@ class TimelineProperties: ObservableObject {
   func resetClips() {
     dataSource.reset()
     selectedClip = nil
+  }
+
+  func requestScroll(to clipID: DesignBlockID) {
+    scrollTargetRequest = .init(id: clipID)
+  }
+
+  func consumeScrollRequest(_ request: TimelineScrollTargetRequest) {
+    if scrollTargetRequest == request {
+      scrollTargetRequest = nil
+    }
   }
 }

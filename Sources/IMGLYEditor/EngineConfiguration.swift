@@ -232,7 +232,7 @@ public enum OnLoaded {
     public let engine: Engine
     /// The event handler of the current editor.
     public let eventHandler: EditorEventHandler
-    /// The asset library configured with the ``IMGLY/assetLibrary(_:)`` view modifier.
+    /// The asset library configured with the ``IMGLYCore/IMGLY/assetLibrary(_:)`` view modifier.
     public let assetLibrary: any AssetLibrary
 
     /// Updates the minimum and maximum video duration constraints at runtime.

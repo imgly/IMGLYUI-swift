@@ -1939,108 +1939,6 @@
         }
       }
     },
-    "ly_img_editor_dialog_voiceover_delete_button_confirm" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voiceover Löschen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete Voiceover"
-          }
-        }
-      }
-    },
-    "ly_img_editor_dialog_voiceover_delete_button_dismiss" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abbrechen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
-          }
-        }
-      }
-    },
-    "ly_img_editor_dialog_voiceover_delete_text" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Aufnahme wird verworfen. Dies kann nicht rückgängig gemacht werden."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your recording will be discarded. This cannot be undone."
-          }
-        }
-      }
-    },
-    "ly_img_editor_dialog_voiceover_discard_button_confirm" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Änderungen verwerfen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Discard Changes"
-          }
-        }
-      }
-    },
-    "ly_img_editor_dialog_voiceover_discard_button_dismiss" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abbrechen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
-          }
-        }
-      }
-    },
-    "ly_img_editor_dialog_voiceover_discard_text" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Änderungen werden verworfen. Dies kann nicht rückgängig gemacht werden."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your changes will be discarded. This cannot be undone."
-          }
-        }
-      }
-    },
     "ly_img_editor_dock_button_adjustments" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2552,23 +2450,6 @@
       }
     },
     "ly_img_editor_inspector_bar_button_edit_text" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bearbeiten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit"
-          }
-        }
-      }
-    },
-    "ly_img_editor_inspector_bar_button_edit_voiceover" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -4025,40 +3906,6 @@
         }
       }
     },
-    "ly_img_editor_sheet_animations_label_easing_duration" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ease-Dauer"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Easing Duration"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_animations_label_end_scale" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Endskalierung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "End Scale"
-          }
-        }
-      }
-    },
     "ly_img_editor_sheet_animations_label_fade" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4072,23 +3919,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fade"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_animations_label_hold_duration" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Haltedauer"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hold Duration"
           }
         }
       }
@@ -4140,40 +3970,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scale Factor"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_animations_label_start_delay" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Startverzögerung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start Delay"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_animations_label_start_scale" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Startskalierung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start Scale"
           }
         }
       }
@@ -6167,6 +5963,40 @@
         }
       }
     },
+    "ly_img_editor_sheet_format_text_button_strikethrough" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durchgestrichen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strikethrough"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_format_text_button_underline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterstrichen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Underline"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_format_text_font_subfamily_black" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6660,6 +6490,23 @@
         }
       }
     },
+    "ly_img_editor_sheet_format_text_label_list_style" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listenstil"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List Style"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_format_text_label_paragraph_spacing" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6741,6 +6588,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "UPPER CASE"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_format_text_list_style_option_none" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_format_text_list_style_option_ordered" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geordnet"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordered"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_format_text_list_style_option_unordered" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ungeordnet"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unordered"
           }
         }
       }
@@ -7612,6 +7510,23 @@
         }
       }
     },
+    "ly_img_editor_sheet_voiceover_button_add_recording" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahme hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add recording"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_voiceover_button_confirm" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7652,7 +7567,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anderes Audio stummschalten"
+            "value" : "Anderes Audio aus"
           }
         },
         "en" : {
@@ -7663,53 +7578,19 @@
         }
       }
     },
-    "ly_img_editor_sheet_voiceover_button_play" : {
+    "ly_img_editor_sheet_voiceover_button_record" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Voiceover abspielen"
+            "value" : "Aufnehmen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Play Voiceover"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_voiceover_button_replace" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ersetzen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Replace"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_voiceover_button_resume" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fortsetzen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Resume"
+            "value" : "Record"
           }
         }
       }
@@ -7720,30 +7601,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anderes Audio einschalten"
+            "value" : "Anderes Audio an"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unmute other Audio"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_voiceover_label_start_recording" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aufnahme starten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start recording"
           }
         }
       }

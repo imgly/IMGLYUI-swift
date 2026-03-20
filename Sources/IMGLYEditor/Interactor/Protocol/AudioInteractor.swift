@@ -23,6 +23,10 @@ protocol AudioInteractor {
   /// - Parameter audioBlock: The identifier of the audio block.
   /// - Returns: The audio file URL.
   func getAudioBlockURL(for audioBlock: DesignBlockID) throws -> URL?
+  /// Retrieves the playback time offset for a specified audio block in timeline seconds.
+  /// - Parameter audioBlock: The identifier of the audio block.
+  /// - Returns: The playback time offset in seconds.
+  func getAudioBlockTimeOffset(for audioBlock: DesignBlockID) throws -> Double
   /// Workaround to have the audio output device started before any recording
   func startAudioOutputDevice() throws
   /// Sets the URL for an audio block.
@@ -30,6 +34,11 @@ protocol AudioInteractor {
   ///   - audioBlock: The identifier of the audio block.
   ///   - url: The URL to set.
   func setAudioBlockURL(for audioBlock: DesignBlockID, to url: URL) throws
+  /// Sets the playback time offset for a specified audio block in timeline seconds.
+  /// - Parameters:
+  ///   - audioBlock: The identifier of the audio block.
+  ///   - offset: The new playback time offset in seconds.
+  func setAudioBlockTimeOffset(for audioBlock: DesignBlockID, to offset: Double) throws
   /// Sets audio data on a specified buffer at a given offset.
   /// - Parameters:
   ///   - audioData: The audio data to set.
@@ -41,6 +50,16 @@ protocol AudioInteractor {
   ///   - url: The URL of the buffer.
   ///   - length: The length to set for the buffer.
   func setAudioBlockBufferLength(url: URL, length: UInt) throws
+  /// Reads audio data from a specified buffer.
+  /// - Parameters:
+  ///   - url: The URL of the buffer.
+  ///   - offset: The byte offset at which to start reading.
+  ///   - length: The number of bytes to read.
+  /// - Returns: The buffer data.
+  func getAudioBlockBufferData(url: URL, offset: UInt, length: UInt) throws -> Data
+  /// Destroys a specified buffer.
+  /// - Parameter url: The URL of the buffer.
+  func destroyAudioBlockBuffer(url: URL) throws
   /// Generates an audio thumbnail for a specified audio block within a time range.
   /// - Parameters:
   ///   - audioBlock: The identifier of the audio block.

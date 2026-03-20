@@ -21,6 +21,7 @@ public extension EditorComponents {
     ///   - label: A view that describes the purpose of the button’s `action`.
     ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
     ///   - isVisible: Whether the button is visible. By default, it is always `true`.
+    ///   - modifier: A view modifier to apply to the button.
     /// - Note: Don't encode the visibility in the `label` view. Use `isVisible` instead.
     public init(
       id: EditorComponentID,

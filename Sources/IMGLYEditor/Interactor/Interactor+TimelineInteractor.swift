@@ -510,6 +510,7 @@ extension Interactor: TimelineInteractor {
     } else {
       clip.title = ""
     }
+    clip.footageURLString = try engine?.block.get(id, property: .key(.audioFileURI))
   }
 
   // MARK: Clip's Set Properties
@@ -519,7 +520,7 @@ extension Interactor: TimelineInteractor {
 
     let durationSeconds = try engine.block.getDuration(clip.id)
     if durationSeconds > Double(Int.max) {
-      clip.duration = (clip.clipType == .voiceOver) ? timelineProperties.timeline?.totalDuration : nil
+      clip.duration = nil
     } else {
       clip.duration = CMTime(seconds: durationSeconds)
     }
@@ -557,9 +558,11 @@ extension Interactor: TimelineInteractor {
   private func setClipTrimOffsetProperties(_ clip: Clip) throws {
     guard let engine else { return }
 
-    // Voiceovers are not meant to be trimmed, skip all trim operations
-    guard clip.clipType != .voiceOver else {
+    let isLiveBufferAudio = (clip.clipType == .audio || clip.clipType == .voiceOver) &&
+      (clip.footageURLString?.hasPrefix("buffer://") == true)
+    if isLiveBufferAudio {
       clip.allowsTrimming = false
+      clip.trimOffset = .zero
       return
     }
 
@@ -575,8 +578,17 @@ extension Interactor: TimelineInteractor {
   private func setClipAVResourceProperties(_ clip: Clip) throws {
     guard let engine else { return }
 
-    guard clip.clipType == .audio || clip.clipType == .video else {
+    guard clip.clipType == .audio || clip.clipType == .video || clip.clipType == .voiceOver else {
       clip.footageDuration = nil
+      return
+    }
+
+    let isLiveBufferAudio = (clip.clipType == .audio || clip.clipType == .voiceOver) &&
+      (clip.footageURLString?.hasPrefix("buffer://") == true)
+    if isLiveBufferAudio {
+      clip.footageDuration = clip.duration
+      clip.isLoading = false
+      clip.allowsTrimming = false
       return
     }
 
@@ -607,7 +619,7 @@ extension Interactor: TimelineInteractor {
   private func setClipAudioProperties(_ clip: Clip) throws {
     guard let engine else { return }
 
-    guard clip.clipType == .audio || clip.clipType == .video else {
+    guard clip.clipType == .audio || clip.clipType == .video || clip.clipType == .voiceOver else {
       clip.isMuted = false
       clip.audioVolume = 1.0
       return
@@ -639,7 +651,8 @@ extension Interactor: TimelineInteractor {
         }
       }
 
-      blocks.insert(contentsOf: audioBlocks.reversed(), at: 0)
+      // Keep newest audio blocks at the bottom in the timeline track list.
+      blocks.insert(contentsOf: audioBlocks, at: 0)
 
       let tracks = try engine.block.find(byType: .track)
       for backgroundTrack in tracks where try engine.block.isPageDurationSource(backgroundTrack) {
@@ -678,14 +691,19 @@ extension Interactor: TimelineInteractor {
 
     do {
       let pageDuration = try engine.block.getDuration(pageID)
-      let totalDuration = CMTime(seconds: pageDuration)
+      let clipsDuration = timelineProperties.dataSource.allClips()
+        .map { clip in
+          let clipDuration = clip.duration?.seconds ?? max(0, pageDuration - clip.timeOffset.seconds)
+          return clip.timeOffset.seconds + max(0, clipDuration)
+        }
+        .max() ?? 0
+      let resolvedDuration = timelineProperties.backgroundTrack == nil
+        ? max(pageDuration, clipsDuration)
+        : pageDuration
+      let totalDuration = CMTime(seconds: resolvedDuration)
 
       if totalDuration != CMTime(seconds: timeline.totalDuration.seconds) {
         timelineProperties.timeline?.setTotalDuration(totalDuration)
-        // update clip elements that require to match duration of timeline
-        timelineProperties.dataSource.foregroundClips()
-          .filter { $0.clipType == .voiceOver }
-          .forEach { $0.duration = totalDuration }
       }
     } catch {
       handleError(error)
@@ -787,18 +805,26 @@ extension Interactor: TimelineInteractor {
 
   /// Select a clip immediately both in the timeline and on canvas (if applicable).
   func select(id: DesignBlockID?) {
-    // Prevent an infinite loop with the engine selection updates
-    guard timelineProperties.selectedClip?.id != id else { return }
     guard let id else {
       // Passing `nil` deselects.
       deselect()
       return
     }
-    if let clip = timelineProperties.dataSource.findClip(id: id) {
-      timelineProperties.selectedClip = clip
-      selectOnCanvas(id: clip.id)
-      pause()
+
+    // Prevent an infinite loop with the engine selection updates while still allowing
+    // canvas selection to be restored for clips that are not in the local timeline cache yet.
+    let clip = timelineProperties.dataSource.findClip(id: id)
+    if timelineProperties.selectedClip?.id == id, clip != nil {
+      return
     }
+
+    if let clip {
+      timelineProperties.selectedClip = clip
+    }
+
+    guard engine?.block.isValid(id) == true else { return }
+    selectOnCanvas(id: id)
+    pause()
   }
 
   /// Deselect a clip immediately both in the timeline and on canvas.
@@ -850,6 +876,14 @@ extension Interactor: TimelineInteractor {
     let selected = engine.block.findAllSelected()
     guard let id = selected.first else {
       deselect()
+      return
+    }
+
+    if isVoiceOverRecordModeActive,
+       voiceOverRecordModeSelectionHidden,
+       let target = voiceOverRecordModeTarget,
+       id == target {
+      timelineProperties.selectedClip = nil
       return
     }
 
@@ -954,21 +988,29 @@ extension Interactor: TimelineInteractor {
                                                        numberOfChannels: 1)
   }
 
+  func forceLoadAudioResource(for clip: Clip) async throws {
+    guard let engine else { throw Error(errorDescription: "Missing engine") }
+    guard engine.block.isValid(clip.trimmableID) else { throw Error(errorDescription: "Block doesn’t exist") }
+    try await engine.block.forceLoadAVResource(clip.trimmableID)
+  }
+
   // MARK: Playback Control
 
   /// Start playback.
-  func play() {
+  func play(seekToStartIfNeeded: Bool) {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }
     do {
-      let playbackTime = try engine.block.getPlaybackTime(pageID)
-      let pageDuration = try engine.block.getDuration(pageID)
-      let maxDuration = timelineProperties.player.maxPlaybackDuration?.seconds ?? pageDuration
+      if seekToStartIfNeeded {
+        let playbackTime = try engine.block.getPlaybackTime(pageID)
+        let pageDuration = try engine.block.getDuration(pageID)
+        let maxDuration = timelineProperties.player.maxPlaybackDuration?.seconds ?? pageDuration
 
-      guard maxDuration > 0 else { return }
+        guard maxDuration > 0 else { return }
 
-      if CMTime(seconds: playbackTime) >= CMTime(seconds: maxDuration) {
-        setPlayheadPosition(CMTime(seconds: 0))
+        if CMTime(seconds: playbackTime) >= CMTime(seconds: maxDuration) {
+          setPlayheadPosition(CMTime(seconds: 0))
+        }
       }
 
       try engine.block.setPlaying(pageID, enabled: true)
@@ -1117,48 +1159,10 @@ extension Interactor: TimelineInteractor {
     }
   }
 
-  private func showVoiceOverSheet(style: SheetStyle) {
-    sheet = .init(.voiceover(style: style), .voiceover)
-  }
-
   func openVoiceOver(style: SheetStyle) {
-    pause()
-
-    Task {
-      do {
-        try engine?.block.deselectAll()
-        // Ensure that the deselect event comes before opening the sheet, otherwise the sheet closes immediately.
-        try await Task.sleep(for: .milliseconds(100))
-
-        guard let duration = timelineProperties.timeline?.totalDuration.seconds, duration > 0 else {
-          error = .init("Unable to Record Voiceover",
-                        message: "Please add content to your timeline to start recording audio.",
-                        dismiss: false)
-          return
-        }
-
-        guard timelineProperties.dataSource.foregroundClips().allSatisfy({ $0.clipType != .voiceOver }) else {
-          error = .init("Only One Voiceover Recording Possible",
-                        message: "Please edit the existing voiceover.",
-                        dismiss: false,
-                        dismissTitle: "Cancel",
-                        confirmTitle: "Edit",
-                        confirmCallback: { [weak self] in
-                          self?.error.isPresented = false
-                          self?.editVoiceOver(style: style)
-                        })
-          return
-        }
-
-        showVoiceOverSheet(style: style)
-      } catch {
-        handleError(error)
-      }
+    Task { [weak self] in
+      await self?.presentVoiceOverRecordMode(style: style, entry: .create)
     }
-  }
-
-  func editVoiceOver(style: SheetStyle) {
-    showVoiceOverSheet(style: style)
   }
 
   func openCamera(_ assetSourceIDs: [MediaType: String]) {

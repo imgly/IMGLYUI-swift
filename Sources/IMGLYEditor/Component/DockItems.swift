@@ -65,7 +65,7 @@ public extension Dock.Buttons.ID {
   static var crop: EditorComponentID { "ly.img.component.dock.button.crop" }
   /// The id of the ``Dock/Buttons/resize(action:title:icon:isEnabled:isVisible:)`` button.
   static var resize: EditorComponentID { "ly.img.component.dock.button.resize" }
-  /// The id of the ``Dock/Buttons/assetLibrary(action:title:icon:isEnabled:isVisible:)`` button.
+  /// The id of the ``Dock/Buttons/assetLibrary(action:title:icon:isEnabled:isVisible:modifier:)`` button.
   static var assetLibrary: EditorComponentID { "ly.img.component.dock.button.assetLibrary" }
 }
 
@@ -74,11 +74,13 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the elements library sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/elementsTab`` content
+  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and
+  /// ``IMGLYCoreUI/AssetLibrary/elementsTab`` content
   /// is displayed on the sheet.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_elements` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addElement``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/addElement``
+  /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -103,11 +105,13 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the audio library sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/audioTab`` content is
+  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and
+  /// ``IMGLYCoreUI/AssetLibrary/audioTab`` content is
   /// displayed on the sheet.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_audio` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addAudio``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/addAudio``
+  /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -132,11 +136,13 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the images library sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/imagesTab`` content
+  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and
+  /// ``IMGLYCoreUI/AssetLibrary/imagesTab`` content
   /// is displayed on the sheet.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_images` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addImage``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/addImage``
+  /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -161,11 +167,13 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the text library sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/textTab`` content is
+  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``IMGLYCoreUI/AssetLibrary/textTab``
+  /// content is
   /// displayed on the sheet.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_text` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addText``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/addText``  is
+  /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -192,11 +200,13 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the shapes library sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/shapesTab`` content
+  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and
+  /// ``IMGLYCoreUI/AssetLibrary/shapesTab`` content
   /// is displayed on the
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_shapes` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addShape``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/addShape``
+  /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -221,11 +231,13 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the stickers library sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/stickersTab`` content
+  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and
+  /// ``IMGLYCoreUI/AssetLibrary/stickersTab`` content
   /// is displayed on the sheet.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_stickers` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addSticker``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/addSticker``
+  /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -250,11 +262,13 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the overlays library sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and ``AssetLibrary/overlaysTab`` content
+  /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and
+  /// ``IMGLYCoreUI/AssetLibrary/overlaysTab`` content
   /// is displayed on the sheet.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_overlays` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addVideo``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/addVideo``
+  /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -280,10 +294,11 @@ public extension Dock.Buttons {
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)`` and
-  /// ``AssetLibrary/stickersAndShapesTab`` content is displayed on the sheet.
+  /// ``IMGLYCoreUI/AssetLibrary/stickersAndShapesTab`` content is displayed on the sheet.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_stickers` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addSticker``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/addSticker``
+  /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -308,17 +323,18 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the photo roll.
   ///
   /// By default, this button opens a system photos picker (no permissions required).
-  /// To enable full photo library access, use ``PhotoRollAssetSource`` with `mode: .fullLibraryAccess`
+  /// To enable full photo library access, use ``IMGLYCore/PhotoRollAssetSource`` with `mode: .fullLibraryAccess`
   /// in your ``OnCreate`` callback.
   ///
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
   ///   invokes ``EditorEvent/addFromPhotoRoll`` which internally determines behavior based on the
-  ///   ``PhotoRollAssetSourceMode`` used when creating the ``PhotoRollAssetSource``.
+  ///   ``IMGLYCore/PhotoRollAssetSourceMode`` used when creating the ``IMGLYCore/PhotoRollAssetSource``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   ///   `ly_img_editor_dock_button_photo_roll` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
-  ///   ``IMGLY/addPhotoRollForeground``  or ``IMGLY/addPhotoRollBackground`` is used depending on the scene mode.
+  ///   ``IMGLYCore/IMGLY/addPhotoRollForeground``  or ``IMGLYCore/IMGLY/addPhotoRollBackground`` is used depending on
+  /// the scene mode.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -348,7 +364,8 @@ public extension Dock.Buttons {
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_photo_roll` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
-  /// ``IMGLY/addPhotoRollForeground``  or ``IMGLY/addPhotoRollBackground`` is used depending on the scene mode.
+  /// ``IMGLYCore/IMGLY/addPhotoRollForeground``  or ``IMGLYCore/IMGLY/addPhotoRollBackground`` is used depending on the
+  /// scene mode.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -383,7 +400,8 @@ public extension Dock.Buttons {
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_photo_roll` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
-  /// ``IMGLY/addPhotoRollForeground``  or ``IMGLY/addPhotoRollBackground`` is used depending on the scene mode.
+  /// ``IMGLYCore/IMGLY/addPhotoRollForeground``  or ``IMGLYCore/IMGLY/addPhotoRollBackground`` is used depending on the
+  /// scene mode.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -416,8 +434,9 @@ public extension Dock.Buttons {
   /// ``EditorEvent/addFromSystemCamera(to:)`` event is invoked.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_camera` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addCameraForeground``
-  /// or ``IMGLY/addCameraBackground`` is used depending on the scene mode.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image`
+  /// ``IMGLYCore/IMGLY/addCameraForeground``
+  /// or ``IMGLYCore/IMGLY/addCameraBackground`` is used depending on the scene mode.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -446,8 +465,9 @@ public extension Dock.Buttons {
   /// ``EditorEvent/addFromIMGLYCamera(to:)`` event is invoked.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_camera` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addCameraForeground``
-  /// or ``IMGLY/addCameraBackground`` is used depending on the scene mode.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image`
+  /// ``IMGLYCore/IMGLY/addCameraForeground``
+  /// or ``IMGLYCore/IMGLY/addCameraBackground`` is used depending on the scene mode.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -476,7 +496,8 @@ public extension Dock.Buttons {
   /// event is invoked with sheet type ``SheetType/voiceover(style:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_voiceover` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addVoiceover``  is
+  ///   - icon: The icon view which is used to label the button. By default, the `Image`
+  /// ``IMGLYCore/IMGLY/addVoiceover``  is
   /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
@@ -503,7 +524,8 @@ public extension Dock.Buttons {
   /// event is invoked with sheet type ``SheetType/reorder(style:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_reorder` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/reorder``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/reorder``  is
+  /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if there is more than one child in the
   /// background track.
@@ -538,7 +560,8 @@ public extension Dock.Buttons {
   /// event is invoked with sheet type ``SheetType/adjustments(style:id:)`` for the current page.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_adjustments` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/adjustments``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/adjustments``
+  ///  is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the engine scope
   /// `"appearance/adjustments"` is allowed for the current page.
@@ -569,7 +592,8 @@ public extension Dock.Buttons {
   /// event is invoked with sheet type ``SheetType/filter(style:id:)`` for the current page.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_filter` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/filter``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/filter``  is
+  /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the engine scope
   /// `"appearance/filter"` is allowed for the current page.
@@ -600,7 +624,8 @@ public extension Dock.Buttons {
   /// event is invoked with sheet type ``SheetType/effect(style:id:)`` for the current page.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_effect` is used
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/effect``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/effect``  is
+  /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the engine scope
   /// `"appearance/effect"` is allowed for the current page.
@@ -631,7 +656,8 @@ public extension Dock.Buttons {
   /// event is invoked with sheet type ``SheetType/blur(style:id:)`` for the current page.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_blur` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/blur``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/blur``  is
+  /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the engine scope
   /// `"appearance/blur"` is allowed for the current page.
@@ -662,7 +688,8 @@ public extension Dock.Buttons {
   /// event is invoked with sheet type ``SheetType/crop(style:id:assetSourceIDs:)`` for the current page.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_crop` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/crop``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/crop``  is
+  /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the engine scope `"layer/crop"` is
   /// allowed for the current page.
@@ -697,7 +724,8 @@ public extension Dock.Buttons {
   /// event is invoked with sheet type ``SheetType/resize(style:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_resize` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/resize``  is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/resize``  is
+  /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -723,7 +751,8 @@ public extension Dock.Buttons {
   /// event is invoked with sheet type ``SheetType/libraryAdd(style:content:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_library` is used.
-  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLY/addAsset``  is
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/addAsset``
+  /// is
   /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.

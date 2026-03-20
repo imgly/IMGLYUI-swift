@@ -164,12 +164,7 @@ extension Interactor: EditorEventHandler {
         self.sheet = .init(sheet, content)
       }
     case let sheet as SheetTypes.Voiceover:
-      clampPlayheadPositionToSelectedClip()
-      if selection?.blocks.first == nil {
-        openVoiceOver(style: sheet.style)
-      } else {
-        editVoiceOver(style: sheet.style)
-      }
+      openVoiceOver(style: sheet.style)
     case let sheet as SheetTypes.Reorder:
       self.sheet = .init(sheet)
     case let sheet as SheetTypes.Adjustments:

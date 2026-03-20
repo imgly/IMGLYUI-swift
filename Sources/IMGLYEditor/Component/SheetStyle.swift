@@ -66,8 +66,9 @@ public struct SheetStyle: Hashable {
   ///   - detents: A set of supported detents for the sheet. If you provide more that one detent, people can drag the
   /// sheet to resize it.
   ///   - largestUndimmedDetent: The largest detent that doesn't dim the underlying content. If `nil` the underlying
-  /// content is always dimmed. If it is not `nil` `PresentationDetent.medium`, `.large`, ``IMGLY/tiny``,
-  /// ``IMGLY/small``, ``IMGLY/medium``, or ``IMGLY/large`` must be used. An assert is triggered on violations. By
+  /// content is always dimmed. If it is not `nil` `PresentationDetent.medium`, `.large`, ``IMGLYCore/IMGLY/micro``,
+  /// ``IMGLYCore/IMGLY/tiny``, ``IMGLYCore/IMGLY/small``, ``IMGLYCore/IMGLY/medium``, or ``IMGLYCore/IMGLY/large``
+  /// must be used. An assert is triggered on violations. By
   /// default, `nil` is used.
   /// - Returns: The created sheet style.
   public static
@@ -86,7 +87,7 @@ public struct SheetStyle: Hashable {
       assert(
         allDetentsArePredefined,
         // swiftlint:disable:next line_length
-        "If `largestUndimmedDetent` is not `nil` `PresentationDetent.medium`, `.large`, `.imgly.tiny`, `.imgly.small`, `.imgly.medium`, or `.imgly.large` must be used.",
+        "If `largestUndimmedDetent` is not `nil` `PresentationDetent.medium`, `.large`, `.imgly.micro`, `.imgly.tiny`, `.imgly.small`, `.imgly.medium`, or `.imgly.large` must be used.",
       )
     }
     return self.init(isFloating, detent, detents, largestUndimmedDetent: largestUndimmedDetent)
@@ -107,6 +108,8 @@ extension Set<PresentationDetent> {
       .imgly.small
     } else if contains(.imgly.tiny) {
       .imgly.tiny
+    } else if contains(.imgly.micro) {
+      .imgly.micro
     } else {
       nil
     }
@@ -120,9 +123,9 @@ public extension SheetStyle {
   /// content, if `false` the canvas will be zoomed to adjust for the size of the sheet so that the canvas' content
   /// won't be covered by the sheet. By default, `false` is used.
   ///   - detent: The initial detent of the sheet. Ensure that the value matches one of the detents that you provide for
-  /// the `detents` parameter. By default, the ``IMGLY/medium`` detent is used.
+  /// the `detents` parameter. By default, the ``IMGLYCore/IMGLY/medium`` detent is used.
   ///   - detents: A set of supported detents for the sheet. If you provide more that one detent, people can drag the
-  /// sheet to resize it. By default, the ``IMGLY/medium`` and ``IMGLY/large`` detents are used.
+  /// sheet to resize it. By default, the ``IMGLYCore/IMGLY/medium`` and ``IMGLYCore/IMGLY/large`` detents are used.
   /// - Returns: The created sheet style.
   static func `default`(isFloating: Bool = false,
                         detent: PresentationDetent = .imgly.medium,
@@ -135,20 +138,22 @@ public extension SheetStyle {
   /// is used for adding assets.
   /// - Parameters:
   ///   - detent: The initial detent of the sheet. Ensure that the value matches one of the detents that you provide for
-  /// the `detents` parameter. By default, the ``IMGLY/large`` detent is used.
+  /// the `detents` parameter. By default, the ``IMGLYCore/IMGLY/large`` detent is used.
   ///   - detents: A set of supported detents for the sheet. If you provide more that one detent, people can drag the
-  /// sheet to resize it. By default, the ``IMGLY/medium`` and ``IMGLY/large`` detents are used.
+  /// sheet to resize it. By default, the ``IMGLYCore/IMGLY/medium`` and ``IMGLYCore/IMGLY/large`` detents are used.
   /// - Returns: The created sheet style.
   static func addAsset(detent: PresentationDetent = .imgly.large,
                        detents: Set<PresentationDetent> = [.imgly.medium, .imgly.large]) -> Self {
     .default(isFloating: true, detent: detent, detents: detents)
   }
 
-  /// Creates a non-floating sheet style  ``withPredefinedDetents(isFloating:detent:detents:largestUndimmedDetent:)``
+  /// Creates a sheet style ``withPredefinedDetents(isFloating:detent:detents:largestUndimmedDetent:)``
   /// that does not allow to resize the sheet.
-  /// - Parameter detent: The detent of the sheet.
+  /// - Parameters:
+  ///   - isFloating: Whether the sheet is floating. By default, `false`.
+  ///   - detent: The detent of the sheet.
   /// - Returns: The created sheet style.
-  static func only(detent: PresentationDetent) -> Self {
-    .default(isFloating: false, detent: detent, detents: [detent])
+  static func only(isFloating: Bool = false, detent: PresentationDetent) -> Self {
+    .default(isFloating: isFloating, detent: detent, detents: [detent])
   }
 }

@@ -92,8 +92,21 @@ import SwiftUI
 
   @Published var isLoopingPlaybackEnabled = true
   @Published var isSelectionVisible = true
+  @Published var isVoiceOverRecordModeActive = false
+  @Published var isVoiceOverRecordModeRecording = false
+  @Published var hasVoiceOverRecordModeRecordedAudio = false
+  @Published var isVoiceOverRecordModeMuteOtherAudio = true
+  @Published var voiceOverRecordModeElapsedDuration: TimeInterval = 0
+  @Published var voiceOverRecordModeTarget: BlockID?
 
   @Published var forceCropState: ForceCropState?
+
+  var voiceOverRecordModeDeletesTargetOnCancel = true
+  var voiceOverRecordModeSelectionToRestore: [BlockID] = []
+  var voiceOverRecordModeSelectionHidden = false
+  var ignoresNextVoiceOverSheetDismiss = false
+  var pendingVoiceOverRevealTarget: BlockID?
+  var voiceOverRecordCoordinator: VoiceOverRecordCoordinator?
 
   var uploadAssetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
   var imageUploadAssetSourceID: String { uploadAssetSourceIDs[.image] ?? Engine.DemoAssetSource.imageUpload.rawValue }
@@ -116,7 +129,7 @@ import SwiftUI
   }
 
   var isCanvasHitTestingEnabled: Bool {
-    !isPreviewMode
+    !isPreviewMode && !isVoiceOverRecordModeActive
   }
 
   var sceneMode: SceneMode? {
@@ -138,7 +151,13 @@ import SwiftUI
   }
 
   var sheetContentForBottomBar: SheetContent? {
-    isPagesMode ? .pageOverview : sheetContentForSelection
+    if isPagesMode {
+      return .pageOverview
+    }
+    if isVoiceOverRecordModeActive {
+      return nil
+    }
+    return sheetContentForSelection
   }
 
   func sheetContent(_ id: BlockID?) -> SheetContent? {
@@ -229,6 +248,7 @@ import SwiftUI
     zoomLevelTask?.cancel()
     historyTask?.cancel()
     pageTask?.cancel()
+    clickedTask?.cancel()
     onLoadedTask?.cancel()
     blockTasks.forEach { $0.value.cancel() }
     blockTasks.removeAll()
@@ -241,6 +261,7 @@ import SwiftUI
     zoomLevelTask = observeZoomLevel()
     historyTask = observeHistory()
     pageTask = observePage()
+    clickedTask = observeClicked()
     onLoadedTask?.cancel()
     keyboardPublisher.assign(to: &$isKeyboardPresented)
   }
@@ -259,6 +280,7 @@ import SwiftUI
     zoomLevelTask?.cancel()
     historyTask?.cancel()
     pageTask?.cancel()
+    clickedTask?.cancel()
     onLoadedTask?.cancel()
     _engine = nil
     timelineProperties.timeline = nil
@@ -284,6 +306,7 @@ import SwiftUI
   private var zoomLevelTask: Task<Void, Never>?
   private var historyTask: Task<Void, Never>?
   private var pageTask: Task<Void, Never>?
+  private var clickedTask: Task<Void, Never>?
   private var onLoadedTask: Task<Void, Never>?
   var blockTasks = [BlockID: Task<Void, Never>]()
 }
@@ -1069,6 +1092,12 @@ extension Interactor {
   }
 
   func bottomBarCloseButtonTapped() {
+    if isVoiceOverRecordModeActive {
+      Task { [weak self] in
+        await self?.cancelVoiceOverRecordMode()
+      }
+      return
+    }
     do {
       try engine?.block.deselectAll()
     } catch {
@@ -1686,9 +1715,13 @@ extension Interactor {
 
     if sceneMode == .video,
        let currentPage = timelineProperties.currentPage {
-      let isSelectionVisible = isVisibleAtCurrentPlaybackTime(selection?.blocks.first)
-      if self.isSelectionVisible != isSelectionVisible {
-        self.isSelectionVisible = isSelectionVisible
+      let isSelectionVisibleAtPlayhead = isVisibleAtCurrentPlaybackTime(selection?.blocks.first)
+      let resolvedSelectionVisibility =
+        (isVoiceOverRecordModeActive && voiceOverRecordModeSelectionHidden)
+          ? false
+          : isSelectionVisibleAtPlayhead
+      if isSelectionVisible != resolvedSelectionVisibility {
+        isSelectionVisible = resolvedSelectionVisibility
       }
       do {
         let isLoopingPlaybackEnabled = try engine.block.isLooping(currentPage)
@@ -1722,6 +1755,31 @@ extension Interactor {
         updateTimeline(events)
         updatePlaybackState()
       }
+    }
+  }
+
+  func observeClicked() -> Task<Void, Never> {
+    Task {
+      guard let engine else {
+        return
+      }
+      for await _ in engine.block.onClicked {
+        openPlaceholderSheetIfNeeded()
+      }
+    }
+  }
+
+  private func openPlaceholderSheetIfNeeded() {
+    guard let content = placeholderContent(for: selection) else { return }
+
+    let replaceSheet = SheetState(.libraryReplace {
+      AssetLibrarySheet(content: content)
+    }, content)
+
+    if sheet.isPresented, !sheet.isReplacing, sheet.content != content {
+      nextSheet = replaceSheet
+    } else {
+      sheet = replaceSheet
     }
   }
 
@@ -1837,6 +1895,27 @@ extension Interactor {
     if !sheet.isPresented, oldValue.isPresented, oldValue.associatedEditMode == .crop {
       setEditMode(.transform)
     }
+    if !sheet.isPresented,
+       oldValue.isPresented,
+       oldValue.type is SheetTypes.Voiceover {
+      if ignoresNextVoiceOverSheetDismiss {
+        ignoresNextVoiceOverSheetDismiss = false
+        if let target = pendingVoiceOverRevealTarget {
+          pendingVoiceOverRevealTarget = nil
+          DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            guard engine?.block.isValid(target) == true else { return }
+
+            timelineProperties.requestScroll(to: target)
+            select(id: target)
+          }
+        }
+      } else if isVoiceOverRecordModeActive {
+        Task { [weak self] in
+          await self?.cancelVoiceOverRecordMode()
+        }
+      }
+    }
   }
 
   func selectionChanged(_ oldValue: Selection?) {
@@ -1850,27 +1929,25 @@ extension Interactor {
     let wasPresented = sheet.isPresented
 
     if sheet.isPresented {
-      if !(sheet.type is SheetTypes.LibraryAdd),
-         oldValue?.blocks != selection?.blocks {
-        sheet.isPresented = false
-      }
-      if sheet.type is SheetTypes.LibraryAdd, selection != nil {
-        sheet.isPresented = false
-      }
-    }
-    if oldValue?.blocks != selection?.blocks,
-       let content = placeholderContent(for: selection) {
-      let replaceSheet = SheetState(.libraryReplace {
-        AssetLibrarySheet(content: content)
-      }, content)
-
-      if wasPresented, !sheet.isReplacing, sheet.content != content {
-        nextSheet = replaceSheet
+      let isVoiceOverRecordSheet = sheet.type is SheetTypes.Voiceover && isVoiceOverRecordModeActive
+      if isVoiceOverRecordSheet {
+        let isTargetSelection = voiceOverRecordModeTarget.map { selection?.blocks == [$0] } ?? false
+        if !isTargetSelection, oldValue?.blocks != selection?.blocks {
+          sheet.isPresented = false
+        }
       } else {
-        sheet = replaceSheet
+        if !(sheet.type is SheetTypes.LibraryAdd),
+           // Don't close a replace sheet when the new selection is also a placeholder —
+           // onClicked will update its content in place for a seamless transition.
+           !(sheet.isReplacing && placeholderContent(for: selection) != nil),
+           oldValue?.blocks != selection?.blocks {
+          sheet.isPresented = false
+        }
+        if sheet.type is SheetTypes.LibraryAdd, selection != nil {
+          sheet.isPresented = false
+        }
       }
     }
-
     updateTimelineSelectionFromCanvas()
   }
 

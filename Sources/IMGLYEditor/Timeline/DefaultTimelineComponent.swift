@@ -8,6 +8,7 @@ import IMGLYEngine
   private let context: BottomPanel.Context
 
   @State private var isMinimized = false
+  @State private var observedTrackCount = 0
   @EnvironmentObject private var interactor: Interactor
 
   /// Creates a timeline component.
@@ -36,7 +37,7 @@ import IMGLYEngine
     let trackHeight = configuration.trackHeight
     let backgroundTrackHeight = configuration.backgroundTrackHeight
     let trackSpacing = configuration.trackSpacing
-    let tracksCount = CGFloat(interactor.timelineProperties.dataSource.tracks.count)
+    let tracksCount = CGFloat(observedTrackCount)
     let rulerHeight = configuration.timelineRulerHeight
 
     let tracksHeight = max(1, tracksCount + 1) * (trackHeight + trackSpacing) + backgroundTrackHeight
@@ -107,6 +108,12 @@ import IMGLYEngine
         .animation(.linear, value: interactor.selection)
       }
       .preference(key: BottomPanelIsMinimizedKey.self, value: isMinimized)
+      .onAppear {
+        observedTrackCount = interactor.timelineProperties.dataSource.tracks.count
+      }
+      .onReceive(interactor.timelineProperties.dataSource.$tracks.map(\.count).removeDuplicates()) { tracksCount in
+        observedTrackCount = tracksCount
+      }
     }
   }
 }

@@ -1,6 +1,7 @@
 @_spi(Internal) import IMGLYCore
 @_spi(Internal) import IMGLYCoreUI
 @_spi(Internal) import enum IMGLYCoreUI.HorizontalAlignment
+@_spi(Internal) import IMGLYEngine
 import SwiftUI
 
 struct TextFormatOptions: View {
@@ -16,11 +17,11 @@ struct TextFormatOptions: View {
         fontWeightSelection
         fontSizeSelection
         alignmentSelection
+        letterOptions
         if interactor.isAllowed(id, scope: .layerResize) {
           frameBehavior
           clipping
         }
-        letterOptions
       }
     }
   }
@@ -50,9 +51,45 @@ struct TextFormatOptions: View {
   @ViewBuilder var fontWeightSelection: some View {
     let text = interactor.bindTextState(id, resetFontProperties: false)
 
+    // Wrap interactor.bind to convert nil → .inactive so the setter fires on deselect.
+    // GenericPropertyButton sets nil when toggling off, but interactor.bind ignores nil values.
+    let rawUnderline: Binding<TextProperty?> = interactor.bind(id) { engine, block in
+      let decorations = try engine.block.getTextDecorations(block)
+      let hasUnderline = decorations.contains { $0.line.contains(.underline) }
+      return hasUnderline ? TextProperty.underline : TextProperty.inactive
+    } setter: { engine, blocks, _, completion in
+      try blocks.forEach {
+        try engine.block.toggleTextDecorationUnderline($0)
+      }
+      let didChange = !blocks.isEmpty
+      return try (completion?(engine, blocks, didChange) ?? false) || didChange
+    }
+    let underlineBinding = Binding<TextProperty?>(
+      get: { rawUnderline.wrappedValue },
+      set: { rawUnderline.wrappedValue = $0 ?? .inactive }
+    )
+
+    let rawStrikethrough: Binding<TextProperty?> = interactor.bind(id) { engine, block in
+      let decorations = try engine.block.getTextDecorations(block)
+      let hasStrikethrough = decorations.contains { $0.line.contains(.strikethrough) }
+      return hasStrikethrough ? TextProperty.strikethrough : TextProperty.inactive
+    } setter: { engine, blocks, _, completion in
+      try blocks.forEach {
+        try engine.block.toggleTextDecorationStrikethrough($0)
+      }
+      let didChange = !blocks.isEmpty
+      return try (completion?(engine, blocks, didChange) ?? false) || didChange
+    }
+    let strikethroughBinding = Binding<TextProperty?>(
+      get: { rawStrikethrough.wrappedValue },
+      set: { rawStrikethrough.wrappedValue = $0 ?? .inactive }
+    )
+
     HStack(spacing: 32) {
       PropertyButton(property: .bold, selection: text.bold)
       PropertyButton(property: .italic, selection: text.italic)
+      PropertyButton(property: .underline, selection: underlineBinding)
+      PropertyButton(property: .strikethrough, selection: strikethroughBinding)
       Spacer()
       let selection: Binding<String?> = interactor.bind(id) { engine, block in
         let typeface = try engine.block.getTypeface(block)
@@ -230,24 +267,6 @@ struct TextFormatOptions: View {
 
   @ViewBuilder var letterOptions: some View {
     Section {
-      PropertySlider<Float>(
-        .imgly.localized("ly_img_editor_sheet_format_text_label_line_height"),
-        in: 0.5 ... 2.5,
-        property: .key(.textLineHeight)
-      )
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_line_height"))
-    }
-    Section {
-      PropertySlider<Float>(
-        .imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"),
-        in: 0 ... 2.5,
-        property: .key(.textParagraphSpacing)
-      )
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"))
-    }
-    Section {
       HStack {
         let letterCase: Binding<Interactor.TextCase?> = interactor.bind(id) { engine, block in
           let textCase = try engine.block.getTextCases(block).first
@@ -287,6 +306,85 @@ struct TextFormatOptions: View {
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"))
+    }
+    listStyleSelection
+    Section {
+      PropertySlider<Float>(
+        .imgly.localized("ly_img_editor_sheet_format_text_label_line_height"),
+        in: 0.5 ... 2.5,
+        property: .key(.textLineHeight)
+      )
+    } header: {
+      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_line_height"))
+    }
+    Section {
+      PropertySlider<Float>(
+        .imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"),
+        in: 0 ... 2.5,
+        property: .key(.textParagraphSpacing)
+      )
+    } header: {
+      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"))
+    }
+  }
+
+  @ViewBuilder var listStyleSelection: some View {
+    Section {
+      HStack {
+        // Use `default: nil` overload so the getter can return nil for mixed-paragraph state.
+        // This gives Binding<ListStyle?> where nil means "mixed" (no button highlighted).
+        let listStyle: Binding<IMGLYEngine.ListStyle?> = interactor.bind(
+          id, default: nil as IMGLYEngine.ListStyle?,
+        ) { engine, block -> IMGLYEngine.ListStyle? in
+          let cursorRange = try engine.block.getTextCursorRange()
+          let paragraphIndices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
+          guard !paragraphIndices.isEmpty else { return ListStyle.none }
+          let styles = try paragraphIndices.map {
+            try engine.block.getTextListStyle(block, paragraphIndex: $0)
+          }
+          let first = styles[0]
+          return styles.dropFirst().allSatisfy { $0 == first } ? first : nil
+        } setter: { engine, blocks, value, completion in
+          guard let value else { return false }
+          let cursorRange = try engine.block.getTextCursorRange()
+          let changed = try blocks.filter { block in
+            let paragraphIndices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
+            guard !paragraphIndices.isEmpty else { return false }
+            return try paragraphIndices.contains {
+              try engine.block.getTextListStyle(block, paragraphIndex: $0) != value
+            }
+          }
+          try changed.forEach { block in
+            if cursorRange != nil {
+              let paragraphIndices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
+              try paragraphIndices.forEach { index in
+                try engine.block.setTextListStyle(block, listStyle: value, paragraphIndex: index)
+              }
+            } else {
+              try engine.block.setTextListStyle(block, listStyle: value, paragraphIndex: -1)
+            }
+          }
+          let didChange = !changed.isEmpty
+          return try (completion?(engine, blocks, didChange) ?? false) || didChange
+        }
+
+        // Wrap so that PropertyButton's toggle-off (nil) maps to .none instead of mixed state.
+        let mappedListStyle = Binding<IMGLYEngine.ListStyle?>(
+          get: { listStyle.wrappedValue },
+          set: { listStyle.wrappedValue = $0 ?? .none },
+        )
+
+        PropertyButton(property: ListStyle.none, selection: mappedListStyle)
+        Spacer()
+        PropertyButton(property: ListStyle.unordered, selection: mappedListStyle)
+        Spacer()
+        PropertyButton(property: ListStyle.ordered, selection: mappedListStyle)
+      }
+      .padding([.leading, .trailing], 16)
+      .labelStyle(.iconOnly)
+      .buttonStyle(.borderless)
+    } header: {
+      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_list_style"))
     }
   }
 }

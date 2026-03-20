@@ -1,4 +1,5 @@
 import CoreMedia
+import IMGLYEngine
 import SwiftUI
 @_spi(Internal) import IMGLYCore
 @_spi(Advanced) import SwiftUIIntrospect
@@ -32,6 +33,7 @@ struct TimelineContentView: View {
 
   var body: some View {
     let scrollOffsetX = horizontalScrollViewDelegate.contentOffset.x
+    let isVoiceOverRecordModeActive = timeline.interactor?.isVoiceOverRecordModeActive == true
     let maxPlaybackPoints = timelineProperties.player.maxPlaybackDuration.map { timeline.convertToPoints(time: $0) }
     let isPlayheadStickyToMax = maxPlaybackPoints.map { scrollOffsetX >= $0 } ?? false
     let playheadOffset: CGFloat = if let maxPlaybackPoints, scrollOffsetX >= maxPlaybackPoints {
@@ -75,6 +77,14 @@ struct TimelineContentView: View {
             withAnimation {
               proxy.scrollTo(id)
             }
+          }
+          .onChange(of: timelineProperties.scrollTargetRequest) { newValue in
+            guard let request = newValue else { return }
+            scrollToRequestedClip(request, proxy: proxy)
+          }
+          .onReceive(dataSource.$tracks) { _ in
+            guard let request = timelineProperties.scrollTargetRequest else { return }
+            scrollToRequestedClip(request, proxy: proxy)
           }
         }
       }
@@ -171,6 +181,7 @@ struct TimelineContentView: View {
       }
     }
     .coordinateSpace(name: "timeline")
+    .allowsHitTesting(!isVoiceOverRecordModeActive)
     .introspect(.scrollView, on: .iOS(.v16...)) { horizontalScrollView in
       guard horizontalScrollView !== self.horizontalScrollView else { return }
 
@@ -352,7 +363,55 @@ struct TimelineContentView: View {
     // Add some delay to "ensure" layouting is done.
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
       self.verticalScrollView = verticalScrollView
+      if let request = timelineProperties.scrollTargetRequest,
+         dataSource.findClip(id: request.id) != nil,
+         adjustVerticalScrollPosition(for: request.id) {
+        timelineProperties.consumeScrollRequest(request)
+      }
     }
+  }
+
+  private func scrollToRequestedClip(_ request: TimelineScrollTargetRequest, proxy: ScrollViewProxy) {
+    guard dataSource.findClip(id: request.id) != nil else { return }
+    withAnimation {
+      proxy.scrollTo(request.id)
+    }
+    DispatchQueue.main.async {
+      if adjustVerticalScrollPosition(for: request.id) {
+        timelineProperties.consumeScrollRequest(request)
+      }
+    }
+  }
+
+  @discardableResult
+  private func adjustVerticalScrollPosition(for clipID: DesignBlockID) -> Bool {
+    guard let verticalScrollView else { return false }
+
+    let displayedTracks = Array(dataSource.tracks.reversed())
+    guard let trackIndex = displayedTracks.firstIndex(where: { track in
+      track.clips.contains(where: { $0.id == clipID })
+    }) else { return false }
+
+    let topPadding = configuration.timelineRulerHeight + configuration.trackSpacing
+    let rowStride = configuration.trackHeight + configuration.trackSpacing
+    let trackTop = topPadding + CGFloat(trackIndex) * rowStride
+    let trackBottom = trackTop + configuration.trackHeight
+
+    let visibleHeight = verticalScrollView.bounds.height
+      - verticalScrollView.adjustedContentInset.top
+      - verticalScrollView.adjustedContentInset.bottom
+    let coveredBottomHeight = configuration.backgroundTrackHeight + configuration.trackSpacing * 3
+    let desiredVisibleBottom = visibleHeight - coveredBottomHeight
+    let desiredOffsetY = max(0, trackBottom - desiredVisibleBottom + configuration.trackSpacing)
+    let maxOffsetY = max(0, verticalScrollView.contentSize.height - visibleHeight)
+    let clampedOffsetY = min(desiredOffsetY, maxOffsetY)
+
+    guard abs(verticalScrollView.contentOffset.y - clampedOffsetY) > 1 else { return true }
+    verticalScrollView.setContentOffset(
+      CGPoint(x: verticalScrollView.contentOffset.x, y: clampedOffsetY),
+      animated: true,
+    )
+    return true
   }
 }
 

@@ -37,7 +37,7 @@ protocol AudioRecordManagerProvider {
   var status: AudioRecordStatus { get }
   var delegate: AudioRecordDelegate? { get set }
 
-  func start()
+  func start() -> AudioRecordError?
   func pause()
   func stop()
 }
@@ -199,29 +199,26 @@ final class AudioRecordManager {
 
     delegate?.engineConfigurationHasChanged(self)
   }
-
-  /// Starts the audio engine for recording.
-  private func startRecording() {
-    do {
-      try audioEngine.start()
-    } catch {
-      delegate?.audioEngineDidEncounterError(self, error: .failedBuffer)
-    }
-  }
 }
 
 // MARK: - AudioEngineProvider
 
 extension AudioRecordManager: AudioRecordManagerProvider {
-  func start() {
-    guard !audioEngine.isRunning else { return }
+  func start() -> AudioRecordError? {
+    guard !audioEngine.isRunning else { return nil }
 
     guard audioEngine.inputNode.inputFormat(forBus: inputBus).channelCount > 0 else {
       delegate?.audioEngineDidEncounterError(self, error: .noInputChannel)
-      return
+      return .noInputChannel
     }
 
-    startRecording()
+    do {
+      try audioEngine.start()
+      return nil
+    } catch {
+      delegate?.audioEngineDidEncounterError(self, error: .failedBuffer)
+      return .failedBuffer
+    }
   }
 
   func pause() {

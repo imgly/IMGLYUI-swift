@@ -35,7 +35,7 @@ struct Sheet: View {
         .imgly.fontFamilies(sheet.fontFamilies)
     case let sheet as SheetTypes.Crop:
       CropOptionsSheet(sources: sheet.assetSourceIDs)
-    case is SheetTypes.Voiceover: VoiceoverSheet()
+    case is SheetTypes.Voiceover: VoiceOverSheet()
     case is SheetTypes.Reorder: ReorderOptionsSheet()
     case is SheetTypes.Adjustments: AdjustmentsOptionsSheet()
     case is SheetTypes.Filter: FilterOptionsSheet()

@@ -8,6 +8,10 @@ import SwiftUI
 protocol TimelineInteractor: ObservableObject {
   var timelineProperties: TimelineProperties { get }
   var isLoopingPlaybackEnabled: Bool { get }
+  var isVoiceOverRecordModeActive: Bool { get }
+  var isVoiceOverRecordModeRecording: Bool { get }
+  var hasVoiceOverRecordModeRecordedAudio: Bool { get }
+  var voiceOverRecordModeTarget: DesignBlockID? { get }
 
   func setTrim(clip: Clip, timeOffset: CMTime, trimOffset: CMTime, duration: CMTime)
   func splitSelectedClipAtPlayheadPosition()
@@ -36,7 +40,8 @@ protocol TimelineInteractor: ObservableObject {
     timeRange: ClosedRange<Double>,
     numberOfSamples: Int,
   ) async throws -> AsyncThrowingStream<AudioThumbnail, Swift.Error>
-  func play()
+  func forceLoadAudioResource(for clip: Clip) async throws
+  func play(seekToStartIfNeeded: Bool)
   func pause()
   func togglePlayback()
   func setPageMuted(_ muted: Bool)
@@ -47,4 +52,10 @@ protocol TimelineInteractor: ObservableObject {
   func addAudioAsset()
   func openVoiceOver(style: SheetStyle)
   func openCamera(_ assetSourceIDs: [MediaType: String])
+}
+
+extension TimelineInteractor {
+  func play() {
+    play(seekToStartIfNeeded: true)
+  }
 }

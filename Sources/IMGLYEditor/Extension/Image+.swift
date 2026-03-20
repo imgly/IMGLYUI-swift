@@ -32,9 +32,6 @@ public extension IMGLY where Wrapped == Image {
   /// An icon image for adding a voiceover.
   static let addVoiceover = Wrapped("custom.mic.badge.plus", bundle: .module)
 
-  /// An icon image for editing a voiceover.
-  static let editVoiceover = Wrapped("custom.waveform.badge.mic", bundle: .module)
-
   /// An icon image for reoder.
   static let reorder = Wrapped(systemName: "rectangle.portrait.arrowtriangle.2.outward")
   /// An icon image for adjustments.

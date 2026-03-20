@@ -30,10 +30,8 @@ extension Interactor: AudioInteractor {
     return audioBlock
   }
 
-  func createAudioBlockBuffer(for audioBlock: DesignBlockID) throws -> URL {
-    let audioBuffer = try _engine.editor.createBuffer()
-    try _engine.block.set(audioBlock, property: .key(.audioFileURI), value: audioBuffer)
-    return audioBuffer
+  func createAudioBlockBuffer(for _: DesignBlockID) throws -> URL {
+    try _engine.editor.createBuffer()
   }
 
   func createAudioBlockData(from audioBlock: DesignBlockID) async throws -> Blob {
@@ -64,8 +62,16 @@ extension Interactor: AudioInteractor {
     return nil
   }
 
+  func getAudioBlockTimeOffset(for audioBlock: DesignBlockID) throws -> Double {
+    try _engine.block.getTimeOffset(audioBlock)
+  }
+
   func setAudioBlockURL(for audioBlock: DesignBlockID, to url: URL) throws {
     try _engine.block.set(audioBlock, property: .key(.audioFileURI), value: url)
+  }
+
+  func setAudioBlockTimeOffset(for audioBlock: DesignBlockID, to offset: Double) throws {
+    try _engine.block.setTimeOffset(audioBlock, offset: offset)
   }
 
   func setAudioBlockBuffer(audioData: Data, on buffer: URL, at offset: UInt) throws {
@@ -74,6 +80,14 @@ extension Interactor: AudioInteractor {
 
   func setAudioBlockBufferLength(url: URL, length: UInt) throws {
     try _engine.editor.setBufferLength(url: url, length: length)
+  }
+
+  func getAudioBlockBufferData(url: URL, offset: UInt, length: UInt) throws -> Data {
+    try _engine.editor.getBufferData(url: url, offset: offset, length: length)
+  }
+
+  func destroyAudioBlockBuffer(url: URL) throws {
+    try _engine.editor.destroyBuffer(url: url)
   }
 
   func generateAudioBlockThumbnails(

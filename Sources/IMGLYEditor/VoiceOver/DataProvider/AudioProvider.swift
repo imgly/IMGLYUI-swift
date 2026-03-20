@@ -36,7 +36,7 @@ protocol VoiceOverAudioProvider {
     -> AsyncThrowingStream<AudioThumbnail, Swift.Error>
   /// Ends the current audio block and optionally writes the data to a file.
   /// - Throws: An error if ending the audio block fails.
-  func endAudioBlock() async throws
+  func endAudioBlock() async throws -> Bool
   /// Ends the current audio block and restores last date if needed..
   /// - Throws: An error if ending the audio block fails.
   func cancelChangesAudioBlock() async throws
@@ -52,6 +52,7 @@ final class AudioProvider {
     static let sampleRateValue = AudioRecordSettings.SampleRate.rate48000.value
     static let numberBytes = 4
     static let audioFileFormat = "wav"
+    static let wavHeaderLength = 44
   }
 
   private enum Localization {
@@ -71,8 +72,11 @@ final class AudioProvider {
   private var interactor: AudioInteractor
   private var buffer: URL?
   private var currentSampleOffset: UInt = 0
+  private var audioBlockTimeOffset: Double = 0
   private var fileURL: URL?
   private var audioBlockWasUpdated: Bool = false
+
+  var currentBufferURL: URL? { buffer }
 
   // MARK: - Initializers
 
@@ -143,19 +147,6 @@ final class AudioProvider {
 
     return interleaved
   }
-
-  /// Sets the buffer size based on the total duration.
-  private func setBufferWithSize(of totalDuration: Double) {
-    guard let buffer else { return }
-
-    let frames = Int(ceil(totalDuration * AudioMetrics.sampleRateValue))
-    let bufferSizeLength = UInt(frames * AudioMetrics.numberChannels * AudioMetrics.numberBytes)
-    do {
-      try interactor.setAudioBlockBufferLength(url: buffer, length: bufferSizeLength)
-    } catch {
-      print("Failed to set buffer length:", error)
-    }
-  }
 }
 
 // MARK: - VoiceOverAudioProvider
@@ -171,32 +162,57 @@ extension AudioProvider: VoiceOverAudioProvider {
     return Double(samplesPerChannel) / AudioMetrics.sampleRateValue
   }
 
+  var recordedDuration: Double {
+    sampleToSeconds(sample: currentSampleOffset)
+  }
+
   func setup(for audioBlock: DesignBlockID) async throws {
     // read an existed data stored for that audioblock
     // create a new buffer
     // fill the buffer from the data
     self.audioBlock = audioBlock
+    buffer = nil
+    audioBlockTimeOffset = (try? interactor.getAudioBlockTimeOffset(for: audioBlock)) ?? 0
+    currentSampleOffset = 0
+    audioBlockWasUpdated = false
+    fileURL = try interactor.getAudioBlockURL(for: audioBlock)
+    if fileURL?.scheme == "buffer" {
+      fileURL = nil
+    }
 
-    if let fileURL = try interactor.getAudioBlockURL(for: audioBlock),
+    if fileURL != nil,
        let audioData = try await interactor.getAudioBlockFileData(for: audioBlock) {
       try createBuffer()
       if let buffer {
         try interactor.setAudioBlockBuffer(audioData: audioData, on: buffer, at: 0)
+        try interactor.setAudioBlockBufferLength(url: buffer, length: UInt(audioData.count))
+        currentSampleOffset = UInt(audioData.count)
       }
-      self.fileURL = fileURL
     }
   }
 
   func resetOffsetPosition(for seconds: Double, totalDuration: Double?) {
+    _ = totalDuration
     do {
+      let clampedSeconds = max(0, seconds)
       if buffer == nil {
         try createAudioBlock()
         try createBuffer()
-        if let totalDuration {
-          setBufferWithSize(of: totalDuration)
+        if let audioBlock {
+          audioBlockTimeOffset = clampedSeconds
+          try interactor.setAudioBlockTimeOffset(for: audioBlock, to: audioBlockTimeOffset)
         }
+        if let buffer {
+          try interactor.setAudioBlockBufferLength(url: buffer, length: 0)
+        }
+        currentSampleOffset = 0
+      } else {
+        let relativeSeconds = max(0, clampedSeconds - audioBlockTimeOffset)
+        currentSampleOffset = secondsToSample(seconds: relativeSeconds)
       }
-      currentSampleOffset = secondsToSample(seconds: seconds)
+      if let audioBlock, let buffer {
+        try interactor.setAudioBlockURL(for: audioBlock, to: buffer)
+      }
     } catch {
       print("Failed to reset offset position:", error)
     }
@@ -210,6 +226,7 @@ extension AudioProvider: VoiceOverAudioProvider {
 
     try interactor.setAudioBlockBuffer(audioData: dataAudio, on: buffer, at: currentSampleOffset)
     currentSampleOffset += UInt(dataAudio.count)
+    try interactor.setAudioBlockBufferLength(url: buffer, length: currentSampleOffset)
 
     if !audioBlockWasUpdated {
       audioBlockWasUpdated = true
@@ -227,14 +244,14 @@ extension AudioProvider: VoiceOverAudioProvider {
                                                              with: numberOfSamples)
   }
 
-  func endAudioBlock() async throws {
+  func endAudioBlock() async throws -> Bool {
     // If there is no audio block and it has not been updated, return early
     // If there have been updates to the audio block, but the block is missing, throw an error
     guard let audioBlock else {
       if audioBlockWasUpdated {
         throw Error(errorDescription: Localization.missingAudioBlock)
       } else {
-        return
+        return false
       }
     }
 
@@ -243,22 +260,92 @@ extension AudioProvider: VoiceOverAudioProvider {
       // create the data from the audio
       // write the audio data to the new file
       // update the audio block to point to the new file URL
-      let url = try createAudioFileUrl()
-      let audioData = try await interactor.createAudioBlockData(from: audioBlock)
-      try audioData.write(to: url, options: .atomic)
-      try interactor.setAudioBlockURL(for: audioBlock, to: url)
+      guard let buffer else { throw Error(errorDescription: Localization.missingBuffer) }
+      defer { try? destroyBufferIfNeeded() }
+      do {
+        try interactor.setAudioBlockURL(for: audioBlock, to: buffer)
+        var audioData = try await interactor.createAudioBlockData(from: audioBlock)
+        if audioData.count <= AudioMetrics.wavHeaderLength, currentSampleOffset > 0 {
+          audioData = try createWAVDataFromBuffer(buffer, length: currentSampleOffset)
+        }
+        guard audioData.count > AudioMetrics.wavHeaderLength else {
+          if let fileURL {
+            try interactor.setAudioBlockURL(for: audioBlock, to: fileURL)
+            return true
+          }
+          return false
+        }
 
+        let url = try createAudioFileUrl()
+        try audioData.write(to: url, options: .atomic)
+        try interactor.setAudioBlockURL(for: audioBlock, to: url)
+        fileURL = url
+        return true
+      } catch {
+        if let fileURL {
+          try? interactor.setAudioBlockURL(for: audioBlock, to: fileURL)
+        }
+        throw error
+      }
     } else if let fileURL {
       // If no updates were made, ensure the audio block URL points to the existing file
       try interactor.setAudioBlockURL(for: audioBlock, to: fileURL)
+      try? destroyBufferIfNeeded()
+      return true
     }
+    try? destroyBufferIfNeeded()
+    return false
   }
 
   func cancelChangesAudioBlock() async throws {
     guard let audioBlock, let fileURL else {
+      try? destroyBufferIfNeeded()
       return
     }
 
     try interactor.setAudioBlockURL(for: audioBlock, to: fileURL)
+    try? destroyBufferIfNeeded()
+  }
+
+  private func destroyBufferIfNeeded() throws {
+    guard let buffer else { return }
+    try interactor.destroyAudioBlockBuffer(url: buffer)
+    self.buffer = nil
+  }
+
+  private func createWAVDataFromBuffer(_ buffer: URL, length: UInt) throws -> Data {
+    let pcmData = try interactor.getAudioBlockBufferData(url: buffer, offset: 0, length: length)
+    var wavData = Data(capacity: AudioMetrics.wavHeaderLength + pcmData.count)
+
+    wavData.append(contentsOf: "RIFF".utf8)
+    wavData.appendUInt32LE(UInt32(36 + pcmData.count))
+    wavData.append(contentsOf: "WAVE".utf8)
+    wavData.append(contentsOf: "fmt ".utf8)
+    wavData.appendUInt32LE(16)
+    wavData.appendUInt16LE(3) // IEEE float PCM
+    wavData.appendUInt16LE(UInt16(AudioMetrics.numberChannels))
+    wavData.appendUInt32LE(UInt32(AudioMetrics.sampleRateValue))
+    wavData
+      .appendUInt32LE(UInt32(AudioMetrics
+          .sampleRateValue * Double(AudioMetrics.numberChannels * AudioMetrics.numberBytes)))
+    wavData.appendUInt16LE(UInt16(AudioMetrics.numberChannels * AudioMetrics.numberBytes))
+    wavData.appendUInt16LE(UInt16(AudioMetrics.numberBytes * 8))
+    wavData.append(contentsOf: "data".utf8)
+    wavData.appendUInt32LE(UInt32(pcmData.count))
+    wavData.append(pcmData)
+
+    return wavData
+  }
+}
+
+private extension Data {
+  mutating func appendUInt16LE(_ value: UInt16) {
+    var littleEndian = value.littleEndian
+    Swift.withUnsafeBytes(of: &littleEndian) { append(contentsOf: $0) }
+  }
+
+  mutating func appendUInt32LE(_ value: UInt32) {
+    var littleEndian = value.littleEndian
+    Swift.withUnsafeBytes(of: &littleEndian) { append(contentsOf: $0) }
   }
 }

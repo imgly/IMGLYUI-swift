@@ -49,7 +49,7 @@ public extension CanvasMenu.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/bringSelectionForward`` event is invoked.
   ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
-  /// `ly_img_editor_canvas_menu_button_bring_forward` and icon ``IMGLY/bringForward`` is used.
+  /// `ly_img_editor_canvas_menu_button_bring_forward` and icon ``IMGLYCore/IMGLY/bringForward`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the selected design block is not
   /// the last reorderable child in the parent design block.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block can be
@@ -75,7 +75,7 @@ public extension CanvasMenu.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/sendSelectionBackward`` event is invoked.
   ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
-  /// `ly_img_editor_canvas_menu_button_send_backward` and icon ``IMGLY/sendBackward`` is used.
+  /// `ly_img_editor_canvas_menu_button_send_backward` and icon ``IMGLYCore/IMGLY/sendBackward`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the selected design block is not
   /// the first reorderable child in the parent design block.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block can be
@@ -101,7 +101,7 @@ public extension CanvasMenu.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/duplicateSelection`` event is invoked.
   ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
-  /// `ly_img_editor_canvas_menu_button_duplicate` and icon ``IMGLY/duplicate`` is used.
+  /// `ly_img_editor_canvas_menu_button_duplicate` and icon ``IMGLYCore/IMGLY/duplicate`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block's engine
   /// scope `"lifecycle/duplicate"` is allowed.
@@ -128,7 +128,7 @@ public extension CanvasMenu.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/deleteSelection``
   /// event is invoked.
   ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
-  /// `ly_img_editor_canvas_menu_button_delete` and icon ``IMGLY/delete`` is used.
+  /// `ly_img_editor_canvas_menu_button_delete` and icon ``IMGLYCore/IMGLY/delete`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block's engine
   /// scope `"lifecycle/destroy"` is allowed.
@@ -155,7 +155,8 @@ public extension CanvasMenu.Buttons {
   ///   - action: The action to perform when the user triggers the button. By default,
   /// ``EditorEvent/selectGroupForSelection`` event is invoked.
   ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
-  /// `ly_img_editor_canvas_menu_button_select_group`, icon ``IMGLY/selectGroup``, and style ``IMGLY/canvasMenu(_:)`` is
+  /// `ly_img_editor_canvas_menu_button_select_group`, icon ``IMGLYCore/IMGLY/selectGroup``, and style
+  /// ``IMGLYCore/IMGLY/canvasMenu(_:)`` is
   /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block is part

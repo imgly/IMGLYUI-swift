@@ -3,20 +3,21 @@ import IMGLYEngine
 import SwiftUI
 
 public extension Dock.Buttons.ID {
-  /// The id of the ``IMGLYEditor/Buttons/designColors(action:title:icon:isEnabled:isVisible:)`` button.
+  /// The id of the ``Dock/Buttons/designColors(action:title:icon:isEnabled:isVisible:)`` button.
   static var designColors: EditorComponentID { "ly.img.component.dock.button.postcard.designColors" }
-  /// The id of the ``IMGLYEditor/Buttons/greetingColors(action:title:icon:isEnabled:isVisible:)`` button.
+  /// The id of the ``Dock/Buttons/greetingColors(action:title:icon:isEnabled:isVisible:)`` button.
   static var greetingColors: EditorComponentID { "ly.img.component.dock.button.postcard.namedColors" }
-  /// The id of the ``IMGLYEditor/Buttons/greetingFont(action:title:icon:isEnabled:isVisible:)`` button.
+  /// The id of the ``Dock/Buttons/greetingFont(action:title:icon:isEnabled:isVisible:)`` button.
   static var greetingFont: EditorComponentID { "ly.img.component.dock.button.postcard.greetingFont" }
-  /// The id of the ``IMGLYEditor/Buttons/greetingSize(action:title:icon:isEnabled:isVisible:)`` button.
+  /// The id of the ``Dock/Buttons/greetingSize(action:title:icon:isEnabled:isVisible:)`` button.
   static var greetingSize: EditorComponentID { "ly.img.component.dock.button.postcard.greetingSize" }
 }
 
 public extension Dock.Buttons {
-  /// Creates a ``Dock/Button`` that opens the selection colors sheet.
+  /// Creates a ``IMGLYEditor/Dock/Button`` that opens the selection colors sheet.
   /// - Parameters:
-  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  ///   - action: The action to perform when the user triggers the button. By default,
+  /// ``IMGLYEditor/EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``Postcard/SheetType/designColors(style:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_colors` is used.
@@ -46,9 +47,10 @@ public extension Dock.Buttons {
     }, isEnabled: isEnabled, isVisible: isVisible)
   }
 
-  /// Creates a ``Dock/Button`` that opens the color sheet.
+  /// Creates a ``IMGLYEditor/Dock/Button`` that opens the color sheet.
   /// - Parameters:
-  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  ///   - action: The action to perform when the user triggers the button. By default,
+  /// ``IMGLYEditor/EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``Postcard/SheetType/greetingColors(style:id:colorPalette:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_colors` is used.
@@ -89,9 +91,10 @@ public extension Dock.Buttons {
     }, isEnabled: isEnabled, isVisible: isVisible)
   }
 
-  /// Creates a ``Dock/Button`` that opens the font sheet.
+  /// Creates a ``IMGLYEditor/Dock/Button`` that opens the font sheet.
   /// - Parameters:
-  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  ///   - action: The action to perform when the user triggers the button. By default,
+  /// ``IMGLYEditor/EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``Postcard/SheetType/greetingFont(style:id:fontFamilies:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_font` is used.
@@ -126,9 +129,10 @@ public extension Dock.Buttons {
     }, isEnabled: isEnabled, isVisible: isVisible)
   }
 
-  /// Creates a ``Dock/Button`` that opens the font size sheet.
+  /// Creates a ``IMGLYEditor/Dock/Button`` that opens the font size sheet.
   /// - Parameters:
-  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  ///   - action: The action to perform when the user triggers the button. By default,
+  /// ``IMGLYEditor/EditorEvent/openSheet(type:)``
   /// event is invoked with sheet type ``Postcard/SheetType/greetingSize(style:id:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_size` is used.

@@ -80,7 +80,8 @@ public extension IMGLY where Wrapped: View {
     wrapped.environment(\.imglyOnChanged, onChanged)
   }
 
-  /// Sets the asset library UI definition used by the editor. By default, the predefined ``DefaultAssetLibrary`` is
+  /// Sets the asset library UI definition used by the editor. By default, the predefined
+  /// ``IMGLYCoreUI/DefaultAssetLibrary`` is
   /// used. To use custom asset sources in the asset library UI, the custom asset source must be first added to the
   /// engine. In addition to creating or loading a scene, registering the asset sources should be done in the
   /// ``onCreate(_:)`` callback.
@@ -177,7 +178,7 @@ public extension IMGLY where Wrapped: View {
   ///   InspectorBar.Buttons.formatText() // Text
   ///   InspectorBar.Buttons.fillStroke() // Page, Video, Image, Shape, Text
   ///   InspectorBar.Buttons.textBackground() // Text
-  ///   InspectorBar.Buttons.editVoiceover() // Voiceover
+  ///   InspectorBar.Buttons.addVoiceoverRecording() // Voiceover
   ///   InspectorBar.Buttons.volume() // Video, Audio, Voiceover
   ///   InspectorBar.Buttons.crop() // Video, Image
   ///   InspectorBar.Buttons.adjustments() // Video, Image

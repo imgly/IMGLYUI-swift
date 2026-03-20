@@ -8,6 +8,10 @@ import SwiftUI
 class AnyTimelineInteractor: TimelineInteractor {
   var timelineProperties: TimelineProperties { interactor.timelineProperties }
   var isLoopingPlaybackEnabled: Bool { interactor.isLoopingPlaybackEnabled }
+  var isVoiceOverRecordModeActive: Bool { interactor.isVoiceOverRecordModeActive }
+  var isVoiceOverRecordModeRecording: Bool { interactor.isVoiceOverRecordModeRecording }
+  var hasVoiceOverRecordModeRecordedAudio: Bool { interactor.hasVoiceOverRecordModeRecordedAudio }
+  var voiceOverRecordModeTarget: DesignBlockID? { interactor.voiceOverRecordModeTarget }
 
   func setTrim(clip: Clip, timeOffset: CMTime, trimOffset: CMTime, duration: CMTime) {
     interactor.setTrim(clip: clip, timeOffset: timeOffset, trimOffset: trimOffset, duration: duration)
@@ -98,8 +102,12 @@ class AnyTimelineInteractor: TimelineInteractor {
     )
   }
 
-  func play() {
-    interactor.play()
+  func forceLoadAudioResource(for clip: Clip) async throws {
+    try await interactor.forceLoadAudioResource(for: clip)
+  }
+
+  func play(seekToStartIfNeeded: Bool) {
+    interactor.play(seekToStartIfNeeded: seekToStartIfNeeded)
   }
 
   func pause() {

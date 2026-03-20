@@ -22,11 +22,6 @@ enum AnimationPropertyDefinitions {
     "/travelDistanceRatio": .imgly.localized("ly_img_editor_sheet_animations_label_distance"),
     "/zoomIntensity": .imgly.localized("ly_img_editor_sheet_animations_label_zoom_intensity"),
     "/writingStyle": .imgly.localized("ly_img_editor_sheet_animations_label_writing_style"),
-    "/startScale": .imgly.localized("ly_img_editor_sheet_animations_label_start_scale"),
-    "/endScale": .imgly.localized("ly_img_editor_sheet_animations_label_end_scale"),
-    "/startDelay": .imgly.localized("ly_img_editor_sheet_animations_label_start_delay"),
-    "/holdDuration": .imgly.localized("ly_img_editor_sheet_animations_label_hold_duration"),
-    "/easingDuration": .imgly.localized("ly_img_editor_sheet_animations_label_easing_duration"),
   ]
 
   // MARK: - Enum Option Labels

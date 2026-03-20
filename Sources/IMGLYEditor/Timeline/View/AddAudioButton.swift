@@ -64,7 +64,7 @@ struct AddAudioButton: View {
       .accessibilityLabel(Text(Localization.accessabilityAddMusic))
 
       Button {
-        interactor.openVoiceOver(style: .only(detent: .imgly.medium))
+        interactor.openVoiceOver(style: .only(isFloating: true, detent: .imgly.micro))
       } label: {
         Label {
           Text(Localization.buttonAddVoiceover)

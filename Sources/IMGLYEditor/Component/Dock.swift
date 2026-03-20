@@ -29,7 +29,7 @@ public extension Dock {
     /// The engine of the current editor.
     public let engine: Engine
     public let eventHandler: EditorEventHandler
-    /// The asset library configured with the ``IMGLY/assetLibrary(_:)`` view modifier.
+    /// The asset library configured with the ``IMGLYCore/IMGLY/assetLibrary(_:)`` view modifier.
     public let assetLibrary: any AssetLibrary
   }
 

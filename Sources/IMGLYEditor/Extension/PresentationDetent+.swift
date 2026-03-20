@@ -4,6 +4,9 @@ import SwiftUI
 extension PresentationDetent: IMGLYCompatible {}
 
 public extension IMGLY where Wrapped == PresentationDetent {
+  /// A micro presentation detent. Smaller than ``tiny``; matches the height of the editor dock bar.
+  /// Use this when a sheet must remain compact so the timeline stays fully visible beneath it.
+  static let micro = Wrapped.custom(AdaptiveMicroPresentationDetent.self)
   /// A tiny presentation detent.
   static let tiny = Wrapped.custom(AdaptiveTinyPresentationDetent.self)
   /// A small presentation detent.
@@ -15,6 +18,7 @@ public extension IMGLY where Wrapped == PresentationDetent {
 
   internal var identifier: UISheetPresentationController.Detent.Identifier? {
     switch wrapped {
+    case .imgly.micro: AdaptiveMicroPresentationDetent.identifier
     case .imgly.tiny: AdaptiveTinyPresentationDetent.identifier
     case .imgly.small: AdaptiveSmallPresentationDetent.identifier
     case .imgly.medium: AdaptiveMediumPresentationDetent.identifier
@@ -33,6 +37,12 @@ extension CustomPresentationDetent {
   static var identifier: UISheetPresentationController.Detent.Identifier {
     let typeName = String(describing: Self.self)
     return .init("Custom:" + typeName)
+  }
+}
+
+private struct AdaptiveMicroPresentationDetent: CustomPresentationDetent {
+  static func height(in context: Context) -> CGFloat? {
+    context.verticalSizeClass == .compact ? 88 : 98
   }
 }
 

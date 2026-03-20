@@ -64,7 +64,7 @@ struct ClipView: View {
           ClipLabelView(
             duration: nil,
             icon: clip.configuration.icon,
-            title: clip.title,
+            title: unselectedClipLabelTitle,
             isMuted: clip.audioVolume == 0 || clip.isMuted,
             isSelectable: clip.allowsSelecting,
             cornerRadius: cornerRadius - 2,
@@ -122,14 +122,16 @@ struct ClipView: View {
   }
 
   private var clipOpacity: Double {
-    (isSelected && clip.clipType != .voiceOver) ? 0 : 1
+    if !isSelected { return 1 }
+    if clip.clipType == .voiceOver, !clip.allowsTrimming { return 1 }
+    return 0
   }
 
   @ViewBuilder
   private var selectedOverlay: some View {
     if isSelected {
       switch clip.clipType {
-      case .voiceOver:
+      case .voiceOver where !clip.allowsTrimming:
         selectedView
       default:
         selectedTrimmingView
@@ -160,7 +162,7 @@ struct ClipView: View {
         ClipLabelView(
           duration: nil,
           icon: clip.configuration.icon,
-          title: clip.clipType == .text ? "" : (clip.title.isEmpty ? clip.clipType.description : clip.title),
+          title: selectedClipLabelTitle,
           isMuted: clip.audioVolume == 0 || clip.isMuted,
           isSelectable: clip.allowsSelecting,
           cornerRadius: configuration.cornerRadius,
@@ -184,6 +186,25 @@ struct ClipView: View {
   private func updateTimeOffsetWidth(timeOffset: CMTime) {
     if !clip.isInBackgroundTrack {
       pointsTimeOffsetWidth = timeline.convertToPoints(time: timeOffset)
+    }
+  }
+
+  private var unselectedClipLabelTitle: String {
+    if clip.clipType == .voiceOver {
+      ""
+    } else {
+      clip.title
+    }
+  }
+
+  private var selectedClipLabelTitle: String {
+    switch clip.clipType {
+    case .text:
+      ""
+    case .voiceOver:
+      isSelected ? (clip.title.isEmpty ? clip.clipType.description : clip.title) : ""
+    default:
+      clip.title.isEmpty ? clip.clipType.description : clip.title
     }
   }
 }

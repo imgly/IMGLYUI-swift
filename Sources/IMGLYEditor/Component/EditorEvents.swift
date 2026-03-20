@@ -160,7 +160,8 @@ public extension EditorEvent where Self == EditorEvents.ShowVideoMinLengthAlert 
 }
 
 public extension EditorEvent where Self == EditorEvents.Export.Start {
-  /// Creates an ``EditorEvent`` to start the export process. This event triggers the ``IMGLY/onExport(_:)`` callback.
+  /// Creates an ``EditorEvent`` to start the export process. This event triggers the ``IMGLYCore/IMGLY/onExport(_:)``
+  /// callback.
   static var startExport: Self { Self() }
 }
 
@@ -229,14 +230,14 @@ public extension EditorEvents.Selection {
 }
 
 public extension EditorEvents.AddFrom {
-  /// Default asset source IDs for adding assets based on the asset's ``MediaType``.
+  /// Default asset source IDs for adding assets based on the asset's ``IMGLYCoreUI/MediaType``.
   static var defaultAssetSourceIDs: [MediaType: String] { [
     .image: Engine.DemoAssetSource.imageUpload.rawValue,
     .movie: Engine.DemoAssetSource.videoUpload.rawValue,
   ] }
 
   /// An event for adding assets from the photo roll.
-  /// The behavior depends on the mode passed to ``PhotoRollAssetSource``:
+  /// The behavior depends on the mode passed to ``IMGLYCore/PhotoRollAssetSource``:
   /// - `photosPicker` (default): Opens system photos picker (no permissions required)
   /// - `fullLibraryAccess`: Opens full photo library (requires permissions)
   struct PhotoRoll: EditorEvent {}
@@ -358,7 +359,7 @@ public extension EditorEvent where Self == EditorEvents.Selection.SendBackward {
 public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {
   /// Creates an ``EditorEvent`` to add assets from the photo roll.
   ///
-  /// The behavior depends on the mode passed to ``PhotoRollAssetSource``:
+  /// The behavior depends on the mode passed to ``IMGLYCore/PhotoRollAssetSource``:
   /// - `photosPicker` (default): Opens system photos picker (no permissions required)
   /// - `fullLibraryAccess`: Opens full photo library (requires permissions)
   ///
@@ -369,7 +370,7 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {
 public extension EditorEvent where Self == EditorEvents.AddFrom.SystemPhotoRoll {
   /// Creates an ``EditorEvent`` to add assets from the system photo roll.
   /// - Parameter assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
-  /// ``MediaType``.
+  /// ``IMGLYCoreUI/MediaType``.
   /// - Returns: The created ``EditorEvents/AddFrom/SystemPhotoRoll`` event.
   @available(*, deprecated, message: """
   Deprecated in v1.66.0. Please see the changelog for migration details:
@@ -395,7 +396,7 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYPhotoRoll {
 public extension EditorEvent where Self == EditorEvents.AddFrom.SystemCamera {
   /// Creates an ``EditorEvent`` to add assets from the system camera.
   /// - Parameter assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
-  /// ``MediaType``.
+  /// ``IMGLYCoreUI/MediaType``.
   /// - Returns: The created ``EditorEvents/AddFrom/SystemCamera`` event.
   static func addFromSystemCamera(
     to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
@@ -407,7 +408,7 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.SystemCamera {
 public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYCamera {
   /// Creates an ``EditorEvent`` to add assets from the IMGLY camera.
   /// - Parameter assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
-  /// ``MediaType``.
+  /// ``IMGLYCoreUI/MediaType``.
   /// - Returns: The created ``EditorEvents/AddFrom/IMGLYCamera`` event.
   static func addFromIMGLYCamera(
     to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
