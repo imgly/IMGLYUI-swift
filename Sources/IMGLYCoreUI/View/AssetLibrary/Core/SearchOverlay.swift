@@ -24,7 +24,7 @@ struct SearchOverlay: View {
       Button {
         searchState.isPresented = false
       } label: {
-        SwiftUI.Label("Cancel", systemImage: "xmark")
+        SwiftUI.Label(String(localized: .imgly.localized("ly_img_editor_button_cancel")), systemImage: "xmark")
       }
       .labelStyle(.titleOnly)
       .imageScale(.large)

@@ -1140,6 +1140,57 @@
         }
       }
     },
+    "ly_img_editor_button_cancel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbrechen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "ly_img_editor_button_close" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schließen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    },
+    "ly_img_editor_button_ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
     "ly_img_editor_canvas_menu_button_bring_forward" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1306,6 +1357,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Are you sure you want to exit?"
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_error_generic_button_dismiss" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schließen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss"
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_error_generic_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fehler"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
           }
         }
       }
@@ -3906,6 +3991,40 @@
         }
       }
     },
+    "ly_img_editor_sheet_animations_label_easing_duration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ease-Dauer"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Easing Duration"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_animations_label_end_scale" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endskalierung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End Scale"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_animations_label_fade" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3919,6 +4038,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fade"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_animations_label_hold_duration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haltedauer"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hold Duration"
           }
         }
       }
@@ -3970,6 +4106,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scale Factor"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_animations_label_start_delay" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Startverzögerung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Delay"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_animations_label_start_scale" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Startskalierung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Scale"
           }
         }
       }
@@ -4429,6 +4599,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Speed"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_color_picker_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farbe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color"
           }
         }
       }
@@ -6405,6 +6592,23 @@
         }
       }
     },
+    "ly_img_editor_sheet_format_text_label_font_weight" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schriftstärke"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Font Weight"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_format_text_label_frame_behaviour" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6656,6 +6860,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Format"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_gradient_color_picker_title_end" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endfarbe des Verlaufs"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gradient End Color"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_gradient_color_picker_title_start" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anfangsfarbe des Verlaufs"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gradient Start Color"
           }
         }
       }
@@ -7612,23 +7850,6 @@
         }
       }
     },
-    "ly_img_editor_sheet_voiceover_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voiceover"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voiceover"
-          }
-        }
-      }
-    },
     "ly_img_editor_sheet_volume_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7829,6 +8050,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Timeline"
+          }
+        }
+      }
+    },
+    "ly_img_editor_timeline_clip_voiceover_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voiceover"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voiceover"
           }
         }
       }

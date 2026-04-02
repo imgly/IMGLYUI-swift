@@ -16,7 +16,6 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
   let assetContext: EffectProperty.AssetContext?
 
   private let extractValue: ((AssetProperty) -> T?)?
-  private let extractStepDigits: ((AssetProperty) -> Int?)?
   private let buildUpdatedProperty: ((AssetProperty, T) -> AssetProperty?)?
   private let assetStep: T?
 
@@ -51,14 +50,12 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
     if let assetContext {
       let closures = Self.assetClosures(for: assetContext.assetProperty)
       extractValue = closures.extractValue
-      extractStepDigits = closures.extractStepDigits
       buildUpdatedProperty = closures.buildUpdatedProperty
       let initialValue = closures.extractValue(assetContext.assetProperty) ?? defaultValue ?? bounds.lowerBound
       _assetValue = State(initialValue: initialValue)
       assetStep = Self.extractStep(from: assetContext.assetProperty)
     } else {
       extractValue = nil
-      extractStepDigits = nil
       buildUpdatedProperty = nil
       _assetValue = State(initialValue: defaultValue ?? bounds.lowerBound)
       assetStep = nil
@@ -91,15 +88,36 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
     )
   }
 
-  // MARK: - Asset Property Formatting
+  // MARK: - Value Formatting
 
-  private static var maxFractionDigits: Int { 2 }
+  private var showPercentage: Bool {
+    PercentageSliderHelper.isPercentageSlider(min: bounds.lowerBound, max: bounds.upperBound)
+  }
+
+  private func percentageText(for value: T) -> String {
+    let percentage = PercentageSliderHelper.valueToPercentage(
+      value: value, min: bounds.lowerBound, max: bounds.upperBound,
+    )
+    return "\(Int(percentage))"
+  }
+
+  private var effectiveStep: T {
+    if let assetStep {
+      return assetStep
+    }
+    return PercentageSliderHelper.stepFromMinMax(min: bounds.lowerBound, max: bounds.upperBound)
+  }
+
+  private func formattedText(for value: T) -> String {
+    PercentageSliderHelper.formatValue(value: value, step: effectiveStep)
+  }
 
   private var formattedValue: String? {
-    guard let assetContext, let extractStepDigits else { return nil }
-    let stepDigits = extractStepDigits(assetContext.assetProperty) ?? Self.maxFractionDigits
-    let decimals = min(Self.maxFractionDigits, stepDigits)
-    return String(format: "%.\(decimals)f", Double(assetValue))
+    if showPercentage {
+      return percentageText(for: assetValue)
+    }
+    guard assetContext != nil else { return nil }
+    return formattedText(for: assetValue)
   }
 
   // MARK: - Body
@@ -113,15 +131,25 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
   }
 
   private var enginePropertyBody: some View {
-    Slider(value: mapping(sliderBinding, bounds),
-           in: bounds) { started in
-      if !started {
-        localValue = nil
-        interactor.addUndoStep()
+    let currentValue = localValue ?? binding.wrappedValue
+    let displayText = showPercentage
+      ? percentageText(for: currentValue)
+      : formattedText(for: currentValue)
+    return HStack {
+      Slider(value: mapping(sliderBinding, bounds),
+             in: bounds) { started in
+        if !started {
+          localValue = nil
+          interactor.addUndoStep()
+        }
       }
+      .accessibilityLabel(Text(title))
+      .onAppear { localValue = nil }
+      Text(displayText)
+        .font(.body.monospacedDigit())
+        .foregroundStyle(.secondary)
+        .frame(minWidth: 40, alignment: .trailing)
     }
-    .accessibilityLabel(Text(title))
-    .onAppear { localValue = nil }
   }
 
   private var assetPropertyBody: some View {
@@ -179,17 +207,10 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
 
 struct AssetClosures<T> {
   let extractValue: (AssetProperty) -> T?
-  let extractStepDigits: (AssetProperty) -> Int?
   let buildUpdatedProperty: (AssetProperty, T) -> AssetProperty?
 }
 
 private extension PropertySlider {
-  static func fractionDigits(of number: NSNumber) -> Int {
-    let str = number.description
-    guard let dotIndex = str.firstIndex(of: ".") else { return 0 }
-    return str[str.index(after: dotIndex)...].count
-  }
-
   /// Returns a step value for the Slider when the asset property requires discrete snapping (e.g. int properties).
   static func extractStep(from assetProperty: AssetProperty) -> T? {
     switch assetProperty {
@@ -210,7 +231,6 @@ private extension PropertySlider {
     case .int: intClosures()
     default: AssetClosures(
         extractValue: { _ in nil },
-        extractStepDigits: { _ in nil },
         buildUpdatedProperty: { _, _ in nil },
       )
     }
@@ -220,12 +240,6 @@ private extension PropertySlider {
     AssetClosures(
       extractValue: { prop in
         if case let .float(_, value, _, _, _, _) = prop { return value as? T }
-        return nil
-      },
-      extractStepDigits: { prop in
-        if case let .float(_, _, _, _, _, step) = prop {
-          return fractionDigits(of: step as NSNumber)
-        }
         return nil
       },
       buildUpdatedProperty: { prop, value in
@@ -247,12 +261,6 @@ private extension PropertySlider {
         if case let .double(_, value, _, _, _, _) = prop { return value as? T }
         return nil
       },
-      extractStepDigits: { prop in
-        if case let .double(_, _, _, _, _, step) = prop {
-          return fractionDigits(of: step as NSNumber)
-        }
-        return nil
-      },
       buildUpdatedProperty: { prop, value in
         if case let .double(property, _, defaultValue, min, max, step) = prop,
            let doubleValue = value as? Double {
@@ -271,9 +279,6 @@ private extension PropertySlider {
       extractValue: { prop in
         if case let .int(_, value, _, _, _, _) = prop { return T(exactly: value) ?? T(value) }
         return nil
-      },
-      extractStepDigits: { _ in
-        0
       },
       buildUpdatedProperty: { prop, value in
         if case let .int(property, _, defaultValue, min, max, step) = prop {

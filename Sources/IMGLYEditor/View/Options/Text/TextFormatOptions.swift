@@ -125,8 +125,12 @@ struct TextFormatOptions: View {
         let nonItalicFonts = sortedFonts.filter { $0.style != .italic }
         let italicFonts = sortedFonts.filter { $0.style == .italic }
 
-        NavigationLinkPicker(title: "Font Weight", data: [nonItalicFonts, italicFonts],
-                             inlineTitle: false, selection: selection) { asset, isSelected in
+        NavigationLinkPicker(
+          title: .imgly.localized("ly_img_editor_sheet_format_text_label_font_weight"),
+          data: [nonItalicFonts, italicFonts],
+          inlineTitle: false,
+          selection: selection,
+        ) { asset, isSelected in
           FontLabel(fontURL: asset.uri, isSelected: isSelected, title: asset.localizedSubFamiliy)
         } linkLabel: { selection in
           if let selection {

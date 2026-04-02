@@ -171,7 +171,7 @@ struct BackgroundColorOptions: View {
 
   var body: some View {
     ColorOptions(
-      title: "Color",
+      title: .imgly.localized("ly_img_editor_sheet_color_picker_title"),
       isEnabled: interactor.bind(id, property: .key(.backgroundColorEnabled), default: false),
       color: interactor.bind(
         id,

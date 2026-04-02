@@ -16,9 +16,13 @@ struct ColorSheet: View {
     DismissableTitledSheet(.imgly.localized("ly_img_editor_postcard_sheet_colors_title")) {
       List {
         if interactor.supportsFill(id) {
-          ColorOptions(title: "Color", color: fillColor, addUndoStep: interactor.addUndoStep)
-            .labelStyle(.iconOnly)
-            .buttonStyle(.borderless)
+          ColorOptions(
+            title: .imgly.localized("ly_img_editor_sheet_color_picker_title"),
+            color: fillColor,
+            addUndoStep: interactor.addUndoStep,
+          )
+          .labelStyle(.iconOnly)
+          .buttonStyle(.borderless)
         }
       }
     }

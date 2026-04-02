@@ -84,7 +84,7 @@ struct GradientOptions: View {
 
   var body: some View {
     if interactor.isGradientFill(id) {
-      ColorOptions(title: "Gradient Start Color",
+      ColorOptions(title: .imgly.localized("ly_img_editor_sheet_gradient_color_picker_title_start"),
                    color: gradientBinding(.start, defaultValue: .imgly.black),
                    addUndoStep: interactor.addUndoStep)
         .accessibilityElement(children: .contain)
@@ -96,7 +96,7 @@ struct GradientOptions: View {
         }
       }
       .accessibilityLabel("Gradient Angle")
-      ColorOptions(title: "Gradient End Color",
+      ColorOptions(title: .imgly.localized("ly_img_editor_sheet_gradient_color_picker_title_end"),
                    color: gradientBinding(.end, defaultValue: .imgly.black),
                    addUndoStep: interactor.addUndoStep)
         .accessibilityElement(children: .contain)

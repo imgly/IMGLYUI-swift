@@ -1,3 +1,4 @@
+@_spi(Internal) import IMGLYCore
 import SwiftUI
 
 /// A view modifier that presents an alert when an identifiable error occurs.
@@ -18,11 +19,14 @@ struct ErrorAlertModifier: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-      .alert("Error", isPresented: Binding<Bool>(
-        get: { identifiableError != nil },
-        set: { if !$0 { identifiableError = nil } }
-      )) {
-        Button("OK", role: .cancel) {
+      .alert(
+        String(localized: .imgly.localized("ly_img_editor_dialog_error_generic_title")),
+        isPresented: Binding<Bool>(
+          get: { identifiableError != nil },
+          set: { if !$0 { identifiableError = nil } }
+        ),
+      ) {
+        Button(String(localized: .imgly.localized("ly_img_editor_button_ok")), role: .cancel) {
           identifiableError = nil
         }
       } message: {

@@ -221,7 +221,11 @@ extension Interactor {
       try engine.block.setDuration(block, duration: 0)
       try engine.block.setTimeOffset(block, offset: 0)
     }
-    try engine.block.setMetadata(block, key: "name", value: "Voiceover")
+    try engine.block.setMetadata(
+      block,
+      key: "name",
+      value: String(localized: .imgly.localized("ly_img_editor_timeline_clip_voiceover_title")),
+    )
     return .init(block: block, hasRecordedAudio: false, deletesTargetOnCancel: true)
   }
 
@@ -341,47 +345,14 @@ final class VoiceOverRecordCoordinator: AudioRecordDelegate {
     let recordingStartOffset = max(0, playheadPositionSeconds)
     self.recordingStartOffset = recordingStartOffset
 
-    if let engine = interactor.engine, engine.block.isValid(targetBlock) {
-      try? engine.block.setTimeOffset(targetBlock, offset: recordingStartOffset)
-      try? engine.block.setDuration(targetBlock, duration: 0)
-      try? engine.block.setTrimOffset(targetBlock, offset: 0)
-    }
-    if let clip = interactor.timelineProperties.dataSource.findClip(id: targetBlock) {
-      clip.timeOffset = .init(seconds: recordingStartOffset)
-      clip.trimOffset = .init(seconds: 0)
-      clip.duration = .init(seconds: 0)
-      clip.allowsTrimming = false
-    }
-    applyLiveBufferState()
-
-    if let currentPage = interactor.timelineProperties.currentPage,
-       let engine = interactor.engine,
-       engine.block.isValid(currentPage) {
-      recordingExtendsPageDuration = interactor.timelineProperties.backgroundTrack == nil
-      recordingOriginalPageDuration = try? engine.block.getDuration(currentPage)
-      wasLoopingPlaybackEnabled = interactor.isLoopingPlaybackEnabled
-      if wasLoopingPlaybackEnabled {
-        interactor.toggleIsLoopingPlaybackEnabled()
-      }
-      wasPageMuted = (try? engine.block.isMuted(currentPage)) ?? false
-      if interactor.isVoiceOverRecordModeMuteOtherAudio, !wasPageMuted {
-        interactor.setPageMuted(true)
-      }
-      if recordingExtendsPageDuration {
-        extendPageDurationIfNeeded(recordedDuration: 0)
-      }
-    }
+    configureTargetBlockForRecording(interactor: interactor, startOffset: recordingStartOffset)
+    configureRecordingEnvironment(interactor: interactor)
 
     pendingAudioRecordError = nil
     hasReceivedAudioBuffer = false
 
     if let startError = audioManager.start() {
-      restorePlaybackEnvironment()
-      if recordingExtendsPageDuration {
-        restoreOriginalPageDurationIfNeeded()
-      }
-      recordingExtendsPageDuration = false
-      recordingOriginalPageDuration = nil
+      cleanupRecordingEnvironment()
       audioManager.pause()
       handleAudioRecordError(startError)
       return
@@ -391,13 +362,8 @@ final class VoiceOverRecordCoordinator: AudioRecordDelegate {
     guard didReceiveInitialAudioBuffer else {
       audioManager.pause()
       interactor.pause()
-      restorePlaybackEnvironment()
+      cleanupRecordingEnvironment()
       interactor.setBlockMuted(targetBlock, muted: false)
-      if recordingExtendsPageDuration {
-        restoreOriginalPageDurationIfNeeded()
-      }
-      recordingExtendsPageDuration = false
-      recordingOriginalPageDuration = nil
       await resetTargetAfterFailedRecordingAttempt()
       handleAudioRecordError(pendingAudioRecordError ?? .failedBuffer)
       return
@@ -670,6 +636,50 @@ final class VoiceOverRecordCoordinator: AudioRecordDelegate {
     }
   }
 
+  private func configureTargetBlockForRecording(interactor: Interactor, startOffset: Double) {
+    if let engine = interactor.engine, engine.block.isValid(targetBlock) {
+      try? engine.block.setTimeOffset(targetBlock, offset: startOffset)
+      try? engine.block.setDuration(targetBlock, duration: 0)
+      try? engine.block.setTrimOffset(targetBlock, offset: 0)
+    }
+    if let clip = interactor.timelineProperties.dataSource.findClip(id: targetBlock) {
+      clip.timeOffset = .init(seconds: startOffset)
+      clip.trimOffset = .init(seconds: 0)
+      clip.duration = .init(seconds: 0)
+      clip.allowsTrimming = false
+    }
+    applyLiveBufferState()
+  }
+
+  private func configureRecordingEnvironment(interactor: Interactor) {
+    if let currentPage = interactor.timelineProperties.currentPage,
+       let engine = interactor.engine,
+       engine.block.isValid(currentPage) {
+      recordingExtendsPageDuration = interactor.timelineProperties.backgroundTrack == nil
+      recordingOriginalPageDuration = try? engine.block.getDuration(currentPage)
+      wasLoopingPlaybackEnabled = interactor.isLoopingPlaybackEnabled
+      if wasLoopingPlaybackEnabled {
+        interactor.toggleIsLoopingPlaybackEnabled()
+      }
+      wasPageMuted = (try? engine.block.isMuted(currentPage)) ?? false
+      if interactor.isVoiceOverRecordModeMuteOtherAudio, !wasPageMuted {
+        interactor.setPageMuted(true)
+      }
+      if recordingExtendsPageDuration {
+        extendPageDurationIfNeeded(recordedDuration: 0)
+      }
+    }
+  }
+
+  private func cleanupRecordingEnvironment() {
+    restorePlaybackEnvironment()
+    if recordingExtendsPageDuration {
+      restoreOriginalPageDurationIfNeeded()
+    }
+    recordingExtendsPageDuration = false
+    recordingOriginalPageDuration = nil
+  }
+
   private func extendPageDurationIfNeeded(recordedDuration: TimeInterval) {
     guard recordingExtendsPageDuration,
           let interactor,
@@ -720,6 +730,11 @@ final class VoiceOverRecordCoordinator: AudioRecordDelegate {
     let resolvedDuration = max(recordingOriginalPageDuration ?? 0, timelineContentEnd, targetBlockEnd)
     try? engine.block.setDuration(currentPage, duration: resolvedDuration)
     interactor.timelineProperties.timeline?.setTotalDuration(.init(seconds: resolvedDuration))
+    // When we set the page duration manually, it becomes the duration source.
+    // We need to unset it so the engine can always calculate the page duration correctly.
+    if (try? engine.block.isPageDurationSource(currentPage)) == true {
+      try? engine.block.removePageDurationSource(currentPage)
+    }
   }
 
   private func applyLiveBufferState() {

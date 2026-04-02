@@ -87,7 +87,7 @@ struct Attribution: View {
           Button {
             dismiss()
           } label: {
-            Label("Close", systemImage: "xmark.circle.fill")
+            Label(String(localized: .imgly.localized("ly_img_editor_button_close")), systemImage: "xmark.circle.fill")
               .symbolRenderingMode(.hierarchical)
               .foregroundColor(.secondary)
               .font(.title2)

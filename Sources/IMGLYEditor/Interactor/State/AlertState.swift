@@ -1,4 +1,5 @@
 import Foundation
+@_spi(Internal) import IMGLYCore
 
 struct AlertState: BatchMutable, Equatable {
   var isPresented: Bool
@@ -17,7 +18,7 @@ struct AlertState: BatchMutable, Equatable {
       title: String,
       message: String,
       shouldDismiss: Bool,
-      dismissTitle: String = "Dismiss",
+      dismissTitle: String = String(localized: .imgly.localized("ly_img_editor_dialog_error_generic_button_dismiss")),
       dismissCallback: (() -> Void)? = nil,
       confirmTitle: String? = nil,
       confirmCallback: (() -> Void)? = nil
@@ -49,7 +50,7 @@ struct AlertState: BatchMutable, Equatable {
   init(_ error: Swift.Error, dismiss: Bool, onDismiss: @escaping (() -> Void) = {}) {
     isPresented = true
     details = Details(
-      title: "Error",
+      title: String(localized: .imgly.localized("ly_img_editor_dialog_error_generic_title")),
       message: error.localizedDescription,
       shouldDismiss: dismiss,
       dismissCallback: onDismiss,
@@ -80,7 +81,7 @@ struct AlertState: BatchMutable, Equatable {
   init(_ title: String,
        message: String,
        dismiss: Bool,
-       dismissTitle: String = "Cancel",
+       dismissTitle: String = String(localized: .imgly.localized("ly_img_editor_button_cancel")),
        dismissCallback: @escaping (() -> Void) = {},
        confirmTitle: String,
        confirmCallback: @escaping (() -> Void)) {
