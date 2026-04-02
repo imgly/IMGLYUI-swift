@@ -29,14 +29,7 @@ extension Interactor: TimelineInteractor {
     NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)
       .receive(on: DispatchQueue.main)
       .sink { [weak self] _ in
-        guard let self else { return }
-        if isVoiceOverRecordModeRecording {
-          Task { [weak self] in
-            await self?.finishVoiceOverRecordMode()
-          }
-        } else {
-          pauseIfNeeded()
-        }
+        self?.pauseIfNeeded()
       }
       .store(in: &cancellables)
   }
