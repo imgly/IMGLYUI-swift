@@ -159,7 +159,7 @@ public extension AssetLoader {
     public init(query: String? = nil, tags: [String]? = nil,
                 groups: IMGLYEngine.Groups? = nil,
                 excludedGroups: IMGLYEngine.Groups? = nil,
-                locale: IMGLYEngine.Locale? = "en",
+                locale: IMGLYEngine.Locale? = Locale.currentLanguageCode,
                 sortingOrder: IMGLYEngine.SortingOrder = .none,
                 sortKey: IMGLYEngine.SortKey? = nil,
                 sortActiveFirst: Bool = false) {
