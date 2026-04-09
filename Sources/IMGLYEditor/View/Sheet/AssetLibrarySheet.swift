@@ -4,11 +4,12 @@ import SwiftUI
 struct AssetLibrarySheet: View {
   let content: SheetContent?
 
-  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
+  @Environment(\.imglyEditorEnvironment) private var editorEnvironment
 
   @MainActor
   var assetLibrary: some AssetLibrary {
-    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
+    let categories = AssetLibraryCategory.defaultCategories
+    return AnyAssetLibrary(erasing: editorEnvironment.makeAssetLibrary(defaultCategories: categories))
   }
 
   var body: some View {

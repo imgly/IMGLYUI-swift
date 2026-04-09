@@ -8,9 +8,7 @@ struct Canvas: View {
   @Environment(\.imglySelection) private var id
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.imglyIsPageNavigationEnabled) private var isPageNavigationEnabled: Bool
-  @Environment(\.imglyInspectorBarEnabled) private var isInspectorBarEnabled
-  @Environment(\.imglyBottomPanel) private var bottomPanel
-  @Environment(\.imglyBottomPanelAnimation) private var bottomPanelAnimation
+  @Environment(\.imglyEditorEnvironment) private var editorEnvironment
 
   let zoomPadding: CGFloat
 
@@ -77,11 +75,13 @@ struct Canvas: View {
     BottomBar(content: content, id: id, height: bottomBarHeight, bottomSafeAreaInset: bottomSafeAreaInset)
   }
 
-  @Environment(\.imglyCanvasMenuItems) private var canvasMenuItems
-  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
+  private var canvasMenuItems: CanvasMenu.Items? {
+    editorEnvironment.canvasMenuItems
+  }
 
   private var assetLibrary: some AssetLibrary {
-    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
+    let categories = AssetLibraryCategory.defaultCategories
+    return AnyAssetLibrary(erasing: editorEnvironment.makeAssetLibrary(defaultCategories: categories))
   }
 
   private var canvasMenuContext: CanvasMenu.Context? {
@@ -164,9 +164,16 @@ struct Canvas: View {
     }
   }
 
+  private func isInspectorBarEnabled(_ context: InspectorBar.Context) -> Bool {
+    if let enabled = editorEnvironment.inspectorBarEnabled, let result = try? enabled(context) {
+      return result
+    }
+    return true
+  }
+
   @ViewBuilder var inspectorBar: some View {
     if let content = interactor.sheetContentForBottomBar, let inspectorBarContext,
-       let isInspectorBarEnabled = try? isInspectorBarEnabled(inspectorBarContext), isInspectorBarEnabled {
+       isInspectorBarEnabled(inspectorBarContext) {
       Group {
         bottomBar(content: content)
           .zIndex(1)
@@ -213,7 +220,7 @@ struct Canvas: View {
     .overlay(alignment: .bottom) {
       // Keep bottom panel visible during text editing (like Android).
       // The keyboard appears on top of it rather than replacing it.
-      if !interactor.isCreating, let bottomPanel, let bottomPanelContext,
+      if !interactor.isCreating, let bottomPanel = editorEnvironment.bottomPanel, let bottomPanelContext,
          let panel = try? bottomPanel(bottomPanelContext) {
         VStack(spacing: 0) {
           Spacer()
@@ -333,13 +340,13 @@ struct Canvas: View {
       // Animate height changes when not in text mode (bottom panel minimize/expand)
       isBottomPanelAnimating = true
       if #available(iOS 17.0, *) {
-        withAnimation(bottomPanelAnimation) {
+        withAnimation(editorEnvironment.bottomPanelAnimation ?? .imgly.timelineMinimizeMaximize) {
           animatedSafeAreaInsetHeight = newValue
         } completion: {
           isBottomPanelAnimating = false
         }
       } else {
-        withAnimation(bottomPanelAnimation) {
+        withAnimation(editorEnvironment.bottomPanelAnimation ?? .imgly.timelineMinimizeMaximize) {
           animatedSafeAreaInsetHeight = newValue
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -368,7 +375,7 @@ struct Canvas: View {
   }
 
   private var media: [MediaType] {
-    let media: [MediaType] = interactor.sceneMode == .video ? [.image, .movie] : [.image]
+    let media: [MediaType] = editorEnvironment.includeAVResources ? [.image, .movie] : [.image]
     return media.filter {
       interactor.uploadAssetSourceIDs[$0] != nil
     }

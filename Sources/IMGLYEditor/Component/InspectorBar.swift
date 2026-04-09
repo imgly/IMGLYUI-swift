@@ -1,12 +1,6 @@
 import IMGLYEngine
 import SwiftUI
 
-@_spi(Internal) public extension EnvironmentValues {
-  @Entry var imglyInspectorBarItems: InspectorBar.Items?
-  @Entry var imglyInspectorBarModifications: InspectorBar.Modifications?
-  @Entry var imglyInspectorBarEnabled: InspectorBar.Enabled = { _ in true }
-}
-
 /// A namespace for the inspector bar component.
 public enum InspectorBar {}
 
@@ -27,7 +21,7 @@ public extension InspectorBar {
     /// animations.
     public let engine: Engine
     public let eventHandler: EditorEventHandler
-    /// The asset library configured with the ``IMGLYCore/IMGLY/assetLibrary(_:)`` view modifier.
+    /// The configured ``IMGLYCoreUI/AssetLibrary``.
     public let assetLibrary: any AssetLibrary
     /// The current selection.
     /// - Note: Prefer using this provided selection property instead of querying the same data from engine because the
@@ -72,6 +66,7 @@ public extension InspectorBar.Context {
   }
 }
 
-@_spi(Internal) public extension InspectorBar {
+public extension InspectorBar {
+  /// A type to set whether the inspector bar is enabled.
   typealias Enabled = Context.To<Bool>
 }

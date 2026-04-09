@@ -1,9 +1,9 @@
 /// A type for the state of the editor.
 @MainActor
 public protocol EditorState {
-  /// Indicates that the ``IMGLYCore/IMGLY/onCreate(_:)`` callback did not yet complete.
+  /// Indicates that the ``EditorConfiguration/Builder/onCreate(_:)`` callback did not yet complete.
   var isCreating: Bool { get }
-  /// Indicates that the ``IMGLYCore/IMGLY/onExport(_:)`` callback is running.
+  /// Indicates that the ``EditorConfiguration/Builder/onExport(_:)`` callback is running.
   var isExporting: Bool { get }
   /// The view mode of the editor.
   var viewMode: EditorViewMode { get }

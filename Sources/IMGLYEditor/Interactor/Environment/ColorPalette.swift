@@ -1,7 +1,7 @@
 import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
 
-struct ColorPaletteKey: EnvironmentKey {
+enum ColorPalette {
   static let defaultValue: [NamedColor] = [
     .init("Blue", .imgly.blue),
     .init("Green", .imgly.green),
@@ -11,11 +11,4 @@ struct ColorPaletteKey: EnvironmentKey {
     .init("White", .imgly.white),
     .init("Gray", .imgly.gray),
   ]
-}
-
-extension EnvironmentValues {
-  var imglyColorPalette: [NamedColor] {
-    get { self[ColorPaletteKey.self] }
-    set { self[ColorPaletteKey.self] = newValue }
-  }
 }

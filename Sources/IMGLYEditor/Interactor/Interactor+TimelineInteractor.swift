@@ -8,8 +8,7 @@ import SwiftUI
 extension Interactor: TimelineInteractor {
   /// Configure the timeline.
   func configureTimeline() throws {
-    guard let engine,
-          sceneMode == .video else { return }
+    guard let engine else { return }
 
     guard let page = try engine.scene.getCurrentPage() else {
       throw Error(errorDescription: "Page missing")
@@ -29,14 +28,7 @@ extension Interactor: TimelineInteractor {
     NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)
       .receive(on: DispatchQueue.main)
       .sink { [weak self] _ in
-        guard let self else { return }
-        if isVoiceOverRecordModeRecording {
-          Task { [weak self] in
-            await self?.finishVoiceOverRecordMode()
-          }
-        } else {
-          pauseIfNeeded()
-        }
+        self?.pauseIfNeeded()
       }
       .store(in: &cancellables)
   }
@@ -44,7 +36,6 @@ extension Interactor: TimelineInteractor {
   func createBackgroundTrackIfNeeded() {
     guard let engine,
           timelineProperties.backgroundTrack == nil,
-          sceneMode == .video,
           let pageID = timelineProperties.currentPage else { return }
     do {
       // Create the Background Track if it doesn't exist yet
@@ -878,7 +869,7 @@ extension Interactor: TimelineInteractor {
 
   /// Select a clip in the timeline to match what’s selected on canvas.
   func updateTimelineSelectionFromCanvas() {
-    guard sceneMode == .video else { return }
+    guard timelineProperties.timeline != nil else { return }
     guard let engine else { return }
     let selected = engine.block.findAllSelected()
     guard let id = selected.first else {
@@ -1088,8 +1079,7 @@ extension Interactor: TimelineInteractor {
   }
 
   func clampPlayheadPositionToSelectedClip() {
-    guard sceneMode == .video,
-          let engine,
+    guard let engine,
           let pageID = timelineProperties.currentPage,
           let totalDuration = timelineProperties.timeline?.totalDuration,
           let clip = timelineProperties.selectedClip else { return }
