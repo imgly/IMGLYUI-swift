@@ -21,11 +21,7 @@ struct ColorOptions: View {
   }
 
   @State private var showColorPicker = false
-  @Environment(\.imglyEditorEnvironment) private var editorEnvironment
-
-  private var colorPalette: [NamedColor] {
-    editorEnvironment.colorPalette ?? ColorPalette.defaultValue
-  }
+  @Environment(\.imglyColorPalette) private var colorPalette
 
   private var colors: [NamedColor] {
     let maxColorCount = isEnabledBinding != nil ? 6 : 7

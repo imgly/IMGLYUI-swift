@@ -62,15 +62,11 @@ struct BottomBar: View {
     return modes.filter { interactor.isAllowed(interactor.pageOverview.currentPage, $0) }
   }
 
-  @Environment(\.imglyEditorEnvironment) private var editorEnvironment
-
-  private var inspectorBarItems: InspectorBar.Items? {
-    editorEnvironment.inspectorBarItems
-  }
+  @Environment(\.imglyInspectorBarItems) private var inspectorBarItems
+  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
 
   private var assetLibrary: some AssetLibrary {
-    let categories = AssetLibraryCategory.defaultCategories
-    return AnyAssetLibrary(erasing: editorEnvironment.makeAssetLibrary(defaultCategories: categories))
+    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
   }
 
   private var inspectorBarContext: InspectorBar.Context? {

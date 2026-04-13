@@ -82,7 +82,8 @@ private struct PreviewAssetLibrary: View {
   @State var hidePresentationDragIndicator: Bool = false
 
   var body: some View {
-    DefaultAssetLibrary(includeAVResources: true)
+    DefaultAssetLibrary()
+      .imgly.assetLibrary(sceneMode: interactor.sceneMode)
       .imgly.assetLibrary(interactor: interactor)
       .imgly.assetLibraryDismissButton {
         Button {} label: {

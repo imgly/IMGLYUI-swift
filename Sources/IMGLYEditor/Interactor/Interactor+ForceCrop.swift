@@ -117,11 +117,7 @@ extension Interactor {
     }
 
     do {
-      let isPage = try engine.block.getType(blockID) == DesignBlockType.page.rawValue
-
-      try await engine.withTemporaryPageResizeInteraction(enable: isPage) {
-        try await engine.asset.applyToBlock(sourceID: sourceID, assetResult: cropPreset, block: blockID)
-      }
+      try await engine.asset.applyToBlock(sourceID: sourceID, assetResult: cropPreset, block: blockID)
 
       guard let scene = try engine.scene.get() else { return }
 
@@ -372,31 +368,5 @@ private extension Float {
   func rounded(toDecimalPlaces places: Int) -> Float {
     let multiplier = pow(10.0, Float(places))
     return (self * multiplier).rounded() / multiplier
-  }
-}
-
-extension Engine {
-  /// Temporarily enables page resize interaction for the duration of `action`, then restores previous values.
-  /// Mirrors Android's `withTemporaryPageResizeInteraction`.
-  func withTemporaryPageResizeInteraction<T>(enable: Bool, _ action: () async throws -> T) async rethrows -> T {
-    guard enable else {
-      return try await action()
-    }
-
-    let previousAllowResize = try? editor.getSettingBool("page/allowResizeInteraction")
-    let previousRestrictResize = try? editor.getSettingBool("page/restrictResizeInteractionToFixedAspectRatio")
-
-    try? editor.setSettingBool("page/allowResizeInteraction", value: true)
-    try? editor.setSettingBool("page/restrictResizeInteractionToFixedAspectRatio", value: false)
-
-    defer {
-      try? editor.setSettingBool("page/allowResizeInteraction", value: previousAllowResize ?? false)
-      try? editor.setSettingBool(
-        "page/restrictResizeInteractionToFixedAspectRatio",
-        value: previousRestrictResize ?? false,
-      )
-    }
-
-    return try await action()
   }
 }

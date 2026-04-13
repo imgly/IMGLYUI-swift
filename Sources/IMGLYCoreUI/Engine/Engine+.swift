@@ -28,6 +28,15 @@ private struct Random: RandomNumberGenerator {
 
   // MARK: - Scene
 
+  static let outlineBlockName = "always-on-top-page-outline"
+
+  func showOutline(_ isVisible: Bool) throws {
+    let outline = try getOutline()
+    try engine.block.setVisible(outline, visible: isVisible)
+    // Workaround: Trigger opacity to force refresh on "fast" devices.
+    try engine.block.setOpacity(outline, value: isVisible ? 1 : 0)
+  }
+
   func selectionColors(
     forPage index: Int,
     includeUnnamed: Bool = false,
@@ -149,18 +158,34 @@ private struct Random: RandomNumberGenerator {
 
   // MARK: - Zoom
 
+  func showAllPages(layout: LayoutAxis, spacing: Float = 16) throws {
+    try showPage(index: nil, layout: layout, spacing: spacing)
+  }
+
+  func showPage(_ index: Int, historyResetBehavior: HistoryResetBehavior = .never, deselectAll: Bool = true) throws {
+    try showPage(index: index, layout: .depth, historyResetBehavior: historyResetBehavior, deselectAll: deselectAll)
+  }
+
   private func showPage(
     index: Int?,
     layout axis: LayoutAxis,
     spacing: Float? = nil,
-    resetHistory: Bool = false,
+    historyResetBehavior: HistoryResetBehavior = .never,
     deselectAll: Bool = true,
   ) throws {
     if deselectAll {
       try engine.block.deselectAll()
     }
-    if resetHistory {
+
+    switch historyResetBehavior {
+    case .always:
       try engine.editor.resetHistory()
+    case .ifNeeded:
+      if !(try engine.editor.canUndo() || engine.editor.canRedo()) {
+        try engine.editor.resetHistory()
+      }
+    case .never:
+      break
     }
 
     let allPages = index == nil
@@ -178,6 +203,14 @@ private struct Random: RandomNumberGenerator {
         try engine.block.setVisible($0, visible: allPages || i == index)
       }
     }
+  }
+
+  func zoomToBackdrop(_ insets: EdgeInsets?) async throws {
+    try await zoomToBlock(getBackdropImage(), with: insets)
+  }
+
+  func zoomToScene(_ insets: EdgeInsets?) async throws {
+    try await zoomToBlock(getScene(), with: insets)
   }
 
   func zoomToPage(_ index: Int, _ insets: EdgeInsets?, zoomModel: ZoomModel) async throws -> Float? {
@@ -515,6 +548,22 @@ private struct Random: RandomNumberGenerator {
     try engine.editor.addUndoStep()
   }
 
+  // Note: Backdrop Images are not officially supported yet.
+  // The backdrop image is the only image that is a direct child of the scene block.
+  private func getBackdropImage() throws -> DesignBlockID {
+    let childIDs = try engine.block.getChildren(getScene())
+    let imageID = try childIDs.first {
+      guard try engine.block.getType($0) == DesignBlockType.graphic.rawValue, try engine.block.supportsFill($0) else {
+        return false
+      }
+      return try engine.block.getType(try engine.block.getFill($0)) == FillType.image.rawValue
+    }
+    guard let imageID else {
+      throw Error(errorDescription: "No backdrop image found.")
+    }
+    return imageID
+  }
+
   private func getAllSelectedElements(of elementType: DesignBlockType? = nil) throws -> [DesignBlockID] {
     try getAllSelectedElements(of: elementType?.rawValue)
   }
@@ -584,25 +633,11 @@ private struct Random: RandomNumberGenerator {
     }
     return scene
   }
-}
 
-@_spi(Internal) public extension Engine {
-  /// Shows all pages in the scene with the specified layout.
-  /// - Parameters:
-  ///   - layout: The layout axis for arranging pages (horizontal or vertical).
-  ///   - spacing: The spacing between pages in pixels. Defaults to 16.
-  /// - Throws: An error if the operation fails.
-  func showAllPages(layout: LayoutAxis, spacing: Float = 16) throws {
-    try showPage(index: nil, layout: layout, spacing: spacing)
-  }
-
-  /// Shows a specific page by index.
-  /// - Parameters:
-  ///   - index: The zero-based index of the page to show.
-  ///   - resetHistory: Whether to reset the undo/redo history. Defaults to false.
-  ///   - deselectAll: Whether to deselect all blocks before showing the page. Defaults to true.
-  /// - Throws: An error if the page index is invalid or the operation fails.
-  func showPage(_ index: Int, resetHistory: Bool = false, deselectAll: Bool = true) throws {
-    try showPage(index: index, layout: .depth, resetHistory: resetHistory, deselectAll: deselectAll)
+  private func getOutline() throws -> DesignBlockID {
+    guard let outline = engine.block.find(byName: Self.outlineBlockName).first else {
+      throw Error(errorDescription: "No outline found.")
+    }
+    return outline
   }
 }

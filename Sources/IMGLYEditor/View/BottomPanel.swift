@@ -2,8 +2,15 @@ import SwiftUI
 @_spi(Internal) import IMGLYCore
 import IMGLYEngine
 
+// MARK: - Environment Value
+
+@_spi(Internal) public extension EnvironmentValues {
+  @Entry var imglyBottomPanel: BottomPanel.Content?
+  @Entry var imglyBottomPanelAnimation: Animation = .imgly.timelineMinimizeMaximize
+}
+
 /// A namespace for the bottom panel component.
-public enum BottomPanel {
+@_spi(Internal) public enum BottomPanel {
   struct State: EditorState {
     let isCreating: Bool
     let isExporting: Bool
@@ -13,14 +20,14 @@ public enum BottomPanel {
 
 // MARK: - Bottom Panel Context
 
-public extension BottomPanel {
+@_spi(Internal) public extension BottomPanel {
   /// The context for bottom panel components.
   struct Context: EditorContext {
     /// The engine of the current editor.
-    public let engine: Engine
-    public let eventHandler: EditorEventHandler
+    @_spi(Internal) public let engine: Engine
+    @_spi(Internal) public let eventHandler: EditorEventHandler
     /// The state of the current editor.
-    public let state: EditorState
+    @_spi(Internal) public let state: EditorState
   }
 
   /// A closure to build a bottom panel.

@@ -1,6 +1,6 @@
 import SwiftUI
 
-@_spi(Internal) public struct AssetLibrarySectionView<
+@_spi(Internal) public struct AssetLibrarySection<
   Destination: View,
   Preview: View,
   Accessory: View,
@@ -140,7 +140,7 @@ struct DismissButton: View {
   }
 }
 
-struct AssetLibrarySectionView_Previews: PreviewProvider {
+struct AssetLibrarySection_Previews: PreviewProvider {
   static var previews: some View {
     defaultAssetLibraryPreviews
   }

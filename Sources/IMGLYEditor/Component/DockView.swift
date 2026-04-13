@@ -4,7 +4,7 @@ struct DockView: View {
   // Interactor is not used directly (except error alert) but keep it to receive all updates to refresh dock on various
   // conditions.
   @EnvironmentObject private var interactor: Interactor
-  @Environment(\.imglyEditorEnvironment) private var editorEnvironment
+  @Environment(\.imglyDockModifications) private var modifications
 
   let items: Dock.Context.To<[any Dock.Item]>
   let context: Dock.Context
@@ -12,7 +12,7 @@ struct DockView: View {
   private var _items: [any Dock.Item] {
     do {
       var items = try items(context)
-      for modifications in editorEnvironment.dockModifications {
+      if let modifications {
         let modifier = Dock.Modifier()
         try modifications(context, modifier)
         try modifier.apply(to: &items)

@@ -5,6 +5,8 @@ import IMGLYEngine
 @MainActor
 class AssetLibraryInteractorMock: ObservableObject {
   @Published private(set) var isAddingAsset = false
+  @Published private(set) var sceneMode: SceneMode?
+
   private var engine: Engine?
   private var sceneTask: Task<Void, Swift.Error>?
 
@@ -20,20 +22,15 @@ class AssetLibraryInteractorMock: ObservableObject {
       let engine = try await Engine(license: secrets.licenseKey)
       self.engine = engine
       try engine.scene.createVideo()
-      let basePath = "https://cdn.img.ly/packages/imgly/cesdk-swift/1.73.0-rc.1/assets"
+      let basePath = "https://cdn.img.ly/packages/imgly/cesdk-swift/1.72.3-rc.0/assets"
       try engine.editor.setSettingString("basePath", value: basePath)
-      for source in Engine.DefaultAssetSource.allCases {
-        try await engine.populateAssetSource(id: source.rawValue, baseURL: Engine.assetBaseURL)
-      }
-      for source in Engine.DemoAssetSource.allCases {
-        if let mimeTypes = source.mimeTypes {
-          try engine.asset.addLocalSource(sourceID: source.rawValue, supportedMimeTypes: mimeTypes)
-        } else {
-          try await engine.populateAssetSource(id: source.rawValue, baseURL: Engine.assetBaseURL)
-        }
-      }
+      async let loadDefault: () = engine.addDefaultAssetSources()
+      async let loadDemo: () = engine.addDemoAssetSources(sceneMode: engine.scene.getMode(),
+                                                          withUploadAssetSources: true)
+      _ = try await (loadDefault, loadDemo)
       try await engine.asset.addSource(TextAssetSource(engine: engine))
       try engine.asset.addSource(PhotoRollAssetSource(engine: engine))
+      sceneMode = try engine.scene.getMode()
     }
   }
 }

@@ -1,6 +1,18 @@
 import IMGLYEngine
 import SwiftUI
 
+@_spi(Internal) public extension EnvironmentValues {
+  @Entry var imglyDockItems: Dock.Items?
+  @Entry var imglyDockModifications: Dock.Modifications?
+  @Entry var imglyDockItemAlignment: Dock.Alignment = { _ in .center }
+  @Entry var imglyDockBackgroundColor: Dock.BackgroundColor = { _, colorScheme in colorScheme == .dark
+    ? Color(uiColor: .systemBackground)
+    : Color(uiColor: .secondarySystemBackground)
+  }
+
+  @Entry var imglyDockScrollDisabled: Dock.ScrollDisabled = { _ in false }
+}
+
 /// A namespace for the dock component.
 public enum Dock {}
 
@@ -17,7 +29,7 @@ public extension Dock {
     /// The engine of the current editor.
     public let engine: Engine
     public let eventHandler: EditorEventHandler
-    /// The configured ``IMGLYCoreUI/AssetLibrary``.
+    /// The asset library configured with the ``IMGLYCore/IMGLY/assetLibrary(_:)`` view modifier.
     public let assetLibrary: any AssetLibrary
   }
 
@@ -31,12 +43,9 @@ public extension Dock {
   typealias Custom = EditorComponents.Custom
 }
 
-public extension Dock {
-  /// A type for the alignment of the dock items.
+@_spi(Internal) public extension Dock {
   typealias Alignment = Context.To<SwiftUI.Alignment>
-  /// A type for enabling/disabling the scroll of the dock.
   typealias ScrollDisabled = Context.To<Bool>
-  /// A type to change the background color of the dock.
   typealias BackgroundColor = @MainActor (_ context: Context, _ colorScheme: ColorScheme) throws -> SwiftUI.Color
 }
 
