@@ -173,7 +173,14 @@ struct TextFormatOptions: View {
             Label {
               Text(HorizontalAlignment.auto.localizedStringResource)
             } icon: {
-              Image(HorizontalAlignment.auto.autoImageName(forEffectiveAlignment: effectiveAlignmentX), bundle: .module)
+              // Only use effectiveAlignment when stored alignment is Auto, because that's
+              // when getTextEffectiveHorizontalAlignment resolves based on actual text direction.
+              Image(
+                HorizontalAlignment.auto.autoImageName(
+                  forEffectiveAlignment: alignmentX.wrappedValue == .auto ? effectiveAlignmentX : nil,
+                ),
+                bundle: .module,
+              )
             }
             .symbolRenderingMode(.monochrome)
           }

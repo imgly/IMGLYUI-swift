@@ -160,7 +160,8 @@ public extension EditorEvent where Self == EditorEvents.ShowVideoMinLengthAlert 
 }
 
 public extension EditorEvent where Self == EditorEvents.Export.Start {
-  /// Creates an ``EditorEvent`` to start the export process. This event triggers the ``IMGLYCore/IMGLY/onExport(_:)``
+  /// Creates an ``EditorEvent`` to start the export process. This event triggers the
+  /// ``EditorConfiguration/Builder/onExport(_:)``
   /// callback.
   static var startExport: Self { Self() }
 }

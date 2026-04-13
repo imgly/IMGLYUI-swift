@@ -6,18 +6,13 @@ import SwiftUI
   @EnvironmentObject private var interactor: Interactor
 
   @Environment(\.layoutDirection) private var layoutDirection
-  @Environment(\.imglyInspectorBarItems) private var inspectorBarItems
-  @Environment(\.imglyCanvasMenuItems) private var canvasMenuItems
+  @Environment(\.imglyEditorEnvironment) private var editorEnvironment
   @Environment(\.colorScheme) private var colorScheme
-
-  @_spi(Internal) public init(zoomPadding: CGFloat = 16) {
-    self.zoomPadding = zoomPadding
-  }
 
   @State private var canvasGeometry: Geometry?
   @State private var sheetGeometry: Geometry?
   private var sheetGeometryIfPresented: Geometry? { interactor.sheet.isPresented ? sheetGeometry : nil }
-  private let zoomPadding: CGFloat
+  private var zoomPadding: CGFloat { editorEnvironment.zoomPadding ?? 0 }
 
   @State private var interactivePopGestureRecognizer: UIGestureRecognizer?
 
@@ -104,53 +99,6 @@ import SwiftUI
       .imgly.onDismiss {
         interactor.onDismiss()
       }
-      .imgly.inspectorBarItems { context in
-        if let inspectorBarItems {
-          try inspectorBarItems(context)
-        } else {
-          InspectorBar.Buttons.replace() // Video, Image, Sticker, Audio
-
-          InspectorBar.Buttons.editText() // Text
-          InspectorBar.Buttons.formatText() // Text
-          InspectorBar.Buttons.fillStroke() // Page, Video, Image, Shape, Text
-          InspectorBar.Buttons.textBackground() // Text
-          InspectorBar.Buttons.addVoiceoverRecording() // Voiceover (video scenes only)
-          InspectorBar.Buttons.volume() // Video, Audio, Voiceover (video scenes only)
-          InspectorBar.Buttons.clipSpeed() // Video, Audio (video scenes only)
-          InspectorBar.Buttons.crop() // Video, Image
-
-          InspectorBar.Buttons.adjustments() // Video, Image
-          InspectorBar.Buttons.filter() // Video, Image
-          InspectorBar.Buttons.effect() // Video, Image
-          InspectorBar.Buttons.blur() // Video, Image
-          InspectorBar.Buttons.animation() // Video, Image, Sticker, Shape, Text (video scenes only, feature flag)
-          InspectorBar.Buttons.shape() // Video, Image, Shape
-
-          InspectorBar.Buttons.selectGroup() // Video, Image, Sticker, Shape, Text
-          InspectorBar.Buttons.enterGroup() // Group
-
-          InspectorBar.Buttons.layer() // Video, Image, Sticker, Shape, Text
-          InspectorBar.Buttons.split() // Video, Image, Sticker, Shape, Text, Audio (video scenes only)
-          InspectorBar.Buttons.moveAsClip() // Video, Image, Sticker, Shape, Text (video scenes only)
-          InspectorBar.Buttons.moveAsOverlay() // Video, Image, Sticker, Shape, Text (video scenes only)
-          InspectorBar.Buttons.reorder() // Video, Image, Sticker, Shape, Text (video scenes only)
-          InspectorBar.Buttons.duplicate() // Video, Image, Sticker, Shape, Text, Audio
-          InspectorBar.Buttons.delete() // Video, Image, Sticker, Shape, Text, Audio, Voiceover
-        }
-      }
-      .imgly.canvasMenuItems { context in
-        if let canvasMenuItems {
-          try canvasMenuItems(context)
-        } else {
-          CanvasMenu.Buttons.selectGroup()
-          CanvasMenu.Divider()
-          CanvasMenu.Buttons.bringForward()
-          CanvasMenu.Buttons.sendBackward()
-          CanvasMenu.Divider()
-          CanvasMenu.Buttons.duplicate()
-          CanvasMenu.Buttons.delete()
-        }
-      }
       .modifier(NavigationBarView(items: navigationBarItems ?? { @MainActor _ in [] }, context: navigationBarContext))
   }
 
@@ -164,11 +112,13 @@ import SwiftUI
     interactor.updateZoom(for: event, with: zoom)
   }
 
-  @Environment(\.imglyNavigationBarItems) private var navigationBarItems
-  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
+  private var navigationBarItems: NavigationBar.Items? {
+    editorEnvironment.navigationBarItems
+  }
 
   private var assetLibrary: some AssetLibrary {
-    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
+    let categories = AssetLibraryCategory.defaultCategories
+    return AnyAssetLibrary(erasing: editorEnvironment.makeAssetLibrary(defaultCategories: categories))
   }
 
   private var navigationBarContext: NavigationBar.Context {

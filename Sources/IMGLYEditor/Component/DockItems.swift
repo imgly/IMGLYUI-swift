@@ -333,8 +333,7 @@ public extension Dock.Buttons {
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   ///   `ly_img_editor_dock_button_photo_roll` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
-  ///   ``IMGLYCore/IMGLY/addPhotoRollForeground``  or ``IMGLYCore/IMGLY/addPhotoRollBackground`` is used depending on
-  /// the scene mode.
+  ///   ``IMGLYCore/IMGLY/addPhotoRollForeground`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -343,10 +342,7 @@ public extension Dock.Buttons {
     @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
       Text(.imgly.localized("ly_img_editor_dock_button_photo_roll"))
     },
-    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
-      let isVideoScene = try context.engine.scene.getMode() == .video
-      return isVideoScene ? Image.imgly.addPhotoRollBackground : Image.imgly.addPhotoRollForeground
-    },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addPhotoRollForeground },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
@@ -364,8 +360,7 @@ public extension Dock.Buttons {
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_photo_roll` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
-  /// ``IMGLYCore/IMGLY/addPhotoRollForeground``  or ``IMGLYCore/IMGLY/addPhotoRollBackground`` is used depending on the
-  /// scene mode.
+  /// ``IMGLYCore/IMGLY/addPhotoRollForeground`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -378,10 +373,7 @@ public extension Dock.Buttons {
     @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
       Text(.imgly.localized("ly_img_editor_dock_button_photo_roll"))
     },
-    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
-      let isVideoScene = try context.engine.scene.getMode() == .video
-      return isVideoScene ? Image.imgly.addPhotoRollBackground : Image.imgly.addPhotoRollForeground
-    },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addPhotoRollForeground },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
@@ -400,8 +392,7 @@ public extension Dock.Buttons {
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_photo_roll` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
-  /// ``IMGLYCore/IMGLY/addPhotoRollForeground``  or ``IMGLYCore/IMGLY/addPhotoRollBackground`` is used depending on the
-  /// scene mode.
+  /// ``IMGLYCore/IMGLY/addPhotoRollForeground`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -414,10 +405,7 @@ public extension Dock.Buttons {
     @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
       Text(.imgly.localized("ly_img_editor_dock_button_photo_roll"))
     },
-    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
-      let isVideoScene = try context.engine.scene.getMode() == .video
-      return isVideoScene ? Image.imgly.addPhotoRollBackground : Image.imgly.addPhotoRollForeground
-    },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addPhotoRollForeground },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
@@ -436,7 +424,7 @@ public extension Dock.Buttons {
   /// `ly_img_editor_dock_button_camera` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
   /// ``IMGLYCore/IMGLY/addCameraForeground``
-  /// or ``IMGLYCore/IMGLY/addCameraBackground`` is used depending on the scene mode.
+  /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -445,10 +433,7 @@ public extension Dock.Buttons {
     @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
       Text(.imgly.localized("ly_img_editor_dock_button_camera"))
     },
-    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
-      let isVideoScene = try context.engine.scene.getMode() == .video
-      return isVideoScene ? Image.imgly.addCameraBackground : Image.imgly.addCameraForeground
-    },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addCameraForeground },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
@@ -467,7 +452,7 @@ public extension Dock.Buttons {
   /// `ly_img_editor_dock_button_camera` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
   /// ``IMGLYCore/IMGLY/addCameraForeground``
-  /// or ``IMGLYCore/IMGLY/addCameraBackground`` is used depending on the scene mode.
+  /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is always `true`.
   /// - Returns: The created button.
@@ -476,10 +461,7 @@ public extension Dock.Buttons {
     @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
       Text(.imgly.localized("ly_img_editor_dock_button_camera"))
     },
-    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { context in
-      let isVideoScene = try context.engine.scene.getMode() == .video
-      return isVideoScene ? Image.imgly.addCameraBackground : Image.imgly.addCameraForeground
-    },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.addCameraForeground },
     isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {

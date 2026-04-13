@@ -3,7 +3,7 @@ import SwiftUI
 import IMGLYEngine
 
 /// The default timeline component for video editing.
-@_spi(Internal) public struct DefaultTimelineComponent: View {
+public struct DefaultTimelineComponent: View {
   /// The bottom panel context.
   private let context: BottomPanel.Context
 
@@ -13,7 +13,7 @@ import IMGLYEngine
 
   /// Creates a timeline component.
   /// - Parameter context: The bottom panel context.
-  @_spi(Internal) public init(context: BottomPanel.Context) {
+  public init(context: BottomPanel.Context) {
     self.context = context
   }
 
@@ -48,12 +48,7 @@ import IMGLYEngine
   }
 
   private var shouldShowTimeline: Bool {
-    if let sceneMode = try? context.engine.scene.getMode() {
-      let editMode = context.engine.editor.getEditMode()
-      return sceneMode == .video &&
-        editMode != .text
-    }
-    return false
+    context.engine.editor.getEditMode() != .text
   }
 
   private var shouldShowFullTimeline: Bool {

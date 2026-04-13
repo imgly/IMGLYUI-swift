@@ -122,8 +122,8 @@ public extension NavigationBar.Buttons {
   ///   - label: A view that describes the purpose of the button’s `action`. By default, a `Label` with localization key
   /// `ly_img_editor_navigation_bar_button_export`, icon ``IMGLYCore/IMGLY/export``, and style
   /// ``IMGLYCore/IMGLY/adaptiveIconOnly`` is used.
-  ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created, is not
-  /// exporting, and scene mode is `SceneMode.design` or the scene has a duration greater than 0.
+  ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is not creating and not
+  /// exporting.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` while the editor is being created or
   /// if the current view mode is not ``EditorViewMode/edit`` or engine setting `"features/pageCarouselEnabled"` is
   /// `true` or the current page is the last page of the scene.
@@ -135,11 +135,7 @@ public extension NavigationBar.Buttons {
         .labelStyle(.imgly.adaptiveIconOnly)
     },
     isEnabled: @escaping NavigationBar.Context.To<Bool> = {
-      if !$0.state.isCreating, !$0.state.isExporting, let engine = $0.engine, let scene = try engine.scene.get() {
-        try engine.scene.getMode() == .design || engine.block.getDuration(scene) > 0
-      } else {
-        false
-      }
+      !$0.state.isCreating && !$0.state.isExporting
     },
     isVisible: @escaping NavigationBar.Context.To<Bool> = {
       if !$0.state.isCreating, let engine = $0.engine {
