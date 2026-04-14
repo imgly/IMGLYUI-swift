@@ -9,15 +9,14 @@ struct RootBottomBar: View {
 
   private let padding: CGFloat = 8
 
-  @Environment(\.imglyEditorEnvironment) private var editorEnvironment
+  @Environment(\.imglyDockItems) private var dockItems
+  @Environment(\.imglyAssetLibrary) private var anyAssetLibrary
+  @Environment(\.imglyDockBackgroundColor) private var backgroundColor
+  @Environment(\.imglyDockItemAlignment) private var alignment
+  @Environment(\.imglyDockScrollDisabled) private var scrollDisabled
 
   private var assetLibrary: some AssetLibrary {
-    let categories = AssetLibraryCategory.defaultCategories
-    return AnyAssetLibrary(erasing: editorEnvironment.makeAssetLibrary(defaultCategories: categories))
-  }
-
-  private var dockItems: Dock.Items? {
-    editorEnvironment.dockItems
+    anyAssetLibrary ?? AnyAssetLibrary(erasing: DefaultAssetLibrary())
   }
 
   private var dockContext: Dock.Context? {
@@ -28,19 +27,19 @@ struct RootBottomBar: View {
   }
 
   private var dockAlignment: Alignment {
-    guard let dockContext else { return .center }
-    if let alignment = editorEnvironment.dockItemAlignment, let result = try? alignment(dockContext) {
-      return result
+    if let dockContext, let alignment = try? alignment(dockContext) {
+      alignment
+    } else {
+      Alignment.center
     }
-    return .center
   }
 
   private var dockScrollDisabled: Bool {
-    guard let dockContext else { return false }
-    if let scrollDisabled = editorEnvironment.dockScrollDisabled, let result = try? scrollDisabled(dockContext) {
-      return result
+    if let dockContext, let scrollDisabled = try? scrollDisabled(dockContext) {
+      scrollDisabled
+    } else {
+      false
     }
-    return false
   }
 
   @ViewBuilder var content: some View {
@@ -106,14 +105,14 @@ struct RootBottomBar: View {
   @State private var isDockHidden = true
 
   private var dockBackgroundColor: Color {
-    if let dockContext,
-       let backgroundColor = editorEnvironment.dockBackgroundColor,
-       let color = try? backgroundColor(dockContext, colorScheme) {
+    if let dockContext, let color = try? backgroundColor(dockContext, colorScheme) {
+      return color
+    } else {
+      let color = colorScheme == .dark
+        ? Color(uiColor: .systemBackground)
+        : Color(uiColor: .secondarySystemBackground)
       return color
     }
-    return colorScheme == .dark
-      ? Color(uiColor: .systemBackground)
-      : Color(uiColor: .secondarySystemBackground)
   }
 
   var body: some View {

@@ -22,34 +22,6 @@ public extension AssetLoader.SourceData {
 
 /// This is a predefined ``AssetLibrary`` intended to quickly customize some parts of the default asset library without
 /// implementing a complete ``AssetLibrary`` from scratch.
-///
-/// - Important: This type is deprecated. Use the configuration system with `AssetLibraryConfiguration` and
-///   `AssetLibraryCategory` modifications instead. The new approach supports composition across multiple
-///   configurations.
-///
-/// ## Migration
-///
-/// Instead of:
-/// ```swift
-/// .imgly.assetLibrary {
-///   DefaultAssetLibrary()
-///     .images { ... }
-/// }
-/// ```
-///
-/// Use:
-/// ```swift
-/// .imgly.configuration {
-///   AssetLibraryConfiguration { builder in
-///     builder.modify { categories in
-///       categories.modifySections(of: AssetLibraryCategory.ID.images) { sections in
-///         sections.addFirst(.image(id: "custom", title: "Custom", source: .init(id: "custom")))
-///       }
-///     }
-///   }
-/// }
-/// ```
-@available(*, deprecated, message: "Use AssetLibraryConfiguration with AssetLibraryCategory modifications instead.")
 @MainActor
 public struct DefaultAssetLibrary: AssetLibrary {
   /// A tab for a specific asset type.
@@ -58,12 +30,9 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// Creates a default asset library with a selection of `tabs`.
-  /// - Parameters:
-  ///   - tabs: A custom selection and ordering of the available tabs.
-  ///   - includeAVResources: Whether to include video and audio tabs. Defaults to `false`.
-  public init(tabs: [Tab] = Tab.allCases, includeAVResources: Bool = false) {
+  /// - Parameter tabs: A custom selection and ordering of the available tabs.
+  public init(tabs: [Tab] = Tab.allCases) {
     self.tabs = tabs.uniqued()
-    self.includeAVResources = includeAVResources
     videos = Self.videos
     audio = Self.audio
     images = Self.images
@@ -73,7 +42,6 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   private init(tabs: [Tab],
-               includeAVResources: Bool,
                videos: AssetLibraryContent,
                audio: AssetLibraryContent,
                images: AssetLibraryContent,
@@ -81,7 +49,6 @@ public struct DefaultAssetLibrary: AssetLibrary {
                shapes: AssetLibraryContent,
                stickers: AssetLibraryContent) {
     self.tabs = tabs
-    self.includeAVResources = includeAVResources
     self.videos = videos
     self.audio = audio
     self.images = images
@@ -91,7 +58,6 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   let tabs: [Tab]
-  let includeAVResources: Bool
   let videos, audio, images, text, shapes, stickers: AssetLibraryContent
 
   /// Modify the video asset library content.
@@ -100,7 +66,6 @@ public struct DefaultAssetLibrary: AssetLibrary {
   public func videos(@AssetLibraryBuilder videos: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,
-      includeAVResources: includeAVResources,
       videos: videos(),
       audio: audio,
       images: images,
@@ -116,7 +81,6 @@ public struct DefaultAssetLibrary: AssetLibrary {
   public func audio(@AssetLibraryBuilder audio: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,
-      includeAVResources: includeAVResources,
       videos: videos,
       audio: audio(),
       images: images,
@@ -132,7 +96,6 @@ public struct DefaultAssetLibrary: AssetLibrary {
   public func images(@AssetLibraryBuilder images: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,
-      includeAVResources: includeAVResources,
       videos: videos,
       audio: audio,
       images: images(),
@@ -148,7 +111,6 @@ public struct DefaultAssetLibrary: AssetLibrary {
   public func text(@AssetLibraryBuilder text: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,
-      includeAVResources: includeAVResources,
       videos: videos,
       audio: audio,
       images: images,
@@ -164,7 +126,6 @@ public struct DefaultAssetLibrary: AssetLibrary {
   public func shapes(@AssetLibraryBuilder shapes: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,
-      includeAVResources: includeAVResources,
       videos: videos,
       audio: audio,
       images: images,
@@ -180,7 +141,6 @@ public struct DefaultAssetLibrary: AssetLibrary {
   public func stickers(@AssetLibraryBuilder stickers: @MainActor () -> AssetLibraryContent) -> Self {
     .init(
       tabs: tabs,
-      includeAVResources: includeAVResources,
       videos: videos,
       audio: audio,
       images: images,
@@ -190,11 +150,11 @@ public struct DefaultAssetLibrary: AssetLibrary {
     )
   }
 
-  func photoRoll()
+  static func photoRoll(_ sceneMode: SceneMode?)
     -> AssetLibrarySource<PhotoRollDestination, PhotoRollPreview, PhotoRollAccessory> {
     AssetLibrarySource.photoRoll(
       .title(.imgly.localized("ly_img_editor_asset_library_section_photo_roll")),
-      media: includeAVResources ? [.image, .video] : [.image],
+      media: sceneMode == .video ? [.image, .video] : [.image],
     )
   }
 
@@ -333,10 +293,10 @@ public struct DefaultAssetLibrary: AssetLibrary {
     )
   }
 
-  func tabContent(_ tab: Tab) -> AssetLibraryContent {
+  func tabContent(_ sceneMode: SceneMode?, _ tab: Tab) -> AssetLibraryContent {
     switch tab {
     case .elements: AssetLibraryGroup.empty
-    case .photoRoll: photoRoll()
+    case .photoRoll: Self.photoRoll(sceneMode)
     case .videos: videos
     case .audio: audio
     case .images: images
@@ -346,10 +306,10 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
-  func elementsContent(_ tab: Tab) -> AssetLibraryContent {
+  func elementsContent(_ sceneMode: SceneMode?, _ tab: Tab) -> AssetLibraryContent {
     switch tab {
     case .elements: AssetLibraryGroup.empty
-    case .photoRoll: photoRoll()
+    case .photoRoll: Self.photoRoll(sceneMode)
     case .videos: AssetLibraryGroup.video(.imgly.localized("ly_img_editor_asset_library_section_videos")) { videos }
     case .audio: AssetLibraryGroup.audio(.imgly.localized("ly_img_editor_asset_library_section_audio")) { audio }
     case .images: AssetLibraryGroup.image(.imgly.localized("ly_img_editor_asset_library_section_images")) { images }
@@ -369,7 +329,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @ViewBuilder func tabView(_ tab: Tab) -> some View {
     switch tab {
     case .elements: elementsTab
-    case .photoRoll: photoRollTab
+    case .photoRoll: Self.photoRollTab
     case .videos: videosTab
     case .audio: audioTab
     case .images: imagesTab
@@ -379,27 +339,27 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
-  func activeTabs() -> [Tab] {
+  func activeTabs(_ sceneMode: SceneMode?) -> [Tab] {
     tabs.filter { tab in
-      let isNotEmpty = !tabContent(tab).isEmpty
+      let isNotEmpty = !tabContent(sceneMode, tab).isEmpty
       switch tab {
       case .elements:
         return true
       case .videos, .audio:
-        return isNotEmpty && includeAVResources
+        return isNotEmpty && sceneMode == .video
       default:
         return isNotEmpty
       }
     }
   }
 
-  func activeElements() -> [Tab] {
-    activeTabs().filter { $0 != .elements }
+  func activeElements(_ sceneMode: SceneMode?) -> [Tab] {
+    activeTabs(sceneMode).filter { $0 != .elements }
   }
 
-  @AssetLibraryBuilder func elements() -> AssetLibraryContent {
-    for tab in activeElements() {
-      elementsContent(tab)
+  @AssetLibraryBuilder func elements(_ sceneMode: SceneMode?) -> AssetLibraryContent {
+    for tab in activeElements(sceneMode) {
+      elementsContent(sceneMode, tab)
     }
   }
 
@@ -485,19 +445,23 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
-  @ViewBuilder public var photoRollTab: some View {
-    AssetLibraryTabView(.imgly.localized("ly_img_editor_asset_library_title_photo_roll")) {
-      photoRoll().content
-    } label: {
-      Self.photoRollLabel($0)
+  @_spi(Internal) @ViewBuilder public static var photoRollTab: some View {
+    AssetLibrarySceneModeReader { sceneMode in
+      AssetLibraryTabView(.imgly.localized("ly_img_editor_asset_library_title_photo_roll")) {
+        photoRoll(sceneMode).content
+      } label: {
+        photoRollLabel($0)
+      }
     }
   }
 
   @ViewBuilder public var elementsTab: some View {
-    AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_elements")) {
-      elements()
-    } label: {
-      Self.elementsLabel($0)
+    AssetLibrarySceneModeReader { sceneMode in
+      AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_elements")) {
+        elements(sceneMode)
+      } label: {
+        Self.elementsLabel($0)
+      }
     }
   }
 
@@ -564,22 +528,24 @@ public struct DefaultAssetLibrary: AssetLibrary {
 
   public var body: some View {
     TabView {
-      let activeTabs = activeTabs()
-      if activeTabs.count > 5 {
-        if activeTabs.contains(.elements), activeTabs.contains(.photoRoll),
-           activeTabs.count == 6 {
-          let tabsWithoutPhotoRoll = activeTabs.filter { $0 != .photoRoll }
-          tabViews(tabsWithoutPhotoRoll)
-        } else {
-          let tabs = activeTabs.prefix(4)
-          let moreTabs = activeTabs.dropFirst(4)
-          tabViews(tabs)
-          AssetLibraryMoreTab {
-            tabViews(moreTabs)
+      AssetLibrarySceneModeReader { sceneMode in
+        let activeTabs = activeTabs(sceneMode)
+        if activeTabs.count > 5 {
+          if activeTabs.contains(.elements), activeTabs.contains(.photoRoll),
+             activeTabs.count == 6 {
+            let tabsWithoutPhotoRoll = activeTabs.filter { $0 != .photoRoll }
+            tabViews(tabsWithoutPhotoRoll)
+          } else {
+            let tabs = activeTabs.prefix(4)
+            let moreTabs = activeTabs.dropFirst(4)
+            tabViews(tabs)
+            AssetLibraryMoreTab {
+              tabViews(moreTabs)
+            }
           }
+        } else {
+          tabViews(activeTabs)
         }
-      } else {
-        tabViews(activeTabs)
       }
     }
   }

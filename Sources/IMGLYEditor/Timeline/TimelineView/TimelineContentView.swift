@@ -33,7 +33,7 @@ struct TimelineContentView: View {
 
   var body: some View {
     let scrollOffsetX = horizontalScrollViewDelegate.contentOffset.x
-    let isVoiceOverRecordModeActive = timeline.interactor?.isVoiceOverRecordModeActive == true
+    let isVoiceOverRecordModeRecording = timeline.interactor?.isVoiceOverRecordModeRecording == true
     let maxPlaybackPoints = timelineProperties.player.maxPlaybackDuration.map { timeline.convertToPoints(time: $0) }
     let isPlayheadStickyToMax = maxPlaybackPoints.map { scrollOffsetX >= $0 } ?? false
     let playheadOffset: CGFloat = if let maxPlaybackPoints, scrollOffsetX >= maxPlaybackPoints {
@@ -181,7 +181,7 @@ struct TimelineContentView: View {
       }
     }
     .coordinateSpace(name: "timeline")
-    .allowsHitTesting(!isVoiceOverRecordModeActive)
+    .allowsHitTesting(!isVoiceOverRecordModeRecording)
     .introspect(.scrollView, on: .iOS(.v16...)) { horizontalScrollView in
       guard horizontalScrollView !== self.horizontalScrollView else { return }
 

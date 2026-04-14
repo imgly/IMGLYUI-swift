@@ -4,7 +4,7 @@ struct NavigationBarView: ViewModifier {
   // Interactor is not used directly (except error alert) but keep it to receive all updates to refresh navigation bar
   // on various conditions.
   @EnvironmentObject private var interactor: Interactor
-  @Environment(\.imglyEditorEnvironment) private var editorEnvironment
+  @Environment(\.imglyNavigationBarModifications) private var modifications
 
   let items: NavigationBar.Context.To<[NavigationBar.ItemGroup]>
   let context: NavigationBar.Context
@@ -14,7 +14,7 @@ struct NavigationBarView: ViewModifier {
       let items = try items(context)
       var groups = Dictionary(grouping: items) { $0.placement }.mapValues { $0.flatMap(\.items) }
 
-      for modifications in editorEnvironment.navigationBarModifications {
+      if let modifications {
         let modifier = NavigationBar.Modifier()
         try modifications(context, modifier)
         try modifier.apply(to: &groups)

@@ -74,7 +74,7 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
   @ViewBuilder private func sections(_ groups: [String]) -> some View {
     ForEach(groups, id: \.self) { group in
       let sources = [source.narrowed(to: group)]
-      AssetLibrarySectionView(title(group)) {
+      AssetLibrarySection(title(group)) {
         destination().imgly.assetLibrary(sources: sources)
       } preview: {
         preview().imgly.assetLibrary(sources: sources)
@@ -95,7 +95,7 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
           } else {
             // Fallback, no groups available
             let sources = [source.expandedGroups(false)]
-            AssetLibrarySectionView(title(nil)) {
+            AssetLibrarySection(title(nil)) {
               destination().imgly.assetLibrary(sources: sources)
             } preview: {
               preview().imgly.assetLibrary(sources: sources)
@@ -106,7 +106,7 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
         }
       }
     } else {
-      AssetLibrarySectionView(title(nil)) {
+      AssetLibrarySection(title(nil)) {
         content
       } preview: {
         preview().imgly.assetLibrary(sources: sources)

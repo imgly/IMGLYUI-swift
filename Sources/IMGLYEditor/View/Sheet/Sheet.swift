@@ -80,6 +80,7 @@ struct Sheet: View {
         sheet(mode)
       }
     }
+    .imgly.assetLibrary(sceneMode: interactor.sceneMode)
     .imgly.assetLibrary(interactor: interactor)
     .imgly.assetLibraryDismissButton {
       SheetDismissButton()

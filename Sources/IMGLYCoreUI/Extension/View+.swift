@@ -38,6 +38,10 @@ public extension View {
     wrapped.environment(\.imglyAssetLibraryTitleDisplayMode, titleDisplayMode)
   }
 
+  func assetLibrary(sceneMode: SceneMode?) -> some View {
+    wrapped.environment(\.imglyAssetLibrarySceneMode, sceneMode)
+  }
+
   func assetLibrary(sources: [AssetLoader.SourceData]) -> some View {
     wrapped.environment(\.imglyAssetLibrarySources, sources)
   }

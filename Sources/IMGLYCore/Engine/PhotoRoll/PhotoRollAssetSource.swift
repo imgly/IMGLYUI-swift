@@ -39,7 +39,7 @@ public enum PhotoRollAssetSourceMode: CaseIterable, Sendable {
 ///
 /// ## Usage
 ///
-/// `PhotoRollAssetSource` is automatically registered by each editor solution's default `loadAssetSources` callback.
+/// `PhotoRollAssetSource` is automatically registered by `OnCreate.loadAssetSources`.
 /// By default, it operates in photos picker mode (no permissions required).
 ///
 /// To enable full photo library access, override `loadAssetSources` in your configuration

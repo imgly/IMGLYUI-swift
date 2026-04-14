@@ -2,6 +2,33 @@ import IMGLYCore
 import IMGLYEngine
 import SwiftUI
 
+/// An alias for `IMGLYEngine.SceneMode`.
+@available(*, deprecated, message: "Use `IMGLYEngine.SceneMode` instead.")
+public typealias AssetLibrarySceneMode = SceneMode
+
+@_spi(Internal) public extension EnvironmentValues {
+  /// The asset library scene mode.
+  @Entry var imglyAssetLibrarySceneMode: SceneMode?
+}
+
+/// A helper view that reads the `SceneMode` used by the ``AssetLibrary`` from the environment and provides access to
+/// it.
+public struct AssetLibrarySceneModeReader<Content: View>: View {
+  @Environment(\.imglyAssetLibrarySceneMode) var sceneMode
+  let content: (SceneMode?) -> Content
+
+  /// Creates a helper view that reads the `SceneMode` used by the ``AssetLibrary`` from the environment  and provides
+  /// access to it in a trailing `content` closure.
+  /// - Parameter content: The content view.
+  public init(@ViewBuilder content: @escaping (_ sceneMode: SceneMode?) -> Content) {
+    self.content = content
+  }
+
+  public var body: some View {
+    content(sceneMode)
+  }
+}
+
 /// An interface to define an asset library.
 @MainActor
 public protocol AssetLibrary: View {
@@ -12,7 +39,6 @@ public protocol AssetLibrary: View {
   associatedtype TextTab: View
   associatedtype ShapesTab: View
   associatedtype StickersTab: View
-  associatedtype PhotoRollTab: View
 
   /// A view to select assets used in the `DesignEditor`.
   var elementsTab: ElementsTab { get }
@@ -28,8 +54,6 @@ public protocol AssetLibrary: View {
   var shapesTab: ShapesTab { get }
   /// A view to select sticker assets.
   var stickersTab: StickersTab { get }
-  /// A view to select assets from the photo roll.
-  var photoRollTab: PhotoRollTab { get }
 
   associatedtype ClipsTab: View
   associatedtype OverlaysTab: View

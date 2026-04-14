@@ -7850,23 +7850,6 @@
         }
       }
     },
-    "ly_img_editor_sheet_voiceover_title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voiceover"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Voiceover"
-          }
-        }
-      }
-    },
     "ly_img_editor_sheet_volume_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8067,6 +8050,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Timeline"
+          }
+        }
+      }
+    },
+    "ly_img_editor_timeline_clip_voiceover_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voiceover"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voiceover"
           }
         }
       }

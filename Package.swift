@@ -29,7 +29,7 @@ let package = Package(
              ]),
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.73.0-rc.2"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.72.3"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", "1.1.2" ..< "27.0.0"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", "7.10.0" ..< "9.0.0"),
   ],
@@ -57,22 +57,27 @@ let package = Package(
     .target(
       name: "IMGLYDesignEditor",
       dependencies: [.target(name: "IMGLYEditor")],
+      resources: [.process("Resources")],
     ),
     .target(
       name: "IMGLYVideoEditor",
       dependencies: [.target(name: "IMGLYEditor")],
+      resources: [.process("Resources")],
     ),
     .target(
       name: "IMGLYPhotoEditor",
       dependencies: [.target(name: "IMGLYEditor")],
+      resources: [.process("Resources")],
     ),
     .target(
       name: "IMGLYApparelEditor",
       dependencies: [.target(name: "IMGLYEditor")],
+      resources: [.process("Resources")],
     ),
     .target(
       name: "IMGLYPostcardEditor",
       dependencies: [.target(name: "IMGLYEditor")],
+      resources: [.process("Resources")],
     ),
   ],
 )

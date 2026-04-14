@@ -132,6 +132,14 @@ import SwiftUI
     !isPreviewMode && !isVoiceOverRecordModeActive
   }
 
+  var sceneMode: SceneMode? {
+    // Make sure scene is loaded before calling `scene.getMode()` as it'll force unwrap the scene.
+    guard let engine, (try? engine.scene.get()) != nil else {
+      return nil
+    }
+    return try? engine.scene.getMode()
+  }
+
   var isCanvasActionEnabled: Bool {
     !isCreating && !sheet
       .isPresented && editMode == .transform && isSelectionVisible && sheetContentForSelection != .page &&
@@ -212,16 +220,19 @@ import SwiftUI
 
   init(
     config: EngineConfiguration,
+    behavior: InteractorBehavior,
     dismiss: DismissAction,
     assetLibrary: any AssetLibrary
   ) {
     self.config = config
+    self.behavior = behavior
     self.dismiss = dismiss
     self.assetLibrary = assetLibrary
   }
 
-  init(config: EngineConfiguration, assetLibrary: any AssetLibrary, sheet: SheetState?) {
+  init(config: EngineConfiguration, behavior: InteractorBehavior, assetLibrary: any AssetLibrary, sheet: SheetState?) {
     self.config = config
+    self.behavior = behavior
     self.assetLibrary = assetLibrary
     if let sheet {
       _sheet = .init(initialValue: sheet)
@@ -280,17 +291,12 @@ import SwiftUI
 
   // MARK: - Private properties
 
+  let behavior: InteractorBehavior
+
   // The optional _engine instance allows to control the deinitialization.
   private var _engine: Engine?
 
   private var previousEditMode: EditMode?
-
-  private var viewModeState: OnChanged.ViewModeState = .init(
-    editorViewMode: .edit,
-    pageIndex: 0,
-    insets: nil,
-    verticalSizeClass: nil,
-  )
 
   private var stateTask: Task<Void, Never>?
   private var eventTask: Task<Void, Never>?
@@ -770,7 +776,7 @@ extension Interactor: AssetLibraryInteractor {
           // If replacing GIFs/looping videos with non-looping videos
           // we need to set the properties for the fill based on the new\
           // asset. This will be part of the engine later.
-          if try engine.block.supportsFill(id) {
+          if sceneMode == .video, try engine.block.supportsFill(id) {
             let fillID = try engine.block.getFill(id)
             if try engine.block.supportsPlaybackControl(fillID) {
               if let looping = asset.looping {
@@ -832,88 +838,99 @@ extension Interactor: AssetLibraryInteractor {
           if let id = try await engine.asset.apply(sourceID: sourceID, assetResult: asset) {
             let pageID = try engine.getPage(page)
 
-            let minClipDuration: TimeInterval = 1
-            let fallbackClipDuration: TimeInterval = 5
-            var resolvedDuration = asset.duration ?? fallbackClipDuration
-
-            if addToBackgroundTrack {
-              createBackgroundTrackIfNeeded()
-              guard let backgroundTrack = timelineProperties.backgroundTrack else {
-                handleError(
-                  Error(errorDescription: "No Background Track."),
-                )
-                return
-              }
-              // Append to background track and configure
-              try engine.block.appendChild(to: backgroundTrack, child: id)
-              try engine.block.fillParent(id)
-
-              // Make sure to put the playhead on the added track and not slightly before it due to floating-point
-              // precision issues.
-              let epsilon = 0.0001
-              try engine.block.setPlaybackTime(pageID, time: engine.block.getTimeOffset(id) + epsilon)
-            } else {
-              // Append to page
+            switch sceneMode {
+            case .design:
               try engine.block.appendChild(to: pageID, child: id)
               try updateCamera(id)
+            case .video:
+              // This is a video scene, so we need to take care of offsets and durations
+              let minClipDuration: TimeInterval = 1
+              let fallbackClipDuration: TimeInterval = 5
 
-              // Set time properties — harmless for design blocks (properties stored but not used)
-              let playbackTime = try engine.block.getPlaybackTime(pageID)
-              let totalDuration = try engine.block.getDuration(pageID)
+              var resolvedDuration = asset.duration ?? fallbackClipDuration
 
-              // Prevent inserting at the very end of the timeline
-              var clampedOffset = max(0, min(playbackTime, totalDuration - minClipDuration))
-
-              if let blockType = try? engine.block.getType(id),
-                 blockType == BlockType.audio.rawValue {
-                // Always insert audio at the beginning
-                clampedOffset = 0
-              }
-
-              // Set the time offset
-              try engine.block.setTimeOffset(id, offset: clampedOffset)
-
-              // If there is nothing in the scene yet, we allow the full asset duration,
-              // otherwise shorten to fit remaining time:
-              let maxClipDuration = totalDuration - clampedOffset
-              let assetDuration = asset.duration ?? max(fallbackClipDuration, maxClipDuration)
-              resolvedDuration = totalDuration == 0 ? assetDuration : min(assetDuration, maxClipDuration)
-            }
-
-            try engine.block.setDuration(id, duration: resolvedDuration)
-
-            // In the future, this may be set by the default implementation.
-            if let artist = asset.artist,
-               let title = asset.title {
-              try engine.block.setMetadata(id, key: "name", value: "\(artist) · \(title)")
-            } else if let label = asset.label {
-              try engine.block.setMetadata(id, key: "name", value: label)
-            }
-
-            if try engine.block.supportsFill(id) {
-              let fillID = try engine.block.getFill(id)
-              let fillType = try engine.block.getType(fillID)
-              if fillType == FillType.video.rawValue {
-                // Wait for the video data to load
-                try await engine.block.forceLoadAVResource(fillID)
-
-                let footageDuration = try engine.block.getAVResourceTotalDuration(fillID)
-                if addToBackgroundTrack {
-                  try engine.block.setDuration(id, duration: footageDuration)
-                } else {
-                  try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
+              if addToBackgroundTrack {
+                createBackgroundTrackIfNeeded()
+                guard let backgroundTrack = timelineProperties.backgroundTrack else {
+                  handleError(
+                    Error(errorDescription: "No Background Track."),
+                  )
+                  return
                 }
+                // Append to background track and configure
+                try engine.block.appendChild(to: backgroundTrack, child: id)
+                try engine.block.fillParent(id)
+
+                // Make sure to put the playhead on the added track and not slightly before it due to floating-point
+                // precision issues.
+                let epsilon = 0.0001
+                try engine.block.setPlaybackTime(pageID, time: engine.block.getTimeOffset(id) + epsilon)
+              } else {
+                // Append to page
+                try engine.block.appendChild(to: pageID, child: id)
+
+                // Determine where at which point in time to insert the clip
+                let playbackTime = try engine.block.getPlaybackTime(pageID)
+                let totalDuration = try engine.block.getDuration(pageID)
+
+                // Prevent inserting at the very end of the timeline
+                var clampedOffset = max(0, min(playbackTime, totalDuration - minClipDuration))
+
+                if let blockType = try? engine.block.getType(id),
+                   blockType == BlockType.audio.rawValue {
+                  // Always insert audio at the beginning
+                  clampedOffset = 0
+                }
+
+                // Set the time offset
+                try engine.block.setTimeOffset(id, offset: clampedOffset)
+
+                // If there is nothing in the scene yet, we allow the full asset duration,
+                // otherwise shorten to fit remaining time:
+                let maxClipDuration = totalDuration - clampedOffset
+                let assetDuration = asset.duration ?? max(fallbackClipDuration, maxClipDuration)
+                resolvedDuration = totalDuration == 0 ? assetDuration : min(assetDuration, maxClipDuration)
               }
-            } else if try engine.block.getType(id) == BlockType.audio.rawValue {
-              // Prevent audio blocks from being considered in the z-index reordering
-              try engine.block.setAlwaysOnTop(id, enabled: true)
 
-              // Wait for the audio data to load
-              try await engine.block.forceLoadAVResource(id)
+              try engine.block.setDuration(id, duration: resolvedDuration)
 
-              let footageDuration = try engine.block.getAVResourceTotalDuration(id)
-              try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
-              try engine.block.setLooping(id, looping: false)
+              // In the future, this may be set by the default implementation.
+              if let artist = asset.artist,
+                 let title = asset.title {
+                try engine.block.setMetadata(id, key: "name", value: "\(artist) · \(title)")
+              } else if let label = asset.label {
+                try engine.block.setMetadata(id, key: "name", value: label)
+              }
+
+              if try engine.block.supportsFill(id) {
+                let fillID = try engine.block.getFill(id)
+                let fillType = try engine.block.getType(fillID)
+                if fillType == FillType.video.rawValue {
+                  // Wait for the video data to load
+                  try await engine.block.forceLoadAVResource(fillID)
+
+                  let footageDuration = try engine.block.getAVResourceTotalDuration(fillID)
+                  if addToBackgroundTrack {
+                    try engine.block.setDuration(id, duration: footageDuration)
+                  } else {
+                    try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
+                  }
+                }
+              } else if try engine.block.getType(id) == BlockType.audio.rawValue {
+                // Prevent audio blocks from being considered in the z-index reordering
+                try engine.block.setAlwaysOnTop(id, enabled: true)
+
+                // Wait for the audio data to load
+                try await engine.block.forceLoadAVResource(id)
+
+                let footageDuration = try engine.block.getAVResourceTotalDuration(id)
+                try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
+                try engine.block.setLooping(id, looping: false)
+              }
+            case .none:
+              assertionFailure("Unknown scene mode.")
+            @unknown default:
+              assertionFailure("Unknown scene mode.")
             }
 
             if ProcessInfo.isUITesting {
@@ -1183,21 +1200,8 @@ extension Interactor {
         _engine = engine
         onAppear()
 
-        try engine.editor.setSettingString(
-          "basePath",
-          value: config.settings.baseURL.absoluteString,
-        )
-
-        try await config.callbacks.onCreate(engine)
-
-        try await performPostOnCreateSetup(engine)
-
-        if engine.asset.findAllSources().contains(Engine.DefaultAssetSource.typeface.rawValue) {
-          try await fontLibrary.loadFromAssetSource(
-            engine: engine,
-            sourceID: Engine.DefaultAssetSource.typeface.rawValue,
-          )
-        }
+        try await behavior.loadScene(.init(engine, self), with: insets)
+        try await fontLibrary.loadFromAssetSource(engine: engine, sourceID: Engine.DefaultAssetSource.typeface.rawValue)
 
         try configureTimeline()
         self.zoomLevelChanged(forceUpdate: true)
@@ -1207,28 +1211,6 @@ extension Interactor {
       } catch {
         config.callbacks.onError(error, self)
       }
-    }
-  }
-
-  private func performPostOnCreateSetup(_ engine: Engine) async throws {
-    if !(try engine.editor.getSettingBool("features/pageCarouselEnabled")) {
-      try engine.showPage(page)
-    }
-
-    selectionColors = try engine.selectionColors(
-      forPage: 0,
-      includeDisabled: true,
-      setDisabled: true,
-      ignoreScope: true,
-    )
-
-    let zoomLevel = try await engine.zoomToPage(
-      page,
-      zoomModel.defaultInsets,
-      zoomModel: zoomModel,
-    )
-    if let zoomLevel {
-      zoomModel.defaultZoomLevel = zoomLevel
     }
   }
 
@@ -1246,30 +1228,25 @@ extension Interactor {
         try await Task.sleep(for: .milliseconds(100))
 
         if let engine {
-          let taskCollector = OnLoaded.TaskCollector()
-          try await config.callbacks.onLoaded(.init(
-            engine: engine,
-            eventHandler: self,
-            assetLibrary: assetLibrary,
-            taskCollector: taskCollector,
-          ))
-
-          // Start all tasks registered via context.task(_:).
-          // They run until onLoadedTask is cancelled.
-          try await taskCollector.runAll()
+          try await config.callbacks.onLoaded(.init(engine: engine, eventHandler: self, assetLibrary: assetLibrary))
         } else {
           throw Error(errorDescription: "Engine not initialized. Failed to execute `.imgly.onLoaded` callback.")
         }
       } catch {
-        if !Task.isCancelled {
-          handleError(error)
-        }
+        handleError(error)
       }
     }
   }
 
   func cancelExport() {
     exportTask?.cancel()
+  }
+
+  private func getContext(_ action: (@MainActor (_ context: InteractorContext) throws -> Void)?) rethrows {
+    guard let engine else {
+      return
+    }
+    try action?(.init(engine, self))
   }
 
   // MARK: - Zoom
@@ -1378,17 +1355,7 @@ extension Interactor {
           }
         } else {
           guard let engine else { return }
-          let newViewModeState = OnChanged.ViewModeState(
-            editorViewMode: .preview,
-            pageIndex: page,
-            insets: insets,
-            verticalSizeClass: verticalSizeClass,
-          )
-          try config.callbacks.onChanged(
-            .viewMode(oldValue: viewModeState, newValue: newViewModeState),
-            .init(engine: engine, eventHandler: self),
-          )
-          viewModeState = newViewModeState
+          try await behavior.enablePreviewMode(.init(engine, self), insets)
         }
         if isCreating {
           // Wait a moment to be sure that the engine rendered the first intended frame after initial zooming before
@@ -1555,19 +1522,8 @@ extension Interactor {
   }
 
   func enableEditMode() throws {
-    guard let engine else { return }
     if viewMode == .preview {
-      let newViewModeState = OnChanged.ViewModeState(
-        editorViewMode: .edit,
-        pageIndex: page,
-        insets: nil,
-        verticalSizeClass: verticalSizeClass,
-      )
-      try config.callbacks.onChanged(
-        .viewMode(oldValue: viewModeState, newValue: newViewModeState),
-        .init(engine: engine, eventHandler: self),
-      )
-      viewModeState = newViewModeState
+      try getContext(behavior.enableEditMode)
     }
     viewMode = .edit
     sheet.isPresented = false
@@ -1757,7 +1713,8 @@ extension Interactor {
       self.selection = selection
     }
 
-    if let currentPage = timelineProperties.currentPage {
+    if sceneMode == .video,
+       let currentPage = timelineProperties.currentPage {
       let isSelectionVisibleAtPlayhead = isVisibleAtCurrentPlaybackTime(selection?.blocks.first)
       let resolvedSelectionVisibility =
         (isVoiceOverRecordModeActive && voiceOverRecordModeSelectionHidden)
@@ -2103,7 +2060,7 @@ extension Interactor {
           // Ensure that the deselect event comes before opening the sheet, otherwise the sheet closes immediately.
           try await Task.sleep(for: .milliseconds(100))
           let content = SheetContent.clip
-          sheet = .init(.libraryAdd { self.assetLibrary.photoRollTab }, content)
+          sheet = .init(.libraryAdd { DefaultAssetLibrary.photoRollTab }, content)
         } catch {
           handleError(error)
         }

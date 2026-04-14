@@ -1,18 +1,72 @@
-import IMGLYEditor
+@_spi(Internal) import IMGLYEditor
 import SwiftUI
 
-@available(*, unavailable, message: """
-ApparelEditor is no longer supported. Please migrate to the new Starter Kit pattern. \
-See the migration guide: https://img.ly/docs/cesdk/ios/to-v1-73-ab14fb/
-""")
+/// Custom, mobile apparel UI for creating a print-ready design. The editable page is overlaid on a t-shirt mockup to
+/// give users an idea of where to position elements.
 public struct ApparelEditor: View {
+  /// Scene that will be loaded by the default implementation of the `onCreate` callback.
+  public nonisolated static let defaultScene = Bundle.module.url(
+    forResource: "apparel-ui-b-empty",
+    withExtension: "scene",
+  )!
+
+  @Environment(\.imglyOnCreate) private var onCreate
+  @Environment(\.imglyOnChanged) private var onChanged
+  @Environment(\.imglyNavigationBarItems) private var navigationBarItems
   private let settings: EngineSettings
 
+  /// Creates an apparel editor with settings.
+  /// - Parameter settings: The settings to initialize the underlying engine.
   public init(_ settings: EngineSettings) {
     self.settings = settings
   }
 
   public var body: some View {
-    Editor(settings)
+    EditorUI()
+      .navigationTitle("")
+      .imgly.editor(settings, behavior: .apparel)
+      .imgly.onCreate { engine in
+        guard let onCreate else {
+          try await OnCreate.loadScene(from: Self.defaultScene)(engine)
+          return
+        }
+        try await onCreate(engine)
+      }
+      .imgly.navigationBarItems { context in
+        if let navigationBarItems {
+          try navigationBarItems(context)
+        } else {
+          NavigationBar.ItemGroup(placement: .topBarLeading) {
+            NavigationBar.Buttons.closeEditor()
+          }
+          NavigationBar.ItemGroup(placement: .principal) {
+            NavigationBar.Buttons.undo()
+            NavigationBar.Buttons.redo()
+            NavigationBar.Buttons.togglePreviewMode()
+          }
+          NavigationBar.ItemGroup(placement: .topBarTrailing) {
+            NavigationBar.Buttons.export()
+          }
+        }
+      }
+      .imgly.dockItems { _ in
+        Dock.Buttons.assetLibrary(modifier: { _ in Dock.Buttons.AssetLibraryModifier() })
+      }
+      .imgly.dockItemAlignment { _ in .leading }
+      .imgly.dockBackgroundColor { _, _ in .clear }
+      .imgly.dockScrollDisabled { _ in true }
+      .imgly.onChanged { update, context in
+        guard let onChanged else {
+          try OnChanged.apparelEditorDefault(update, context)
+          return
+        }
+        try onChanged(update, context)
+      }
+  }
+}
+
+struct ApparelUI_Previews: PreviewProvider {
+  static var previews: some View {
+    defaultPreviews
   }
 }

@@ -364,7 +364,9 @@ public extension InspectorBar.Buttons {
       let playbackFillType = try? FillType(rawValue: context.engine.block.getType(playbackBlock))
       let selectionFillType = context.selection.fillType
       let isAudio = context.selection.type == .audio
-      return try (isAudio || selectionFillType == .video || playbackFillType == .video) &&
+      let isVideoScene = try context.engine.scene.getMode() == .video
+      return try isVideoScene &&
+        (isAudio || selectionFillType == .video || playbackFillType == .video) &&
         context.engine.block.isAllowedByScope(context.selection.block, key: "fill/change")
     },
   ) -> some InspectorBar.Item {
@@ -505,8 +507,8 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/split``  is
   /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
-  ///   - isVisible: Whether the button is visible. By default, it is only `true` if its engine scope
-  /// `"lifecycle/duplicate"` is allowed.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the scene mode is
+  /// `SceneMode.video` and its engine scope `"lifecycle/duplicate"` is allowed.
   /// - Returns: The created button.
   static func split(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.splitSelection) },
@@ -516,7 +518,8 @@ public extension InspectorBar.Buttons {
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.split },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
-      try $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/duplicate")
+      try $0.engine.scene.getMode() == .video &&
+        $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/duplicate")
     },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.split, action: action, label: { context in
@@ -584,8 +587,9 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/moveAsClip``
   /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
-  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// not `DesignBlockType.audio` and its parent is not the background track.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the scene mode is
+  /// `SceneMode.video`, the selected design block type is not `DesignBlockType.audio`, and its parent is not the
+  /// background track.
   /// - Returns: The created button.
   static func moveAsClip(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.moveSelectionAsClip) },
@@ -603,7 +607,8 @@ public extension InspectorBar.Buttons {
           false
         }
       }
-      return try context.selection.type != .audio &&
+      return try context.engine.scene.getMode() == .video &&
+        context.selection.type != .audio &&
         !isBackgroundTrack(context.selection.parentBlock)
     },
   ) -> some InspectorBar.Item {
@@ -624,8 +629,9 @@ public extension InspectorBar.Buttons {
   /// ``IMGLYCore/IMGLY/moveAsOverlay``  is
   /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
-  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// not `DesignBlockType.audio` and its parent is the background track.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the scene mode is
+  /// `SceneMode.video`, the selected design block type is not `DesignBlockType.audio`, and its parent is the background
+  /// track.
   /// - Returns: The created button.
   static func moveAsOverlay(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.moveSelectionAsOverlay) },
@@ -643,7 +649,8 @@ public extension InspectorBar.Buttons {
           false
         }
       }
-      return try context.selection.type != .audio &&
+      return try context.engine.scene.getMode() == .video &&
+        context.selection.type != .audio &&
         isBackgroundTrack(context.selection.parentBlock)
     },
   ) -> some InspectorBar.Item {
@@ -967,7 +974,8 @@ public extension InspectorBar.Buttons {
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.animation },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
-      try context.selection.type != .page &&
+      try context.engine.scene.getMode() == .video &&
+        context.selection.type != .page &&
         context.selection.type != .audio &&
         context.engine.block.supportsAnimation(context.selection.block)
     },

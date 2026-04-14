@@ -129,7 +129,8 @@ public extension SheetTypes {
 }
 
 public extension SheetType where Self == SheetTypes.LibraryAdd {
-  /// Creates a ``SheetType`` to add assets to the scene from the configured ``IMGLYCoreUI/AssetLibrary``.
+  /// Creates a ``SheetType`` to add assets to the scene from the ``IMGLYCoreUI/AssetLibrary`` configured with the
+  /// ``IMGLYCore/IMGLY/assetLibrary(_:)`` view modifier.
   /// - Parameters:
   ///   - style: The style of the sheet. By default, the ``SheetStyle/addAsset(detent:detents:)`` style is used.
   ///   - content: The content of the sheet.
@@ -142,7 +143,9 @@ public extension SheetType where Self == SheetTypes.LibraryAdd {
   }
 
   /// Creates a ``SheetType`` to add assets to the scene from a custom asset library defined by the provided `content`
-  /// with an ``IMGLYCoreUI/AssetLibraryBuilder`` independent of the configured ``IMGLYCoreUI/AssetLibrary``.
+  /// with an ``IMGLYCoreUI/AssetLibraryBuilder`` independent of the ``IMGLYCoreUI/AssetLibrary`` configured with the
+  /// ``IMGLYCore/IMGLY/assetLibrary(_:)``
+  /// view modifier.
   /// - Parameters:
   ///   - title: The title of the sheet.
   ///   - style: The style of the sheet. By default, the ``SheetStyle/addAsset(detent:detents:)`` style is used.
@@ -159,7 +162,8 @@ public extension SheetType where Self == SheetTypes.LibraryAdd {
 }
 
 public extension SheetType where Self == SheetTypes.LibraryReplace {
-  /// Creates a ``SheetType`` to replace assets in the scene from the configured ``IMGLYCoreUI/AssetLibrary``.
+  /// Creates a ``SheetType`` to replace assets in the scene from the ``IMGLYCoreUI/AssetLibrary`` configured with the
+  /// ``IMGLYCore/IMGLY/assetLibrary(_:)`` view modifier.
   /// - Parameters:
   ///   - style: The style of the sheet. By default, the ``SheetStyle/default(isFloating:detent:detents:)`` style is
   /// used.
@@ -173,7 +177,9 @@ public extension SheetType where Self == SheetTypes.LibraryReplace {
   }
 
   /// Creates a ``SheetType`` to replace assets in the scene from a custom asset library defined by the provided
-  /// `content` with an ``IMGLYCoreUI/AssetLibraryBuilder`` independent of the configured ``IMGLYCoreUI/AssetLibrary``.
+  /// `content` with an ``IMGLYCoreUI/AssetLibraryBuilder`` independent of the ``IMGLYCoreUI/AssetLibrary`` configured
+  /// with the
+  /// ``IMGLYCore/IMGLY/assetLibrary(_:)`` view modifier
   /// - Parameters:
   ///   - title: The title of the sheet.
   ///   - style: The style of the sheet. By default, the ``SheetStyle/default(isFloating:detent:detents:)`` style is
