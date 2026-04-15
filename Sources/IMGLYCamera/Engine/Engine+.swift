@@ -3,7 +3,7 @@ import IMGLYEngine
 @_spi(Internal) import IMGLYCoreUI
 @_spi(Internal) import struct IMGLYCore.Error
 
-@_spi(Internal) public extension Engine {
+public extension Engine {
   func createScene(from result: CameraResult) async throws {
     switch result {
     case let .recording(recordings):

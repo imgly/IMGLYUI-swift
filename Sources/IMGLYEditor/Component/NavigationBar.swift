@@ -1,11 +1,6 @@
 import IMGLYEngine
 import SwiftUI
 
-@_spi(Internal) public extension EnvironmentValues {
-  @Entry var imglyNavigationBarItems: NavigationBar.Items?
-  @Entry var imglyNavigationBarModifications: NavigationBar.Modifications?
-}
-
 /// A namespace for the navigation bar component.
 public enum NavigationBar {
   struct State: EditorState {
@@ -26,12 +21,12 @@ public extension NavigationBar {
   /// The context of navigation bar components.
   struct Context: EditorContext {
     /// The engine of the current editor. It is `nil` as long as the engine is being created before the
-    /// ``IMGLYCore/IMGLY/onCreate(_:)``callback is run.
+    /// ``EditorConfiguration/Builder/onCreate(_:)`` callback is run.
     public let engine: Engine?
     public let eventHandler: EditorEventHandler
     /// The state of the current editor.
     public let state: EditorState
-    /// The asset library configured with the ``IMGLYCore/IMGLY/assetLibrary(_:)`` view modifier.
+    /// The configured ``IMGLYCoreUI/AssetLibrary``.
     public let assetLibrary: any AssetLibrary
   }
 

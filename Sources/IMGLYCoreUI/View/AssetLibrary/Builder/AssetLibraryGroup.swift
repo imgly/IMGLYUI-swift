@@ -59,7 +59,7 @@ public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
 
   public var body: some View {
     if let title {
-      AssetLibrarySection(title) {
+      AssetLibrarySectionView(title) {
         scrollView
       } preview: {
         preview()

@@ -38,7 +38,6 @@ private struct EditorPreview: View {
   init(_ config: EngineConfiguration, sheet: SheetState?) {
     _interactor = .init(wrappedValue: Interactor(
       config: config,
-      behavior: .default,
       assetLibrary: DefaultAssetLibrary(),
       sheet: sheet,
     ))
@@ -46,14 +45,6 @@ private struct EditorPreview: View {
 
   var body: some View {
     EditorUI()
-      .imgly.navigationBarItems { _ in
-        NavigationBar.ItemGroup(placement: .topBarTrailing) {
-          NavigationBar.Buttons.undo()
-          NavigationBar.Buttons.redo()
-          NavigationBar.Buttons.togglePreviewMode()
-          NavigationBar.Buttons.export()
-        }
-      }
       .imgly.interactor(interactor)
   }
 }

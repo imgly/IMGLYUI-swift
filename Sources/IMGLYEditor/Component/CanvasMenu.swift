@@ -2,11 +2,6 @@ import IMGLYEngine
 import SwiftUI
 @_spi(Internal) import IMGLYCoreUI
 
-@_spi(Internal) public extension EnvironmentValues {
-  @Entry var imglyCanvasMenuItems: CanvasMenu.Items?
-  @Entry var imglyCanvasMenuModifications: CanvasMenu.Modifications?
-}
-
 /// A namespace for the canvas menu component.
 public enum CanvasMenu {}
 
@@ -27,7 +22,7 @@ public extension CanvasMenu {
     /// animations.
     public let engine: Engine
     public let eventHandler: EditorEventHandler
-    /// The asset library configured with the ``IMGLYCore/IMGLY/assetLibrary(_:)`` view modifier.
+    /// The configured ``IMGLYCoreUI/AssetLibrary``.
     public let assetLibrary: any AssetLibrary
     /// The current selection.
     /// - Note: Prefer using this provided selection property instead of querying the same data from engine because the

@@ -427,34 +427,6 @@ extension MappedType {
       try setSelected($0, selected: false)
     }
   }
-
-  func addOutline(_ name: String? = nil, for id: DesignBlockID, to parent: DesignBlockID) throws -> DesignBlockID {
-    let outline = try create(.graphic)
-    let rect = try createShape(.rect)
-    try setShape(outline, shape: rect)
-
-    let height = try getHeight(id)
-    let width = try getWidth(id)
-
-    if let name {
-      try setName(outline, name: name)
-    }
-    try setHeightMode(outline, mode: .absolute)
-    try setHeight(outline, value: height)
-    try setWidthMode(outline, mode: .absolute)
-    try setWidth(outline, value: width)
-    try appendChild(to: parent, child: outline)
-
-    try set(outline, property: .key(.fillEnabled), value: false)
-    try set(outline, property: .key(.strokeEnabled), value: true)
-    try set(outline, property: .key(.strokeColor), value: CGColor.imgly.white)
-    try set(outline, property: .key(.strokeStyle), value: StrokeStyle.dotted)
-    try set(outline, property: .key(.strokeWidth), value: 1.0)
-    try set(outline, property: .key(.blendMode), value: BlendMode.difference)
-    try setScopeEnabled(outline, scope: .key(.editorSelect), enabled: false)
-
-    return outline
-  }
 }
 
 // MARK: - Kind
