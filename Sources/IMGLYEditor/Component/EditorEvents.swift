@@ -241,7 +241,10 @@ public extension EditorEvents.AddFrom {
   /// The behavior depends on the mode passed to ``IMGLYCore/PhotoRollAssetSource``:
   /// - `photosPicker` (default): Opens system photos picker (no permissions required)
   /// - `fullLibraryAccess`: Opens full photo library (requires permissions)
-  struct PhotoRoll: EditorEvent {}
+  struct PhotoRoll: EditorEvent {
+    /// Whether to add the asset to the background track.
+    let addToBackgroundTrack: Bool
+  }
 
   /// An event for adding assets from the system photo roll.
   @available(*, deprecated, message: """
@@ -250,6 +253,8 @@ public extension EditorEvents.AddFrom {
   """)
   struct SystemPhotoRoll: EditorEvent {
     let assetSourceIDs: [MediaType: String]
+    /// Whether to add the asset to the background track.
+    let addToBackgroundTrack: Bool
   }
 
   /// An event for adding assets from the photo roll library sheet.
@@ -262,6 +267,8 @@ public extension EditorEvents.AddFrom {
   /// An event for adding assets from the system camera.
   struct SystemCamera: EditorEvent {
     let assetSourceIDs: [MediaType: String]
+    /// Whether to add the asset to the background track.
+    let addToBackgroundTrack: Bool
   }
 
   /// An event for adding assets from the IMGLY camera.
@@ -364,14 +371,23 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {
   /// - `photosPicker` (default): Opens system photos picker (no permissions required)
   /// - `fullLibraryAccess`: Opens full photo library (requires permissions)
   ///
+  /// - Parameters:
+  ///   - addToBackgroundTrack: Whether to add the asset to the background track. Defaults to `false`.
   /// - Returns: The created ``EditorEvents/AddFrom/PhotoRoll`` event.
-  static var addFromPhotoRoll: Self { Self() }
+  static func addFromPhotoRoll(addToBackgroundTrack: Bool = false) -> Self {
+    Self(addToBackgroundTrack: addToBackgroundTrack)
+  }
+
+  /// Creates an ``EditorEvent`` to add assets from the photo roll.
+  static var addFromPhotoRoll: Self { Self(addToBackgroundTrack: false) }
 }
 
 public extension EditorEvent where Self == EditorEvents.AddFrom.SystemPhotoRoll {
   /// Creates an ``EditorEvent`` to add assets from the system photo roll.
-  /// - Parameter assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
-  /// ``IMGLYCoreUI/MediaType``.
+  /// - Parameters:
+  ///   - assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
+  ///   ``IMGLYCoreUI/MediaType``.
+  ///   - addToBackgroundTrack: Whether to add the asset to the background track. Defaults to `false`.
   /// - Returns: The created ``EditorEvents/AddFrom/SystemPhotoRoll`` event.
   @available(*, deprecated, message: """
   Deprecated in v1.66.0. Please see the changelog for migration details:
@@ -379,8 +395,9 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.SystemPhotoRoll 
   """)
   static func addFromSystemPhotoRoll(
     to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
+    addToBackgroundTrack: Bool = false,
   ) -> Self {
-    Self(assetSourceIDs: assetSourceIDs)
+    Self(assetSourceIDs: assetSourceIDs, addToBackgroundTrack: addToBackgroundTrack)
   }
 }
 
@@ -396,13 +413,16 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYPhotoRoll {
 
 public extension EditorEvent where Self == EditorEvents.AddFrom.SystemCamera {
   /// Creates an ``EditorEvent`` to add assets from the system camera.
-  /// - Parameter assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
-  /// ``IMGLYCoreUI/MediaType``.
+  /// - Parameters:
+  ///   - assetSourceIDs: Added assets will be added to the corresponding asset source based on the asset's
+  ///   ``IMGLYCoreUI/MediaType``.
+  ///   - addToBackgroundTrack: Whether to add the asset to the background track. Defaults to `false`.
   /// - Returns: The created ``EditorEvents/AddFrom/SystemCamera`` event.
   static func addFromSystemCamera(
     to assetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs,
+    addToBackgroundTrack: Bool = false,
   ) -> Self {
-    Self(assetSourceIDs: assetSourceIDs)
+    Self(assetSourceIDs: assetSourceIDs, addToBackgroundTrack: addToBackgroundTrack)
   }
 }
 

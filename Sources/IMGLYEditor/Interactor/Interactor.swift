@@ -830,7 +830,7 @@ extension Interactor: AssetLibraryInteractor {
           let addToBackgroundTrack = sheet.content == .clip
 
           if let id = try await engine.asset.apply(sourceID: sourceID, assetResult: asset) {
-            let pageID = try engine.getPage(page)
+            guard let pageID = try engine.scene.getCurrentPage() else { return }
 
             let minClipDuration: TimeInterval = 1
             let fallbackClipDuration: TimeInterval = 5
@@ -1969,8 +1969,6 @@ extension Interactor {
       updateZoom(clampOnly: true)
     }
 
-    let wasPresented = sheet.isPresented
-
     if sheet.isPresented {
       let isVoiceOverRecordSheet = sheet.type is SheetTypes.Voiceover && isVoiceOverRecordModeActive
       if isVoiceOverRecordSheet {
@@ -2084,15 +2082,16 @@ extension Interactor {
     historyVersion &+= 1
   }
 
-  func openImagePicker(_ assetSourceIDs: [MediaType: String]) {
+  func openImagePicker(_ assetSourceIDs: [MediaType: String], addToBackgroundTrack: Bool = false) {
     pause()
     uploadAssetSourceIDs = assetSourceIDs
     isImagePickerShown = true
-    sheet.content = .clip // Set to clip to add to background track
+    sheet.content = addToBackgroundTrack ? .clip : .image
   }
 
-  func openPhotoRoll() {
+  func openPhotoRoll(addToBackgroundTrack: Bool = false) {
     pause()
+    let content: SheetContent = addToBackgroundTrack ? .clip : .image
     if isPhotoRollFullLibraryAccessEnabled {
       Task { @MainActor in
         if PhotoLibraryAuthorizationManager.shared.authorizationStatus == .notDetermined {
@@ -2102,7 +2101,6 @@ extension Interactor {
           try engine?.block.deselectAll()
           // Ensure that the deselect event comes before opening the sheet, otherwise the sheet closes immediately.
           try await Task.sleep(for: .milliseconds(100))
-          let content = SheetContent.clip
           sheet = .init(.libraryAdd { self.assetLibrary.photoRollTab }, content)
         } catch {
           handleError(error)
@@ -2115,7 +2113,7 @@ extension Interactor {
         .movie: PhotoRollAssetSource.id,
       ]
       isImagePickerShown = true
-      sheet.content = .clip // Set to clip to add to background track
+      sheet.content = content
     }
   }
 }

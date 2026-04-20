@@ -28,7 +28,14 @@ extension Interactor: TimelineInteractor {
     NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)
       .receive(on: DispatchQueue.main)
       .sink { [weak self] _ in
-        self?.pauseIfNeeded()
+        guard let self else { return }
+        if isVoiceOverRecordModeRecording {
+          Task { [weak self] in
+            await self?.finishVoiceOverRecordMode()
+          }
+        } else {
+          pauseIfNeeded()
+        }
       }
       .store(in: &cancellables)
   }
@@ -867,13 +874,15 @@ extension Interactor: TimelineInteractor {
 
   // MARK: Update and sync the selection state
 
-  /// Select a clip in the timeline to match what’s selected on canvas.
+  /// Sync the timeline’s selected clip to match what’s currently selected on the canvas.
+  /// This only updates the timeline state without modifying the canvas selection or edit mode,
+  /// which would otherwise cause sheets (e.g. crop) to close due to re-entrant selection events.
   func updateTimelineSelectionFromCanvas() {
     guard timelineProperties.timeline != nil else { return }
     guard let engine else { return }
     let selected = engine.block.findAllSelected()
     guard let id = selected.first else {
-      deselect()
+      timelineProperties.selectedClip = nil
       return
     }
 
@@ -891,7 +900,12 @@ extension Interactor: TimelineInteractor {
       return
     }
 
-    select(id: id)
+    let clip = timelineProperties.dataSource.findClip(id: id)
+    guard timelineProperties.selectedClip?.id != id || clip == nil else { return }
+    timelineProperties.selectedClip = clip
+    if clip != nil {
+      pause()
+    }
   }
 
   /// Select a block on the canvas.
@@ -1239,11 +1253,11 @@ extension Interactor: TimelineInteractor {
     }
   }
 
-  func openSystemCamera(_ assetSourceIDs: [MediaType: String]) {
+  func openSystemCamera(_ assetSourceIDs: [MediaType: String], addToBackgroundTrack: Bool = false) {
     pause()
     uploadAssetSourceIDs = assetSourceIDs
     isSystemCameraShown = true
-    sheet.content = .clip // Set to clip to add to background track
+    sheet.content = addToBackgroundTrack ? .clip : .image
   }
 
   func addAssetsFromImagePicker(_ assets: [(URL, MediaType)]) {

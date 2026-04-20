@@ -356,7 +356,7 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the system photo roll.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
-  /// ``EditorEvent/addFromSystemPhotoRoll(to:)`` event is invoked.
+  /// ``EditorEvent/addFromSystemPhotoRoll(to:addToBackgroundTrack:)`` event is invoked.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_photo_roll` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`
@@ -419,7 +419,7 @@ public extension Dock.Buttons {
   /// Creates a ``Dock/Button`` that opens the system camera.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default,
-  /// ``EditorEvent/addFromSystemCamera(to:)`` event is invoked.
+  /// ``EditorEvent/addFromSystemCamera(to:addToBackgroundTrack:)`` event is invoked.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_dock_button_camera` is used.
   ///   - icon: The icon view which is used to label the button. By default, the `Image`

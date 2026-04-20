@@ -42,7 +42,6 @@ class ThumbnailsAudioProvider {
 // MARK: - ThumbnailsProvider
 
 extension ThumbnailsAudioProvider: ThumbnailsProvider {
-  // swiftlint:disable:next cyclomatic_complexity
   func loadThumbnails(clip: Clip, availableWidth: Double, thumbHeight: Double) {
     guard availableWidth > 0, let duration = clip.duration else { return }
 
@@ -83,46 +82,63 @@ extension ThumbnailsAudioProvider: ThumbnailsProvider {
     task = Task { [weak self] in
       guard let self else { return }
       isLoading = true
-
       defer { isLoading = false }
 
-      for attempt in 0 ..< Loading.maxAttempts {
-        do {
-          var receivedSamples = false
-          for try await thumb in
-            try await interactor.generateAudioThumbnails(
-              clip: clip,
-              timeRange: timeRange,
-              numberOfSamples: numberOfSamples,
-            ) {
-            guard !Task.isCancelled else { return }
-            audioWaves = thumb.samples
-            loadedTrimOffset = clip.trimOffset
-            receivedSamples = receivedSamples || !thumb.samples.isEmpty
-          }
+      await performThumbnailLoading(
+        clip: clip,
+        interactor: interactor,
+        timeRange: timeRange,
+        numberOfSamples: numberOfSamples,
+        availableWidth: availableWidth,
+        isLiveBufferResource: isLiveBufferResource,
+      )
+    }
+  }
 
-          if receivedSamples {
-            self.availableWidth = availableWidth
-            if isLiveBufferResource {
-              lastLiveBufferRefreshAt = CACurrentMediaTime()
-            }
-            return
-          }
-        } catch {
-          debugPrint("Failed to load audio thumbnails:", error)
+  private func performThumbnailLoading(
+    clip: Clip,
+    interactor: any TimelineInteractor,
+    timeRange: ClosedRange<Double>,
+    numberOfSamples: Int,
+    availableWidth: Double,
+    isLiveBufferResource: Bool,
+  ) async {
+    for attempt in 0 ..< Loading.maxAttempts {
+      do {
+        var receivedSamples = false
+        for try await thumb in
+          try await interactor.generateAudioThumbnails(
+            clip: clip,
+            timeRange: timeRange,
+            numberOfSamples: numberOfSamples,
+          ) {
+          guard !Task.isCancelled else { return }
+          audioWaves = thumb.samples
+          loadedTrimOffset = clip.trimOffset
+          receivedSamples = receivedSamples || !thumb.samples.isEmpty
         }
 
-        guard !isLiveBufferResource else { break }
-        guard attempt < Loading.maxAttempts - 1 else { break }
-
-        do {
-          try await interactor.forceLoadAudioResource(for: clip)
-        } catch {
-          debugPrint("Failed to force-load audio resource:", error)
+        if receivedSamples {
+          self.availableWidth = availableWidth
+          if isLiveBufferResource {
+            lastLiveBufferRefreshAt = CACurrentMediaTime()
+          }
+          return
         }
-
-        try? await Task.sleep(nanoseconds: Loading.retryDelayNanoseconds)
+      } catch {
+        debugPrint("Failed to load audio thumbnails:", error)
       }
+
+      guard !isLiveBufferResource else { break }
+      guard attempt < Loading.maxAttempts - 1 else { break }
+
+      do {
+        try await interactor.forceLoadAudioResource(for: clip)
+      } catch {
+        debugPrint("Failed to force-load audio resource:", error)
+      }
+
+      try? await Task.sleep(nanoseconds: Loading.retryDelayNanoseconds)
     }
   }
 

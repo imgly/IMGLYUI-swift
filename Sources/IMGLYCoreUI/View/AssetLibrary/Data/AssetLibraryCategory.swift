@@ -182,14 +182,13 @@ public extension AssetLibraryCategory {
   }
 
   /// Default categories for the asset library.
-  ///
-  /// Video and audio categories are automatically filtered based on the scene mode.
   static var defaultCategories: [Self] {
     [
       .defaultElements,
-      .defaultImages,
+      .defaultPhotoRoll,
       .defaultVideos,
       .defaultAudio,
+      .defaultImages,
       .defaultText,
       .defaultShapes,
       .defaultStickers,

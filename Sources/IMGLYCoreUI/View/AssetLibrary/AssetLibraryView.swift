@@ -21,19 +21,63 @@ public struct AssetLibraryView: AssetLibrary {
 
   // MARK: - Body
 
-  /// Categories excluding the elements meta-category.
+  /// Categories rendered as groups inside the elements tab.
+  ///
+  /// Excludes `elements` (the meta-category itself); all other categories (including `photoRoll`)
+  /// are rendered via ``elementGroup(for:)``.
   private var contentCategories: [AssetLibraryCategory] {
     categories.filter { $0.id != AssetLibraryCategory.ID.elements }
   }
 
+  /// The categories that are actually rendered as tabs after filtering:
+  /// - `elements` is always kept (its content is derived from the other categories).
+  /// - `videos`/`audio` are only kept when `includeAVResources` is `true` and they are non-empty.
+  /// - All other categories are kept when they are non-empty.
+  private var activeCategories: [AssetLibraryCategory] {
+    categories.filter { category in
+      switch category.id {
+      case AssetLibraryCategory.ID.elements:
+        true
+      case AssetLibraryCategory.ID.videos, AssetLibraryCategory.ID.audio:
+        includeAVResources && !category.sections.isEmpty
+      default:
+        !category.sections.isEmpty
+      }
+    }
+  }
+
   public var body: some View {
     TabView {
-      ForEach(categories, id: \.id) { category in
-        if category.id == AssetLibraryCategory.ID.elements {
-          elementsTab
+      let active = activeCategories
+      if active.count > 5 {
+        let hasElements = active.contains { $0.id == AssetLibraryCategory.ID.elements }
+        let hasPhotoRoll = active.contains { $0.id == AssetLibraryCategory.ID.photoRoll }
+        if hasElements, hasPhotoRoll, active.count == 6 {
+          // `elementsTab` already surfaces the photo roll at the top, so we drop the
+          // dedicated photo roll tab here to keep the five-tab layout.
+          let withoutPhotoRoll = active.filter { $0.id != AssetLibraryCategory.ID.photoRoll }
+          tabViews(for: withoutPhotoRoll)
         } else {
-          tabView(for: category)
+          let primary = active.prefix(4)
+          let overflow = active.dropFirst(4)
+          tabViews(for: primary)
+          AssetLibraryMoreTab {
+            tabViews(for: overflow)
+          }
         }
+      } else {
+        tabViews(for: active)
+      }
+    }
+  }
+
+  @ViewBuilder
+  private func tabViews(for categories: some RandomAccessCollection<AssetLibraryCategory>) -> some View {
+    ForEach(categories, id: \.id) { category in
+      if category.id == AssetLibraryCategory.ID.elements {
+        elementsTab
+      } else {
+        tabView(for: category)
       }
     }
   }
@@ -168,7 +212,40 @@ public struct AssetLibraryView: AssetLibrary {
   @AssetLibraryBuilder
   private var elementsContent: AssetLibraryContent {
     for category in contentCategories {
-      AssetLibraryGroup(category.title) {
+      elementGroup(for: category)
+    }
+  }
+
+  private func elementGroup(for category: AssetLibraryCategory) -> AssetLibraryContent {
+    switch category.id {
+    case AssetLibraryCategory.ID.photoRoll:
+      return sectionsContent(for: category)
+    case AssetLibraryCategory.ID.text:
+      let textComponentSourceIDs = Set(
+        category.sections
+          .filter { $0.contentType == .textComponent }
+          .map(\.source.id),
+      )
+      return AssetLibraryGroup.text(
+        category.title,
+        excludedPreviewSources: textComponentSourceIDs,
+      ) {
+        sectionsContent(for: category)
+      }
+    case AssetLibraryCategory.ID.shapes:
+      return AssetLibraryGroup.shape(category.title) {
+        sectionsContent(for: category)
+      }
+    case AssetLibraryCategory.ID.stickers:
+      return AssetLibraryGroup.sticker(category.title) {
+        sectionsContent(for: category)
+      }
+    case AssetLibraryCategory.ID.audio:
+      return AssetLibraryGroup.audio(category.title) {
+        sectionsContent(for: category)
+      }
+    default:
+      return AssetLibraryGroup(category.title) {
         sectionsContent(for: category)
       } preview: {
         AssetPreview.imageOrVideo
@@ -239,7 +316,9 @@ public struct AssetLibraryView: AssetLibrary {
       return AssetLibrarySource.sticker(.title(title), source: section.source)
 
     case let .photoRoll(media):
-      return AssetLibrarySource.photoRoll(.title(title), media: media)
+      // When AV resources are disabled (e.g. in a photo editor), constrain photo roll to images only.
+      let effectiveMedia = includeAVResources ? media : media.filter { $0 != .video }
+      return AssetLibrarySource.photoRoll(.title(title), media: effectiveMedia)
     }
   }
 }
