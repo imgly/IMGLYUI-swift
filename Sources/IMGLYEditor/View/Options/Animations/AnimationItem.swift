@@ -25,8 +25,13 @@ struct AnimationItem: View {
   }
 
   private var localizedTitle: String {
-    let title = asset.result.label ?? ""
-    return String(localized: LocalizedStringResource(stringLiteral: title))
+    let engineLabel = asset.result.label ?? ""
+    let assetKey = asset.result.id.components(separatedBy: "/").last ?? ""
+    guard !assetKey.isEmpty else { return engineLabel }
+    let resourceKey = "ly_img_editor_asset_label_\(assetKey)"
+    let resource: LocalizedStringResource = .imgly.localized(String.LocalizationValue(resourceKey))
+    let resolved = String(localized: resource)
+    return resolved == resourceKey ? engineLabel : resolved
   }
 
   private var properties: [EffectProperty] {

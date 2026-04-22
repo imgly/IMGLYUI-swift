@@ -20,7 +20,7 @@ class AssetLibraryInteractorMock: ObservableObject {
       let engine = try await Engine(license: secrets.licenseKey)
       self.engine = engine
       try engine.scene.createVideo()
-      let basePath = "https://cdn.img.ly/packages/imgly/cesdk-swift/1.73.0/assets"
+      let basePath = "https://cdn.img.ly/packages/imgly/cesdk-swift/1.73.1-rc.0/assets"
       try engine.editor.setSettingString("basePath", value: basePath)
       for source in Engine.DefaultAssetSource.allCases {
         try await engine.populateAssetSource(id: source.rawValue, baseURL: Engine.assetBaseURL)
