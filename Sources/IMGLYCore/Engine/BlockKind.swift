@@ -16,5 +16,6 @@ import Foundation
   case group
   case voiceover
   case gif
+  case apng
   case animatedSticker
 }
