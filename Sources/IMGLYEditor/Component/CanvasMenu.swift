@@ -43,11 +43,10 @@ extension CanvasMenu.Button: CanvasMenu.Item where Context == CanvasMenu.Context
 
 public extension CanvasMenu.Context {
   /// Cached properties of the current selection.
+  @MainActor
   struct Selection {
     /// The id of the current selected design block.
     public let block: DesignBlockID
-    /// The id of the parent design block of the current selected design ``block``.
-    public let parentBlock: DesignBlockID?
     /// The type of the current selected design ``block``.
     public let type: DesignBlockType?
     /// The fill type of the current selected design ``block``.
@@ -60,15 +59,22 @@ public extension CanvasMenu.Context {
     /// Whether the current selected design ``block`` can be moved: forward or backward.
     public let canMove: Bool
 
-    @MainActor
+    private let engine: Engine
+
+    /// The id of the parent design block of the current selected design ``block``.
+    public var parentBlock: DesignBlockID? {
+      try? engine.block.getParent(block)
+    }
+
     init(block: DesignBlockID, engine: Engine) throws {
       self.block = block
-      parentBlock = try engine.block.getParent(block)
+      self.engine = engine
       type = try .init(rawValue: engine.block.getType(block))
       fillType = try engine.block
         .supportsFill(block) ? .init(rawValue: engine.block.getType(engine.block.getFill(block))) : nil
       kind = try engine.block.getKind(block)
 
+      let initialParent = try engine.block.getParent(block)
       @MainActor func isBackgroundTrack(_ id: DesignBlockID?) throws -> Bool {
         if let id {
           try engine.block.getType(id) == DesignBlockType.track.rawValue &&
@@ -77,12 +83,12 @@ public extension CanvasMenu.Context {
           false
         }
       }
-      if let parentBlock {
-        siblings = try engine.block.getReorderableChildren(parentBlock, child: block)
+      if let initialParent {
+        siblings = try engine.block.getReorderableChildren(initialParent, child: block)
       } else {
         siblings = [block]
       }
-      let canReorderTrack = try !isBackgroundTrack(parentBlock) && siblings.count > 1
+      let canReorderTrack = try !isBackgroundTrack(initialParent) && siblings.count > 1
       canMove = try engine.block.isAllowedByScope(block, key: "layer/move") && canReorderTrack
     }
   }

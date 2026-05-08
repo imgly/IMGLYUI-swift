@@ -534,7 +534,6 @@ extension CameraModel {
       for: .AVCaptureSessionRuntimeError,
       object: captureService.captureSession,
     )
-    .receive(on: DispatchQueue.main)
     .sink(receiveValue: { [weak self] notification in
       guard let self else { return }
       stopStreaming()
@@ -552,7 +551,6 @@ extension CameraModel {
       for: .AVCaptureSessionWasInterrupted,
       object: captureService.captureSession,
     )
-    .receive(on: DispatchQueue.main)
     .sink(receiveValue: { [weak self] notification in
       guard let self else { return }
       if let userInfoValue = notification.userInfo?[AVCaptureSessionInterruptionReasonKey] as AnyObject?,
@@ -582,7 +580,6 @@ extension CameraModel {
       for: .AVCaptureSessionInterruptionEnded,
       object: captureService.captureSession,
     )
-    .receive(on: DispatchQueue.main)
     .sink(receiveValue: { [weak self] _ in
       guard let self else { return }
       startStreaming()

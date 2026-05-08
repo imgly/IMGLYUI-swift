@@ -161,8 +161,7 @@ struct TextFormatOptions: View {
         let alignmentX: Binding<HorizontalAlignment?> = interactor.bind(id, property: .key(.textHorizontalAlignment))
         let effectiveAlignmentX: HorizontalAlignment? = id.flatMap { blockID in
           interactor.get(blockID) { engine, block in
-            let alignmentString = try engine.block.getTextEffectiveHorizontalAlignment(block)
-            return HorizontalAlignment(rawValue: alignmentString) ?? .left
+            HorizontalAlignment(try engine.block.getTextEffectiveHorizontalAlignment(block))
           }
         }
         HStack(spacing: 16) {
