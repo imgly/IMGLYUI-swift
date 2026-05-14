@@ -31,13 +31,6 @@ struct TimelineContentView: View {
 
   @State var needsRestoreVerticalOffset = true
 
-  /// Trailing X of the background track's content; pinned to 0 when empty so the
-  /// "+ Add Clip" button doesn't drift along with foreground content.
-  private var backgroundTrackEndPoints: CGFloat {
-    guard !dataSource.backgroundTrack.clips.isEmpty else { return 0 }
-    return timeline.convertToPoints(time: timeline.totalDuration)
-  }
-
   var body: some View {
     let scrollOffsetX = horizontalScrollViewDelegate.contentOffset.x
     let isVoiceOverRecordModeRecording = timeline.interactor?.isVoiceOverRecordModeRecording == true
@@ -148,12 +141,12 @@ struct TimelineContentView: View {
               ? Color(uiColor: .systemBackground)
               : Color(uiColor: .secondarySystemBackground))
             .frame(height: configuration.backgroundTrackHeight + configuration.trackSpacing * 2)
-          // Placed before `TrackView` so trim handles render on top of the button.
-          BackgroundTrackAddButton()
-            .frame(height: configuration.backgroundTrackHeight)
-            .padding(.leading, viewportWidth / 2 + backgroundTrackEndPoints)
           TrackView(track: dataSource.backgroundTrack)
             .frame(height: configuration.backgroundTrackHeight)
+            .background(alignment: .trailing) {
+              BackgroundTrackAddButton()
+                .alignmentGuide(.trailing) { _ in 0 }
+            }
             .padding(.horizontal, viewportWidth / 2)
           if maxOverlayWidth > 0,
              let maxDuration {

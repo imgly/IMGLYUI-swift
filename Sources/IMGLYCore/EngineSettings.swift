@@ -19,7 +19,7 @@ public struct EngineSettings: Sendable {
   public init(
     license: String? = nil,
     userID: String? = nil,
-    baseURL: URL = .init(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.75.0-rc.5/assets")!
+    baseURL: URL = .init(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.74.2-rc.0/assets")!
   ) {
     self.license = license
     self.userID = userID

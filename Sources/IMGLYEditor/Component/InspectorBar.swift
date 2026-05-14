@@ -42,10 +42,11 @@ extension InspectorBar.Button: InspectorBar.Item where Context == InspectorBar.C
 
 public extension InspectorBar.Context {
   /// Cached properties of the current selection.
-  @MainActor
   struct Selection {
     /// The id of the current selected design block.
     public let block: DesignBlockID
+    /// The id of the parent design block of the current selected design ``block``.
+    public let parentBlock: DesignBlockID?
     /// The type of the current selected design ``block``.
     public let type: DesignBlockType?
     /// The fill type of the current selected design ``block``.
@@ -53,16 +54,10 @@ public extension InspectorBar.Context {
     /// The kind of the current selected design ``block``.
     public let kind: String?
 
-    private let engine: Engine
-
-    /// The id of the parent design block of the current selected design ``block``.
-    public var parentBlock: DesignBlockID? {
-      try? engine.block.getParent(block)
-    }
-
+    @MainActor
     init(block: DesignBlockID, engine: Engine) throws {
       self.block = block
-      self.engine = engine
+      parentBlock = try engine.block.getParent(block)
       type = try .init(rawValue: engine.block.getType(block))
       fillType = try engine.block
         .supportsFill(block) ? .init(rawValue: engine.block.getType(engine.block.getFill(block))) : nil
