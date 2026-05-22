@@ -49,6 +49,30 @@ class TimelineProperties: ObservableObject {
   /// Video duration constraints for the current timeline.
   @Published var videoDurationConstraints = VideoDurationConstraints()
 
+  /// Drives preview rendering across tracks; engine state is written only on release.
+  @Published var dragDropState: DragDropState = .idle
+
+  /// Foreground `Track.id` → window-space frame, published by each `TrackView` via
+  /// `TrackFramesPreferenceKey`. Drag & drop maps pointer Y to a target track.
+  @Published var trackFrames: [UUID: CGRect] = [:]
+
+  /// Horizontal scroll view's `contentOffset.x` in points. Drag & drop reads it so
+  /// the drop slot stays anchored to the finger as auto-scroll moves the timeline.
+  @Published var horizontalScrollOffsetPoints: CGFloat = 0
+
+  /// `applyDrop`'s cross-track and new-track branches refresh synchronously; the
+  /// engine then fires async events that would refresh again and flash an empty
+  /// frame. Set `true` after a sync refresh, cleared by the next dirty event.
+  /// Drags are user-gated and serialized (touch must release before the next can start),
+  /// so a Bool is sufficient — no counter needed. Intentionally non-`@Published` because
+  /// it's transient bookkeeping, not UI state.
+  var suppressNextDirtyRefresh: Bool = false
+
+  /// Live delta applied to the background track's trailing edge during a trim drag
+  /// on a background clip, so UI anchored there (most visibly "+ Add Clip") tracks
+  /// the preview instead of jumping on commit.
+  @Published var backgroundTrackTrimDelta: CMTime = .zero
+
   // MARK: - Methods
 
   func resetClips() {

@@ -258,17 +258,32 @@ extension MappedType {
 // MARK: - Layering
 
 @_spi(Internal) public extension BlockAPI {
+  /// Whether ``bringForward(_:)`` would change layout. Any clip in a multi-clip
+  /// track returns `true` — the engine pops it out before walking siblings.
   func canBringForward(_ id: DesignBlockID) throws -> Bool {
     guard let parent = try getParent(id) else {
       return false
+    }
+    if try getType(parent) == DesignBlockType.track.rawValue {
+      if try getChildren(parent).count > 1 {
+        return true
+      }
+      return try canBringForward(parent)
     }
     let children = try getReorderableChildren(parent, child: id)
     return children.last != id
   }
 
+  /// Mirror of ``canBringForward(_:)``.
   func canBringBackward(_ id: DesignBlockID) throws -> Bool {
     guard let parent = try getParent(id) else {
       return false
+    }
+    if try getType(parent) == DesignBlockType.track.rawValue {
+      if try getChildren(parent).count > 1 {
+        return true
+      }
+      return try canBringBackward(parent)
     }
     let children = try getReorderableChildren(parent, child: id)
     return children.first != id
@@ -279,19 +294,25 @@ extension MappedType {
   func getReorderableChildren(_ parent: DesignBlockID, child: DesignBlockID) throws -> [IMGLYEngine.DesignBlockID] {
     let childIsAlwaysOnTop = try isAlwaysOnTop(child)
     let childIsAlwaysOnBottom = try isAlwaysOnBottom(child)
-    let childType = try getType(child)
+    let childIsAudioLike = try isAudioLike(child)
 
     return try getChildren(parent).filter {
       let matchingIsAlwaysOnTop = try childIsAlwaysOnTop == isAlwaysOnTop($0)
       let matchingIsAlwaysOnBottom = try childIsAlwaysOnBottom == isAlwaysOnBottom($0)
-      let matchingType: Bool = switch childType {
-      case DesignBlockType.audio.rawValue:
-        try DesignBlockType.audio.rawValue == getType($0)
-      default:
-        try DesignBlockType.audio.rawValue != getType($0)
-      }
-      return matchingIsAlwaysOnTop && matchingIsAlwaysOnBottom && matchingType
+      let matchingIsAudioLike = try childIsAudioLike == isAudioLike($0)
+      return matchingIsAlwaysOnTop && matchingIsAlwaysOnBottom && matchingIsAudioLike
     }
+  }
+
+  /// Audio block, or a track whose first child is audio. Mirrors the engine's
+  /// `isOrderedWith` audio bucket — also used by the iOS timeline to keep
+  /// audio-bearing tracks pinned to the audio lane.
+  func isAudioLike(_ id: DesignBlockID) throws -> Bool {
+    let type = try getType(id)
+    if type == DesignBlockType.audio.rawValue { return true }
+    guard type == DesignBlockType.track.rawValue,
+          let firstChild = try getChildren(id).first else { return false }
+    return try getType(firstChild) == DesignBlockType.audio.rawValue
   }
 }
 

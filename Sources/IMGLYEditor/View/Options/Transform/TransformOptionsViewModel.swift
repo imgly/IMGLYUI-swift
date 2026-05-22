@@ -119,6 +119,7 @@ extension TransformOptions {
         guard let scene = try engine.scene.get() else { return }
         let pageID = try engine.getPage(interactor.page)
         let designUnit = try engine.scene.getDesignUnit()
+        let fontUnit = try engine.scene.getFontSizeUnit()
         let width = try engine.block.getWidth(pageID)
         let height = try engine.block.getHeight(pageID)
         let dpi = try engine.block.getFloat(scene, property: "scene/dpi")
@@ -128,6 +129,7 @@ extension TransformOptions {
           width: CGFloat(width),
           height: CGFloat(height),
           designUnit: designUnit,
+          fontUnit: fontUnit,
           dpi: CGFloat(dpi),
           pixelScale: CGFloat(pixelFactor),
         )

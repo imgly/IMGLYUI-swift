@@ -46,7 +46,7 @@ public enum OnCreate {
     let color: IMGLYEngine.Color = try engine.editor.getSettingColor("highlightColor")
     try engine.editor.setSettingColor("placeholderHighlightColor", color: color)
 
-    try engine.editor.setSettingBool("features/removeForegroundTracksOnSceneLoad", value: true)
+    try engine.editor.setSettingBool("features/removeForegroundTracksOnSceneLoad", value: false)
     try engine.editor.setSettingBool("features/videoTranscodingEnabled",
                                      value: !FeatureFlags.isEnabled(.transcodePickerVideoImports))
 

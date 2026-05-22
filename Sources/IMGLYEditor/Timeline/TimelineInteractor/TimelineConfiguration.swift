@@ -41,6 +41,16 @@ struct TimelineConfiguration {
   /// to make editing feel more precise.
   var clipSpacing: CGFloat = 1
 
+  /// Bottom inset under the foreground track stack — leaves room for the
+  /// background row's overlay (`backgroundTrackHeight + 2× trackSpacing`)
+  /// plus one `trackSpacing` of breathing room above the AddAudioButton.
+  /// Shared between `TimelineContentView`'s layout and
+  /// `NewTrackLineIndicatorView`'s empty-stack anchor so the two can never
+  /// drift out of sync.
+  var foregroundStackBottomInset: CGFloat {
+    backgroundTrackHeight + trackSpacing * 3
+  }
+
   /// The width of the left and right trimming handles of a selected clip.
   var trimHandleWidth: CGFloat = 20
   /// The corner radius of clip items in the timeline.
@@ -55,6 +65,10 @@ struct TimelineConfiguration {
   /// The color of the overlay shape on selected clips in the timeline while moving it and  while dragging one of the
   /// trim handles.
   var clipSelectionActiveColor = Color.yellow
+  /// The tint applied to the floating clip overlay when the current pointer location
+  /// would land on an incompatible track (e.g. dragging a text or sticker over the
+  /// background row).
+  var clipDragInvalidColor = Color.red
   /// The color of the thin vertical line overlay in the timeline that indicates the current playback position.
   var playheadColor = Color.blue
   /// The color of the thin vertical line overlay’s shadow.

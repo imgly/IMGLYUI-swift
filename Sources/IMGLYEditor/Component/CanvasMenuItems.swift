@@ -64,7 +64,7 @@ public extension CanvasMenu.Buttons {
         Image.imgly.bringForward
       }
     },
-    isEnabled: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.siblings.last != $0.selection.block },
+    isEnabled: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.canBringForward },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.canMove },
   ) -> some CanvasMenu.Item {
     CanvasMenu.Button(id: ID.bringForward, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)
@@ -90,7 +90,7 @@ public extension CanvasMenu.Buttons {
         Image.imgly.sendBackward
       }
     },
-    isEnabled: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.siblings.first != $0.selection.block },
+    isEnabled: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.canSendBackward },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = { $0.selection.canMove },
   ) -> some CanvasMenu.Item {
     CanvasMenu.Button(id: ID.sendBackward, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)

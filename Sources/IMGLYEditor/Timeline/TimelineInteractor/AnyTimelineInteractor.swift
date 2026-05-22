@@ -17,6 +17,14 @@ class AnyTimelineInteractor: TimelineInteractor {
     interactor.setTrim(clip: clip, timeOffset: timeOffset, trimOffset: trimOffset, duration: duration)
   }
 
+  func commitPreviewedOffsets(_ offsets: [DesignBlockID: CMTime]) {
+    interactor.commitPreviewedOffsets(offsets)
+  }
+
+  func applyDrop(clip: Clip, target: DropTarget, siblingOffsets: [DesignBlockID: CMTime]) {
+    interactor.applyDrop(clip: clip, target: target, siblingOffsets: siblingOffsets)
+  }
+
   func splitSelectedClipAtPlayheadPosition() {
     interactor.splitSelectedClipAtPlayheadPosition()
   }

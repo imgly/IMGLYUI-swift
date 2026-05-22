@@ -61,6 +61,12 @@ struct ResizeOverlay: View {
             pixelScaleView()
           }
           .padding(.vertical, 8)
+          Divider()
+          HStack(spacing: 8) {
+            fontUnitPicker()
+            Spacer()
+          }
+          .padding(.vertical, 8)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
@@ -97,6 +103,26 @@ struct ResizeOverlay: View {
       title: .imgly.localized("ly_img_editor_dialog_resize_label_unit"),
       data: data,
       selection: $viewModel.designUnit,
+    ) { element in
+      Text(element.localizedStringResource)
+    } label: { element in
+      if let element {
+        element.localizedStringResource
+      } else {
+        ""
+      }
+    }
+    .onLongPressGesture(minimumDuration: 0) {
+      focusedField = nil
+    }
+  }
+
+  @ViewBuilder private func fontUnitPicker() -> some View {
+    let data: [Interactor.FontUnit] = [.pt, .px]
+    ResizePicker(
+      title: .imgly.localized("ly_img_editor_dialog_resize_label_font_unit"),
+      data: data,
+      selection: $viewModel.fontUnit,
     ) { element in
       Text(element.localizedStringResource)
     } label: { element in

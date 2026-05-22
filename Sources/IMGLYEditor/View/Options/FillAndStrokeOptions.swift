@@ -10,7 +10,14 @@ struct FillAndStrokeOptions: View {
   @Environment(\.imglySelection) private var id
 
   @ViewBuilder var fillAndStrokeOptions: some View {
-    if interactor.isColorFill(id), interactor.supportsFill(id), interactor.isAllowed(id, scope: .fillChange) {
+    // Line-origin graphics surface their colour through the stroke section, but
+    // only hide the fill when stroke is actually available — otherwise the user
+    // would lose every colour control in configurations without a stroke section.
+    let isLineOrigin = interactor.isLineOrigin(id)
+    let strokeAvailable = interactor.supportsStroke(id) && interactor.isAllowed(id, scope: .strokeChange)
+    let hideFillForLine = isLineOrigin && strokeAvailable
+    if interactor.isColorFill(id), !hideFillForLine, interactor.supportsFill(id),
+       interactor.isAllowed(id, scope: .fillChange) {
       Section {
         let fillType: Binding<ColorFillType?> = interactor
           .bind(id, .fill, property: .key(.type), getter: fillTypeGetter, setter: fillTypeSetter)
@@ -19,7 +26,7 @@ struct FillAndStrokeOptions: View {
         Text(.imgly.localized("ly_img_editor_sheet_fill_stroke_label_fill"))
       }
     }
-    if interactor.supportsStroke(id), interactor.isAllowed(id, scope: .strokeChange) {
+    if strokeAvailable {
       Section {
         StrokeOptions(isEnabled: interactor.bind(id, property: .key(.strokeEnabled), default: false))
       } header: {

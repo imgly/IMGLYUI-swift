@@ -53,10 +53,24 @@ public extension CanvasMenu.Context {
     public let fillType: FillType?
     /// The kind of the current selected design ``block``.
     public let kind: String?
-    /// The ids of reorderable siblings of the current selected design ``block`` and the current selected design
-    /// ``block`` itself sorted in their rendering order: last block is rendered in front of other blocks.
+    /// The reorderable peers of the current selected design ``block`` *in its current parent*,
+    /// sorted in rendering order (last is rendered in front). Use this for enumeration or
+    /// display — to gate UI on whether a reorder action would actually change layout, prefer
+    /// the engine-aware ``canBringForward`` / ``canSendBackward`` properties below, which
+    /// also account for the track pop-out semantics that this list intentionally does not
+    /// reflect.
     public let siblings: [DesignBlockID]
-    /// Whether the current selected design ``block`` can be moved: forward or backward.
+    /// `true` when `BlockAPI.bringForward(_:)` would change the block's layout.
+    /// Drives per-direction *enabled* state of "bring forward" / layer-up controls.
+    public let canBringForward: Bool
+    /// `true` when `BlockAPI.bringBackward(_:)` would change the block's layout.
+    /// Drives per-direction *enabled* state of "send backward" / layer-down controls.
+    public let canSendBackward: Bool
+    /// Aggregate visibility gate: `true` when the editor allows reordering this selection at
+    /// all (combines `canBringForward || canSendBackward` with the editor scope, the
+    /// background-track pin, and the audio-clip exclusion). Drives *visibility* of the
+    /// reorder controls; for the per-direction enabled state use ``canBringForward`` /
+    /// ``canSendBackward``.
     public let canMove: Bool
 
     private let engine: Engine
@@ -88,7 +102,11 @@ public extension CanvasMenu.Context {
       } else {
         siblings = [block]
       }
-      let canReorderTrack = try !isBackgroundTrack(initialParent) && siblings.count > 1
+      canBringForward = try engine.block.canBringForward(block)
+      canSendBackward = try engine.block.canBringBackward(block)
+      // Audio (incl. voiceover) clips have no z-order — matches web.
+      let isAudio = type == .audio
+      let canReorderTrack = try !isAudio && !isBackgroundTrack(initialParent) && (canBringForward || canSendBackward)
       canMove = try engine.block.isAllowedByScope(block, key: "layer/move") && canReorderTrack
     }
   }

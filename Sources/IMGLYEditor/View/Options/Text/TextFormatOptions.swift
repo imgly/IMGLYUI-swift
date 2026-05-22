@@ -144,14 +144,19 @@ struct TextFormatOptions: View {
   }
 
   @ViewBuilder var fontSizeSelection: some View {
+    // Read the scene's font-size unit so the slider range and label match what the engine
+    // returns from the unit-aware text/fontSize property.
+    let fontUnit: Interactor.FontUnit = (try? interactor.engine?.scene.getFontSizeUnit()) ?? .pt
+    let fontSizeRange: ClosedRange<Float> = fontUnit == .px ? 8 ... 128 : 6 ... 90
+    let unitSuffix = fontUnit == .px ? " (px)" : " (pt)"
     Section {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_font_size"),
-        in: 6 ... 90,
+        in: fontSizeRange,
         property: .key(.textFontSize)
       )
     } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_font_size"))
+      Text(String(localized: .imgly.localized("ly_img_editor_sheet_format_text_label_font_size")) + unitSuffix)
     }
   }
 

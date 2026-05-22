@@ -55,6 +55,7 @@ extension Interactor: TimelineInteractor {
         try engine.block.setPageDurationSource(pageID, id: backgroundTrack)
       }
       timelineProperties.backgroundTrack = backgroundTrack
+      timelineProperties.dataSource.backgroundTrack.engineTrackID = backgroundTrack
     } catch {
       handleError(error)
     }
@@ -89,7 +90,6 @@ extension Interactor: TimelineInteractor {
           !timelineProperties.isScrubbing,
           let page = timelineProperties.currentPage else { return }
 
-    // Clean up empty tracks before processing events
     cleanUpEmptyTracks()
 
     // If the events list contains only the page and we're currently playing back, we can skip evaluating the events,
@@ -126,6 +126,13 @@ extension Interactor: TimelineInteractor {
     }
 
     if isDirty {
+      // Skip the async follow-up if `applyDrop` already refreshed; the duplicate
+      // rebuild flashes an empty-state frame.
+      if timelineProperties.suppressNextDirtyRefresh {
+        timelineProperties.suppressNextDirtyRefresh = false
+        updateDurations()
+        return
+      }
       refreshTimeline()
       updateDurations()
       return
@@ -143,6 +150,9 @@ extension Interactor: TimelineInteractor {
       for clip in clipsToUpdate {
         refresh(clip: clip)
       }
+      // Once per batch — reading page duration triggers `Track::layout()`, which
+      // amplifies its gap-handling bug on intermediate state.
+      updateDurations()
     }
   }
 
@@ -206,7 +216,341 @@ extension Interactor: TimelineInteractor {
     }
   }
 
+  // MARK: Drag & Drop
+
+  /// `insertChild` runs before `setTimeOffset` so `Track::layout()` walks children in
+  /// time order — its gap-handling bug corrupts intermediate state otherwise.
+  /// Cross-track and new-track drops refresh synchronously to rebuild track membership.
+  func applyDrop(clip: Clip, target: DropTarget, siblingOffsets: [DesignBlockID: CMTime]) {
+    guard let engine else { return }
+    switch target {
+    case let .newTrack(insertAt, timeOffset):
+      applyNewTrackDrop(engine: engine, clip: clip, insertAt: insertAt, timeOffset: timeOffset)
+    case let .existingTrack(trackID, insertIndex, timeOffset, effectiveDuration):
+      applyExistingTrackDrop(
+        engine: engine,
+        clip: clip,
+        trackID: trackID,
+        insertIndex: insertIndex,
+        timeOffset: timeOffset,
+        effectiveDuration: effectiveDuration,
+        siblingOffsets: siblingOffsets,
+      )
+    }
+  }
+
+  private func applyExistingTrackDrop(
+    engine: Engine,
+    clip: Clip,
+    trackID: UUID,
+    insertIndex: Int,
+    timeOffset: CMTime,
+    effectiveDuration: CMTime?,
+    siblingOffsets: [DesignBlockID: CMTime],
+  ) {
+    let dataSource = timelineProperties.dataSource
+    let targetTrack: Track
+    if let foreground = dataSource.tracks.first(where: { $0.id == trackID }) {
+      targetTrack = foreground
+    } else if trackID == dataSource.backgroundTrack.id {
+      targetTrack = dataSource.backgroundTrack
+    } else {
+      return
+    }
+    let sourceTrack = dataSource.findTrack(containing: clip)
+    let isCrossTrack = sourceTrack?.id != targetTrack.id
+    let isBackgroundReorder = targetTrack === dataSource.backgroundTrack
+    let sourceWasBackground = sourceTrack === dataSource.backgroundTrack
+    do {
+      // Trim-to-fit (tail only): shrink the engine duration *before* repositioning so
+      // `Track::layout()` doesn't see an oversized clip overlapping a locked sibling
+      // and bump the locked sibling out of place. `trimOffset` is left alone.
+      if let effectiveDuration {
+        try applyTailTrimDuration(engine: engine, clip: clip, duration: effectiveDuration)
+      }
+
+      if isBackgroundReorder {
+        try insertIntoBackgroundTrack(engine: engine, clip: clip, insertIndex: insertIndex)
+        if !sourceWasBackground {
+          try resetCropAndFillParentForBackgroundDrop(engine: engine, clipID: clip.id)
+        }
+      } else if let targetEngineTrackID = targetTrack.engineTrackID {
+        try insertIntoMultiClipTrack(
+          engine: engine,
+          clip: clip,
+          targetTrack: targetTrack,
+          engineTrackID: targetEngineTrackID,
+          insertIndex: insertIndex,
+          timeOffset: timeOffset,
+          siblingOffsets: siblingOffsets,
+        )
+      } else if isCrossTrack {
+        // Standalone target — promote into a multi-clip track wrapping both clips.
+        try promoteStandaloneTargetAndInsert(
+          engine: engine,
+          clip: clip,
+          targetTrack: targetTrack,
+          insertIndex: insertIndex,
+          timeOffset: timeOffset,
+          siblingOffsets: siblingOffsets,
+        )
+      } else {
+        // Same standalone track — just move it.
+        try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
+      }
+
+      addUndoStep()
+      finalizeExistingTrackDrop(
+        clip: clip,
+        targetTrack: targetTrack,
+        isCrossTrack: isCrossTrack,
+        sourceWasBackground: sourceWasBackground,
+      )
+    } catch {
+      handleError(error)
+    }
+  }
+
+  /// Mirrors `setDuration` from the trim path: writes the new clip duration plus, for
+  /// video / audio, the matching trim-length on the underlying media so the engine
+  /// stays internally consistent. Used by trim-to-fit drops where we shrink the tail
+  /// before repositioning.
+  private func applyTailTrimDuration(engine: Engine, clip: Clip, duration: CMTime) throws {
+    try engine.block.setDuration(clip.id, duration: duration.seconds)
+    if clip.clipType == .audio {
+      try engine.block.setTrimLength(clip.id, length: duration.seconds)
+    } else if clip.clipType == .video, let fillID = clip.fillID {
+      try engine.block.setTrimLength(fillID, length: duration.seconds)
+    }
+  }
+
+  /// No `setTimeOffset` — the engine auto-packs bg offsets on insert. Canvas
+  /// geometry is handled separately by `resetCropAndFillParentForBackgroundDrop`.
+  private func insertIntoBackgroundTrack(engine: Engine, clip: Clip, insertIndex: Int) throws {
+    guard let backgroundTrackID = syncAndResolveBackgroundTrackID(engine: engine, createIfNeeded: true) else { return }
+    try engine.block.insertChild(into: backgroundTrackID, child: clip.id, at: insertIndex)
+  }
+
+  /// Mirrors the `moveAsClip` handler: when a clip lands in the background track
+  /// from outside, reset its crop and `fillParent` so it covers the page — except
+  /// for stickers, which keep their authored geometry.
+  private func resetCropAndFillParentForBackgroundDrop(engine: Engine, clipID: DesignBlockID) throws {
+    guard try engine.block.isScopeEnabled(clipID, scope: .key(.layerCrop)),
+          try engine.block.getKind(clipID) != BlockKindKey.sticker.rawValue else { return }
+    try engine.block.resetCrop(clipID)
+    try engine.block.fillParent(clipID)
+  }
+
+  /// `timelineProperties.backgroundTrack` and `dataSource.backgroundTrack.engineTrackID`
+  /// can diverge, so consult both before falling back to creation. `createIfNeeded`
+  /// defaults to `false` so post-drop callers can't resurrect a track that
+  /// `cleanUpEmptyTracks` just destroyed.
+  private func syncAndResolveBackgroundTrackID(engine: Engine, createIfNeeded: Bool = false) -> DesignBlockID? {
+    if let id = timelineProperties.backgroundTrack, engine.block.isValid(id) {
+      return id
+    }
+    if let id = timelineProperties.dataSource.backgroundTrack.engineTrackID,
+       engine.block.isValid(id) {
+      // Keep `timelineProperties.backgroundTrack` in sync — future callers rely on it.
+      timelineProperties.backgroundTrack = id
+      return id
+    }
+    guard createIfNeeded else { return nil }
+    createBackgroundTrackIfNeeded()
+    if let id = timelineProperties.backgroundTrack, engine.block.isValid(id) {
+      return id
+    }
+    return nil
+  }
+
+  /// Walks the background track's remaining children in order and writes
+  /// packed offsets (0, d₀, d₀+d₁, …). Used after a cross-track drop that
+  /// removed a clip from the background: the engine's auto-pack only runs on
+  /// insert, so without this call the remaining children keep their pre-drag
+  /// offsets and end up rendering past the page duration.
+  ///
+  /// Ordering: must run AFTER `cleanUpEmptyTracks()` and BEFORE
+  /// `refreshTimeline()`. The `createIfNeeded: false` default in
+  /// `syncAndResolveBackgroundTrackID` defends against the cleanup step
+  /// destroying the bg track first.
+  private func packBackgroundChildren(engine: Engine) {
+    guard let backgroundTrackID = syncAndResolveBackgroundTrackID(engine: engine) else { return }
+    do {
+      var cursor: Double = 0
+      for childID in try engine.block.getChildren(backgroundTrackID) {
+        try engine.block.setTimeOffset(childID, offset: cursor)
+        cursor += try engine.block.getDuration(childID)
+      }
+    } catch {
+      handleError(error)
+    }
+  }
+
+  private func insertIntoMultiClipTrack(
+    engine: Engine,
+    clip: Clip,
+    targetTrack: Track,
+    engineTrackID: DesignBlockID,
+    insertIndex: Int,
+    timeOffset: CMTime,
+    siblingOffsets: [DesignBlockID: CMTime],
+  ) throws {
+    try engine.block.insertChild(into: engineTrackID, child: clip.id, at: insertIndex)
+    for sibling in targetTrack.clips where sibling.id != clip.id {
+      let offset = siblingOffsets[sibling.id] ?? sibling.timeOffset
+      try engine.block.setTimeOffset(sibling.id, offset: offset.seconds)
+    }
+    try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
+  }
+
+  private func promoteStandaloneTargetAndInsert(
+    engine: Engine,
+    clip: Clip,
+    targetTrack: Track,
+    insertIndex: Int,
+    timeOffset: CMTime,
+    siblingOffsets: [DesignBlockID: CMTime],
+  ) throws {
+    guard let pageID = timelineProperties.currentPage,
+          let targetSolo = targetTrack.clips.first else { return }
+    let pageChildren = try engine.block.getChildren(pageID)
+    guard let pageIndex = pageChildren.firstIndex(of: targetSolo.id) else { return }
+
+    // `appendChild` / `insertChild` move (re-parent) an existing block — so the
+    // following calls move `targetSolo` from the page and `clip` from its source
+    // track into the new track. No explicit `removeChild` needed.
+    let newEngineTrack = try engine.block.create(DesignBlockType.track)
+    try engine.block.setBool(newEngineTrack, property: "track/automaticallyManageBlockOffsets", value: false)
+    try engine.block.insertChild(into: pageID, child: newEngineTrack, at: pageIndex)
+    try engine.block.appendChild(to: newEngineTrack, child: targetSolo.id)
+    try engine.block.insertChild(into: newEngineTrack, child: clip.id, at: insertIndex)
+
+    let soloOffset = siblingOffsets[targetSolo.id] ?? targetSolo.timeOffset
+    try engine.block.setTimeOffset(targetSolo.id, offset: soloOffset.seconds)
+    try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
+  }
+
+  private func finalizeExistingTrackDrop(
+    clip: Clip,
+    targetTrack: Track,
+    isCrossTrack: Bool,
+    sourceWasBackground: Bool,
+  ) {
+    if isCrossTrack {
+      cleanUpEmptyTracks()
+      if sourceWasBackground, let engine {
+        // Engine auto-packs the BG on insert, not on remove. `refreshTimeline`
+        // packs the UI side, but without this call the engine canvas plays
+        // remaining BG clips at their pre-drag offsets until an async event
+        // triggers `Track::layout()`.
+        packBackgroundChildren(engine: engine)
+      }
+    } else if targetTrack !== timelineProperties.dataSource.backgroundTrack {
+      refresh(clip: clip)
+      for sibling in targetTrack.clips where sibling.id != clip.id {
+        refresh(clip: sibling)
+      }
+      return
+    }
+    // Cross-track or BG reorder — refreshTimeline rebuilds with reused instances and
+    // recomputes the BG packed offsets deterministically.
+    refreshTimeline()
+    timelineProperties.suppressNextDirtyRefresh = true
+  }
+
+  /// Maps the UI's reversed-list `insertAt` to a page-children index via a same-lane
+  /// anchor block, then reparents the dragged clip into a fresh engine track at that slot.
+  /// The audio-sort in `refreshTimeline` inverts the pc-to-visual relationship for audio
+  /// (lower pc = higher visually), so audio drags use the anchor's pc directly rather than
+  /// `pc + 1`, and fall back to walking *upward* (insert after) when no anchor sits below.
+  private func applyNewTrackDrop(engine: Engine, clip: Clip, insertAt: Int, timeOffset: CMTime) {
+    guard let pageID = timelineProperties.currentPage else { return }
+    let sourceWasBackground = timelineProperties.dataSource.findTrack(containing: clip)
+      === timelineProperties.dataSource.backgroundTrack
+    do {
+      let pageChildren = try engine.block.getChildren(pageID)
+      let tracks = timelineProperties.dataSource.tracks
+      let draggedIsAudio = clip.clipType == .audio || clip.clipType == .voiceOver
+
+      func anchorPageIndex(for track: Track) -> Int? {
+        guard let anchor = track.engineTrackID ?? track.clips.first?.id else { return nil }
+        return pageChildren.firstIndex(of: anchor)
+      }
+      func laneMatches(_ track: Track) -> Bool {
+        let trackIsAudio = track.clips.first.map { $0.clipType == .audio || $0.clipType == .voiceOver } ?? false
+        return trackIsAudio == draggedIsAudio
+      }
+
+      let engineInsertionIndex: Int = {
+        // Walk down (toward visually lower neighbors) for a same-lane anchor.
+        var probe = min(max(insertAt - 1, -1), tracks.count - 1)
+        while probe >= 0 {
+          let track = tracks[probe]
+          if laneMatches(track), let anchorIndex = anchorPageIndex(for: track) {
+            // Visual: insert AFTER the anchor (higher pc → above it visually).
+            // Audio: insert AT the anchor's pc (lower pc → above it visually).
+            return draggedIsAudio ? anchorIndex : anchorIndex + 1
+          }
+          probe -= 1
+        }
+        // Audio with no same-lane anchor below — look upward and insert AFTER it
+        // (higher pc → below it visually under the audio sort).
+        if draggedIsAudio {
+          var upProbe = max(insertAt, 0)
+          while upProbe < tracks.count {
+            let track = tracks[upProbe]
+            if laneMatches(track), let anchorIndex = anchorPageIndex(for: track) {
+              return anchorIndex + 1
+            }
+            upProbe += 1
+          }
+        }
+        return 0
+      }()
+
+      let newEngineTrack = try engine.block.create(DesignBlockType.track)
+      try engine.block.setBool(newEngineTrack, property: "track/automaticallyManageBlockOffsets", value: false)
+      try engine.block.insertChild(into: pageID, child: newEngineTrack, at: engineInsertionIndex)
+      try engine.block.insertChild(into: newEngineTrack, child: clip.id, at: 0)
+      try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
+
+      addUndoStep()
+      cleanUpEmptyTracks()
+      if sourceWasBackground {
+        // Engine auto-packs the BG on insert, not on remove. `refreshTimeline`
+        // packs the UI side, but without this call the engine canvas plays
+        // remaining BG clips at their pre-drag offsets until an async event
+        // triggers `Track::layout()`.
+        packBackgroundChildren(engine: engine)
+      }
+      refreshTimeline()
+      timelineProperties.suppressNextDirtyRefresh = true
+    } catch {
+      handleError(error)
+    }
+  }
+
   // MARK: Trimming
+
+  /// Called before `setTrim` on drag end so `Track::layout()` sees the right adjacent
+  /// context and doesn't push the dragged clip away from the trimmed edge.
+  func commitPreviewedOffsets(_ offsets: [DesignBlockID: CMTime]) {
+    guard let engine else { return }
+    let sortedIDs = offsets.keys.sorted()
+    for blockID in sortedIDs {
+      guard let offset = offsets[blockID] else { continue }
+      do {
+        try engine.block.setTimeOffset(blockID, offset: offset.seconds)
+      } catch {
+        handleError(error)
+      }
+    }
+    for blockID in sortedIDs {
+      if let clip = timelineProperties.dataSource.findClip(id: blockID) {
+        refresh(clip: clip)
+      }
+    }
+  }
 
   /// Sets a new trim to the passed `Clip` and its corresponding `DesignBlock`.
   /// - Parameters:
@@ -221,7 +565,72 @@ extension Interactor: TimelineInteractor {
 
     // Call refresh manually to apply the change immediately (without a glitch):
     refresh(clip: clip)
+
+    // Work around the engine's `Track::layout()` gap-handling bug by packing clips
+    // ourselves on submit (like web's `packElements`).
+    if !clip.isInBackgroundTrack,
+       let track = timelineProperties.dataSource.findTrack(containing: clip),
+       track.engineTrackID != nil {
+      packAndPersistTrackClips(track: track)
+    }
+
+    // Sync now so anchored UI (e.g. "+ Add Clip") doesn't flicker before the async
+    // engine event arrives. Mostly relevant for background trims.
+    updateDurations()
+
     addUndoStep()
+  }
+
+  /// Mirrors web's `packElements`: walk the track left-to-right, resolve overlaps,
+  /// persist positions, refresh.
+  private func packAndPersistTrackClips(track: Track) {
+    guard let engine else { return }
+    let sorted = track.clips.sorted { $0.timeOffset < $1.timeOffset }
+    var cursor: CMTime = .zero
+
+    for (index, clip) in sorted.enumerated() {
+      let duration = clip.duration ?? .zero
+
+      if clip.isLocked {
+        // Locked clips stay at their authored position. Re-write it explicitly so the
+        // engine's `Track::layout()` (triggered by `setDuration` / `insertChild`) can't
+        // leave a locked clip drifted to a position we never asked for. Advance the
+        // cursor monotonically past it so trailing unlocked clips pack behind.
+        do {
+          try engine.block.setTimeOffset(clip.id, offset: clip.timeOffset.seconds)
+        } catch {
+          handleError(error)
+        }
+        cursor = max(cursor, clip.timeOffset + duration)
+        continue
+      }
+
+      let nextLockedStart = sorted[(index + 1)...]
+        .first(where: { $0.isLocked })?.timeOffset
+
+      var resolvedOffset = max(clip.timeOffset, cursor)
+      if let nextLockedStart {
+        // Cap at the next locked clip so an unlocked one can't overlap it.
+        let cap = nextLockedStart - duration
+        if cap >= cursor {
+          resolvedOffset = min(resolvedOffset, cap)
+        }
+        // If cap < cursor, the clip can't fit — accept overlap (the trim cap should
+        // prevent reaching this state).
+      }
+
+      clip.timeOffset = resolvedOffset
+      do {
+        try engine.block.setTimeOffset(clip.id, offset: resolvedOffset.seconds)
+      } catch {
+        handleError(error)
+      }
+      cursor = resolvedOffset + duration
+    }
+
+    for clip in track.clips {
+      refresh(clip: clip)
+    }
   }
 
   /// Sets the time offset.
@@ -299,9 +708,14 @@ extension Interactor: TimelineInteractor {
         _ = try engine.block.split(
           clip.id,
           atTime: firstClipDuration.seconds,
+          options: SplitOptions(createParentTrackIfNeeded: true),
         )
 
         addUndoStep()
+
+        // `createParentTrackIfNeeded` re-parents both halves into a new track, which
+        // snaps the playhead back to the first half's start. Restore it.
+        setPlayheadPosition(playheadPosition)
       } catch {
         handleError(error)
       }
@@ -369,14 +783,13 @@ extension Interactor: TimelineInteractor {
     refresh(id: clip.id, clip: clip)
   }
 
-  /// Creates a new clip representation in the timeline.
-  private func createClip(id: DesignBlockID) {
-    refresh(id: id, clip: nil)
-  }
-
   // swiftlint:disable cyclomatic_complexity
   /// Creates a new clip or updates the passed existing clip representation in the timeline.
-  private func refresh(id: DesignBlockID, clip existingClip: Clip?) {
+  /// - Parameters:
+  ///   - id: The engine block ID.
+  ///   - existingClip: An existing clip to update, or `nil` to create a new one.
+  ///   - targetTrack: When creating a new clip, the track to add it to. When `nil`, a new track is created.
+  private func refresh(id: DesignBlockID, clip existingClip: Clip?, targetTrack: Track? = nil) {
     guard let engine else { return }
 
     // Check if the block still exists or whether it has been deleted already.
@@ -440,15 +853,22 @@ extension Interactor: TimelineInteractor {
 
       // If this is a freshly created clip, we need to add it to the timeline
       if existingClip == nil {
-        let track = clip.isInBackgroundTrack ? timelineProperties.dataSource.backgroundTrack : Track()
+        let track: Track = if clip.isInBackgroundTrack {
+          timelineProperties.dataSource.backgroundTrack
+        } else if let targetTrack {
+          // Clip belongs to a multi-clip engine track — use the provided track.
+          targetTrack
+        } else {
+          // Standalone foreground clip — create a new UI track.
+          Track()
+        }
 
         track.clips.append(clip)
-        if !clip.isInBackgroundTrack {
+        if !clip.isInBackgroundTrack, targetTrack == nil {
+          // Only append to dataSource when we created a new track.
+          // Tracks provided via targetTrack are already appended by refreshTimeline().
           timelineProperties.dataSource.tracks.append(track)
         }
-      } else {
-        // Every clip change could affect the page’s total duration, so update durations and snap detents
-        updateDurations()
       }
 
       timelineProperties.dataSource.updateSnapDetents()
@@ -636,56 +1056,117 @@ extension Interactor: TimelineInteractor {
 
   // swiftlint:enable cyclomatic_complexity
 
-  /// Reloads the whole timeline from the engine state, purging the previous state.
+  /// Rebuilds the timeline from the engine, reusing existing `Track`/`Clip`
+  /// instances so SwiftUI keeps view identity across refreshes.
   func refreshTimeline() {
-    guard let engine,
-          let pageID = timelineProperties.currentPage else { return }
+    guard let engine, let pageID = timelineProperties.currentPage else { return }
     do {
-      var blocks = try engine.block.getChildren(pageID)
+      let blocks = try audioFirstOrderedPageChildren(engine: engine, pageID: pageID)
+      let backgroundChildren = try resolveBackgroundTrack(engine: engine)
+      let cache = buildOldClipCache()
 
-      // Ensure that the scrubbing layer is never displayed in the timeline
-      blocks.removeAll(where: { $0 == timelineProperties.scrubbingPreviewLayer })
-
-      // Sort audio blocks to the bottom
-      var audioBlocks = [DesignBlockID]()
-      for (i, block) in blocks.enumerated().reversed() {
-        let blockType = try engine.block.getType(block)
-        if blockType == DesignBlockType.audio.rawValue {
-          blocks.remove(at: i)
-          audioBlocks.append(block)
-        }
+      func resolveClip(_ id: DesignBlockID) -> Clip? {
+        guard engine.block.isValid(id) else { return nil }
+        let clip = cache.clipByID[id] ?? Clip(id: id)
+        refresh(id: id, clip: clip)
+        return clip
       }
 
-      // Keep newest audio blocks at the bottom in the timeline track list.
-      blocks.insert(contentsOf: audioBlocks, at: 0)
+      let newTracks = try blocks
+        .filter { $0 != timelineProperties.backgroundTrack }
+        .compactMap { try buildTrack(forBlock: $0, engine: engine, cache: cache, resolveClip: resolveClip) }
+      let newBgClips = packBackground(backgroundChildren.compactMap(resolveClip))
 
-      let tracks = try engine.block.find(byType: .track)
-      for backgroundTrack in tracks where try engine.block.isPageDurationSource(backgroundTrack) {
-        timelineProperties.backgroundTrack = backgroundTrack
-      }
-
-      if let backgroundTrack = timelineProperties.backgroundTrack,
-         engine.block.isValid(backgroundTrack) {
-        // Read background track blocks
-        let backgroundTrackBlocks = try engine.block.getChildren(backgroundTrack)
-        // Append the background track contents to the other blocks
-        blocks.append(contentsOf: backgroundTrackBlocks)
-      } else {
-        timelineProperties.backgroundTrack = nil
-      }
-
-      // Remove all clips and tracks from the data source.
-      timelineProperties.resetClips()
-
-      // Then we walk through everything the engine gave us and recreate every clip in the timeline.
-      for block in blocks {
-        createClip(id: block)
-      }
-
+      timelineProperties.dataSource.tracks = newTracks
+      timelineProperties.dataSource.backgroundTrack.clips = newBgClips
+      timelineProperties.dataSource.updateSnapDetents()
       updateTimelineSelectionFromCanvas()
     } catch {
       handleError(error)
     }
+  }
+
+  /// Page children with audio-like blocks moved to the front (matches engine ordering).
+  private func audioFirstOrderedPageChildren(engine: Engine, pageID: DesignBlockID) throws -> [DesignBlockID] {
+    var blocks = try engine.block.getChildren(pageID)
+    blocks.removeAll { $0 == timelineProperties.scrubbingPreviewLayer }
+    var audioBlocks = [DesignBlockID]()
+    for (i, block) in blocks.enumerated().reversed() where (try? engine.block.isAudioLike(block)) == true {
+      blocks.remove(at: i)
+      audioBlocks.append(block)
+    }
+    blocks.insert(contentsOf: audioBlocks, at: 0)
+    return blocks
+  }
+
+  /// Resolves the page-duration-source background track and returns its current children.
+  /// Side-effects: updates `timelineProperties.backgroundTrack` and the data-source mirror.
+  private func resolveBackgroundTrack(engine: Engine) throws -> [DesignBlockID] {
+    timelineProperties.backgroundTrack = try engine.block.find(byType: .track)
+      .first { try engine.block.isPageDurationSource($0) }
+    if let bgTrack = timelineProperties.backgroundTrack, engine.block.isValid(bgTrack) {
+      timelineProperties.dataSource.backgroundTrack.engineTrackID = bgTrack
+      return try engine.block.getChildren(bgTrack)
+    }
+    timelineProperties.backgroundTrack = nil
+    timelineProperties.dataSource.backgroundTrack.engineTrackID = nil
+    return []
+  }
+
+  private struct OldTrackCache {
+    var trackByEngineID: [DesignBlockID: Track] = [:]
+    var standaloneByClipID: [DesignBlockID: Track] = [:]
+    var clipByID: [DesignBlockID: Clip] = [:]
+  }
+
+  /// Indexes existing tracks/clips so the next refresh can reuse the same instances.
+  private func buildOldClipCache() -> OldTrackCache {
+    var cache = OldTrackCache()
+    for track in timelineProperties.dataSource.tracks {
+      if let engineID = track.engineTrackID {
+        cache.trackByEngineID[engineID] = track
+      } else if let clipID = track.clips.first?.id {
+        cache.standaloneByClipID[clipID] = track
+      }
+      for clip in track.clips {
+        cache.clipByID[clip.id] = clip
+      }
+    }
+    for clip in timelineProperties.dataSource.backgroundTrack.clips {
+      cache.clipByID[clip.id] = clip
+    }
+    return cache
+  }
+
+  private func buildTrack(
+    forBlock block: DesignBlockID,
+    engine: Engine,
+    cache: OldTrackCache,
+    resolveClip: (DesignBlockID) -> Clip?,
+  ) throws -> Track? {
+    let blockType = try engine.block.getType(block)
+    if blockType == DesignBlockType.track.rawValue {
+      let track = cache.trackByEngineID[block] ?? Track(engineTrackID: block)
+      track.clips = try engine.block.getChildren(block).compactMap(resolveClip)
+      return track
+    }
+    guard let clip = resolveClip(block) else { return nil }
+    let track = cache.standaloneByClipID[block] ?? Track()
+    track.clips = [clip]
+    return track
+  }
+
+  /// BG auto-packs lazily — pack offsets ourselves to keep cells stable through the post-drop tick.
+  private func packBackground(_ clips: [Clip]) -> [Clip] {
+    var packedCursor = CMTime.zero
+    for clip in clips {
+      if clip.timeOffset != packedCursor {
+        clip.timeOffset = packedCursor
+      }
+      // swiftlint:disable:next shorthand_operator
+      packedCursor = packedCursor + (clip.duration ?? .zero)
+    }
+    return clips
   }
 
   /// Updates the total duration of the page by reading it from the engine.
@@ -702,9 +1183,17 @@ extension Interactor: TimelineInteractor {
           return clip.timeOffset.seconds + max(0, clipDuration)
         }
         .max() ?? 0
-      let resolvedDuration = timelineProperties.backgroundTrack == nil
-        ? max(pageDuration, clipsDuration)
-        : pageDuration
+      // Sum local BG clip durations rather than reading `engine.block.getDuration(pageID)`.
+      // Right after a BG trim commit, `refresh(clip:)` has already pushed the new
+      // duration into the local `Clip`, but the engine's page duration can lag a frame
+      // — reading it here would briefly snap the "+ Add Clip" anchor back to the
+      // pre-trim position before the engine event lands.
+      let resolvedDuration: Double = if timelineProperties.backgroundTrack != nil {
+        timelineProperties.dataSource.backgroundTrack.clips
+          .reduce(0.0) { $0 + ($1.duration?.seconds ?? 0) }
+      } else {
+        max(pageDuration, clipsDuration)
+      }
       let totalDuration = CMTime(seconds: resolvedDuration)
 
       if totalDuration != CMTime(seconds: timeline.totalDuration.seconds) {
@@ -1188,6 +1677,7 @@ extension Interactor: TimelineInteractor {
     guard let totalDuration = timelineProperties.timeline?.totalDuration else { return }
     Task {
       var currentTimeOffset = totalDuration
+      var trackForVideoIndex: [Int: DesignBlockID] = [:]
       for recording in recordings {
         for (index, video) in recording.videos.enumerated() {
           // Add to asset library without invoking assetTapped()
@@ -1198,12 +1688,16 @@ extension Interactor: TimelineInteractor {
           let asset = try await uploadVideo(to: videoUploadAssetSourceID) { video.url }
 
           guard let assetURL = asset.url else { continue }
+          guard let parentTrack = parentTrackForCameraVideo(
+            at: index,
+            memo: &trackForVideoIndex,
+          ) else { continue }
           await addCameraVideo(
             fileURL: assetURL,
             rect: video.rect,
             duration: recording.duration,
             timeOffset: currentTimeOffset,
-            addToBackgroundTrack: index == 0,
+            parentTrack: parentTrack,
           )
         }
         // swiftlint:disable:next shorthand_operator
@@ -1213,30 +1707,44 @@ extension Interactor: TimelineInteractor {
     }
   }
 
+  private func parentTrackForCameraVideo(
+    at index: Int,
+    memo: inout [Int: DesignBlockID],
+  ) -> DesignBlockID? {
+    if index == 0 {
+      createBackgroundTrackIfNeeded()
+      return timelineProperties.backgroundTrack
+    }
+    if let existing = memo[index] {
+      return existing
+    }
+    guard let engine, let pageID = timelineProperties.currentPage else { return nil }
+    do {
+      let newTrack = try engine.block.create(.track)
+      try engine.block.setBool(newTrack, property: "track/automaticallyManageBlockOffsets", value: false)
+      try engine.block.appendChild(to: pageID, child: newTrack)
+      memo[index] = newTrack
+      return newTrack
+    } catch {
+      handleError(error)
+      return nil
+    }
+  }
+
   private func addCameraVideo(
     fileURL: URL,
     rect: CGRect,
     duration: CMTime,
     timeOffset: CMTime,
-    addToBackgroundTrack: Bool,
+    parentTrack: DesignBlockID,
   ) async {
-    guard let engine,
-          let pageID = timelineProperties.currentPage else { return }
+    guard let engine else { return }
     do {
       let id = try engine.block.create(.graphic)
       let rectShape = try engine.block.createShape(.rect)
       try engine.block.setShape(id, shape: rectShape)
 
-      if addToBackgroundTrack {
-        createBackgroundTrackIfNeeded()
-      }
-
-      if addToBackgroundTrack,
-         let backgroundTrack = timelineProperties.backgroundTrack {
-        try engine.block.appendChild(to: backgroundTrack, child: id)
-      } else {
-        try engine.block.appendChild(to: pageID, child: id)
-      }
+      try engine.block.appendChild(to: parentTrack, child: id)
       try engine.block.setWidth(id, value: Float(rect.width))
       try engine.block.setHeight(id, value: Float(rect.height))
       try engine.block.setPositionX(id, value: Float(rect.origin.x))
@@ -1308,14 +1816,17 @@ extension Interactor: TimelineInteractor {
           }
         }
         try engine.block.insertChild(into: backgroundTrack, child: id, at: insertionIndex)
-        if try engine.block.isScopeEnabled(id, scope: .key(.layerCrop)),
-           try engine.block.getKind(id) != BlockKindKey.sticker.rawValue {
-          try engine.block.resetCrop(id)
-          try engine.block.fillParent(id)
-        }
+        try resetCropAndFillParentForBackgroundDrop(engine: engine, clipID: id)
       }
 
       addUndoStep()
+      // Reparenting fires `.updated` events but no `.created` / `.destroyed` and the
+      // page's direct children don't change, so `updateTimeline` won't flag the
+      // datasource as dirty. Force a rebuild here so the moved clip leaves its old
+      // track and lands in the new one — mirrors `finalizeExistingTrackDrop` after a
+      // cross-track drop.
+      cleanUpEmptyTracks()
+      refreshTimeline()
     } catch {
       handleError(error)
     }

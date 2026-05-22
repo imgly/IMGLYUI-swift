@@ -8,37 +8,13 @@ struct ShapeOptions: View {
 
   @ViewBuilder var shapeOptions: some View {
     switch interactor.shapeType(id) {
-    case .line:
-      Section {
-        let setter: Interactor.PropertySetter<Float> = { engine, blocks, _, _, value, completion in
-          let changed = try blocks.filter {
-            try engine.block.getHeight($0) != value
-          }
-
-          try changed.forEach {
-            try engine.block.setWidth($0, value: engine.block.getFrameWidth($0))
-            try engine.block.setHeight($0, value: value)
-          }
-
-          let didChange = !changed.isEmpty
-          return try (completion?(engine, blocks, didChange) ?? false) || didChange
-        }
-        PropertySlider<Float>(
-          .imgly.localized("ly_img_editor_sheet_shape_label_line_width"),
-          in: 0.1 ... 30,
-          property: .key(.lastFrameHeight),
-          setter: setter
-        )
-      } header: {
-        Text(.imgly.localized("ly_img_editor_sheet_shape_label_line_width"))
-      }
     case .star:
       Section {
         PropertySlider<Float>(
           .imgly.localized("ly_img_editor_sheet_shape_label_points"),
           in: 3 ... 12,
           property: .key(.shapeStarPoints),
-          propertyBlock: .shape
+          propertyBlock: .shape,
         )
       } header: {
         Text(.imgly.localized("ly_img_editor_sheet_shape_label_points"))
@@ -48,7 +24,7 @@ struct ShapeOptions: View {
           .imgly.localized("ly_img_editor_sheet_shape_label_inner_diameter"),
           in: 0.1 ... 1,
           property: .key(.shapeStarInnerDiameter),
-          propertyBlock: .shape
+          propertyBlock: .shape,
         )
       } header: {
         Text(.imgly.localized("ly_img_editor_sheet_shape_label_inner_diameter"))
@@ -59,7 +35,7 @@ struct ShapeOptions: View {
           .imgly.localized("ly_img_editor_sheet_shape_label_sides"),
           in: 3 ... 12,
           property: .key(.shapePolygonSides),
-          propertyBlock: .shape
+          propertyBlock: .shape,
         )
       } header: {
         Text(.imgly.localized("ly_img_editor_sheet_shape_label_sides"))
@@ -86,7 +62,7 @@ struct ShapeOptions: View {
             let cornerRadius: Float = try engine.block.get(block, propertyBlock, property: property)
             return try cornerRadius / engine.block.getRadiusFactor(block)
           },
-          propertyBlock: .shape
+          propertyBlock: .shape,
         )
       } header: {
         Text(.imgly.localized("ly_img_editor_sheet_shape_label_round_corners"))

@@ -67,6 +67,7 @@ import SwiftUI
   typealias Font = IMGLYEngine.Font
   typealias TextCase = IMGLYEngine.TextCase
   typealias DesignUnit = IMGLYEngine.DesignUnit
+  typealias FontUnit = IMGLYEngine.FontUnit
   typealias FillType = IMGLYEngine.FillType
 
   struct Selection: Equatable {
@@ -213,7 +214,7 @@ import SwiftUI
   init(
     config: EngineConfiguration,
     dismiss: DismissAction,
-    assetLibrary: any AssetLibrary
+    assetLibrary: any AssetLibrary,
   ) {
     self.config = config
     self.dismiss = dismiss
@@ -343,6 +344,7 @@ extension Interactor {
   func isSolidFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .solid) }
   func isGradientFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .gradient) }
   func isColorFill(_ id: DesignBlockID?) -> Bool { isSolidFill(id) || isGradientFill(id) }
+  func isLineOrigin(_ id: BlockID?) -> Bool { block(id, engine?.block.isLineOrigin) ?? false }
   func isVisibleAtCurrentPlaybackTime(_ id: BlockID?) -> Bool {
     block(id, engine?.block.isVisibleAtCurrentPlaybackTime) ?? false
   }
@@ -1010,7 +1012,14 @@ extension Interactor {
     }
   }
 
-  func resizePages(width: CGFloat, height: CGFloat, designUnit: DesignUnit, dpi: CGFloat, pixelScale: CGFloat) throws {
+  func resizePages(
+    width: CGFloat,
+    height: CGFloat,
+    designUnit: DesignUnit,
+    fontUnit: FontUnit? = nil,
+    dpi: CGFloat,
+    pixelScale: CGFloat,
+  ) throws {
     guard let pages = try engine?.getSortedPages(), let scene = try engine?.scene.get() else { return }
     // Temporarily disable camera clamping as otherwise the page carousel breaks
     // while resizing as we cannot batch update the sizes for all pages.
@@ -1019,6 +1028,9 @@ extension Interactor {
     try disableCameraClamping()
 
     try engine?.scene.setDesignUnit(designUnit)
+    if let fontUnit {
+      try engine?.scene.setFontSizeUnit(fontUnit)
+    }
     try engine?.block.setFloat(scene, property: "scene/pixelScaleFactor", value: Float(pixelScale))
     try engine?.block.setFloat(scene, property: "scene/dpi", value: Float(dpi))
     try engine?.block.setFloat(scene, property: "scene/pageDimensions/width", value: Float(width))

@@ -77,7 +77,13 @@ private struct Random: RandomNumberGenerator {
       }
     }
 
-    let hasFill = try engine.block.supportsFill(id)
+    // Only solid/gradient fills have a readable `fill/solid/color`; others would throw.
+    let hasFill: Bool = if try engine.block.supportsFill(id),
+                           let fillType: ColorFillType = try? engine.block.get(id, .fill, property: .key(.type)) {
+      fillType == .solid || fillType == .gradient
+    } else {
+      false
+    }
     let hasStroke = try engine.block.supportsStroke(id)
 
     if hasFill, hasStroke {

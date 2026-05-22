@@ -705,7 +705,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try (
         ($0.selection.type == .audio && $0.selection.kind != "voiceover") ||
-          ($0.selection.type == .graphic && [.image, .video].contains($0.selection.fillType))
+          ($0.selection.type == .graphic && [.image, .video].contains($0.selection.fillType)),
       ) && $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change") &&
         $0.selection.kind != "sticker" && $0.selection.kind != "animatedSticker"
     },
@@ -889,7 +889,8 @@ public extension InspectorBar.Buttons {
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block fill type
   /// is not `FillType.image` or its kind is not `"sticker"` and its kind is not `"animatedSticker"`, its engine
-  /// scope `"shape/change"` is allowed, and its shape type is `ShapeType.line`, `.star`, `.polygon`, or `.rect`.
+  /// scope `"shape/change"` is allowed, and its shape type is `ShapeType.star`, `.polygon`, or `.rect`. Lines are
+  /// excluded because their thickness is configured via the stroke section, not shape options.
   /// - Returns: The created button.
   static func shape(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .shape())) },
@@ -903,7 +904,7 @@ public extension InspectorBar.Buttons {
         $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "shape/change") &&
         $0.engine.block.supportsShape($0.selection.block) &&
-        [.line, .star, .polygon, .rect].contains(
+        [.star, .polygon, .rect].contains(
           ShapeType(rawValue: $0.engine.block.getType($0.engine.block.getShape($0.selection.block))),
         )
     },

@@ -14,6 +14,12 @@ protocol TimelineInteractor: ObservableObject {
   var voiceOverRecordModeTarget: DesignBlockID? { get }
 
   func setTrim(clip: Clip, timeOffset: CMTime, trimOffset: CMTime, duration: CMTime)
+  /// Commits preview offsets to the engine and mirrors them into `Clip.timeOffset` so
+  /// the UI never has to mutate the authoritative value itself.
+  func commitPreviewedOffsets(_ offsets: [DesignBlockID: CMTime])
+  /// Commits a drag-and-drop to the engine. `siblingOffsets` supplies the preview
+  /// positions for every sibling in the target track.
+  func applyDrop(clip: Clip, target: DropTarget, siblingOffsets: [DesignBlockID: CMTime])
   func splitSelectedClipAtPlayheadPosition()
   func reorderBackgroundTrack(clip: Clip, toIndex index: Int)
   func refreshTimeline()

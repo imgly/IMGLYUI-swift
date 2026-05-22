@@ -15,6 +15,14 @@ enum ClipType {
   case group
 }
 
+extension ClipType {
+  /// True for types the background track accepts — everything except audio /
+  /// voiceover. Matches the `moveAsClip` inspector rule.
+  var allowedInBackgroundTrack: Bool {
+    self != .audio && self != .voiceOver
+  }
+}
+
 extension ClipType: CustomStringConvertible {
   var description: String {
     switch self {
@@ -71,6 +79,18 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   /// Whether the clip can be selected
   @Published var allowsSelecting: Bool = true
 
+  /// Whether the clip's position is locked — i.e. it stays put when sibling drags or
+  /// trims would otherwise cascade through it. The cascade and trim-cap code paths
+  /// gate on this property; everything else (lock icon, gesture gates, opacity) keys
+  /// off ``allowsSelecting``.
+  ///
+  /// Always `false` for now — there's no engine scope that means "position locked"
+  /// today. Web doesn't model this either: an unselectable clip can still be moved
+  /// by the cascade. The companion code (locked-successor wall, locked-predecessor
+  /// pull, trim-to-fit) stays in the codebase but is inert until product nails down
+  /// the semantic and we wire this property to a real engine signal.
+  @Published var isLocked: Bool = false
+
   /// Whether the clip has an audio track
   let hasAudio: Bool = false
 
@@ -79,6 +99,22 @@ final class Clip: Identifiable, Hashable, ObservableObject {
 
   /// A positive time offset in seconds that is inserted *before* the start of clip.
   @Published var timeOffset: CMTime = .init(seconds: 0)
+
+  /// Drag-preview shadow of `timeOffset`. Non-nil while a sibling's drag is pushing this
+  /// clip; `nil` otherwise. Views render from `displayTimeOffset` to keep the authoritative
+  /// `timeOffset` untouched until commit.
+  @Published var previewTimeOffset: CMTime?
+
+  /// Value the view should render — preview during drag, authoritative otherwise.
+  var displayTimeOffset: CMTime { previewTimeOffset ?? timeOffset }
+
+  func applyPreview(timeOffset newOffset: CMTime) {
+    previewTimeOffset = newOffset
+  }
+
+  func clearPreviewTimeOffset() {
+    previewTimeOffset = nil
+  }
 
   /// A positive time offset as `CMTime` that is trimmed from the *start* of the clip.
   @Published var trimOffset: CMTime = .init(seconds: 0)

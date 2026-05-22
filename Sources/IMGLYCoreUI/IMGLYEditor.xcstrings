@@ -2262,6 +2262,23 @@
         }
       }
     },
+    "ly_img_editor_dialog_resize_label_font_unit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schriftgrößeneinheit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Font size unit"
+          }
+        }
+      }
+    },
     "ly_img_editor_dialog_resize_label_height %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2411,6 +2428,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pixel"
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_resize_unit_option_point" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Punkt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Point"
           }
         }
       }
@@ -7080,7 +7114,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Frame Clipping"
+            "value" : "Clipping"
           }
         }
       }
@@ -8315,13 +8349,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Musik"
+            "value" : "Audio"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Music"
+            "value" : "Audio"
           }
         }
       }
