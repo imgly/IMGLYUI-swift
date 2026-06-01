@@ -1854,7 +1854,7 @@ extension Interactor {
       guard let engine else {
         return
       }
-      for await _ in engine.editor.onHistoryUpdated {
+      for await _ in engine.editor.onHistoryUpdatedWithKind {
         historyChanged()
         DispatchQueue.main.async { [weak self] in
           self?.refreshThumbnails()
@@ -2154,8 +2154,8 @@ extension PageOverviewState {
             block: $0,
             width: CGFloat(try engine.block.getFrameWidth($0)),
             height: CGFloat(try engine.block.getFrameHeight($0)),
-            // When engine exposes the page(s) changed for `onHistoryUpdated` we can selectively refresh pages instead
-            // of all.
+            // When engine exposes the page(s) changed for `onHistoryUpdatedWithKind` we can selectively refresh pages
+            // instead of all.
             refresh: UUID())
     }
   }

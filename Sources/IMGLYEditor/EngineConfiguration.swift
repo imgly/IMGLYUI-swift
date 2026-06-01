@@ -346,7 +346,7 @@ public enum OnLoaded {
     /// ```swift
     /// .imgly.onLoaded { context in
     ///   context.task {
-    ///     for try await _ in context.engine.editor.onHistoryUpdated {
+    ///     for try await _ in context.engine.editor.onHistoryUpdatedWithKind {
     ///       // React to history changes
     ///     }
     ///   }
