@@ -612,6 +612,28 @@ extension Interactor {
         return try (completion?(engine, blocks, didChange) ?? false) || didChange
       }
     }
+
+    /// Sets the stroke style and the cap its preset implies, like the web editor. Dotted/*Round
+    /// presets need a Round cap, else a Dotted stroke is invisible (ANDROID-814). All four caps
+    /// are set equal to keep the renderer on its fast path.
+    static func strokeStyleWithPresetCaps() -> Interactor.PropertySetter<IMGLYCoreUI.StrokeStyle> {
+      { engine, blocks, propertyBlock, property, value, completion in
+        let didChange = try engine.block.set(blocks, propertyBlock, property: property, value: value)
+        if didChange {
+          let cap: StrokeCap = switch value {
+          case .dotted, .dashedRound, .longDashedRound: .round
+          case .solid, .dashed, .longDashed: .butt
+          }
+          for block in blocks {
+            try engine.block.setStrokeStartCap(block, cap: cap)
+            try engine.block.setStrokeEndCap(block, cap: cap)
+            try engine.block.setStrokeDashStartCap(block, cap: cap)
+            try engine.block.setStrokeDashEndCap(block, cap: cap)
+          }
+        }
+        return try (completion?(engine, blocks, didChange) ?? false) || didChange
+      }
+    }
   }
 
   typealias PropertyCompletion = @MainActor (
@@ -1854,7 +1876,7 @@ extension Interactor {
       guard let engine else {
         return
       }
-      for await _ in engine.editor.onHistoryUpdatedWithKind {
+      for await _ in engine.editor.onHistoryUpdated {
         historyChanged()
         DispatchQueue.main.async { [weak self] in
           self?.refreshThumbnails()
@@ -2154,7 +2176,7 @@ extension PageOverviewState {
             block: $0,
             width: CGFloat(try engine.block.getFrameWidth($0)),
             height: CGFloat(try engine.block.getFrameHeight($0)),
-            // When engine exposes the page(s) changed for `onHistoryUpdatedWithKind` we can selectively refresh pages
+            // When engine exposes the page(s) changed for `onHistoryUpdated` we can selectively refresh pages
             // instead of all.
             refresh: UUID())
     }
