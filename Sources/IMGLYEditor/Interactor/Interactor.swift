@@ -1743,10 +1743,21 @@ extension Interactor {
       let showsPlaceholderButton = try engine.block.isPlaceholderControlsButtonEnabled(block)
       let showsPlaceholderOverlay = try engine.block.isPlaceholderControlsOverlayEnabled(block)
 
-      if isPlaceholder, showsPlaceholderButton || showsPlaceholderOverlay {
-        return content
-      } else {
+      guard isPlaceholder, showsPlaceholderButton || showsPlaceholderOverlay else {
         return nil
+      }
+      // A page holds its replaceable media in its fill, not the block type, so for a page
+      // placeholder resolve the library from the fill type (mirrors the graphic case in
+      // `sheetContent(for:with:and:)`). Non-media fills (color/gradient) have nothing to
+      // replace, so no sheet opens.
+      guard case .page = content else {
+        return content
+      }
+      let fill = try engine.block.getFill(block)
+      switch try engine.block.getType(fill) {
+      case FillType.image.rawValue: return .image
+      case FillType.video.rawValue: return .video
+      default: return nil
       }
     } catch {
       handleError(error)

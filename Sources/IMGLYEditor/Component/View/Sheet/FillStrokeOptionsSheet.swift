@@ -6,11 +6,12 @@ struct FillStrokeOptionsSheet: View {
   @Environment(\.imglySelection) private var id
 
   var title: LocalizedStringResource {
-    let showFill = interactor.isColorFill(id) && interactor.supportsFill(id) && interactor.isAllowed(
-      id,
-      scope: .fillChange,
-    )
     let showStroke = interactor.supportsStroke(id) && interactor.isAllowed(id, scope: .strokeChange)
+    // Line-origin graphics surface their colour through the stroke section, so the fill is
+    // hidden when a stroke section is available — matching the FillAndStrokeOptions content.
+    let hideFillForLine = interactor.isLineOrigin(id) && showStroke
+    let showFill = interactor.isColorFill(id) && !hideFillForLine &&
+      interactor.supportsFill(id) && interactor.isAllowed(id, scope: .fillChange)
     if showFill, showStroke {
       return .imgly.localized("ly_img_editor_sheet_fill_stroke_title_fill_stroke")
     } else if showFill {
