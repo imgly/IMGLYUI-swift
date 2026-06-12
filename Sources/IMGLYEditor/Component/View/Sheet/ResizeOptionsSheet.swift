@@ -8,7 +8,7 @@ struct ResizeOptionsSheet: View {
     DismissableTitledSheet(.imgly.localized("ly_img_editor_sheet_resize_title")) {
       TransformOptions(interactor: interactor, item: { asset in
         TransformItem(asset: asset)
-      }, sources: [.init(defaultSource: .pagePresets)])
+      }, sources: [.init(id: "ly.img.page.presets")])
     }
   }
 }

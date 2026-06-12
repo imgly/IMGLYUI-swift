@@ -250,8 +250,22 @@ extension MappedType {
 // MARK: - Crop
 
 @_spi(Internal) public extension BlockAPI {
-  func canResetCrop(_ id: DesignBlockID) throws -> Bool {
-    try getContentFillMode(id) == .crop
+  /// Whether the Crop sheet's Reset button should be enabled. The engine
+  /// recomputes crop translation from the block frame on every `resetCrop`, so
+  /// the caller owns `initialCropTranslation*` as a baseline.
+  func canResetCrop(
+    _ id: DesignBlockID,
+    initialCropTranslationX: Float,
+    initialCropTranslationY: Float,
+  ) throws -> Bool {
+    if try getContentFillMode(id) != .crop { return true }
+    if try getCropRotation(id) != 0 { return true }
+    if try getCropScaleX(id) < 1 { return true }
+    if try getCropScaleY(id) < 1 { return true }
+    if try getCropScaleRatio(id) != 1 { return true }
+    if try getCropTranslationX(id) != initialCropTranslationX { return true }
+    if try getCropTranslationY(id) != initialCropTranslationY { return true }
+    return false
   }
 }
 
@@ -319,25 +333,16 @@ extension MappedType {
 // MARK: - Fonts
 
 @_spi(Internal) public extension BlockAPI {
-  func isBoldFont(_ id: DesignBlockID) throws -> Bool {
-    try getTextFontWeights(id).contains { $0.rawValue >= 700 }
+  /// Whether every character in `subrange` (or the whole text when `nil`) is bold.
+  func isBoldFont(_ id: DesignBlockID, in subrange: Range<String.Index>? = nil) throws -> Bool {
+    let weights = try getTextFontWeights(id, in: subrange)
+    return !weights.isEmpty && weights.allSatisfy { $0 == .bold }
   }
 
-  func isItalicFont(_ id: DesignBlockID) throws -> Bool {
-    try getTextFontStyles(id).contains(.italic)
-  }
-
-  func getFontProperties(_ id: DesignBlockID) throws -> FontProperties? {
-    switch try (canToggleBoldFont(id), canToggleItalicFont(id)) {
-    case (true, true):
-      try .init(bold: isBoldFont(id), italic: isItalicFont(id))
-    case (false, true):
-      try .init(bold: nil, italic: isItalicFont(id))
-    case (true, false):
-      try .init(bold: isBoldFont(id), italic: nil)
-    case (false, false):
-      nil
-    }
+  /// Whether every character in `subrange` (or the whole text when `nil`) is italic.
+  func isItalicFont(_ id: DesignBlockID, in subrange: Range<String.Index>? = nil) throws -> Bool {
+    let styles = try getTextFontStyles(id, in: subrange)
+    return !styles.isEmpty && styles.allSatisfy { $0 == .italic }
   }
 }
 

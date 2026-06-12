@@ -355,14 +355,19 @@ struct Canvas: View {
       }
     }
     .fullScreenCover(isPresented: $interactor.isCameraSheetShown) {
-      Camera(interactor.config.settings) { result in
+      Camera(
+        interactor.config.settings,
+        config: editorEnvironment.acceptsVideoCapture
+          ? .init(captureType: .mixed, captureCount: .multi)
+          : .init(captureType: .photo, captureCount: .single),
+      ) { result in
         interactor.isCameraSheetShown = false
         switch result {
-        case let .success(.recording(recordings)):
-          interactor.addCameraRecordings(recordings)
         case .success(.reaction):
           // Reaction case not handled here.
           break
+        case let .success(.capture(captures)):
+          interactor.addCameraCaptures(captures, addToBackgroundTrack: editorEnvironment.acceptsVideoCapture)
         case let .failure(error):
           print(error)
         }
@@ -375,7 +380,7 @@ struct Canvas: View {
   }
 
   private var media: [MediaType] {
-    let media: [MediaType] = editorEnvironment.includeAVResources ? [.image, .movie] : [.image]
+    let media: [MediaType] = editorEnvironment.acceptsVideoCapture ? [.image, .movie] : [.image]
     return media.filter {
       interactor.uploadAssetSourceIDs[$0] != nil
     }

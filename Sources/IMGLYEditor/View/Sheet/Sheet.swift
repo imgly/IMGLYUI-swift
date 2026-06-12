@@ -44,7 +44,7 @@ struct Sheet: View {
     case is SheetTypes.Layer: LayerOptionsSheet()
     case is SheetTypes.FormatText: FormatTextOptionsSheet()
     case is SheetTypes.Shape: ShapeOptionsSheet()
-    case is SheetTypes.FillStroke: FillStrokeOptionsSheet()
+    case let sheet as SheetTypes.FillStroke: FillStrokeOptionsSheet(fillOnly: sheet.fillOnly)
     case is SheetTypes.TextBackground: BackgroundOptionsSheet()
     case is SheetTypes.Volume: VolumeOptionsSheet()
     case is SheetTypes.ClipSpeed: ClipSpeedOptionsSheet()

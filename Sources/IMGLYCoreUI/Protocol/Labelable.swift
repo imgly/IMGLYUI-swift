@@ -44,4 +44,16 @@ import SwiftUI
   @ViewBuilder var taggedLabel: some View {
     label.tag(self)
   }
+
+  /// The icon from ``label`` without the title, as a plain `Image` (not the
+  /// `Text(Image(...))` wrap ``label`` uses) so it renders inside SwiftUI's `Menu`.
+  @ViewBuilder var icon: some View {
+    if let imageName {
+      if isSystemImage {
+        Image(systemName: imageName)
+      } else {
+        Image(imageName, bundle: .module)
+      }
+    }
+  }
 }

@@ -30,6 +30,11 @@ private struct DynamicTransformItem: View {
     return defaultWidth * (size / 32)
   }
 
+  // Mirror Web: the "Original" tile is dimmed and non-interactive when the content can't revert.
+  private var canRevertToOriginalRatio: Bool {
+    interactor.canRevertToOriginalRatio(id)
+  }
+
   var body: some View {
     switch asset.result.payload?.transformPreset {
     case .freeAspectRatio:
@@ -80,6 +85,21 @@ private struct DynamicTransformItem: View {
         Spacer()
       }
       .aspectRatio(0.7, contentMode: .fit)
+    case .contentAspectRatio:
+      VStack {
+        Image(systemName: "arrow.left.and.right.square")
+          .frame(width: size, height: size)
+          .font(.title)
+        Text(asset.labelOrTypefaceName ?? "Unknown")
+          .font(.caption2)
+          .lineLimit(3)
+          .frame(maxWidth: 56)
+          .multilineTextAlignment(.center)
+      }
+      .aspectRatio(1.3, contentMode: .fit)
+      .opacity(canRevertToOriginalRatio ? 1 : 0.4)
+      .allowsHitTesting(canRevertToOriginalRatio)
+      .onTapGesture(perform: onTap)
     default:
       EmptyView()
     }

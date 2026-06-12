@@ -392,7 +392,7 @@ public extension InspectorBar.Buttons {
     action: @escaping InspectorBar.Context.To<Void> = {
       $0.eventHandler.send(.openSheet(type: .crop(
         id: $0.selection.block,
-        assetSourceIDs: [Engine.DefaultAssetSource.cropPresets.rawValue],
+        assetSourceIDs: ["ly.img.crop.presets"],
       )))
     },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
@@ -529,7 +529,7 @@ public extension InspectorBar.Buttons {
   /// Creates a ``InspectorBar/Button`` that opens the fill and stroke sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/fillStroke(style:)``.
+  /// event is invoked with sheet type ``SheetType/fillStroke(style:fillOnly:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_inspector_bar_button_fill_and_stroke`,  `ly_img_editor_inspector_bar_button_fill`, or
   /// `ly_img_editor_inspector_bar_button_stroke` is used depending on the fill type and allowed engine scopes for the
