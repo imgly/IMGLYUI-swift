@@ -93,7 +93,7 @@ extension TransformOptions {
           for try await asset in group {
             if let asset {
               switch asset.result.payload?.transformPreset {
-              case .freeAspectRatio, .fixedAspectRatio, .contentAspectRatio:
+              case .freeAspectRatio, .fixedAspectRatio:
                 return 72
               default:
                 return 120

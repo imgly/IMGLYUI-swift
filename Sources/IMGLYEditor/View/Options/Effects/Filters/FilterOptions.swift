@@ -21,7 +21,7 @@ struct FilterOptions: View {
                 let darkColor: CGColor = try? engine.block.get(filter, property: .key(.filterDuoToneDarkColor)),
                 let lightHex = try? lightColor.hex(),
                 let darkHex = try? darkColor.hex() {
-        return AssetSelection(identifier: DuotoneFilterID.make(lightColor: lightHex, darkColor: darkHex), id: filter)
+        return AssetSelection(identifier: "ly.filter.duotone.\(lightHex).\(darkHex)", id: filter)
       }
       return AssetSelection()
     }
@@ -106,19 +106,22 @@ struct FilterOptions: View {
       selection: selection,
       item: { asset, binding in FilterItem(asset: asset, selection: selection, sheetState: binding) },
       identifier: { identifier(for: $0) },
-      sources: [.init(id: "ly.img.filter")],
+      sources: [.init(id: "ly.img.filter.duotone"), .init(id: "ly.img.filter.lut")],
       sheetState: $sheetState,
     )
   }
 
   private func identifier(for asset: AssetLoader.Asset) -> String? {
-    // The merged `ly.img.filter` source contains both LUT and duotone assets. Duotone assets carry
-    // `lightColor` / `darkColor` metadata — LUT assets don't.
-    if let lightColor = asset.result.meta?[.lightColor],
-       let darkColor = asset.result.meta?[.darkColor] {
-      return DuotoneFilterID.make(lightColor: lightColor, darkColor: darkColor)
+    if asset.sourceID == "ly.img.filter.duotone" {
+      guard let lightColor = asset.result.meta?[.lightColor],
+            let darkColor = asset.result.meta?[.darkColor]
+      else {
+        return nil
+      }
+      return "ly.filter.duotone.\(lightColor).\(darkColor)"
+    } else {
+      return asset.result.id
     }
-    return asset.result.id
   }
 }
 

@@ -15,7 +15,7 @@ public final class TextAssetSource: NSObject {
   public convenience init(
     engine: Engine,
     typefaceName: String = "Roboto",
-    typefaceSourceID: String = "ly.img.typeface"
+    typefaceSourceID: String = Engine.DefaultAssetSource.typeface.rawValue
   ) async throws {
     guard let asset = try await engine.asset.findAssets(
       sourceID: typefaceSourceID,

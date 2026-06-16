@@ -9,9 +9,9 @@ import SwiftUI
   @_spi(Internal) public init() {}
 
   @_spi(Internal) public var body: some View {
-    let fontAssetID = interactor.bindFontAssetID(id)
+    let text = interactor.bindTextState(id, resetFontProperties: true)
 
-    if let assetID = fontAssetID.wrappedValue,
+    if let assetID = text.wrappedValue.assetID,
        let typeface = fontLibrary.typefaceFor(id: assetID) {
       FontLoader(fontURL: typeface.previewFont?.uri) { fontName in
         FontImage(font: .custom(fontName, size: 28))

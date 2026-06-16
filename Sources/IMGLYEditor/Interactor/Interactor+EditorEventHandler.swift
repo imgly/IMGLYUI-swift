@@ -146,9 +146,7 @@ extension Interactor: EditorEventHandler {
 
   // swiftlint:disable:next cyclomatic_complexity
   private func openSheet(_ event: EditorEvents.Sheet.Open) throws {
-    // Pause only if actually playing: a plain `pause()` unconditionally sets the edit mode to
-    // TRANSFORM, which isn't desirable in TEXT edit mode.
-    pauseIfNeeded()
+    pause()
 
     switch event.type {
     case let sheet as SheetTypes.Custom:

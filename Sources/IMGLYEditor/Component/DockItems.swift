@@ -680,8 +680,8 @@ public extension Dock.Buttons {
     action: @escaping Dock.Context.To<Void> = {
       try $0.eventHandler.send(.openSheet(type: .crop(
         id: nonNil($0.engine.scene.getCurrentPage()),
-        assetSourceIDs: ["ly.img.crop.presets",
-                         "ly.img.page.presets"],
+        assetSourceIDs: [Engine.DefaultAssetSource.cropPresets.rawValue,
+                         Engine.DefaultAssetSource.pagePresets.rawValue],
       )))
     },
     @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in

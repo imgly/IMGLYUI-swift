@@ -5,12 +5,9 @@ import SwiftUI
 struct PropertyButton<T: Labelable>: View {
   let property: T
   @Binding var selection: T?
-  /// When `false`, tapping the already-selected button re-applies its value instead of clearing the
-  /// selection. Use for mutually-exclusive rows (e.g. letter case) where there is no "off" state.
-  var allowsDeselection = true
 
   var body: some View {
-    GenericPropertyButton(property: property, selection: $selection, allowsDeselection: allowsDeselection) {
+    GenericPropertyButton(property: property, selection: $selection) {
       property.label
     }
   }
@@ -19,7 +16,6 @@ struct PropertyButton<T: Labelable>: View {
 struct GenericPropertyButton<T: Equatable, Label: View>: View {
   let property: T
   @Binding var selection: T?
-  var allowsDeselection = true
   @ViewBuilder let label: () -> Label
 
   private var isSelected: Bool { selection == property }
@@ -32,7 +28,7 @@ struct GenericPropertyButton<T: Equatable, Label: View>: View {
 
   var body: some View {
     Button {
-      selection = (allowsDeselection && isSelected) ? nil : property
+      selection = isSelected ? nil : property
     } label: {
       label()
     }

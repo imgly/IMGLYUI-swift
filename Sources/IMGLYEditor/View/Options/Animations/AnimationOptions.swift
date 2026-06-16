@@ -108,8 +108,7 @@ struct AnimationOptions: View {
     guard let block, let engine = interactor.engine else { return nil }
     let isText = (try? engine.block.getType(block)) == DesignBlockType.text.rawValue
     let sourceName = isText ? "ly.img.animation.text" : "ly.img.animation"
-    guard let basePath = try? engine.editor.getSettingString("basePath"),
-          let base = URL(string: basePath) else { return nil }
+    let base = engine.defaultAssetSourcesBaseURL ?? Engine.assetBaseURL
     return base.appendingPathComponent(sourceName).appendingPathComponent("thumbnails")
   }
 

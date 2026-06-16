@@ -11,21 +11,22 @@ enum CameraOnDismissCallback {
   case legacy((Result<[Recording], CameraError>) -> Void)
   case modern((Result<CameraResult, CameraError>) -> Void)
 
-  func emit(_ result: Result<CameraResult, CameraError>) {
-    switch (self, result) {
-    case let (.modern(callback), result):
+  func callAsFunction(_ result: Result<[Recording], CameraError>, _ reactionVideo: Recording? = nil) {
+    switch (self, result, reactionVideo) {
+    case let (.legacy(callback), .success(recordings), .some(reactionVideo)):
+      callback(.success([reactionVideo] + recordings))
+
+    case let (.legacy(callback), _, _):
       callback(result)
 
-    case let (.legacy(callback), .failure(error)):
+    case let (.modern(callback), .failure(error), _):
       callback(.failure(error))
 
-    case let (.legacy(callback), .success(.reaction(video, recordings))):
-      callback(.success([video] + recordings))
+    case let (.modern(callback), .success(recordings), .some(reactionVideo)):
+      callback(.success(.reaction(video: reactionVideo, reaction: recordings)))
 
-    case let (.legacy(callback), .success(.capture(captures))):
-      // The legacy callback only carries `[Recording]`, so photos are dropped. The deprecated
-      // initializer forces `captureType: .video` to prevent that silently — see `Camera.init`.
-      callback(.success(captures.videos))
+    case let (.modern(callback), .success(recordings), .none):
+      callback(.success(.recording(recordings)))
     }
   }
 }
@@ -53,7 +54,7 @@ final class CameraModel: ObservableObject {
   private var captureSessionInterruptionEndedNotificationPublisher: AnyCancellable?
   private var hasCamera = false
 
-  private let captureService: CaptureService
+  private let captureService = CaptureService()
   private let settings: EngineSettings
 
   // MARK: - State
@@ -63,8 +64,6 @@ final class CameraModel: ObservableObject {
     case ready
     case countingDown
     case recording
-    case capturingPhoto
-    case previewingPhoto(Photo)
     case error(CameraCaptureError)
   }
 
@@ -81,30 +80,8 @@ final class CameraModel: ObservableObject {
   @Published private(set) var isLoadingAsset: Bool = false
   @Published var alertState: AlertState?
 
-  /// Drives shutter routing while `captureType == .mixed`. Ignored for `.photo` / `.video`.
-  @Published var activeMixedSubMode: ActiveMixedSubMode = .photo {
-    didSet {
-      captureService.setFlash(mode: torchMode)
-    }
-  }
-
-  /// The torch state to apply to the device. Photo capture flashes via `AVCapturePhotoSettings`
-  /// at shutter time, so the persistent torch only runs in video mode.
-  private var torchMode: FlashMode {
-    isVideoModeActive ? flashMode : .off
-  }
-
-  /// True when a tap would start a video recording.
-  var isVideoModeActive: Bool {
-    switch configuration.captureType {
-    case .video: true
-    case .photo: false
-    case .mixed: activeMixedSubMode == .video
-    }
-  }
-
   var hasRecordings: Bool {
-    !recordingsManager.captures.isEmpty
+    !recordingsManager.clips.isEmpty
   }
 
   var isRecording: Bool {
@@ -124,8 +101,8 @@ final class CameraModel: ObservableObject {
 
   private var cancellables: Set<AnyCancellable> = []
 
-  // Prevents double cleanup, and lets views hide chrome while the modal animates away.
-  @Published private(set) var isDismissalInProgress = false
+  // Property to track if dismissal is already in progress (prevents double cleanup)
+  private var isDismissalInProgress = false
 
   // MARK: - Lifecycle
 
@@ -139,7 +116,6 @@ final class CameraModel: ObservableObject {
     self.settings = settings
     cameraMode = mode
     configuration = config
-    captureService = CaptureService(captureType: config.captureType)
     recordingsManager = RecordingsManager(
       maxTotalDuration: configuration.maxTotalDuration,
       allowExceedingMaxDuration: configuration.allowExceedingMaxDuration,
@@ -177,26 +153,16 @@ final class CameraModel: ObservableObject {
 
     let cameraMode = cameraMode
     let reactionVideoDuration = reactionVideoDuration
-    let captures = recordingsManager.captures
+    let clips = recordingsManager.clips
     let onDismiss = onDismiss
-
     cleanUp {
-      if let reactionVideo = reactionVideoDuration.flatMap({ cameraMode.reactionVideo(duration: $0) }) {
-        onDismiss.emit(.success(.reaction(video: reactionVideo, reaction: captures.videos)))
-      } else {
-        onDismiss.emit(.success(.capture(captures)))
-      }
+      let reactionVideo = reactionVideoDuration.flatMap { cameraMode.reactionVideo(duration: $0) }
+      onDismiss(.success(clips), reactionVideo)
     }
   }
 
   func cancel(error: CameraError? = nil) {
     guard !isDismissalInProgress else { return }
-    // Orphan-clean the previewing photo — it's not in `recordingsManager` yet, so `deleteAll()` won't catch it.
-    if case let .previewingPhoto(photo) = state {
-      for image in photo.images {
-        try? FileManager.default.removeItem(at: image.url)
-      }
-    }
     isDismissalInProgress = true
 
     cleanUp()
@@ -207,11 +173,11 @@ final class CameraModel: ObservableObject {
     }
 
     if let error {
-      onDismiss.emit(.failure(error))
+      onDismiss(.failure(error))
     } else {
       // Inform the caller that the camera was possibly closed because of missing permissions.
       let error = !hasVideoPermissions || !hasAudioPermissions ? CameraError.permissionsMissing : .cancelled
-      onDismiss.emit(.failure(error))
+      onDismiss(.failure(error))
     }
   }
 
@@ -237,19 +203,17 @@ final class CameraModel: ObservableObject {
   // MARK: - Camera / Microphone Permissions
 
   func updatePermissions() async {
-    let requiresAudio = configuration.captureType != .photo
-
     let videoStatus = AVCaptureDevice.authorizationStatus(for: .video)
     var isVideoAuthorized = videoStatus == .authorized
 
     let audioStatus = AVCaptureDevice.authorizationStatus(for: .audio)
-    var isAudioAuthorized = !requiresAudio || audioStatus == .authorized
+    var isAudioAuthorized = audioStatus == .authorized
 
     if videoStatus == .notDetermined {
       isVideoAuthorized = await AVCaptureDevice.imgly.requestAccess(for: .video)
     }
 
-    if requiresAudio, audioStatus == .notDetermined {
+    if audioStatus == .notDetermined {
       isAudioAuthorized = await AVCaptureDevice.imgly.requestAccess(for: .audio)
     }
 
@@ -260,7 +224,7 @@ final class CameraModel: ObservableObject {
       alertState = .cameraPermissions {
         self.cancel()
       }
-    } else if requiresAudio, !isAudioAuthorized {
+    } else if !isAudioAuthorized {
       alertState = .microphonePermissions {
         self.cancel()
       }
@@ -298,7 +262,7 @@ final class CameraModel: ObservableObject {
     }
 
     // Re-enable the flash in case it was previously activated.
-    captureService.setFlash(mode: torchMode)
+    captureService.setFlash(mode: flashMode)
   }
 
   private func configureReactions(url: URL) {
@@ -325,7 +289,7 @@ final class CameraModel: ObservableObject {
       return
     }
     flashMode.toggle()
-    captureService.setFlash(mode: torchMode)
+    captureService.setFlash(mode: flashMode)
   }
 
   @Published private(set) var isFrontBackFlipped = false
@@ -418,7 +382,7 @@ final class CameraModel: ObservableObject {
       cameraStreamTask = Task {
         // The captureSession resets its properties, including flash state, at the start of each capture. To maintain
         // consistency, we explicitly set the flash to its desired state ('flashMode') after initiating streaming.
-        for try await event in captureService.resumeStreaming(with: torchMode) {
+        for try await event in captureService.resumeStreaming(with: flashMode) {
           switch event {
           case let .output1Frame(buffer):
             try interactor.updatePixelStreamFill1(buffer: buffer)
@@ -430,16 +394,10 @@ final class CameraModel: ObservableObject {
             try interactor.updatePixelStreamFill2(buffer: buffer)
 
           case let .recording(recordedClip):
-            recordingsManager.add(.video(recordedClip))
+            recordingsManager.add(recordedClip)
             recordingsManager.currentlyRecordedClipDuration = nil
             DispatchQueue.main.async { [weak self] in
-              guard let self else { return }
-              // Order matters: `done()` before any state flip avoids a shutter flash.
-              if configuration.captureCount == .single {
-                done()
-              } else {
-                state = .ready
-              }
+              self?.state = .ready
             }
           }
         }
@@ -459,95 +417,7 @@ final class CameraModel: ObservableObject {
     }
   }
 
-  // MARK: - Shutter routing
-
-  func shutterTapped() {
-    switch (configuration.captureType, configuration.captureCount) {
-    case (.photo, _):
-      capturePhoto()
-    case (.mixed, _) where activeMixedSubMode == .photo:
-      capturePhoto()
-    case (.video, _), (.mixed, _):
-      toggleRecording()
-    }
-  }
-
-  func shutterLongPressed() {
-    switch (configuration.captureType, configuration.captureCount) {
-    case (.video, _):
-      startRecording()
-    case (.mixed, .multi) where activeMixedSubMode == .video:
-      startRecording()
-    default:
-      break
-    }
-  }
-
-  func shutterLongPressReleased() {
-    switch (configuration.captureType, configuration.captureCount) {
-    case (.video, _):
-      stopRecording()
-    case (.mixed, .multi) where activeMixedSubMode == .video:
-      stopRecording()
-    default:
-      break
-    }
-  }
-
   // MARK: - Manage recording state
-
-  func capturePhoto() {
-    switch state {
-    case .ready:
-      guard !isLoadingAsset else { return }
-      if countdownMode != .disabled {
-        state = .countingDown
-        countdownTimer.start(seconds: countdownMode.rawValue) { [weak self] in
-          self?.capturePhotoImmediate()
-        }
-      } else {
-        capturePhotoImmediate()
-      }
-    case .countingDown:
-      // Second tap cancels the countdown (mirrors `toggleRecording`).
-      countdownTimer.cancel()
-      state = .ready
-    default:
-      break
-    }
-  }
-
-  private func capturePhotoImmediate() {
-    state = .capturingPhoto
-    Task { [weak self] in
-      guard let self else { return }
-      do {
-        let images = try await captureService.capturePhoto(flashMode: flashMode)
-        guard !isDismissalInProgress else {
-          // Cancelled mid-capture — drop the orphan JPEGs since cancel() already cleared the stack.
-          for image in images {
-            try? FileManager.default.removeItem(at: image.url)
-          }
-          return
-        }
-        let photo = Photo(images: images, duration: configuration.photoClipDuration)
-        if configuration.showsPhotoPreview {
-          // Hold the photo in `.previewingPhoto` until the user confirms or discards.
-          // The photo only joins `recordingsManager` on confirm so retry is a clean file delete.
-          state = .previewingPhoto(photo)
-        } else {
-          recordingsManager.add(.photo(photo))
-          if configuration.captureCount == .single {
-            done()
-          } else {
-            state = .ready
-          }
-        }
-      } catch {
-        handleCaptureError(error)
-      }
-    }
-  }
 
   func toggleRecording() {
     switch state {
@@ -581,13 +451,8 @@ final class CameraModel: ObservableObject {
   func stopRecording() {
     do {
       countdownTimer.cancel()
-      // Only reset state if there's actually an active recording/countdown to stop — otherwise
-      // backgrounding during `.previewingPhoto` (which calls into here) would clobber the preview.
-      let isActiveRecording = [.recording, .countingDown].contains(state)
-      if isActiveRecording, !isDismissalInProgress {
-        DispatchQueue.main.async { [weak self] in
-          self?.state = .ready
-        }
+      DispatchQueue.main.async { [weak self] in
+        self?.state = .ready
       }
       try captureService.stopRecording()
       interactor?.reactionVideoSetPlaying(false)
@@ -599,33 +464,12 @@ final class CameraModel: ObservableObject {
   func deleteLastRecording() {
     do {
       objectWillChange.send()
-      try recordingsManager.deleteLastCapture()
+      try recordingsManager.deleteLastRecording()
       let currentDuration = recordingsManager.recordedClipsTotalDuration.seconds
       try interactor?.setReactionPlaybackTime(currentDuration)
     } catch {
       handleActionError(error)
     }
-  }
-
-  // MARK: - Photo preview
-
-  func confirmPhotoPreview() {
-    guard case let .previewingPhoto(photo) = state else { return }
-    recordingsManager.add(.photo(photo))
-    // Order matters: `done()` before any state flip avoids a preview flash.
-    if configuration.captureCount == .single {
-      done()
-    } else {
-      state = .ready
-    }
-  }
-
-  func discardPhotoPreview() {
-    guard case let .previewingPhoto(photo) = state else { return }
-    for image in photo.images {
-      try? FileManager.default.removeItem(at: image.url)
-    }
-    state = .ready
   }
 
   // MARK: - Error handling

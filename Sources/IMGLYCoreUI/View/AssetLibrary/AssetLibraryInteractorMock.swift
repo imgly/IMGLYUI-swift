@@ -20,27 +20,17 @@ class AssetLibraryInteractorMock: ObservableObject {
       let engine = try await Engine(license: secrets.licenseKey)
       self.engine = engine
       try engine.scene.createVideo()
-      let baseURL = URL(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.77.0-rc.1/assets")!
-      try engine.editor.setSettingString("basePath", value: baseURL.absoluteString)
-      let defaultSourceIDs = [
-        "ly.img.sticker", "ly.img.vector.shape", "ly.img.filter", "ly.img.color.palette",
-        "ly.img.effect", "ly.img.blur", "ly.img.typeface", "ly.img.crop.presets",
-        "ly.img.page.presets", "ly.img.text", "ly.img.text.components",
-        "ly.img.caption.presets",
-      ]
-      let remoteDemoSourceIDs = ["ly.img.image", "ly.img.audio", "ly.img.video"]
-      let uploadDemoSources: [(id: String, mimeTypes: [String])] = [
-        ("ly.img.image.upload", ["image/jpeg", "image/png", "image/svg+xml", "image/gif", "image/apng", "image/bmp"]),
-        ("ly.img.audio.upload", ["audio/x-m4a", "audio/mp3", "audio/mpeg"]),
-        ("ly.img.video.upload", ["video/mp4"]),
-      ]
-      for id in defaultSourceIDs + remoteDemoSourceIDs {
-        _ = try await engine.asset.addLocalAssetSourceFromJSON(
-          baseURL.appendingPathComponent(id).appendingPathComponent("content.json"),
-        )
+      let basePath = "https://cdn.img.ly/packages/imgly/cesdk-swift/1.76.1-rc.0/assets"
+      try engine.editor.setSettingString("basePath", value: basePath)
+      for source in Engine.DefaultAssetSource.allCases {
+        try await engine.populateAssetSource(id: source.rawValue, baseURL: Engine.assetBaseURL)
       }
-      for source in uploadDemoSources {
-        try engine.asset.addLocalSource(sourceID: source.id, supportedMimeTypes: source.mimeTypes)
+      for source in Engine.DemoAssetSource.allCases {
+        if let mimeTypes = source.mimeTypes {
+          try engine.asset.addLocalSource(sourceID: source.rawValue, supportedMimeTypes: mimeTypes)
+        } else {
+          try await engine.populateAssetSource(id: source.rawValue, baseURL: Engine.assetBaseURL)
+        }
       }
       try await engine.asset.addSource(TextAssetSource(engine: engine))
       try engine.asset.addSource(PhotoRollAssetSource(engine: engine))

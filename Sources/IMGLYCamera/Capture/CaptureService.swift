@@ -16,8 +16,6 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
   var currentlyRecordedClipDuration: CMTime?
 
-  private let captureType: CaptureType
-
   private let videoFileType = AVFileType.mp4
   private let videoFileExtension = "mp4"
   private let videoCodec = AVVideoCodecType.h264
@@ -42,23 +40,15 @@ final class CaptureService: NSObject, @unchecked Sendable {
   private let videoOutput1 = AVCaptureVideoDataOutput()
   private let videoOutput2 = AVCaptureVideoDataOutput()
   private let audioOutput = AVCaptureAudioDataOutput()
-  private let photoOutput = AVCapturePhotoOutput()
-  private let photoOutput2 = AVCapturePhotoOutput()
-  private var photoConnection: AVCaptureConnection?
-  private var photoConnection2: AVCaptureConnection?
 
   private var recorder1: VideoRecorder?
   private var recorder2: VideoRecorder?
 
   private var remainingRecordingDuration: CMTime = .positiveInfinity
 
-  private var requiresAudio: Bool { captureType != .photo }
-  private var requiresPhotoOutput: Bool { captureType != .video }
-
   // MARK: -
 
-  init(captureType: CaptureType) {
-    self.captureType = captureType
+  override init() {
     captureSession = AVCaptureMultiCamSession.isMultiCamSupported ? AVCaptureMultiCamSession() : AVCaptureSession()
 
     super.init()
@@ -80,14 +70,8 @@ final class CaptureService: NSObject, @unchecked Sendable {
       captureSession.addOutputWithNoConnections(videoOutput2)
     }
 
-    if requiresPhotoOutput {
-      if captureSession.canAddOutput(photoOutput) {
-        captureSession.addOutputWithNoConnections(photoOutput)
-      }
-      // Second photo output for dual-camera capture. Only multicam sessions allow more than one.
-      if AVCaptureMultiCamSession.isMultiCamSupported, captureSession.canAddOutput(photoOutput2) {
-        captureSession.addOutputWithNoConnections(photoOutput2)
-      }
+    if captureSession.canAddOutput(audioOutput) {
+      captureSession.addOutputWithNoConnections(audioOutput)
     }
 
     videoOutput1.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
@@ -96,50 +80,19 @@ final class CaptureService: NSObject, @unchecked Sendable {
     camera1Input = backCameraInput()
     camera2Input = frontCameraInput()
 
-    if requiresAudio {
-      attachAudio()
-    }
-
-    videoOutput1.setSampleBufferDelegate(self, queue: queue)
-    videoOutput2.setSampleBufferDelegate(self, queue: queue)
-
-    captureSession.commitConfiguration()
-  }
-
-  private func attachAudio() {
-    if captureSession.canAddOutput(audioOutput) {
-      captureSession.addOutputWithNoConnections(audioOutput)
-    }
-    if let input = microphoneInput(), captureSession.canAddInput(input) {
+    if let input = microphoneInput(),
+       captureSession.canAddInput(input) {
       audioInput = input
       captureSession.addInputWithNoConnections(input)
       let connection = AVCaptureConnection(inputPorts: input.ports, output: audioOutput)
       captureSession.addConnection(connection)
     }
+
+    videoOutput1.setSampleBufferDelegate(self, queue: queue)
+    videoOutput2.setSampleBufferDelegate(self, queue: queue)
     audioOutput.setSampleBufferDelegate(self, queue: queue)
-  }
 
-  private func removePhotoConnections() {
-    if let connection = photoConnection {
-      captureSession.removeConnection(connection)
-      photoConnection = nil
-    }
-    if let connection = photoConnection2 {
-      captureSession.removeConnection(connection)
-      photoConnection2 = nil
-    }
-  }
-
-  private func attachPhotoConnectionIfNeeded(
-    for input: AVCaptureDeviceInput,
-    output: AVCapturePhotoOutput,
-  ) -> AVCaptureConnection? {
-    guard requiresPhotoOutput else { return nil }
-    let connection = AVCaptureConnection(inputPorts: input.ports, output: output)
-    connection.isVideoMirrored = input.device.position == .front
-    connection.videoOrientation = videoOrientation
-    captureSession.addConnection(connection)
-    return connection
+    captureSession.commitConfiguration()
   }
 
   private func frontCameraInput() -> AVCaptureDeviceInput? {
@@ -198,8 +151,6 @@ final class CaptureService: NSObject, @unchecked Sendable {
         self.camera2Connection = nil
       }
 
-      removePhotoConnections()
-
       if let input = isFlipped ? camera2Input : camera1Input {
         if !AVCaptureMultiCamSession.isMultiCamSupported,
            let oldInput = isFlipped ? camera1Input : camera2Input {
@@ -219,8 +170,6 @@ final class CaptureService: NSObject, @unchecked Sendable {
         connection.videoOrientation = videoOrientation
         connection.preferredVideoStabilizationMode = .standard
         captureSession.addConnection(connection)
-
-        photoConnection = attachPhotoConnectionIfNeeded(for: input, output: photoOutput)
       }
 
       if AVCaptureMultiCamSession.isMultiCamSupported, cameraMode.isMultiCamera {
@@ -234,8 +183,6 @@ final class CaptureService: NSObject, @unchecked Sendable {
           connection.videoOrientation = videoOrientation
           connection.preferredVideoStabilizationMode = .standard
           captureSession.addConnection(connection)
-
-          photoConnection2 = attachPhotoConnectionIfNeeded(for: input, output: photoOutput2)
         }
       }
 
@@ -265,14 +212,12 @@ final class CaptureService: NSObject, @unchecked Sendable {
   private func startRunning() {
     queue.async { [weak self] in
       guard let self else { return }
-      if requiresAudio {
-        DispatchQueue.main.sync {
-          do {
-            AVAudioSession.push()
-            try AVAudioSession.prepareForRecording()
-          } catch {
-            print("Couldn't prepare session for recording")
-          }
+      DispatchQueue.main.sync {
+        do {
+          AVAudioSession.push()
+          try AVAudioSession.prepareForRecording()
+        } catch {
+          print("Couldn't prepare session for recording")
         }
       }
       captureSession.startRunning()
@@ -290,12 +235,10 @@ final class CaptureService: NSObject, @unchecked Sendable {
       captureSession.stopRunning()
       DispatchQueue.main.sync {
         callback?()
-        if requiresAudio {
-          do {
-            try AVAudioSession.pop()
-          } catch {
-            print("Couldn't return session to previous mode \(error)")
-          }
+        do {
+          try AVAudioSession.pop()
+        } catch {
+          print("Couldn't return session to previous mode \(error)")
         }
       }
     }
@@ -333,34 +276,6 @@ final class CaptureService: NSObject, @unchecked Sendable {
       }
       self.remainingRecordingDuration = remainingRecordingDuration
     }
-  }
-
-  func capturePhoto(flashMode: FlashMode) async throws -> [Photo.Image] {
-    let avFlashMode: AVCaptureDevice.FlashMode = switch flashMode {
-    case .off: .off
-    case .on: .on
-    }
-    if case .dualCamera = cameraMode {
-      // Capture both photos in parallel; if one throws after the other succeeded,
-      // delete the successful side's JPEG so it doesn't leak on disk.
-      let task1 = Task { try await PhotoCapture().capture(with: photoOutput, flashMode: avFlashMode) }
-      let task2 = Task { try await PhotoCapture().capture(with: photoOutput2, flashMode: avFlashMode) }
-      switch (await task1.result, await task2.result) {
-      case let (.success(firstURL), .success(secondURL)):
-        return [
-          Photo.Image(url: firstURL, rect: cameraMode.rect1),
-          Photo.Image(url: secondURL, rect: cameraMode.rect2 ?? .zero),
-        ]
-      case let (.success(orphan), .failure(error)),
-           let (.failure(error), .success(orphan)):
-        try? FileManager.default.removeItem(at: orphan)
-        throw error
-      case let (.failure(error), .failure):
-        throw error
-      }
-    }
-    let url = try await PhotoCapture().capture(with: photoOutput, flashMode: avFlashMode)
-    return [Photo.Image(url: url, rect: cameraMode.rect1)]
   }
 
   func stopRecording() throws {

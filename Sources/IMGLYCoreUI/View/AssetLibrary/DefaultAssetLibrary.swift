@@ -7,14 +7,6 @@ public extension AssetLoader.SourceData {
   /// - Parameters:
   ///   - demoSource: The demo asset source.
   ///   - config: The configuration query to limit the results of this asset source.
-  @available(
-    *,
-    deprecated,
-    message: """
-    Uses legacy v3-era demo asset source IDs and will be removed in a future version. \
-    Use 'init(id:config:)' with a raw asset source ID string instead.
-    """
-  )
   init(demoSource: Engine.DemoAssetSource, config: AssetLoader.QueryData = .init()) {
     self.init(id: demoSource.rawValue, config: config)
   }
@@ -23,14 +15,6 @@ public extension AssetLoader.SourceData {
   /// - Parameters:
   ///   - defaultSource: The default asset source.
   ///   - config: The configuration query to limit the results of this asset source.
-  @available(
-    *,
-    deprecated,
-    message: """
-    Uses legacy v4 asset source IDs and will be removed in a future version. \
-    Use 'init(id:config:)' with a raw v5 asset source ID string instead.
-    """
-  )
   init(defaultSource: Engine.DefaultAssetSource, config: AssetLoader.QueryData = .init()) {
     self.init(id: defaultSource.rawValue, config: config)
   }
@@ -227,7 +211,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @AssetLibraryBuilder public static var videos: AssetLibraryContent {
     AssetLibrarySource.video(
       .title(.imgly.localized("ly_img_editor_asset_library_section_videos")),
-      source: .init(id: "ly.img.video"),
+      source: .init(demoSource: .video),
     )
     AssetLibrarySource.photoRoll(
       .title(.imgly.localized("ly_img_editor_asset_library_section_photo_roll")),
@@ -239,11 +223,11 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @AssetLibraryBuilder public static var audio: AssetLibraryContent {
     AssetLibrarySource.audio(
       .title(.imgly.localized("ly_img_editor_asset_library_section_audio")),
-      source: .init(id: "ly.img.audio"),
+      source: .init(demoSource: .audio),
     )
     AssetLibrarySource.audioUpload(
       .title(.imgly.localized("ly_img_editor_asset_library_section_audio_uploads")),
-      source: .init(id: "ly.img.audio.upload"),
+      source: .init(demoSource: .audioUpload),
     )
   }
 
@@ -251,7 +235,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @AssetLibraryBuilder public static var images: AssetLibraryContent {
     AssetLibrarySource.image(
       .title(.imgly.localized("ly_img_editor_asset_library_section_images")),
-      source: .init(id: "ly.img.image"),
+      source: .init(demoSource: .image),
     )
     AssetLibrarySource.photoRoll(
       .title(.imgly.localized("ly_img_editor_asset_library_section_photo_roll")),
@@ -267,7 +251,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
     )
     AssetLibrarySource.textComponent(
       .title(.imgly.localized("ly_img_editor_asset_library_section_font_combinations")),
-      source: .init(id: "ly.img.text.components"),
+      source: .init(demoSource: .textComponents),
     )
   }
 
@@ -275,35 +259,43 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @AssetLibraryBuilder public static var shapes: AssetLibraryContent {
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_filled")),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["filled"])),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/filled"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_outline")),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["outline"])),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/outline"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_gradient")),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["gradient"])),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/gradient"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_image")),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["image"])),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/image"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_filled")),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-filled"])),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-filled"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_outline")),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-outline"])),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-outline"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_gradient")),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-gradient"])),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-gradient"])),
     )
     AssetLibrarySource.shape(
       .title(.imgly.localized("ly_img_editor_asset_library_section_abstract_image")),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-image"])),
+      source: .init(defaultSource: .vectorPath,
+                    config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-image"])),
     )
   }
 
@@ -311,27 +303,33 @@ public struct DefaultAssetLibrary: AssetLibrary {
   @AssetLibraryBuilder public static var stickers: AssetLibraryContent {
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_emoji")),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["emoji"])),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.emoji/category/emoji"])),
     )
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_emoticons")),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["emoticons"])),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.emoticons/category/emoticons"])),
     )
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_craft")),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["craft"])),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.craft/category/craft"])),
     )
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_3d_stickers")),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["3Dstickers"])),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.3Dstickers/category/3Dstickers"])),
     )
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_hand")),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["hand"])),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.hand/category/hand"])),
     )
     AssetLibrarySource.sticker(
       .title(.imgly.localized("ly_img_editor_asset_library_section_doodle")),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["doodle"])),
+      source: .init(defaultSource: .sticker,
+                    config: .init(groups: ["//ly.img.cesdk.stickers.doodle/category/doodle"])),
     )
   }
 
@@ -358,7 +356,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
     case .text:
       AssetLibraryGroup.text(
         .imgly.localized("ly_img_editor_asset_library_section_text"),
-        excludedPreviewSources: ["ly.img.text.components"],
+        excludedPreviewSources: [Engine.DemoAssetSource.textComponents.rawValue],
       ) {
         text
       }

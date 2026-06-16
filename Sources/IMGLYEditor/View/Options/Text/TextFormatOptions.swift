@@ -29,12 +29,12 @@ struct TextFormatOptions: View {
   // MARK: - @ViewBuilder
 
   @ViewBuilder var fontSelection: some View {
-    let fontAssetID = interactor.bindFontAssetID(id)
+    let textReset = interactor.bindTextState(id, resetFontProperties: true)
 
     NavigationLinkPicker(
       title: .imgly.localized("ly_img_editor_sheet_format_text_label_font"),
       data: [fontLibrary.assets],
-      selection: fontAssetID,
+      selection: textReset.assetID,
     ) { asset, isSelected in
       FontLoader(fontURL: asset.result.payload?.typeface?.previewFont?.uri) { fontName in
         Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
@@ -49,18 +49,55 @@ struct TextFormatOptions: View {
   }
 
   @ViewBuilder var fontWeightSelection: some View {
+    let text = interactor.bindTextState(id, resetFontProperties: false)
+
+    // Wrap interactor.bind to convert nil → .inactive so the setter fires on deselect.
+    // GenericPropertyButton sets nil when toggling off, but interactor.bind ignores nil values.
+    let rawUnderline: Binding<TextProperty?> = interactor.bind(id) { engine, block in
+      let decorations = try engine.block.getTextDecorations(block)
+      let hasUnderline = decorations.contains { $0.line.contains(.underline) }
+      return hasUnderline ? TextProperty.underline : TextProperty.inactive
+    } setter: { engine, blocks, _, completion in
+      try blocks.forEach {
+        try engine.block.toggleTextDecorationUnderline($0)
+      }
+      let didChange = !blocks.isEmpty
+      return try (completion?(engine, blocks, didChange) ?? false) || didChange
+    }
+    let underlineBinding = Binding<TextProperty?>(
+      get: { rawUnderline.wrappedValue },
+      set: { rawUnderline.wrappedValue = $0 ?? .inactive }
+    )
+
+    let rawStrikethrough: Binding<TextProperty?> = interactor.bind(id) { engine, block in
+      let decorations = try engine.block.getTextDecorations(block)
+      let hasStrikethrough = decorations.contains { $0.line.contains(.strikethrough) }
+      return hasStrikethrough ? TextProperty.strikethrough : TextProperty.inactive
+    } setter: { engine, blocks, _, completion in
+      try blocks.forEach {
+        try engine.block.toggleTextDecorationStrikethrough($0)
+      }
+      let didChange = !blocks.isEmpty
+      return try (completion?(engine, blocks, didChange) ?? false) || didChange
+    }
+    let strikethroughBinding = Binding<TextProperty?>(
+      get: { rawStrikethrough.wrappedValue },
+      set: { rawStrikethrough.wrappedValue = $0 ?? .inactive }
+    )
+
     HStack(spacing: 32) {
-      PropertyButton(property: .bold, selection: interactor.bindBoldToggle(id))
-      PropertyButton(property: .italic, selection: interactor.bindItalicToggle(id))
-      PropertyButton(property: .underline, selection: interactor.bindUnderlineToggle(id))
-      PropertyButton(property: .strikethrough, selection: interactor.bindStrikethroughToggle(id))
+      PropertyButton(property: .bold, selection: text.bold)
+      PropertyButton(property: .italic, selection: text.italic)
+      PropertyButton(property: .underline, selection: underlineBinding)
+      PropertyButton(property: .strikethrough, selection: strikethroughBinding)
       Spacer()
-      let selection: Binding<String?> = interactor.bind(
-        id, default: nil as String?,
-      ) { engine, block -> String? in
-        try engine.block.resolveTextFontID(block)
+      let selection: Binding<String?> = interactor.bind(id) { engine, block in
+        let typeface = try engine.block.getTypeface(block)
+        let styles = try engine.block.getTextFontStyles(block).first
+        let weights = try engine.block.getTextFontWeights(block).first
+        let currentFont = typeface.fonts.first { $0.style == styles && $0.weight == weights }
+        return currentFont?.id ?? ""
       } setter: { engine, blocks, value, completion in
-        guard let value else { return false }
         let changed = try blocks.filter {
           let typeface = try engine.block.getTypeface($0)
           let styles = try engine.block.getTextFontStyles($0).first
@@ -98,8 +135,6 @@ struct TextFormatOptions: View {
         } linkLabel: { selection in
           if let selection {
             Text(selection.localizedSubFamiliy)
-          } else {
-            Text(.imgly.localized("ly_img_editor_sheet_format_text_font_subfamily_mixed"))
           }
         }
       }
@@ -248,14 +283,29 @@ struct TextFormatOptions: View {
   @ViewBuilder var letterOptions: some View {
     Section {
       HStack {
-        let letterCase = interactor.bindLetterCase(id)
-        PropertyButton(property: .normal, selection: letterCase, allowsDeselection: false)
+        let letterCase: Binding<Interactor.TextCase?> = interactor.bind(id) { engine, block in
+          let textCase = try engine.block.getTextCases(block).first
+          return textCase ?? .normal
+        } setter: { engine, blocks, value, completion in
+          let changed = try blocks.filter {
+            let textCase = try engine.block.getTextCases($0).first
+            return textCase != value
+          }
+
+          try changed.forEach {
+            try engine.block.setTextCase($0, textCase: value)
+          }
+
+          let didChange = !changed.isEmpty
+          return try (completion?(engine, blocks, didChange) ?? false) || didChange
+        }
+        PropertyButton(property: .normal, selection: letterCase)
         Spacer()
-        PropertyButton(property: .uppercase, selection: letterCase, allowsDeselection: false)
+        PropertyButton(property: .uppercase, selection: letterCase)
         Spacer()
-        PropertyButton(property: .lowercase, selection: letterCase, allowsDeselection: false)
+        PropertyButton(property: .lowercase, selection: letterCase)
         Spacer()
-        PropertyButton(property: .titlecase, selection: letterCase, allowsDeselection: false)
+        PropertyButton(property: .titlecase, selection: letterCase)
       }
       .padding([.leading, .trailing], 16)
       .labelStyle(.iconOnly)
@@ -296,7 +346,42 @@ struct TextFormatOptions: View {
   @ViewBuilder var listStyleSelection: some View {
     Section {
       HStack {
-        let listStyle = interactor.bindListStyle(id)
+        // Use `default: nil` overload so the getter can return nil for mixed-paragraph state.
+        // This gives Binding<ListStyle?> where nil means "mixed" (no button highlighted).
+        let listStyle: Binding<IMGLYEngine.ListStyle?> = interactor.bind(
+          id, default: nil as IMGLYEngine.ListStyle?,
+        ) { engine, block -> IMGLYEngine.ListStyle? in
+          let cursorRange = try engine.block.getTextCursorRange()
+          let paragraphIndices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
+          guard !paragraphIndices.isEmpty else { return ListStyle.none }
+          let styles = try paragraphIndices.map {
+            try engine.block.getTextListStyle(block, paragraphIndex: $0)
+          }
+          let first = styles[0]
+          return styles.dropFirst().allSatisfy { $0 == first } ? first : nil
+        } setter: { engine, blocks, value, completion in
+          guard let value else { return false }
+          let cursorRange = try engine.block.getTextCursorRange()
+          let changed = try blocks.filter { block in
+            let paragraphIndices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
+            guard !paragraphIndices.isEmpty else { return false }
+            return try paragraphIndices.contains {
+              try engine.block.getTextListStyle(block, paragraphIndex: $0) != value
+            }
+          }
+          try changed.forEach { block in
+            if cursorRange != nil {
+              let paragraphIndices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
+              try paragraphIndices.forEach { index in
+                try engine.block.setTextListStyle(block, listStyle: value, paragraphIndex: index)
+              }
+            } else {
+              try engine.block.setTextListStyle(block, listStyle: value, paragraphIndex: -1)
+            }
+          }
+          let didChange = !changed.isEmpty
+          return try (completion?(engine, blocks, didChange) ?? false) || didChange
+        }
 
         // Wrap so that PropertyButton's toggle-off (nil) maps to .none instead of mixed state.
         let mappedListStyle = Binding<IMGLYEngine.ListStyle?>(

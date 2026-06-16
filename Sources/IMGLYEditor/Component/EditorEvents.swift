@@ -233,8 +233,8 @@ public extension EditorEvents.Selection {
 public extension EditorEvents.AddFrom {
   /// Default asset source IDs for adding assets based on the asset's ``IMGLYCoreUI/MediaType``.
   static var defaultAssetSourceIDs: [MediaType: String] { [
-    .image: "ly.img.image.upload",
-    .movie: "ly.img.video.upload",
+    .image: Engine.DemoAssetSource.imageUpload.rawValue,
+    .movie: Engine.DemoAssetSource.videoUpload.rawValue,
   ] }
 
   /// An event for adding assets from the photo roll.

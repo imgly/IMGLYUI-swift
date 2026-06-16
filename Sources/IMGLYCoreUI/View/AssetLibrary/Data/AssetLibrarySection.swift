@@ -291,7 +291,7 @@ public extension AssetLibrarySection {
     .image(
       id: ID.images,
       title: .imgly.localized("ly_img_editor_asset_library_section_images"),
-      source: .init(id: "ly.img.image"),
+      source: .init(demoSource: .image),
     )
   }
 
@@ -309,7 +309,7 @@ public extension AssetLibrarySection {
     .video(
       id: ID.videos,
       title: .imgly.localized("ly_img_editor_asset_library_section_videos"),
-      source: .init(id: "ly.img.video"),
+      source: .init(demoSource: .video),
     )
   }
 
@@ -327,7 +327,7 @@ public extension AssetLibrarySection {
     .audio(
       id: ID.audio,
       title: .imgly.localized("ly_img_editor_asset_library_section_audio"),
-      source: .init(id: "ly.img.audio"),
+      source: .init(demoSource: .audio),
     )
   }
 
@@ -335,7 +335,7 @@ public extension AssetLibrarySection {
     .audioUpload(
       id: ID.audioUpload,
       title: .imgly.localized("ly_img_editor_asset_library_section_audio_uploads"),
-      source: .init(id: "ly.img.audio.upload"),
+      source: .init(demoSource: .audioUpload),
     )
   }
 
@@ -353,7 +353,7 @@ public extension AssetLibrarySection {
     .textComponent(
       id: ID.textComponents,
       title: .imgly.localized("ly_img_editor_asset_library_section_font_combinations"),
-      source: .init(id: "ly.img.text.components"),
+      source: .init(demoSource: .textComponents),
     )
   }
 
@@ -363,7 +363,10 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesFilled,
       title: .imgly.localized("ly_img_editor_asset_library_section_filled"),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["filled"])),
+      source: .init(
+        defaultSource: .vectorPath,
+        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/filled"]),
+      ),
     )
   }
 
@@ -371,7 +374,10 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesOutline,
       title: .imgly.localized("ly_img_editor_asset_library_section_outline"),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["outline"])),
+      source: .init(
+        defaultSource: .vectorPath,
+        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/outline"]),
+      ),
     )
   }
 
@@ -379,7 +385,10 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesGradient,
       title: .imgly.localized("ly_img_editor_asset_library_section_gradient"),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["gradient"])),
+      source: .init(
+        defaultSource: .vectorPath,
+        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/gradient"]),
+      ),
     )
   }
 
@@ -387,7 +396,10 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesImage,
       title: .imgly.localized("ly_img_editor_asset_library_section_image"),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["image"])),
+      source: .init(
+        defaultSource: .vectorPath,
+        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/image"]),
+      ),
     )
   }
 
@@ -395,7 +407,10 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesAbstractFilled,
       title: .imgly.localized("ly_img_editor_asset_library_section_abstract_filled"),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-filled"])),
+      source: .init(
+        defaultSource: .vectorPath,
+        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-filled"]),
+      ),
     )
   }
 
@@ -403,7 +418,10 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesAbstractOutline,
       title: .imgly.localized("ly_img_editor_asset_library_section_abstract_outline"),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-outline"])),
+      source: .init(
+        defaultSource: .vectorPath,
+        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-outline"]),
+      ),
     )
   }
 
@@ -411,7 +429,10 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesAbstractGradient,
       title: .imgly.localized("ly_img_editor_asset_library_section_abstract_gradient"),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-gradient"])),
+      source: .init(
+        defaultSource: .vectorPath,
+        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-gradient"]),
+      ),
     )
   }
 
@@ -419,7 +440,10 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesAbstractImage,
       title: .imgly.localized("ly_img_editor_asset_library_section_abstract_image"),
-      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-image"])),
+      source: .init(
+        defaultSource: .vectorPath,
+        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-image"]),
+      ),
     )
   }
 
@@ -429,7 +453,10 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickersEmoji,
       title: .imgly.localized("ly_img_editor_asset_library_section_emoji"),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["emoji"])),
+      source: .init(
+        defaultSource: .sticker,
+        config: .init(groups: ["//ly.img.cesdk.stickers.emoji/category/emoji"]),
+      ),
     )
   }
 
@@ -437,7 +464,10 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickersEmoticons,
       title: .imgly.localized("ly_img_editor_asset_library_section_emoticons"),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["emoticons"])),
+      source: .init(
+        defaultSource: .sticker,
+        config: .init(groups: ["//ly.img.cesdk.stickers.emoticons/category/emoticons"]),
+      ),
     )
   }
 
@@ -445,7 +475,10 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickersCraft,
       title: .imgly.localized("ly_img_editor_asset_library_section_craft"),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["craft"])),
+      source: .init(
+        defaultSource: .sticker,
+        config: .init(groups: ["//ly.img.cesdk.stickers.craft/category/craft"]),
+      ),
     )
   }
 
@@ -453,7 +486,10 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickers3D,
       title: .imgly.localized("ly_img_editor_asset_library_section_3d_stickers"),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["3Dstickers"])),
+      source: .init(
+        defaultSource: .sticker,
+        config: .init(groups: ["//ly.img.cesdk.stickers.3Dstickers/category/3Dstickers"]),
+      ),
     )
   }
 
@@ -461,7 +497,10 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickersHand,
       title: .imgly.localized("ly_img_editor_asset_library_section_hand"),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["hand"])),
+      source: .init(
+        defaultSource: .sticker,
+        config: .init(groups: ["//ly.img.cesdk.stickers.hand/category/hand"]),
+      ),
     )
   }
 
@@ -469,7 +508,10 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickersDoodle,
       title: .imgly.localized("ly_img_editor_asset_library_section_doodle"),
-      source: .init(id: "ly.img.sticker", config: .init(groups: ["doodle"])),
+      source: .init(
+        defaultSource: .sticker,
+        config: .init(groups: ["//ly.img.cesdk.stickers.doodle/category/doodle"]),
+      ),
     )
   }
 }

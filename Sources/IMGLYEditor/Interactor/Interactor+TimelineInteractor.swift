@@ -1520,9 +1520,8 @@ extension Interactor: TimelineInteractor {
     }
   }
 
-  /// Pause only when actually playing. Unlike ``pause()``, avoids the idle `setPlaying` that would
-  /// flip edit mode to TRANSFORM and tear down a text-edit session.
-  func pauseIfNeeded() {
+  /// Pause playback if needed.
+  private func pauseIfNeeded() {
     if timelineProperties.player.isPlaying {
       pause()
     }
@@ -1677,137 +1676,34 @@ extension Interactor: TimelineInteractor {
 
     guard let totalDuration = timelineProperties.timeline?.totalDuration else { return }
     Task {
-      do {
-        var currentTimeOffset = totalDuration
-        var trackForVideoIndex: [Int: DesignBlockID] = [:]
-        for recording in recordings {
-          for (index, video) in recording.videos.enumerated() {
-            // Add to asset library without invoking assetTapped()
-            isAddingCameraRecording = true
-            defer {
-              isAddingCameraRecording = false
-            }
-            let asset = try await uploadVideo(to: videoUploadAssetSourceID) { video.url }
-
-            guard let assetURL = asset.url else { continue }
-            guard let parentTrack = parentTrackForCameraVideo(
-              at: index,
-              memo: &trackForVideoIndex,
-            ) else { continue }
-            await addCameraVideo(
-              fileURL: assetURL,
-              rect: video.rect,
-              duration: recording.duration,
-              timeOffset: currentTimeOffset,
-              parentTrack: parentTrack,
-            )
+      var currentTimeOffset = totalDuration
+      var trackForVideoIndex: [Int: DesignBlockID] = [:]
+      for recording in recordings {
+        for (index, video) in recording.videos.enumerated() {
+          // Add to asset library without invoking assetTapped()
+          isAddingCameraRecording = true
+          defer {
+            isAddingCameraRecording = false
           }
-          // swiftlint:disable:next shorthand_operator
-          currentTimeOffset = currentTimeOffset + recording.duration
+          let asset = try await uploadVideo(to: videoUploadAssetSourceID) { video.url }
+
+          guard let assetURL = asset.url else { continue }
+          guard let parentTrack = parentTrackForCameraVideo(
+            at: index,
+            memo: &trackForVideoIndex,
+          ) else { continue }
+          await addCameraVideo(
+            fileURL: assetURL,
+            rect: video.rect,
+            duration: recording.duration,
+            timeOffset: currentTimeOffset,
+            parentTrack: parentTrack,
+          )
         }
-        addUndoStep()
-      } catch {
-        handleError(error)
+        // swiftlint:disable:next shorthand_operator
+        currentTimeOffset = currentTimeOffset + recording.duration
       }
-    }
-  }
-
-  func addCameraCapturesToTimeline(_ captures: [Capture]) {
-    setPlayheadPositionToEnding()
-    guard let totalDuration = timelineProperties.timeline?.totalDuration else { return }
-    Task {
-      isAddingCameraRecording = true
-      defer { isAddingCameraRecording = false }
-      do {
-        var currentTimeOffset = totalDuration
-        var trackForVideoIndex: [Int: DesignBlockID] = [:]
-        for capture in captures {
-          let captureDuration: CMTime
-          switch capture {
-          case let .photo(photo):
-            captureDuration = photo.duration
-            try await addCameraPhotoCapture(
-              photo,
-              timeOffset: currentTimeOffset,
-              trackForVideoIndex: &trackForVideoIndex,
-            )
-          case let .video(recording):
-            captureDuration = recording.duration
-            try await addCameraVideoCapture(
-              recording,
-              timeOffset: currentTimeOffset,
-              trackForVideoIndex: &trackForVideoIndex,
-            )
-          }
-          // swiftlint:disable:next shorthand_operator
-          currentTimeOffset = currentTimeOffset + captureDuration
-        }
-        addUndoStep()
-      } catch {
-        handleError(error)
-      }
-    }
-  }
-
-  private func addCameraPhotoCapture(
-    _ photo: Photo,
-    timeOffset: CMTime,
-    trackForVideoIndex: inout [Int: DesignBlockID],
-  ) async throws {
-    for (index, image) in photo.images.enumerated() {
-      let asset = try await uploadImage(to: imageUploadAssetSourceID) { image.url }
-      guard let assetURL = asset.url else { continue }
-      guard let parentTrack = parentTrackForCameraVideo(
-        at: index,
-        memo: &trackForVideoIndex,
-      ) else { continue }
-      await addCameraPhoto(
-        fileURL: assetURL,
-        rect: photo.images.count > 1 ? image.rect : nil,
-        duration: photo.duration,
-        timeOffset: timeOffset,
-        parentTrack: parentTrack,
-      )
-    }
-  }
-
-  private func addCameraVideoCapture(
-    _ recording: Recording,
-    timeOffset: CMTime,
-    trackForVideoIndex: inout [Int: DesignBlockID],
-  ) async throws {
-    for (index, video) in recording.videos.enumerated() {
-      let asset = try await uploadVideo(to: videoUploadAssetSourceID) { video.url }
-      guard let assetURL = asset.url else { continue }
-      guard let parentTrack = parentTrackForCameraVideo(
-        at: index,
-        memo: &trackForVideoIndex,
-      ) else { continue }
-      await addCameraVideo(
-        fileURL: assetURL,
-        rect: video.rect,
-        duration: recording.duration,
-        timeOffset: timeOffset,
-        parentTrack: parentTrack,
-      )
-    }
-  }
-
-  private func addCameraPhoto(
-    fileURL: URL,
-    rect: CGRect?,
-    duration: CMTime,
-    timeOffset: CMTime,
-    parentTrack: DesignBlockID,
-  ) async {
-    guard let engine else { return }
-    do {
-      let frame = rect ?? CGRect(origin: .zero, size: CameraConfiguration.defaultVideoSize)
-      guard let id = try placeImageGraphic(at: frame, fillURL: fileURL, parent: parentTrack) else { return }
-      try engine.block.setDuration(id, duration: duration.seconds)
-      try engine.block.setTimeOffset(id, offset: timeOffset.seconds)
-    } catch {
-      handleError(error)
+      addUndoStep()
     }
   }
 

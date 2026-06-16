@@ -457,11 +457,6 @@ private struct Random: RandomNumberGenerator {
   func resetCropSelectedElement() throws {
     try engine.block.findAllSelected().forEach {
       try engine.block.resetCrop($0)
-      // `resetCrop` switches the fill mode to `.cover`; restore `.crop` so the
-      // user stays in the Crop sheet's editing mode.
-      if try engine.block.supportsContentFillMode($0) {
-        try engine.block.setContentFillMode($0, mode: .crop)
-      }
     }
     try engine.editor.addUndoStep()
   }

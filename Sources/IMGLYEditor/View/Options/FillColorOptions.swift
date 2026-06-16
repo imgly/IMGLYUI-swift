@@ -21,17 +21,17 @@ struct FillColorOptions: View {
       if interactor.isGradientFill(id), fillType == .gradient {
         GradientOptions()
       } else if interactor.isSolidFill(id) {
-        let colorsBinding = interactor.bind(
+        let colorBinding = interactor.bind(
           id,
           property: .key(.fillSolidColor),
-          default: [CGColor.imgly.black],
-          getter: colorsGetter,
-          setter: colorsSetter,
+          default: .imgly.black,
+          getter: temporaryColorGetter,
+          setter: colorSetter,
           completion: Interactor.Completion.set(property: .key(.fillEnabled), value: true),
         )
         ColorOptions(title: .imgly.localized("ly_img_editor_sheet_fill_stroke_color_picker_title_fill"),
                      isEnabled: interactor.bind(id, property: .key(.fillEnabled), default: false),
-                     colors: colorsBinding,
+                     color: colorBinding,
                      addUndoStep: interactor.addUndoStep)
           .accessibilityElement(children: .contain)
           .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_fill_stroke_color_picker_title_fill")))
@@ -39,54 +39,38 @@ struct FillColorOptions: View {
     }
   }
 
-  /// The distinct colours across the effective text range (or the solid fill colour for non-text
-  /// blocks). A single colour marks the matching preset as selected; several mark none.
-  /// - Note: Reading the text colours instead of the fill property is also a workaround for an
-  ///         engine issue where the state is not consistent when switching between solid and
-  ///         gradient color fill mode.
-  let colorsGetter: Interactor.PropertyGetter<[CGColor]> = { engine, id, _, property in
+  /// - Note: This is a workaround for an engine issue where the state is not consistent
+  ///         when switching between solid and gradient color fill mode.
+  let temporaryColorGetter: Interactor.PropertyGetter<CGColor> = { engine, id, _, property in
     do {
-      if try engine.block.getType(id) == Interactor.BlockType.text.rawValue {
-        let range = try engine.block.effectiveTextRange(id)
-        var distinct: [Interactor.Color] = []
-        for color in try engine.block.getTextColors(id, in: range) where !distinct.contains(color) {
-          distinct.append(color)
-        }
-        let cgColors = distinct.compactMap(\.cgColor)
-        if !cgColors.isEmpty {
-          return cgColors
-        }
+      let blockType = try engine.block.getType(id)
+      if blockType == Interactor.BlockType.text.rawValue,
+         let textColor = try engine.block.getTextColors(id).first?.cgColor {
+        return textColor
       }
-      return [try engine.block.get(id, property: property)]
+      return try engine.block.get(id, property: property)
     } catch {
-      return [.imgly.black]
+      return .imgly.black
     }
   }
 
-  /// Applies the first colour uniformly — to the effective text range for text blocks, or to the
-  /// fill property otherwise.
-  let colorsSetter: Interactor.PropertySetter<[CGColor]> = { engine, blocks, _, property, value, completion in
+  let colorSetter: Interactor.PropertySetter<CGColor> = { engine, blocks, _, property, value, completion in
     var didChange = false
 
-    if let newColor = value.first, let color = Interactor.Color(cgColor: newColor) {
-      try blocks.forEach {
-        let blockType = try engine.block.getType($0)
+    try blocks.forEach {
+      guard let color = Interactor.Color(cgColor: value) else { return }
+      let blockType = try engine.block.getType($0)
 
-        if blockType == Interactor.BlockType.text.rawValue {
-          // Apply the colour to the effective text range.
-          let range = try engine.block.effectiveTextRange($0)
-          let originalColors = try engine.block.getTextColors($0, in: range)
-          let isUnchanged = !originalColors.isEmpty && originalColors.allSatisfy { $0 == color }
-          if !isUnchanged {
-            didChange = true
-            try engine.block.setTextColor($0, color: color, in: range)
-          }
-        } else {
-          let originalColor: Interactor.Color = try engine.block.get($0, property: property)
-          if originalColor != color {
-            didChange = true
-            try engine.block.set($0, property: property, value: newColor)
-          }
+      if blockType == Interactor.BlockType.text.rawValue {
+        if let originalTextColor = try engine.block.getTextColors($0).first, originalTextColor != color {
+          didChange = true
+          try engine.block.setTextColor($0, color: color)
+        }
+      } else {
+        let originalColor: Interactor.Color = try engine.block.get($0, property: property)
+        if originalColor != color {
+          didChange = true
+          try engine.block.set($0, property: property, value: value)
         }
       }
     }

@@ -5,7 +5,6 @@ public struct EngineSettings: Sendable {
   @_spi(Internal) public let license: String?
   @_spi(Internal) public let userID: String?
   @_spi(Internal) public let baseURL: URL
-  @_spi(Internal) public let host: String
 
   /// Creates engine settings.
   /// - Parameters:
@@ -17,16 +16,13 @@ public struct EngineSettings: Sendable {
   ///   - baseURL: It is used to initialize the engine's `basePath` setting before the editor's `onCreate` callback is
   /// run. It is the foundational URL for constructing absolute paths from relative ones. This URL enables the loading
   /// of specific scenes or assets using their relative paths.
-  ///   - host: The integration context embedding the engine, used for license matching.
   public init(
     license: String? = nil,
     userID: String? = nil,
-    baseURL: URL = .init(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.77.0-rc.1/assets")!,
-    host: String = ""
+    baseURL: URL = .init(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.76.1-rc.0/assets")!
   ) {
     self.license = license
     self.userID = userID
     self.baseURL = baseURL
-    self.host = host
   }
 }

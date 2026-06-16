@@ -61,6 +61,7 @@ import SwiftUI
   typealias RGBA = IMGLYEngine.RGBA
   typealias GradientColorStop = IMGLYEngine.GradientColorStop
   typealias Color = IMGLYEngine.Color
+  typealias DefaultAssetSource = Engine.DefaultAssetSource
   typealias BlurType = IMGLYEngine.BlurType
   typealias EffectType = IMGLYEngine.EffectType
   typealias Font = IMGLYEngine.Font
@@ -109,8 +110,8 @@ import SwiftUI
   var voiceOverRecordCoordinator: VoiceOverRecordCoordinator?
 
   var uploadAssetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
-  var imageUploadAssetSourceID: String { uploadAssetSourceIDs[.image] ?? "ly.img.image.upload" }
-  var videoUploadAssetSourceID: String { uploadAssetSourceIDs[.movie] ?? "ly.img.video.upload" }
+  var imageUploadAssetSourceID: String { uploadAssetSourceIDs[.image] ?? Engine.DemoAssetSource.imageUpload.rawValue }
+  var videoUploadAssetSourceID: String { uploadAssetSourceIDs[.movie] ?? Engine.DemoAssetSource.videoUpload.rawValue }
 
   var isAddingCameraRecording = false
 
@@ -339,17 +340,7 @@ extension Interactor {
   func supportsBlendMode(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlendMode) ?? false }
   func supportsBlur(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlur) ?? false }
   func supportsCrop(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsCrop) ?? false }
-  func canRevertToOriginalRatio(_ id: BlockID?) -> Bool { block(id, engine?.block.canRevertToOriginalRatio) ?? false }
-  func canResetCrop(_ id: BlockID?, initialCropTranslationX: Float, initialCropTranslationY: Float) -> Bool {
-    block(id) { [self] in
-      try engine?.block.canResetCrop(
-        $0,
-        initialCropTranslationX: initialCropTranslationX,
-        initialCropTranslationY: initialCropTranslationY,
-      ) ?? false
-    } ?? false
-  }
-
+  func canResetCrop(_ id: BlockID?) -> Bool { block(id, engine?.block.canResetCrop) ?? false }
   func isSolidFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .solid) }
   func isGradientFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .gradient) }
   func isColorFill(_ id: DesignBlockID?) -> Bool { isSolidFill(id) || isGradientFill(id) }
@@ -362,144 +353,47 @@ extension Interactor {
 // MARK: - Property bindings
 
 extension Interactor {
-  /// Binding for the selected font's asset id; applies the matching typeface to the blocks on set.
-  func bindFontAssetID(_ id: BlockID?, overrideScopes: Set<Scope> = []) -> Binding<String?> {
-    bind(id, default: nil as String?) { engine, block in
-      self.fontLibrary.assetFor(typefaceName: try engine.block.getTypeface(block).name)?.id
-    } setter: { engine, blocks, assetID, completion in
-      guard let assetID,
-            let typeface = self.fontLibrary.typefaceFor(id: assetID),
-            let font = typeface.previewFont else {
+  /// Create a `TextState` binding for a block `id`.
+  /// If `resetFontProperties` is enabled bold and italic states would not be preserved on set.
+  func bindTextState(_ id: BlockID?, resetFontProperties: Bool, overrideScopes: Set<Scope> = []) -> Binding<TextState> {
+    bind(id, default: TextState()) { engine, block in
+      var text = TextState()
+      text.assetID = self.fontLibrary.assetFor(typefaceName: try engine.block.getTypeface(block).name)?.id
+      text.setFontProperties(try engine.block.getFontProperties(block))
+      return text
+    } setter: { engine, blocks, text, completion in
+      guard let assetID = text.assetID,
+            let typeface = self.fontLibrary.typefaceFor(id: assetID) else {
         return false
       }
-      let changed = try blocks.filter {
-        try engine.block.get($0, property: .key(.textFontFileURI)) != font.uri
-      }
-      try changed.forEach {
-        try engine.block.overrideAndRestore($0, scopes: overrideScopes) {
-          try engine.block.setTypeface($0, typeface: typeface)
+
+      func font(typeface: Typeface) -> IMGLYEngine.Font? {
+        if resetFontProperties {
+          typeface.previewFont
+        } else {
+          typeface.font(for: .init(bold: text.isBold, italic: text.isItalic)) ?? typeface.previewFont
         }
       }
-      let didChange = !changed.isEmpty
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-  }
 
-  func bindBoldToggle(_ id: BlockID?) -> Binding<TextProperty?> {
-    let raw: Binding<TextProperty?> = bind(id, default: nil as TextProperty?) { engine, block -> TextProperty? in
-      let range = try engine.block.effectiveTextRange(block)
-      guard try engine.block.canToggleBoldFont(block, in: range) else { return nil }
-      return try engine.block.isBoldFont(block, in: range) ? .bold : .inactive
-    } setter: { engine, blocks, _, completion in
-      try blocks.forEach {
-        let range = try engine.block.effectiveTextRange($0)
-        try engine.block.toggleBoldFont($0, in: range)
-      }
-      let didChange = !blocks.isEmpty
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-    return inactiveWrapped(raw)
-  }
-
-  func bindItalicToggle(_ id: BlockID?) -> Binding<TextProperty?> {
-    let raw: Binding<TextProperty?> = bind(id, default: nil as TextProperty?) { engine, block -> TextProperty? in
-      let range = try engine.block.effectiveTextRange(block)
-      guard try engine.block.canToggleItalicFont(block, in: range) else { return nil }
-      return try engine.block.isItalicFont(block, in: range) ? .italic : .inactive
-    } setter: { engine, blocks, _, completion in
-      try blocks.forEach {
-        let range = try engine.block.effectiveTextRange($0)
-        try engine.block.toggleItalicFont($0, in: range)
-      }
-      let didChange = !blocks.isEmpty
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-    return inactiveWrapped(raw)
-  }
-
-  func bindUnderlineToggle(_ id: BlockID?) -> Binding<TextProperty?> {
-    bindDecorationToggle(id, property: .underline, line: .underline) { engine, block, range in
-      try engine.block.toggleTextDecorationUnderline(block, in: range)
-    }
-  }
-
-  func bindStrikethroughToggle(_ id: BlockID?) -> Binding<TextProperty?> {
-    bindDecorationToggle(id, property: .strikethrough, line: .strikethrough) { engine, block, range in
-      try engine.block.toggleTextDecorationStrikethrough(block, in: range)
-    }
-  }
-
-  func bindLetterCase(_ id: BlockID?) -> Binding<TextCase?> {
-    bind(id, default: nil as TextCase?) { engine, block -> TextCase? in
-      let range = try engine.block.effectiveTextRange(block)
-      return try engine.block.getTextCases(block, in: range).first ?? .normal
-    } setter: { engine, blocks, value, completion in
-      guard let value else { return false }
-      var didChange = false
-      for block in blocks {
-        let range = try engine.block.effectiveTextRange(block)
-        let isUniform = try engine.block.getTextCases(block, in: range).allSatisfy { $0 == value }
-        guard !isUniform else { continue }
-        try engine.block.setTextCase(block, textCase: value, in: range)
-        didChange = true
-      }
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-  }
-
-  func bindListStyle(_ id: BlockID?) -> Binding<IMGLYEngine.ListStyle?> {
-    bind(id, default: nil as IMGLYEngine.ListStyle?) { engine, block -> IMGLYEngine.ListStyle? in
-      try engine.block.resolveTextListStyle(block)
-    } setter: { engine, blocks, value, completion in
-      guard let value else { return false }
-      let cursorRange = try engine.block.getTextCursorRange()
-      let changed = try blocks.filter { block in
-        let indices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
-        guard !indices.isEmpty else { return false }
-        return try indices.contains {
-          try engine.block.getTextListStyle(block, paragraphIndex: $0) != value
+      if let font = font(typeface: typeface) {
+        let changed = try blocks.filter {
+          try engine.block.get($0, property: .key(.textFontFileURI)) != font.uri
         }
-      }
-      try changed.forEach { block in
-        let indices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
-        try indices.forEach { index in
-          try engine.block.setTextListStyle(block, listStyle: value, paragraphIndex: index)
+        try changed.forEach {
+          try engine.block.overrideAndRestore($0, scopes: overrideScopes) {
+            if resetFontProperties {
+              try engine.block.setTypeface($0, typeface: typeface)
+            } else {
+              try engine.block.setFont($0, fontFileURL: font.uri, typeface: typeface)
+            }
+          }
         }
+        let didChange = !changed.isEmpty
+        return try (completion?(engine, blocks, didChange) ?? false) || didChange
+      } else {
+        return false
       }
-      let didChange = !changed.isEmpty
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
     }
-  }
-
-  private func bindDecorationToggle(
-    _ id: BlockID?,
-    property: TextProperty,
-    line: TextDecorationLine,
-    toggle: @escaping @MainActor (Engine, DesignBlockID, Range<String.Index>) throws -> Void,
-  ) -> Binding<TextProperty?> {
-    let raw: Binding<TextProperty?> = bind(id, default: nil as TextProperty?) { engine, block -> TextProperty? in
-      let range = try engine.block.effectiveTextRange(block)
-      let decorations = try engine.block.getTextDecorations(block, in: range)
-      let allDecorated = !decorations.isEmpty && decorations.allSatisfy { $0.line.contains(line) }
-      return allDecorated ? property : .inactive
-    } setter: { engine, blocks, _, completion in
-      try blocks.forEach {
-        let range = try engine.block.effectiveTextRange($0)
-        try toggle(engine, $0, range)
-      }
-      let didChange = !blocks.isEmpty
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-    return inactiveWrapped(raw)
-  }
-
-  /// Wraps a toggle binding so ``GenericPropertyButton`` deselecting to `nil` re-applies `.inactive`,
-  /// which fires the setter (a plain `nil` would otherwise be a no-op).
-  private func inactiveWrapped(_ raw: Binding<TextProperty?>) -> Binding<TextProperty?> {
-    Binding<TextProperty?>(
-      get: { raw.wrappedValue },
-      set: { raw.wrappedValue = $0 ?? .inactive },
-    )
   }
 
   // swiftlint:disable cyclomatic_complexity
@@ -714,6 +608,28 @@ extension Interactor {
       { engine, blocks, propertyBlock, property, value, completion in
         let didChange = try engine.block.overrideAndRestore(blocks, scopes: overrideScopes) {
           try engine.block.set($0, propertyBlock, property: property, value: value)
+        }
+        return try (completion?(engine, blocks, didChange) ?? false) || didChange
+      }
+    }
+
+    /// Sets the stroke style and the cap its preset implies, like the web editor. Dotted/*Round
+    /// presets need a Round cap, else a Dotted stroke is invisible (ANDROID-814). All four caps
+    /// are set equal to keep the renderer on its fast path.
+    static func strokeStyleWithPresetCaps() -> Interactor.PropertySetter<IMGLYCoreUI.StrokeStyle> {
+      { engine, blocks, propertyBlock, property, value, completion in
+        let didChange = try engine.block.set(blocks, propertyBlock, property: property, value: value)
+        if didChange {
+          let cap: StrokeCap = switch value {
+          case .dotted, .dashedRound, .longDashedRound: .round
+          case .solid, .dashed, .longDashed: .butt
+          }
+          for block in blocks {
+            try engine.block.setStrokeStartCap(block, cap: cap)
+            try engine.block.setStrokeEndCap(block, cap: cap)
+            try engine.block.setStrokeDashStartCap(block, cap: cap)
+            try engine.block.setStrokeDashEndCap(block, cap: cap)
+          }
         }
         return try (completion?(engine, blocks, didChange) ?? false) || didChange
       }
@@ -1072,9 +988,6 @@ extension Interactor: AssetLibraryInteractor {
 
 extension Interactor {
   func applyResizeAsset(sourceID: String, asset: AssetResult, to id: DesignBlockID?) {
-    if asset.payload?.transformPreset == .contentAspectRatio, !canRevertToOriginalRatio(id) {
-      return
-    }
     func resizePages() async throws {
       let pages = try engine?.getSortedPages()
       let scene = try engine?.scene.get()
@@ -1114,9 +1027,6 @@ extension Interactor {
         } else {
           try await resizePages()
         }
-        // Wait for the pending zoom Task to finish before committing the undo step so the snapshot captures the
-        // post-resize camera position (otherwise undo/redo of fixedSize presets restores a stale camera).
-        await zoom.task?.value
         try engine?.editor.addUndoStep()
       } catch {
         handleError(error)
@@ -1303,11 +1213,7 @@ extension Interactor {
 
     sceneTask = Task {
       do {
-        let engine = try await Engine(
-          license: config.settings.license,
-          userID: config.settings.userID,
-          buildHost: config.settings.host,
-        )
+        let engine = try await Engine(license: config.settings.license, userID: config.settings.userID)
         _engine = engine
         onAppear()
 
@@ -1320,10 +1226,10 @@ extension Interactor {
 
         try await performPostOnCreateSetup(engine)
 
-        if engine.asset.findAllSources().contains("ly.img.typeface") {
+        if engine.asset.findAllSources().contains(Engine.DefaultAssetSource.typeface.rawValue) {
           try await fontLibrary.loadFromAssetSource(
             engine: engine,
-            sourceID: "ly.img.typeface",
+            sourceID: Engine.DefaultAssetSource.typeface.rawValue,
           )
         }
 
@@ -1981,7 +1887,7 @@ extension Interactor {
       guard let engine else {
         return
       }
-      for await _ in engine.editor.onHistoryUpdatedWithKind {
+      for await _ in engine.editor.onHistoryUpdated {
         historyChanged()
         DispatchQueue.main.async { [weak self] in
           self?.refreshThumbnails()
@@ -1997,9 +1903,7 @@ extension Interactor {
       }
       for await page in engine.scene.onCarouselPageChanged {
         let pageIndex = try? engine.getPageIndex(page)
-        // Ignore carousel events while the Resize sheet is open — would dismiss the sheet via pageChanged().
-        let isPageResize = sheet.isPresented && sheet.type is SheetTypes.Resize
-        if !isCreating, !isPagesMode, !isPageResize, let pageIndex, pageIndex != self.page {
+        if !isCreating, !isPagesMode, let pageIndex, pageIndex != self.page {
           self.page = pageIndex
         }
       }
@@ -2078,12 +1982,6 @@ extension Interactor {
     }
     if !sheet.isPresented, oldValue.isPresented, oldValue.associatedEditMode == .crop {
       setEditMode(.transform)
-    }
-    if !sheet.isPresented,
-       oldValue.isPresented,
-       (try? engine?.editor.getSettingBool("softwareKeyboardSuspended")) == true {
-      // A sheet that suspended the keyboard closed; clear the flag so the IME can resume.
-      try? engine?.editor.setSettingBool("softwareKeyboardSuspended", value: false)
     }
     if !sheet.isPresented,
        oldValue.isPresented,
@@ -2192,16 +2090,10 @@ extension Interactor {
   func historyChanged() {
     guard let engine else { return }
 
-    let isPageResize = sheet.isPresented && sheet.type is SheetTypes.Resize
     do {
       // If in page crop/resize mode, zoom to page again.
-      let isPageCrop: Bool = {
-        guard editMode == .crop,
-              let blockID = selection?.blocks.first,
-              let type = try? engine.block.getType(blockID) else { return false }
-        return type != DesignBlockType.graphic.rawValue
-      }()
-      if isPageCrop || isPageResize {
+      if editMode == .crop, let selection = selection?.blocks.first, let type = try? engine.block.getType(selection),
+         type != DesignBlockType.graphic.rawValue {
         updateZoom(for: .pageSizeChanged, with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding))
       }
       if isPagesMode {
@@ -2219,8 +2111,7 @@ extension Interactor {
         page = pageIndex
       }
     } else {
-      // Mirrors isResizingPages: suppress page-index sync while the Resize sheet is open.
-      if isResizingPages || isPageResize {
+      if isResizingPages {
         isResizingPages = false
       } else {
         let pageIndex = try? engine.getCurrentPageIndex()
@@ -2296,7 +2187,7 @@ extension PageOverviewState {
             block: $0,
             width: CGFloat(try engine.block.getFrameWidth($0)),
             height: CGFloat(try engine.block.getFrameHeight($0)),
-            // When engine exposes the page(s) changed for `onHistoryUpdatedWithKind` we can selectively refresh pages
+            // When engine exposes the page(s) changed for `onHistoryUpdated` we can selectively refresh pages
             // instead of all.
             refresh: UUID())
     }
