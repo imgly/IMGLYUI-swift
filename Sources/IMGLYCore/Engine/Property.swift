@@ -46,6 +46,8 @@ import Foundation
   case textHorizontalAlignment = "text/horizontalAlignment"
   case textLetterSpacing = "text/letterSpacing"
   case textLineHeight = "text/lineHeight"
+  case textPathOffset = "text/pathOffset"
+  case textPathExternalRef = "text/pathExternalRef"
   case textVerticalAlignment = "text/verticalAlignment"
   case textClipLinesOutsideOfFrame = "text/clipLinesOutsideOfFrame"
   case textParagraphSpacing = "text/paragraphSpacing"

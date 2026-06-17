@@ -10,21 +10,22 @@ struct ColorPropertyButton: View {
   let name: LocalizedStringResource
   let color: CGColor
   let isEnabled: Bool
-  @Binding var selection: CGColor
+  /// The distinct colours of the current selection; the button is marked selected only when the
+  /// selection is uniformly its colour.
+  @Binding var selection: [CGColor]
   var style: ColorPropertyButtonStyle = .fill
 
   private var isSelected: Bool {
-    if isEnabled,
-       let selection = try? selection.rgba(),
-       let color = try? color.rgba() {
-      return selection == color
+    guard isEnabled, selection.count == 1, let selectionColor = selection.first,
+          let rgba = try? color.rgba(), let selectionRGBA = try? selectionColor.rgba() else {
+      return false
     }
-    return false
+    return selectionRGBA == rgba
   }
 
   var body: some View {
     Button {
-      selection = color
+      selection = [color]
     } label: {
       ZStack {
         Image(systemName: "circle")
@@ -57,13 +58,13 @@ struct ColorPropertyButton: View {
 }
 
 struct ColorPropertyButton_Previews: PreviewProvider {
-  @State static var color: CGColor = .imgly.blue
+  @State static var selection: [CGColor] = [.imgly.blue]
 
   static var previews: some View {
     HStack {
-      ColorPropertyButton(name: "Blue", color: .imgly.blue, isEnabled: true, selection: $color)
-      ColorPropertyButton(name: "Blue", color: .imgly.blue, isEnabled: false, selection: $color)
-      ColorPropertyButton(name: "Yellow", color: .imgly.yellow, isEnabled: true, selection: $color)
+      ColorPropertyButton(name: "Blue", color: .imgly.blue, isEnabled: true, selection: $selection)
+      ColorPropertyButton(name: "Blue", color: .imgly.blue, isEnabled: false, selection: $selection)
+      ColorPropertyButton(name: "Yellow", color: .imgly.yellow, isEnabled: true, selection: $selection)
     }
     .labelStyle(.iconOnly)
   }

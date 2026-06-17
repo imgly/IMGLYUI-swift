@@ -103,14 +103,14 @@ public extension AssetLibraryCategory {
     )
   }
 
-  /// Default text category.
+  /// Default text category: text style presets and font combinations.
   static var defaultText: Self {
     .init(
       id: ID.text,
       title: .imgly.localized("ly_img_editor_asset_library_title_text"),
       icon: Image(systemName: "textformat.alt"),
       sections: [
-        .defaultText,
+        .defaultTextStylePresets,
         .defaultTextComponents,
       ],
     )

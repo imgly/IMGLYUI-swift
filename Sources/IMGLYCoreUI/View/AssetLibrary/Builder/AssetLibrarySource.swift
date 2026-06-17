@@ -126,13 +126,23 @@ private struct ExpandGroups<Content: View>: View {
   let sourceID: String
   @ViewBuilder let content: (_ groups: [String]?) -> Content
   @State private var groups: [String]?
+  @State private var isSourceAvailable = true
   @EnvironmentObject private var interactor: AnyAssetLibraryInteractor
 
   var body: some View {
-    content(groups)
-      .task {
-        groups = try? await interactor.getGroups(sourceID: sourceID)
-      }
+    if isSourceAvailable {
+      content(groups)
+        .task {
+          do {
+            groups = try await interactor.getGroups(sourceID: sourceID)
+          } catch {
+            // `getGroups` throws for an unregistered source — hide the section(s) entirely
+            // instead of rendering a dead fallback section. An empty group list keeps the
+            // single-section fallback.
+            isSourceAvailable = false
+          }
+        }
+    }
   }
 }
 

@@ -12,16 +12,45 @@ public struct Camera: View {
 
   @ScaledMetric private var recordButtonSize: Double = 82
 
+  @State private var isPhotoFlashing = false
+  @State private var hideChromeForCapture = false
+
   var showsCameraUI: Bool {
-    [.ready, .countingDown, .recording].contains(camera.state) && !camera.isLoadingAsset
+    [.ready, .countingDown, .recording, .capturingPhoto].contains(camera.state)
+      && !camera.isLoadingAsset
+      && !camera.isDismissalInProgress
+  }
+
+  var isPreviewingPhoto: Bool {
+    if case .previewingPhoto = camera.state { return true }
+    return false
   }
 
   var showsFlashButton: Bool {
     !camera.isFrontBackFlipped && camera.cameraMode.supportsFlash
   }
 
+  var showsPhotoVideoToggle: Bool {
+    camera.configuration.captureType == .mixed
+      && camera.state == .ready
+      && !camera.isLoadingAsset
+  }
+
+  var showsFeaturesMenu: Bool {
+    guard !camera.isLoadingAsset else { return false }
+    switch camera.state {
+    case .ready, .capturingPhoto, .previewingPhoto:
+      return true
+    default:
+      return false
+    }
+  }
+
   var didRecord: Bool {
-    camera.recordingsManager.hasRecordings && ![.countingDown, .recording].contains(camera.state)
+    // Single-take auto-dismisses, so the delete and Done buttons would only flash in.
+    camera.configuration.captureCount == .multi
+      && camera.recordingsManager.hasRecordings
+      && ![.countingDown, .recording].contains(camera.state)
   }
 
   var maxDuration: String {
@@ -29,7 +58,10 @@ public struct Camera: View {
   }
 
   var isRecordButtonDisabled: Bool {
-    camera.recordingsManager.hasReachedMaxDuration || !showsCameraUI || camera.isLoadingAsset
+    camera.recordingsManager.hasReachedMaxDuration
+      || !showsCameraUI
+      || camera.isLoadingAsset
+      || camera.state == .capturingPhoto
   }
 
   var canSwapPositions: Bool {
@@ -50,9 +82,21 @@ public struct Camera: View {
     config: CameraConfiguration = .init(),
     onDismiss: @escaping @MainActor (Result<[Recording], CameraError>) -> Void
   ) {
+    // The legacy `Result<[Recording], CameraError>` callback can only carry videos. Force
+    // `.video` so a host accidentally configuring `.photo` or `.mixed` doesn't silently
+    // receive `.failure(.cancelled)` after capturing photos that landed on disk.
+    let safeConfig = config.captureType == .video ? config : config.forcingVideoCaptureType()
+    if safeConfig.captureType != config.captureType {
+      print("""
+      Camera: `captureType: \(config.captureType)` is incompatible with the deprecated \
+      `Result<[Recording], CameraError>` callback (it can't carry photos). Forcing \
+      `captureType: .video`. Use the `Result<CameraResult, CameraError>` initializer to \
+      capture photos.
+      """)
+    }
     let camera = CameraModel(
       settings,
-      config: config,
+      config: safeConfig,
       mode: .standard,
       onDismiss: .legacy(onDismiss),
     )
@@ -109,8 +153,10 @@ public struct Camera: View {
     VStack(spacing: 0) {
       VStack {
         CenteredLeadingTrailing {
-          TimecodeView()
-            .padding(.top)
+          if camera.configuration.captureType != .photo {
+            TimecodeView()
+              .padding(.top)
+          }
         } leading: {
           cancelButton
             .padding(.top)
@@ -122,7 +168,10 @@ public struct Camera: View {
         Spacer()
 
         HStack {
-          if camera.state == .ready, !camera.isLoadingAsset {
+          // Keep rendered through the photo capture window so the slide-in transition isn't
+          // triggered every time we briefly leave `.ready` for a photo. `.preparing` is excluded
+          // so the initial entry into `.ready` still animates the menu in.
+          if showsFeaturesMenu {
             FeaturesMenuView()
               .transition(.offset(x: -20).combined(with: .opacity))
           }
@@ -165,6 +214,8 @@ public struct Camera: View {
         .padding(.top, 60)
         .padding(.bottom, 40)
       }
+      .opacity(isPreviewingPhoto || camera.isDismissalInProgress || hideChromeForCapture ? 0 : 1)
+      .allowsHitTesting(!isPreviewingPhoto && !camera.isDismissalInProgress && !hideChromeForCapture)
       .aspectRatio(9 / 16, contentMode: .fit)
       .overlay {
         countdownView.offset(x: 0, y: -44)
@@ -173,11 +224,13 @@ public struct Camera: View {
       .background { cameraCanvas() }
       .animation(.easeInOut(duration: 0.3), value: camera.state)
       // Animation when deleting a clip
-      .animation(.easeInOut(duration: 0.3), value: camera.recordingsManager.clips.count)
+      .animation(.easeInOut(duration: 0.3), value: camera.recordingsManager.captures.count)
       Spacer()
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .overlay { photoPreviewOverlay }
     .overlay(alignment: .bottom) { bottomButtons() }
+    .overlay { photoFlashOverlay }
     .background { Color.black.ignoresSafeArea() }
     .environment(\.colorScheme, .dark)
     .environmentObject(camera)
@@ -186,10 +239,71 @@ public struct Camera: View {
       await camera.updatePermissions()
       camera.startStreaming()
     }
+    .onChange(of: camera.state) { newState in
+      updatePhotoFlash(for: newState)
+      updateChromeForCapture(for: newState)
+    }
     .imgly.onDismiss {
       camera.cancel(error: .cancelled)
     }
     .imgly.alert($camera.alertState)
+  }
+
+  @ViewBuilder private var photoFlashOverlay: some View {
+    Color.white
+      .ignoresSafeArea()
+      .opacity(isPhotoFlashing ? 1 : 0)
+      .allowsHitTesting(false)
+  }
+
+  @ViewBuilder private var photoPreviewOverlay: some View {
+    if case let .previewingPhoto(photo) = camera.state {
+      PhotoPreviewCanvas(photo: photo, layoutMode: camera.cameraMode.layoutMode)
+        .transition(.opacity)
+    }
+  }
+
+  private func isPreviewingPhoto(in state: CameraModel.CameraState) -> Bool {
+    if case .previewingPhoto = state { return true }
+    return false
+  }
+
+  // Hide the camera chrome instantly when capture starts so the white flash doesn't reveal
+  // it fading away. Restore once we leave the capturing/previewing window.
+  private func updateChromeForCapture(for newState: CameraModel.CameraState) {
+    if newState == .capturingPhoto, !hideChromeForCapture {
+      var transaction = Transaction()
+      transaction.disablesAnimations = true
+      withTransaction(transaction) {
+        hideChromeForCapture = true
+      }
+    } else if hideChromeForCapture, newState != .capturingPhoto, !isPreviewingPhoto(in: newState) {
+      hideChromeForCapture = false
+    }
+  }
+
+  // Capture flips the flash on instantly; the preview state fades it out. Discarding the
+  // preview (preview → ready) clears it without animation so no cross-fade lingers.
+  private func updatePhotoFlash(for newState: CameraModel.CameraState) {
+    if newState == .capturingPhoto {
+      var transaction = Transaction()
+      transaction.disablesAnimations = true
+      withTransaction(transaction) {
+        isPhotoFlashing = true
+      }
+    } else if isPhotoFlashing {
+      if case .previewingPhoto = newState {
+        withAnimation(.easeOut(duration: 0.35)) {
+          isPhotoFlashing = false
+        }
+      } else {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+          isPhotoFlashing = false
+        }
+      }
+    }
   }
 
   @ViewBuilder private func zoomGesture() -> some View {
@@ -232,7 +346,15 @@ public struct Camera: View {
   }
 
   @ViewBuilder private func bottomButtons() -> some View {
-    if showsCameraUI {
+    if isPreviewingPhoto {
+      PhotoPreviewActions(
+        onBack: { camera.discardPhotoPreview() },
+        onDone: { camera.confirmPhotoPreview() },
+      )
+      .padding(.horizontal)
+      .padding(.bottom, 4)
+      .transition(.opacity)
+    } else if showsCameraUI {
       HStack {
         flashButton
           .opacity(showsFlashButton ? 1 : 0)
@@ -241,6 +363,8 @@ public struct Camera: View {
           swapPlaceButton
             .disabled(isRecordButtonDisabled)
             .opacity(camera.isLoadingAsset ? 0.8 : 1)
+        } else if showsPhotoVideoToggle {
+          PhotoVideoToggle()
         }
         Spacer()
         flipButton
@@ -385,11 +509,18 @@ extension Camera {
       HapticsHelper.shared.cameraSelectFeature()
       camera.toggleFlashMode()
     } label: {
-      switch camera.flashMode {
-      case .off:
+      // Photo mode shows the strobe (bolt) symbol since the flash fires per capture;
+      // video mode shows the flashlight symbol since the LED runs as a continuous torch.
+      switch (camera.flashMode, camera.isVideoModeActive) {
+      case (.off, false):
         Image(systemName: "bolt.slash.fill")
-      case .on:
+      case (.on, false):
         Image(systemName: "bolt.fill")
+      case (.off, true):
+        // `flashlight.slash` is iOS 17+, so use a custom symbol template for iOS 16 parity.
+        Image("custom.flashlight.slash", bundle: .module)
+      case (.on, true):
+        Image(systemName: "flashlight.on.fill")
       }
     }
     .accessibilityLabel(Text(.imgly.localized("ly_img_camera_button_toggle_flash")))

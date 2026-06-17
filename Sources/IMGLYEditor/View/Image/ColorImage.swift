@@ -24,8 +24,17 @@ extension ShapeStyle where Self == ImagePaint {
 }
 
 struct FillColorImage: View {
+  /// How a swatch with more than one colour is rendered.
+  enum MultiColorStyle {
+    /// Blend into a left-to-right gradient (gradient fills).
+    case gradient
+    /// Equal-width vertical stripes (a text run with mixed colours).
+    case stripes
+  }
+
   let isEnabled: Bool
   @Binding var colors: [CGColor]
+  var multiColorStyle: MultiColorStyle = .gradient
 
   var body: some View {
     ZStack {
@@ -35,13 +44,32 @@ struct FillColorImage: View {
       Image(systemName: "circle.fill")
         .foregroundStyle(.transparentColorPattern)
       if isEnabled {
-        Image(systemName: "circle.fill")
-          .foregroundStyle(.linearGradient(colors: colors.map { Color(cgColor: $0) }, startPoint: .leading,
-                                           endPoint: .trailing))
+        fill
       } else {
         Image(systemName: "circle.slash")
           .foregroundStyle(.black, .clear)
       }
+    }
+  }
+
+  @ViewBuilder private var fill: some View {
+    if multiColorStyle == .stripes, colors.count > 1 {
+      // Overlay the stripes on the same `circle.fill` glyph and mask to it, so the swatch keeps the
+      // single-colour footprint instead of growing to the proposed width.
+      Image(systemName: "circle.fill")
+        .foregroundStyle(.clear)
+        .overlay {
+          HStack(spacing: 0) {
+            ForEach(Array(colors.enumerated()), id: \.offset) { _, color in
+              Color(cgColor: color)
+            }
+          }
+        }
+        .mask { Image(systemName: "circle.fill") }
+    } else {
+      Image(systemName: "circle.fill")
+        .foregroundStyle(.linearGradient(colors: colors.map { Color(cgColor: $0) }, startPoint: .leading,
+                                         endPoint: .trailing))
     }
   }
 }

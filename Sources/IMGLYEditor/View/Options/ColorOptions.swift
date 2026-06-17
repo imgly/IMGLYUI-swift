@@ -4,20 +4,37 @@ import SwiftUI
 struct ColorOptions: View {
   private let title: LocalizedStringResource?
   private let isEnabledBinding: Binding<Bool>?
-  @Binding private var color: CGColor
+  /// The distinct colours of the bound selection. A single colour marks the matching preset as
+  /// selected; several (a mixed text selection) mark none. Setting always writes one uniform colour.
+  @Binding private var colors: [CGColor]
   private let addUndoStep: @MainActor () -> Void
   private let style: ColorPropertyButtonStyle
 
   init(title: LocalizedStringResource? = nil,
        isEnabled: Binding<Bool>? = nil,
-       color: Binding<CGColor>,
+       colors: Binding<[CGColor]>,
        addUndoStep: @escaping @MainActor () -> Void = {},
        style: ColorPropertyButtonStyle = .fill) {
     self.title = title
     isEnabledBinding = isEnabled
-    _color = color
+    _colors = colors
     self.addUndoStep = addUndoStep
     self.style = style
+  }
+
+  /// Convenience for call sites bound to a single colour.
+  init(title: LocalizedStringResource? = nil,
+       isEnabled: Binding<Bool>? = nil,
+       color: Binding<CGColor>,
+       addUndoStep: @escaping @MainActor () -> Void = {},
+       style: ColorPropertyButtonStyle = .fill) {
+    let colors = Binding<[CGColor]> {
+      [color.wrappedValue]
+    } set: { newValue in
+      guard let newColor = newValue.first else { return }
+      color.wrappedValue = newColor
+    }
+    self.init(title: title, isEnabled: isEnabled, colors: colors, addUndoStep: addUndoStep, style: style)
   }
 
   @State private var showColorPicker = false
@@ -27,7 +44,7 @@ struct ColorOptions: View {
     editorEnvironment.colorPalette ?? ColorPalette.defaultValue
   }
 
-  private var colors: [NamedColor] {
+  private var presetColors: [NamedColor] {
     let maxColorCount = isEnabledBinding != nil ? 6 : 7
     if colorPalette.count > maxColorCount {
       return colorPalette.dropLast(colorPalette.count - maxColorCount)
@@ -38,13 +55,22 @@ struct ColorOptions: View {
 
   private var isEnabled: Bool { isEnabledBinding?.wrappedValue ?? true }
 
+  /// Single-colour view onto `colors` for the colour pickers; a mixed selection shows its first colour.
+  private var color: Binding<CGColor> {
+    .init {
+      colors.first ?? .imgly.black
+    } set: { newValue in
+      colors = [newValue]
+    }
+  }
+
   var body: some View {
-    let colorWithUndo: Binding<CGColor> = .init {
-      color
+    let colorsWithUndo: Binding<[CGColor]> = .init {
+      colors
     } set: { newValue in
       let wasEnabled = isEnabled
-      let oldValue = color
-      color = newValue
+      let oldValue = colors
+      colors = newValue
       if oldValue != newValue || !wasEnabled {
         addUndoStep()
       }
@@ -55,31 +81,31 @@ struct ColorOptions: View {
         NoColorButton(isEnabled: isEnabledBinding)
         Spacer()
       }
-      ForEach(colors) {
+      ForEach(presetColors) {
         ColorPropertyButton(
           name: $0.name,
           color: $0.color,
           isEnabled: isEnabled,
-          selection: colorWithUndo,
+          selection: colorsWithUndo,
           style: style,
         )
         Spacer()
       }
 
-      ColorPicker("Color Picker", selection: $color)
+      ColorPicker("Color Picker", selection: color)
         .labelsHidden()
         .onTapGesture {
           // Override normal tap and show custom color picker instead.
           showColorPicker = true
         }
-        .imgly.colorPicker(title, isPresented: $showColorPicker, selection: $color) { started in
+        .imgly.colorPicker(title, isPresented: $showColorPicker, selection: color) { started in
           if !started {
             addUndoStep()
           }
         }
         .onChange(of: showColorPicker) { newValue in
           if newValue {
-            colorWithUndo.wrappedValue = color
+            colorsWithUndo.wrappedValue = colors
           }
         }
     }

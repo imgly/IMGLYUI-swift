@@ -97,6 +97,11 @@ public extension SheetTypes {
     public let style: SheetStyle
   }
 
+  /// A sheet that is used to control placing text along an SVG baseline path.
+  struct TextOnPath: SheetType {
+    public let style: SheetStyle
+  }
+
   /// A sheet that is used to control the shape of various blocks.
   struct Shape: SheetType {
     public let style: SheetStyle
@@ -105,6 +110,8 @@ public extension SheetTypes {
   /// A sheet that is used to control the fill and/or stroke of various blocks.
   struct FillStroke: SheetType {
     public let style: SheetStyle
+    /// When `true`, only the fill section is shown (no stroke).
+    public let fillOnly: Bool
   }
 
   /// A sheet that is used to control the volume of audio/video.
@@ -261,7 +268,7 @@ public extension SheetType where Self == SheetTypes.Crop {
   static func crop(
     style: SheetStyle = .only(detent: .imgly.medium),
     id: DesignBlockID,
-    assetSourceIDs: [String] = [Engine.DefaultAssetSource.cropPresets.rawValue],
+    assetSourceIDs: [String] = ["ly.img.crop.presets"],
   ) -> Self {
     Self(style: style, id: id, assetSourceIDs: assetSourceIDs)
   }
@@ -291,6 +298,13 @@ public extension SheetType where Self == SheetTypes.FormatText {
   static func formatText(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
 }
 
+public extension SheetType where Self == SheetTypes.TextOnPath {
+  /// Creates a ``SheetType`` that is used to control placing text along an SVG baseline path.
+  /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
+  /// - Returns: The created ``SheetTypes/TextOnPath`` sheet type.
+  static func textOnPath(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
+}
+
 public extension SheetType where Self == SheetTypes.Shape {
   /// Creates a ``SheetType`` that is used to control the shape of various blocks.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/default(isFloating:detent:detents:)``
@@ -302,10 +316,14 @@ public extension SheetType where Self == SheetTypes.Shape {
 
 public extension SheetType where Self == SheetTypes.FillStroke {
   /// Creates a ``SheetType`` that is used to control the fill and/or stroke of various blocks.
-  /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/default(isFloating:detent:detents:)``
-  /// style is used.
+  /// - Parameters:
+  ///   - style: The style of the sheet. By default, the ``SheetStyle/default(isFloating:detent:detents:)``
+  ///     style is used.
+  ///   - fillOnly: When `true`, the sheet shows only the fill section. Defaults to `false`.
   /// - Returns: The created ``SheetTypes/FillStroke`` sheet type.
-  static func fillStroke(style: SheetStyle = .default()) -> Self { Self(style: style) }
+  static func fillStroke(style: SheetStyle = .default(), fillOnly: Bool = false) -> Self {
+    Self(style: style, fillOnly: fillOnly)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.Volume {

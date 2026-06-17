@@ -219,33 +219,25 @@ public struct AssetLibraryView: AssetLibrary {
   private func elementGroup(for category: AssetLibraryCategory) -> AssetLibraryContent {
     switch category.id {
     case AssetLibraryCategory.ID.photoRoll:
-      return sectionsContent(for: category)
+      sectionsContent(for: category)
     case AssetLibraryCategory.ID.text:
-      let textComponentSourceIDs = Set(
-        category.sections
-          .filter { $0.contentType == .textComponent }
-          .map(\.source.id),
-      )
-      return AssetLibraryGroup.text(
-        category.title,
-        excludedPreviewSources: textComponentSourceIDs,
-      ) {
-        sectionsContent(for: category)
-      }
+      // Surface the text sections (style presets, then text designs) as their own Elements rows,
+      // mirroring the dedicated Text tab, rather than one merged preview row.
+      sectionsContent(for: category)
     case AssetLibraryCategory.ID.shapes:
-      return AssetLibraryGroup.shape(category.title) {
+      AssetLibraryGroup.shape(category.title) {
         sectionsContent(for: category)
       }
     case AssetLibraryCategory.ID.stickers:
-      return AssetLibraryGroup.sticker(category.title) {
+      AssetLibraryGroup.sticker(category.title) {
         sectionsContent(for: category)
       }
     case AssetLibraryCategory.ID.audio:
-      return AssetLibraryGroup.audio(category.title) {
+      AssetLibraryGroup.audio(category.title) {
         sectionsContent(for: category)
       }
     default:
-      return AssetLibraryGroup(category.title) {
+      AssetLibraryGroup(category.title) {
         sectionsContent(for: category)
       } preview: {
         AssetPreview.imageOrVideo
@@ -308,6 +300,15 @@ public struct AssetLibraryView: AssetLibrary {
 
     case .textComponent:
       return AssetLibrarySource.textComponent(.title(title), source: section.source)
+
+    case .textStylePreset:
+      // A single section; tapping "See All" reveals the per-group overview (one section per asset group).
+      return AssetLibraryGroup(title) {
+        AssetLibrarySource.textStylePreset(
+          .titleForGroup { TextStylePresetsGrid.sectionTitle(for: $0) },
+          source: section.source,
+        )
+      }
 
     case .shape:
       return AssetLibrarySource.shape(.title(title), source: section.source)

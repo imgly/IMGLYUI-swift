@@ -6,11 +6,11 @@ import IMGLYEngine
 public extension Engine {
   func createScene(from result: CameraResult) async throws {
     switch result {
-    case let .recording(recordings):
-      try await createSceneFromRecordings(recordings)
-
     case let .reaction(video, reaction):
       try await createSceneFromReaction(video: video, recordings: reaction)
+
+    case let .capture(captures):
+      try await createSceneFromCaptures(captures)
     }
   }
 }
@@ -36,8 +36,8 @@ private extension Engine {
       throw Error(errorDescription: "Failed to get background track.")
     }
 
-    try addRecordings(
-      recordings,
+    try addCaptures(
+      recordings.map(Capture.video),
       useBackgroundTrack: backgroundTrack,
       page: pageID,
       skipFirstVideoBecauseItWasAddedToTheSceneAlready: true,
@@ -62,8 +62,8 @@ private extension Engine {
     }
 
     // Loop through the reaction recordings and add each clip to the timeline, offset by the previous clip's duration.
-    let duration = try addRecordings(
-      recordings,
+    let duration = try addCaptures(
+      recordings.map(Capture.video),
       useBackgroundTrack: nil,
       page: pageID,
     )
@@ -74,6 +74,77 @@ private extension Engine {
     try block.setTrimLength(fill, length: duration)
     try block.setTrimOffset(fill, offset: 0)
     try block.setDuration(video, duration: duration)
+  }
+
+  /// Creates a new scene from the given captures.
+  ///
+  /// - Parameter captures: The captures to render.
+  func createSceneFromCaptures(_ captures: [Capture]) async throws {
+    guard let first = captures.first else {
+      throw Error(errorDescription: "Tried creating a scene with no captures.")
+    }
+
+    if captures.count == 1 {
+      switch first {
+      case let .photo(photo) where photo.images.count <= 1:
+        guard let url = photo.images.first?.url else {
+          throw Error(errorDescription: "Tried creating a scene from a photo capture with no images.")
+        }
+        _ = try await scene.create(fromImage: url)
+        return
+      case .photo:
+        // Dual-camera photo: fall through to the multi-capture path so both images are laid out.
+        break
+      case let .video(recording):
+        try await createSceneFromRecordings([recording])
+        return
+      }
+    }
+
+    try createEmptyTimelineScene()
+    guard let pageID = try scene.getCurrentPage() else {
+      throw Error(errorDescription: "Failed to get current page.")
+    }
+    guard let backgroundTrack = try block.find(byType: .track).first else {
+      throw Error(errorDescription: "Failed to get background track.")
+    }
+
+    try addCaptures(captures, useBackgroundTrack: backgroundTrack, page: pageID)
+  }
+
+  /// Creates an empty timeline scene with a single page and a background track.
+  func createEmptyTimelineScene() throws {
+    let sceneBlock = try scene.createVideo()
+    let page = try block.create(.page)
+    try block.appendChild(to: sceneBlock, child: page)
+    try block.setFrame(page, value: CGRect(origin: .zero, size: CameraConfiguration.defaultVideoSize))
+    let track = try block.create(.track)
+    try block.appendChild(to: page, child: track)
+    try block.setAlwaysOnBottom(track, enabled: true)
+    try block.fillParent(track)
+    try block.setScopeEnabled(track, scope: .key(.editorSelect), enabled: false)
+    if try block.supportsPageDurationSource(page, id: track) {
+      try block.setPageDurationSource(page, id: track)
+    }
+  }
+
+  /// Adds a still image to the current scene as a fixed-duration graphic block with image fill.
+  func addImage(
+    _ url: URL,
+    frame: CGRect = CGRect(origin: .zero, size: CameraConfiguration.defaultVideoSize),
+    duration: Double,
+    at offset: Double,
+    appendTo track: DesignBlockID,
+  ) throws {
+    try addClip(
+      fillType: .image,
+      fillURI: url,
+      fillURIProperty: .fillImageImageFileURI,
+      frame: frame,
+      duration: duration,
+      at: offset,
+      appendTo: track,
+    )
   }
 
   /// Creates a new scene from a video and sets it up.
@@ -100,20 +171,20 @@ private extension Engine {
     return (videoBlock, fill)
   }
 
-  /// Adds an array of `Recording`s to the scene.
+  /// Adds an array of `Capture`s to the scene.
   ///
   /// - Parameters:
-  ///   - recordings: The recordings to add.
-  ///   - engine: The engine holding the scene that the recordings should be added to.
+  ///   - captures: The captures to add.
   ///   - backgroundTrack: The ID of the background track if that should be used. When defined the first video of each
-  ///   recording is added to the background track.
+  ///   recording (and any photo) is added to the background track.
   ///   - page: The current page.
   ///   - skipFirstVideoBecauseItWasAddedToTheSceneAlready: Setting this to `true` skips the first video of the first
-  ///   recording as this is often used to create the scene.
-  /// - Returns: The total duration of all recordings.
+  ///   recording, since `createSceneFromRecordings` seeds the scene from that video. Only applies to video captures —
+  ///   photos must not be passed as the first capture when this flag is set.
+  /// - Returns: The total duration of all captures.
   @discardableResult
-  func addRecordings(
-    _ recordings: [Recording],
+  func addCaptures(
+    _ captures: [Capture],
     useBackgroundTrack backgroundTrack: DesignBlockID?,
     page: DesignBlockID,
     skipFirstVideoBecauseItWasAddedToTheSceneAlready: Bool = false,
@@ -125,33 +196,50 @@ private extension Engine {
       trackForVideoIndex[0] = backgroundTrack
     }
 
-    for recording in recordings {
-      for (index, video) in recording.videos.enumerated() {
-        if skipFirstVideoBecauseItWasAddedToTheSceneAlready, !didSkipFirstVideo {
-          didSkipFirstVideo = true
-          continue
-        }
-
-        let parent: DesignBlockID
-        if let existing = trackForVideoIndex[index] {
-          parent = existing
-        } else {
-          let newTrack = try block.create(.track)
-          try block.appendChild(to: page, child: newTrack)
-          trackForVideoIndex[index] = newTrack
-          parent = newTrack
-        }
-
-        try addVideo(
-          video,
-          duration: recording.duration.seconds,
-          at: offset,
-          appendTo: parent,
+    for capture in captures {
+      let captureDuration = capture.duration.seconds
+      switch capture {
+      case let .photo(photo):
+        assert(
+          !(skipFirstVideoBecauseItWasAddedToTheSceneAlready && !didSkipFirstVideo),
+          "skipFirstVideo… is video-only; the seed capture must be a video.",
         )
+        for (index, image) in photo.images.enumerated() {
+          let parent: DesignBlockID
+          if let existing = trackForVideoIndex[index] {
+            parent = existing
+          } else {
+            let newTrack = try block.create(.track)
+            try block.appendChild(to: page, child: newTrack)
+            trackForVideoIndex[index] = newTrack
+            parent = newTrack
+          }
+          // For single-camera photos the rect is the full page; for dual it's the sub-rect.
+          let frame = photo.images.count > 1
+            ? image.rect
+            : CGRect(origin: .zero, size: CameraConfiguration.defaultVideoSize)
+          try addImage(image.url, frame: frame, duration: captureDuration, at: offset, appendTo: parent)
+        }
+      case let .video(recording):
+        for (index, video) in recording.videos.enumerated() {
+          if skipFirstVideoBecauseItWasAddedToTheSceneAlready, !didSkipFirstVideo {
+            didSkipFirstVideo = true
+            continue
+          }
+          let parent: DesignBlockID
+          if let existing = trackForVideoIndex[index] {
+            parent = existing
+          } else {
+            let newTrack = try block.create(.track)
+            try block.appendChild(to: page, child: newTrack)
+            trackForVideoIndex[index] = newTrack
+            parent = newTrack
+          }
+          try addVideo(video, duration: captureDuration, at: offset, appendTo: parent)
+        }
       }
-      offset += recording.duration.seconds
+      offset += captureDuration
     }
-
     return offset
   }
 
@@ -159,7 +247,7 @@ private extension Engine {
   ///
   /// - Parameters:
   ///   - video: The video to add.
-  ///   - engine: The engine to add the video to.
+  ///   - duration: The duration the clip should occupy on the timeline.
   ///   - offset: Where to put the video on the timeline.
   ///   - track: The track to add the clip to.
   func addVideo(
@@ -168,15 +256,35 @@ private extension Engine {
     at offset: Double,
     appendTo track: DesignBlockID,
   ) throws {
-    let rect = video.rect
+    try addClip(
+      fillType: .video,
+      fillURI: video.url,
+      fillURIProperty: .fillVideoFileURI,
+      frame: video.rect,
+      duration: duration,
+      at: offset,
+      appendTo: track,
+    )
+  }
+
+  /// Adds a fixed-duration graphic block with the given fill to the current scene.
+  func addClip(
+    fillType: FillType,
+    fillURI: URL,
+    fillURIProperty: PropertyKey,
+    frame: CGRect,
+    duration: Double,
+    at offset: Double,
+    appendTo track: DesignBlockID,
+  ) throws {
     let id = try block.create(.graphic)
     let rectShape = try block.createShape(.rect)
     try block.setShape(id, shape: rectShape)
     try block.appendChild(to: track, child: id)
-    try block.setFrame(id, value: rect)
+    try block.setFrame(id, value: frame)
     try block.setTimeOffset(id, offset: offset)
-    let fill = try block.createFill(.video)
-    try block.set(fill, property: .key(.fillVideoFileURI), value: video.url)
+    let fill = try block.createFill(fillType)
+    try block.set(fill, property: .key(fillURIProperty), value: fillURI)
     try block.setFill(id, fill: fill)
     try block.setDuration(id, duration: duration)
   }

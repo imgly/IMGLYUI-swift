@@ -5,8 +5,10 @@ struct FillStrokeOptionsSheet: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
+  var fillOnly = false
+
   var title: LocalizedStringResource {
-    let showStroke = interactor.supportsStroke(id) && interactor.isAllowed(id, scope: .strokeChange)
+    let showStroke = !fillOnly && interactor.supportsStroke(id) && interactor.isAllowed(id, scope: .strokeChange)
     // Line-origin graphics surface their colour through the stroke section, so the fill is
     // hidden when a stroke section is available — matching the FillAndStrokeOptions content.
     let hideFillForLine = interactor.isLineOrigin(id) && showStroke
@@ -23,7 +25,7 @@ struct FillStrokeOptionsSheet: View {
 
   var body: some View {
     DismissableTitledSheet(title) {
-      FillAndStrokeOptions()
+      FillAndStrokeOptions(fillOnly: fillOnly)
     }
   }
 }

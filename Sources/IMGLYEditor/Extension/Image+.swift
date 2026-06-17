@@ -75,6 +75,10 @@ public extension IMGLY where Wrapped == Image {
   static let editText = Wrapped(systemName: "keyboard")
   /// An icon image for format text.
   static let formatText = Wrapped(systemName: "textformat.alt")
+  /// An icon image for text style presets ("Presets").
+  static let textStyles = Wrapped(systemName: "swatchpalette")
+  /// An icon image for text on path.
+  static let textOnPath = Wrapped("custom.text.on.path", bundle: .module)
   /// An icon image for shape.
   static let shape = Wrapped(systemName: "square.on.circle")
 

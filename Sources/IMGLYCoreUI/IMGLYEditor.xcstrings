@@ -1327,6 +1327,108 @@
         }
       }
     },
+    "ly_img_editor_asset_library_section_text_style_presets" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textstilvorlagen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text Style Presets"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_curves" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebogener Text"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Curved Text"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_paragraphDefault" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Absatz · Standard"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paragraph · Default"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_paragraphElegant" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Absatz · Elegant"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paragraph · Elegant"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_paragraphModernTech" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Absatz · Modern Tech"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paragraph · Modern Tech"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_textStyles" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textstile"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text Styles"
+          }
+        }
+      }
+    },
     "ly_img_editor_asset_library_section_video_uploads" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2857,6 +2959,227 @@
         }
       }
     },
+    "ly_img_editor_edit_text_button_bold" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fett"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bold"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_button_italic" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kursiv"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Italic"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_button_strikethrough" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durchgestrichen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strikethrough"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_button_underline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterstrichen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Underline"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_label_letter_case" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groß-/Kleinschreibung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letter Case"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_label_list_style" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listenstil"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List Style"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_letter_case_option_lowercase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "alles klein"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "lower case"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_letter_case_option_none" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie geschrieben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As typed"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_letter_case_option_title_case" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Großschreibung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capitalized Case"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_letter_case_option_uppercase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ALLES GROSS"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UPPER CASE"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_list_style_option_bulleted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufzählungsliste"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bulleted List"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_list_style_option_none" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_list_style_option_numbered" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nummerierte Liste"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numbered List"
+          }
+        }
+      }
+    },
     "ly_img_editor_edit_text_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3295,6 +3618,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Background"
+          }
+        }
+      }
+    },
+    "ly_img_editor_inspector_bar_button_text_on_path" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text auf Pfad"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text on Path"
+          }
+        }
+      }
+    },
+    "ly_img_editor_inspector_bar_button_text_styles" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorlagen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presets"
           }
         }
       }
@@ -6881,6 +7238,23 @@
         }
       }
     },
+    "ly_img_editor_sheet_format_text_font_subfamily_mixed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemischt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mixed"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_format_text_font_subfamily_regular" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8220,6 +8594,108 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Background"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_direction_option_forward" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorwärts"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forward"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_direction_option_reversed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umgekehrt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reversed"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_label_direction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richtung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direction"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_label_offset" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versatz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offset"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_label_path_position" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pfadposition"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Path Position"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text auf Pfad"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text on Path"
           }
         }
       }

@@ -1,7 +1,13 @@
 import Foundation
 import IMGLYEngine
 
-/// A custom asset source that applies different font weight and size when applied to a text block.
+/// A legacy custom asset source that applies a fixed font weight and size (Title / Headline / Body) when applied to a
+/// text block.
+///
+/// The default text library now uses the unified text style presets (source id `ly.img.text.presets`) and no longer
+/// references this source. It is retained only for integrations that still register it explicitly; new integrations
+/// should use the text style presets instead.
+@available(*, deprecated, message: "Use the unified text style presets (ly.img.text.presets) instead.")
 public final class TextAssetSource: NSObject {
   private weak var engine: Engine?
   private let assets: [AssetResult]
@@ -15,7 +21,7 @@ public final class TextAssetSource: NSObject {
   public convenience init(
     engine: Engine,
     typefaceName: String = "Roboto",
-    typefaceSourceID: String = Engine.DefaultAssetSource.typeface.rawValue
+    typefaceSourceID: String = "ly.img.typeface"
   ) async throws {
     guard let asset = try await engine.asset.findAssets(
       sourceID: typefaceSourceID,
@@ -70,6 +76,7 @@ public final class TextAssetSource: NSObject {
   }
 }
 
+@available(*, deprecated, message: "Use the unified text style presets (ly.img.text.presets) instead.")
 extension TextAssetSource: AssetSource {
   public static let id = "ly.img.asset.source.text"
 

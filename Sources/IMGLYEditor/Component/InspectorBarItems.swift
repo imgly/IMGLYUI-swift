@@ -1,4 +1,5 @@
 @_spi(Internal) import IMGLYCore
+import IMGLYCoreUI
 import IMGLYEngine
 import SwiftUI
 
@@ -61,6 +62,10 @@ public extension InspectorBar.Buttons.ID {
   static var textBackground: EditorComponentID { "ly.img.component.inspectorBar.button.textBackground" }
   /// The id of the ``InspectorBar/Buttons/animation(action:title:icon:isEnabled:isVisible:)`` button.
   static var animation: EditorComponentID { "ly.img.component.inspectorBar.button.animation" }
+  /// The id of the ``InspectorBar/Buttons/textStylePresets(action:title:icon:isEnabled:isVisible:)`` button.
+  static var textStylePresets: EditorComponentID { "ly.img.component.inspectorBar.button.textStylePresets" }
+  /// The id of the ``InspectorBar/Buttons/textOnPath(action:title:icon:isEnabled:isVisible:)`` button.
+  static var textOnPath: EditorComponentID { "ly.img.component.inspectorBar.button.textOnPath" }
 }
 
 @MainActor
@@ -392,7 +397,7 @@ public extension InspectorBar.Buttons {
     action: @escaping InspectorBar.Context.To<Void> = {
       $0.eventHandler.send(.openSheet(type: .crop(
         id: $0.selection.block,
-        assetSourceIDs: [Engine.DefaultAssetSource.cropPresets.rawValue],
+        assetSourceIDs: ["ly.img.crop.presets"],
       )))
     },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
@@ -529,7 +534,7 @@ public extension InspectorBar.Buttons {
   /// Creates a ``InspectorBar/Button`` that opens the fill and stroke sheet.
   /// - Parameters:
   ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
-  /// event is invoked with sheet type ``SheetType/fillStroke(style:)``.
+  /// event is invoked with sheet type ``SheetType/fillStroke(style:fillOnly:)``.
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_inspector_bar_button_fill_and_stroke`,  `ly_img_editor_inspector_bar_button_fill`, or
   /// `ly_img_editor_inspector_bar_button_stroke` is used depending on the fill type and allowed engine scopes for the
@@ -894,6 +899,80 @@ public extension InspectorBar.Buttons {
     },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.formatText, action: action, label: { context in
+      let title = try title(context)
+      let icon = try icon(context)
+      Label { title } icon: { icon }
+    }, isEnabled: isEnabled, isVisible: isVisible)
+  }
+
+  /// Creates an ``InspectorBar/Button`` that opens the text style presets sheet.
+  /// - Parameters:
+  ///   - action: The action to perform when the user triggers the button. By default,
+  /// ``EditorEvent/openSheet(type:)`` event is invoked with sheet type ``SheetType/libraryReplace(style:content:)``
+  /// using the default text style presets library content.
+  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
+  /// `ly_img_editor_inspector_bar_button_text_styles` is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image`
+  /// ``IMGLYCore/IMGLY/textStyles`` is used.
+  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
+  /// `DesignBlockType.text`, its engine scope `"text/character"` is allowed, and the text style presets source is
+  /// registered.
+  /// - Returns: The created button.
+  static func textStylePresets(
+    action: @escaping InspectorBar.Context.To<Void> = { context in
+      context.eventHandler.send(.openSheet(type: .libraryReplace(
+        .imgly.localized("ly_img_editor_inspector_bar_button_text_styles"),
+        style: .only(detent: .imgly.medium),
+      ) {
+        // The restyle sheet opens straight to the grouped preset overview — the user is already
+        // choosing a style, so skip the flat "Add Text" entry row.
+        DefaultAssetLibrary.textStylePresetGroups
+      }))
+    },
+    @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
+      Text(.imgly.localized("ly_img_editor_inspector_bar_button_text_styles"))
+    },
+    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.textStyles },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isVisible: @escaping InspectorBar.Context.To<Bool> = {
+      try $0.selection.type == .text &&
+        $0.engine.block.isAllowedByScope($0.selection.block, key: "text/character") &&
+        $0.engine.asset.findAllSources().contains("ly.img.text.presets")
+    },
+  ) -> some InspectorBar.Item {
+    InspectorBar.Button(id: ID.textStylePresets, action: action, label: { context in
+      let title = try title(context)
+      let icon = try icon(context)
+      Label { title } icon: { icon }
+    }, isEnabled: isEnabled, isVisible: isVisible)
+  }
+
+  /// Creates a ``InspectorBar/Button`` that opens the Text on Path sheet.
+  /// - Parameters:
+  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  /// event is invoked with sheet type ``SheetType/textOnPath(style:)``.
+  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
+  /// `ly_img_editor_inspector_bar_button_text_on_path` is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/textOnPath``
+  /// is used.
+  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
+  /// `DesignBlockType.text` and its engine scope `"text/character"` is allowed.
+  /// - Returns: The created button.
+  static func textOnPath(
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .textOnPath())) },
+    @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
+      Text(.imgly.localized("ly_img_editor_inspector_bar_button_text_on_path"))
+    },
+    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.textOnPath },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isVisible: @escaping InspectorBar.Context.To<Bool> = {
+      try $0.selection.type == .text &&
+        $0.engine.block.isAllowedByScope($0.selection.block, key: "text/character")
+    },
+  ) -> some InspectorBar.Item {
+    InspectorBar.Button(id: ID.textOnPath, action: action, label: { context in
       let title = try title(context)
       let icon = try icon(context)
       Label { title } icon: { icon }
