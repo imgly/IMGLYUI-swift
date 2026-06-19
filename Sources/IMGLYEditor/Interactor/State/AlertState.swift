@@ -1,5 +1,7 @@
 import Foundation
 @_spi(Internal) import IMGLYCore
+@_spi(Internal) import IMGLYCoreUI
+import IMGLYEngine
 
 struct AlertState: BatchMutable, Equatable {
   var isPresented: Bool
@@ -51,7 +53,7 @@ struct AlertState: BatchMutable, Equatable {
     isPresented = true
     details = Details(
       title: String(localized: .imgly.localized("ly_img_editor_dialog_error_generic_title")),
-      message: error.localizedDescription,
+      message: EngineError(error)?.displayMessage ?? error.localizedDescription,
       shouldDismiss: dismiss,
       dismissCallback: onDismiss,
     )
