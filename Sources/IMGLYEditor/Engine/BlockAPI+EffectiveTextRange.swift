@@ -25,17 +25,19 @@ extension BlockAPI {
 
   /// The id of the typeface font shared across ``effectiveTextRange(_:)`` — the
   /// font matching the uniform style and weight of the whole range — or `nil`
-  /// when the range mixes multiple styles or weights.
+  /// when the range mixes multiple styles or weights or has no resolvable typeface.
   func resolveTextFontID(_ id: DesignBlockID) throws -> String? {
     let range = try effectiveTextRange(id)
-    let styles = try getTextFontStyles(id, in: range)
-    let weights = try getTextFontWeights(id, in: range)
+    guard let styles = try? getTextFontStyles(id, in: range),
+          let weights = try? getTextFontWeights(id, in: range),
+          let typeface = try? getTypeface(id) else {
+      return nil
+    }
     guard let style = styles.first, let weight = weights.first,
           styles.dropFirst().allSatisfy({ $0 == style }),
           weights.dropFirst().allSatisfy({ $0 == weight }) else {
       return nil
     }
-    let typeface = try getTypeface(id)
     return typeface.fonts.first { $0.style == style && $0.weight == weight }?.id
   }
 }

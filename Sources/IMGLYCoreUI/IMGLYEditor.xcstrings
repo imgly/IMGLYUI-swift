@@ -1021,6 +1021,23 @@
         }
       }
     },
+    "ly_img_editor_asset_library_section_curve_text" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebogener Text"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Curved Text"
+          }
+        }
+      }
+    },
     "ly_img_editor_asset_library_section_doodle" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1095,13 +1112,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Textdesigns"
+            "value" : "Textkombinationen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Text Designs"
+            "value" : "Text Combinations"
           }
         }
       }
@@ -1361,6 +1378,57 @@
         }
       }
     },
+    "ly_img_editor_asset_library_section_text_style_presets_default" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_elegant" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegant"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegant"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_modernTech" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modern Tech"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modern Tech"
+          }
+        }
+      }
+    },
     "ly_img_editor_asset_library_section_text_style_presets_paragraphDefault" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1413,6 +1481,23 @@
       }
     },
     "ly_img_editor_asset_library_section_text_style_presets_textStyles" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textstile"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text Styles"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_styles" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {

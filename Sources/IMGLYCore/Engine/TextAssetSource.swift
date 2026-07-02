@@ -4,10 +4,11 @@ import IMGLYEngine
 /// A legacy custom asset source that applies a fixed font weight and size (Title / Headline / Body) when applied to a
 /// text block.
 ///
-/// The default text library now uses the unified text style presets (source id `ly.img.text.presets`) and no longer
-/// references this source. It is retained only for integrations that still register it explicitly; new integrations
-/// should use the text style presets instead.
-@available(*, deprecated, message: "Use the unified text style presets (ly.img.text.presets) instead.")
+/// The default text library now uses the split text sources (`ly.img.text` for plain-text presets, plus
+/// `ly.img.text.styles`, `ly.img.text.curves`, and `ly.img.text.components`) and no longer references this source.
+/// It is retained only for integrations that still register it explicitly; new integrations should use the split
+/// text sources instead.
+@available(*, deprecated, message: "Use the default text sources: ly.img.text, .styles, .curves, .components.")
 public final class TextAssetSource: NSObject {
   private weak var engine: Engine?
   private let assets: [AssetResult]
@@ -76,7 +77,7 @@ public final class TextAssetSource: NSObject {
   }
 }
 
-@available(*, deprecated, message: "Use the unified text style presets (ly.img.text.presets) instead.")
+@available(*, deprecated, message: "Use the default text sources: ly.img.text, .styles, .curves, .components.")
 extension TextAssetSource: AssetSource {
   public static let id = "ly.img.asset.source.text"
 

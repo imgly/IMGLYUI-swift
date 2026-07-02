@@ -10,8 +10,7 @@ struct TextOnPathOptions: View {
 
   @State private var sheetState: EffectSheetState = .selection
 
-  private static let sourceID = "ly.img.text.presets"
-  private static let curvesGroupID = "curves"
+  private static let sourceID = "ly.img.text.curves"
 
   // MARK: - Bindings
 
@@ -65,10 +64,7 @@ struct TextOnPathOptions: View {
           )
         },
         identifier: { $0.result.id },
-        sources: [.init(
-          id: Self.sourceID,
-          config: .init(groups: [Self.curvesGroupID]),
-        )],
+        sources: [.init(id: Self.sourceID)],
         sheetState: $sheetState,
       )
       .frame(height: hasPath ? 126 : nil, alignment: .top)

@@ -62,8 +62,8 @@ public extension InspectorBar.Buttons.ID {
   static var textBackground: EditorComponentID { "ly.img.component.inspectorBar.button.textBackground" }
   /// The id of the ``InspectorBar/Buttons/animation(action:title:icon:isEnabled:isVisible:)`` button.
   static var animation: EditorComponentID { "ly.img.component.inspectorBar.button.animation" }
-  /// The id of the ``InspectorBar/Buttons/textStylePresets(action:title:icon:isEnabled:isVisible:)`` button.
-  static var textStylePresets: EditorComponentID { "ly.img.component.inspectorBar.button.textStylePresets" }
+  /// The id of the ``InspectorBar/Buttons/textPresets(action:title:icon:isEnabled:isVisible:)`` button.
+  static var textPresets: EditorComponentID { "ly.img.component.inspectorBar.button.textPresets" }
   /// The id of the ``InspectorBar/Buttons/textOnPath(action:title:icon:isEnabled:isVisible:)`` button.
   static var textOnPath: EditorComponentID { "ly.img.component.inspectorBar.button.textOnPath" }
 }
@@ -919,15 +919,27 @@ public extension InspectorBar.Buttons {
   /// `DesignBlockType.text`, its engine scope `"text/character"` is allowed, and the text style presets source is
   /// registered.
   /// - Returns: The created button.
-  static func textStylePresets(
+  static func textPresets(
     action: @escaping InspectorBar.Context.To<Void> = { context in
       context.eventHandler.send(.openSheet(type: .libraryReplace(
         .imgly.localized("ly_img_editor_inspector_bar_button_text_styles"),
         style: .only(detent: .imgly.medium),
       ) {
-        // The restyle sheet opens straight to the grouped preset overview — the user is already
-        // choosing a style, so skip the flat "Add Text" entry row.
-        DefaultAssetLibrary.textStylePresetGroups
+        // Text Combinations are excluded — they are a group (a different block type).
+        AssetLibraryGroup(.imgly.localized("ly_img_editor_asset_library_section_plain_text")) {
+          AssetLibrarySource.textPreset(
+            .titleForGroup { TextPresetsGrid.sectionTitle(for: $0) },
+            source: .init(id: "ly.img.text"),
+          )
+        }
+        AssetLibrarySource.textPreset(
+          .title(.imgly.localized("ly_img_editor_asset_library_section_text_styles")),
+          source: .init(id: "ly.img.text.styles"),
+        )
+        AssetLibrarySource.textPreset(
+          .title(.imgly.localized("ly_img_editor_asset_library_section_curve_text")),
+          source: .init(id: "ly.img.text.curves"),
+        )
       }))
     },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
@@ -938,10 +950,10 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try $0.selection.type == .text &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "text/character") &&
-        $0.engine.asset.findAllSources().contains("ly.img.text.presets")
+        $0.engine.asset.findAllSources().contains("ly.img.text.styles")
     },
   ) -> some InspectorBar.Item {
-    InspectorBar.Button(id: ID.textStylePresets, action: action, label: { context in
+    InspectorBar.Button(id: ID.textPresets, action: action, label: { context in
       let title = try title(context)
       let icon = try icon(context)
       Label { title } icon: { icon }

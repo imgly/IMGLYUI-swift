@@ -44,7 +44,7 @@ struct TextFormatOptions: View {
           .labelStyle(.icon(hidden: !isSelected, titleFont: .custom("", size: 17)))
       }
     } linkLabel: { selection in
-      Text(selection?.labelOrTypefaceName ?? "Unnamed Typeface")
+      Text(selection?.labelOrTypefaceName ?? "Default")
     }
   }
 
@@ -80,10 +80,10 @@ struct TextFormatOptions: View {
         return try (completion?(engine, blocks, didChange) ?? false) || didChange
       }
 
-      if let id, let fonts: [Interactor.Font] = interactor.get(id, getter: { engine, block in
-        let typeface = try engine.block.getTypeface(block)
-        return typeface.fonts
-      }) {
+      if let id,
+         let fonts: [Interactor.Font] = interactor.get(id, getter: { engine, block in
+           (try? engine.block.getTypeface(block))?.fonts ?? []
+         }), !fonts.isEmpty {
         let sortedFonts = fonts.sorted { $0.weight.rawValue < $1.weight.rawValue }
         let nonItalicFonts = sortedFonts.filter { $0.style != .italic }
         let italicFonts = sortedFonts.filter { $0.style == .italic }

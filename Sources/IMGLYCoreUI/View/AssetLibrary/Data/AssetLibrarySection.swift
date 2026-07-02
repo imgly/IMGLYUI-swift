@@ -15,6 +15,12 @@ public struct AssetLibrarySection: Sendable, Equatable {
   /// The type of content this section displays.
   public let contentType: ContentType
 
+  /// Optional localization-key prefix for sections expanded from the source's asset groups.
+  ///
+  /// When set, the section drills into one sub-section per asset group, each titled
+  /// `<prefix><group>`, falling back to a humanized group name.
+  public let groupTitleKeyPrefix: String?
+
   /// The content type determines how the section is rendered.
   public enum ContentType: Sendable, Equatable {
     case image
@@ -25,7 +31,7 @@ public struct AssetLibrarySection: Sendable, Equatable {
     case audioUpload
     case text
     case textComponent
-    case textStylePreset
+    case textPreset
     case shape
     case sticker
     case photoRoll(media: [PhotoRollMediaType])
@@ -37,16 +43,20 @@ public struct AssetLibrarySection: Sendable, Equatable {
   ///   - title: The localized title for this section.
   ///   - source: The asset source data.
   ///   - contentType: The type of content this section displays.
+  ///   - groupTitleKeyPrefix: Optional localization-key prefix to drill the source's asset groups
+  ///     into per-group sub-sections.
   public init(
     id: String,
     title: LocalizedStringResource?,
     source: AssetLoader.SourceData,
-    contentType: ContentType
+    contentType: ContentType,
+    groupTitleKeyPrefix: String? = nil
   ) {
     self.id = id
     self.title = title
     self.source = source
     self.contentType = contentType
+    self.groupTitleKeyPrefix = groupTitleKeyPrefix
   }
 
   public static func == (lhs: AssetLibrarySection, rhs: AssetLibrarySection) -> Bool {
@@ -88,12 +98,16 @@ public struct AssetLibrarySection: Sendable, Equatable {
   // MARK: Text
 
   /// ID for the default text section.
-  @available(*, deprecated, message: "Plain text is deprecated. Use `textStylePresets` instead.")
+  @available(*, deprecated, message: "Plain text is deprecated. Use `textPlain` instead.")
   static let text = "ly.img.section.text"
   /// ID for the text components section.
   static let textComponents = "ly.img.section.text.components"
-  /// ID for the text style presets section.
-  static let textStylePresets = "ly.img.section.text.styles"
+  /// ID for the text styles section.
+  static let textStyles = "ly.img.section.text.styles"
+  /// ID for the plain text section.
+  static let textPlain = "ly.img.section.text.plain"
+  /// ID for the curve (text-on-path) section.
+  static let textCurves = "ly.img.section.text.curves"
 
   // MARK: Shapes
 
@@ -216,7 +230,7 @@ public extension AssetLibrarySection {
   ///   - id: A unique identifier for this section. Provide a unique, stable identifier for your section.
   ///   - title: The localized title for this section.
   ///   - source: The asset source data.
-  @available(*, deprecated, message: "Plain text is deprecated. Use `textStylePreset(id:title:source:)` instead.")
+  @available(*, deprecated, message: "Plain text is deprecated. Use `textPreset(id:title:source:)` instead.")
   static func text(
     id: String,
     title: LocalizedStringResource,
@@ -243,12 +257,21 @@ public extension AssetLibrarySection {
   ///   - id: A unique identifier for this section. Provide a unique, stable identifier for your section.
   ///   - title: The localized title for this section.
   ///   - source: The asset source data.
-  static func textStylePreset(
+  ///   - groupTitleKeyPrefix: Optional localization-key prefix to drill the source's asset groups
+  ///     into per-group sub-sections (e.g. Plain Text → Default / Elegant / Modern Tech).
+  static func textPreset(
     id: String,
     title: LocalizedStringResource,
     source: AssetLoader.SourceData,
+    groupTitleKeyPrefix: String? = nil,
   ) -> Self {
-    .init(id: id, title: title, source: source, contentType: .textStylePreset)
+    .init(
+      id: id,
+      title: title,
+      source: source,
+      contentType: .textPreset,
+      groupTitleKeyPrefix: groupTitleKeyPrefix,
+    )
   }
 
   /// Creates a shape section.
@@ -359,7 +382,7 @@ public extension AssetLibrarySection {
 
   // MARK: Text
 
-  @available(*, deprecated, message: "Use `defaultTextStylePresets` instead.")
+  @available(*, deprecated, message: "Use `defaultTextPlain` instead.")
   static var defaultText: Self {
     .text(
       id: ID.text,
@@ -376,11 +399,28 @@ public extension AssetLibrarySection {
     )
   }
 
-  static var defaultTextStylePresets: Self {
-    .textStylePreset(
-      id: ID.textStylePresets,
-      title: .imgly.localized("ly_img_editor_asset_library_section_text_style_presets"),
-      source: .init(id: "ly.img.text.presets"),
+  static var defaultTextPlain: Self {
+    .textPreset(
+      id: ID.textPlain,
+      title: .imgly.localized("ly_img_editor_asset_library_section_plain_text"),
+      source: .init(id: "ly.img.text"),
+      groupTitleKeyPrefix: "ly_img_editor_asset_library_section_text_style_presets_",
+    )
+  }
+
+  static var defaultTextStyles: Self {
+    .textPreset(
+      id: ID.textStyles,
+      title: .imgly.localized("ly_img_editor_asset_library_section_text_styles"),
+      source: .init(id: "ly.img.text.styles"),
+    )
+  }
+
+  static var defaultTextCurves: Self {
+    .textPreset(
+      id: ID.textCurves,
+      title: .imgly.localized("ly_img_editor_asset_library_section_curve_text"),
+      source: .init(id: "ly.img.text.curves"),
     )
   }
 

@@ -1,12 +1,12 @@
 import IMGLYCore
 import SwiftUI
 
-/// A grid of text style-preset assets (engine source `ly.img.text.presets`).
+/// A grid of text style-preset assets (engine sources `ly.img.text`, `ly.img.text.styles`, `ly.img.text.curves`).
 ///
-/// Used as the `destination` of `AssetLibrarySource.textStylePreset(_:source:)`.
+/// Used as the `destination` of `AssetLibrarySource.textPreset(_:source:)`.
 ///
 /// - Note: The source must be registered on the engine for content to appear.
-public struct TextStylePresetsGrid: View {
+public struct TextPresetsGrid: View {
   /// Creates a grid of text style-preset assets.
   public init() {}
 
@@ -25,25 +25,28 @@ public struct TextStylePresetsGrid: View {
   }
 }
 
-public extension TextStylePresetsGrid {
+public extension TextPresetsGrid {
   /// Maps a style-preset asset `group` to its localized section title.
   ///
-  /// The localization key is derived from the group
-  /// (`ly_img_editor_asset_library_section_text_style_presets_<group>`), so a new preset group
-  /// shipped with the asset content only needs its translation string. Until a translation
-  /// exists, the raw group id is shown.
-  static func sectionTitle(for group: String?) -> LocalizedStringResource {
+  /// The localization key is `keyPrefix` + `group`, so a new preset group shipped with the asset
+  /// content only needs its translation string. Until a translation exists, the raw group id is
+  /// shown. When `group` is `nil`, the prefix's trailing `_` is dropped to form the base section key.
+  static func sectionTitle(
+    for group: String?,
+    keyPrefix: String = "ly_img_editor_asset_library_section_text_style_presets_",
+  ) -> LocalizedStringResource {
     guard let group else {
-      return .imgly.localized("ly_img_editor_asset_library_section_text_style_presets")
+      let baseKey = keyPrefix.hasSuffix("_") ? String(keyPrefix.dropLast()) : keyPrefix
+      return .imgly.localized(String.LocalizationValue(baseKey))
     }
-    let key = "ly_img_editor_asset_library_section_text_style_presets_\(group)"
+    let key = "\(keyPrefix)\(group)"
     let resource: LocalizedStringResource = .imgly.localized(String.LocalizationValue(key))
     guard String(localized: resource) == key else { return resource }
     return "\(group)"
   }
 }
 
-struct TextStylePresetsGrid_Previews: PreviewProvider {
+struct TextPresetsGrid_Previews: PreviewProvider {
   static var previews: some View {
     defaultAssetLibraryPreviews
   }

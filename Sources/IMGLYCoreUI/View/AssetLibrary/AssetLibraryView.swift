@@ -220,10 +220,6 @@ public struct AssetLibraryView: AssetLibrary {
     switch category.id {
     case AssetLibraryCategory.ID.photoRoll:
       sectionsContent(for: category)
-    case AssetLibraryCategory.ID.text:
-      // Surface the text sections (style presets, then text designs) as their own Elements rows,
-      // mirroring the dedicated Text tab, rather than one merged preview row.
-      sectionsContent(for: category)
     case AssetLibraryCategory.ID.shapes:
       AssetLibraryGroup.shape(category.title) {
         sectionsContent(for: category)
@@ -301,14 +297,17 @@ public struct AssetLibraryView: AssetLibrary {
     case .textComponent:
       return AssetLibrarySource.textComponent(.title(title), source: section.source)
 
-    case .textStylePreset:
-      // A single section; tapping "See All" reveals the per-group overview (one section per asset group).
-      return AssetLibraryGroup(title) {
-        AssetLibrarySource.textStylePreset(
-          .titleForGroup { TextStylePresetsGrid.sectionTitle(for: $0) },
-          source: section.source,
-        )
+    case .textPreset:
+      // With a `groupTitleKeyPrefix`, drill into one section per asset group; otherwise a flat grid.
+      if let keyPrefix = section.groupTitleKeyPrefix {
+        return AssetLibraryGroup(title) {
+          AssetLibrarySource.textPreset(
+            .titleForGroup { TextPresetsGrid.sectionTitle(for: $0, keyPrefix: keyPrefix) },
+            source: section.source,
+          )
+        }
       }
+      return AssetLibrarySource.textPreset(.title(title), source: section.source)
 
     case .shape:
       return AssetLibrarySource.shape(.title(title), source: section.source)

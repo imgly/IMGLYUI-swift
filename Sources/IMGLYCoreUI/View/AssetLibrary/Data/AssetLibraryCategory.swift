@@ -103,15 +103,17 @@ public extension AssetLibraryCategory {
     )
   }
 
-  /// Default text category: text style presets and font combinations.
+  /// Default text category: plain text, text styles, text combinations, and curved text.
   static var defaultText: Self {
     .init(
       id: ID.text,
       title: .imgly.localized("ly_img_editor_asset_library_title_text"),
       icon: Image(systemName: "textformat.alt"),
       sections: [
-        .defaultTextStylePresets,
+        .defaultTextPlain,
+        .defaultTextStyles,
         .defaultTextComponents,
+        .defaultTextCurves,
       ],
     )
   }

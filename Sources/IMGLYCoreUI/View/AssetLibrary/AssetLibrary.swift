@@ -165,13 +165,13 @@ public extension AssetLibrarySource<TextComponentGrid, AssetPreview<Message>, Em
   }
 }
 
-public extension AssetLibrarySource<TextStylePresetsGrid, AssetPreview<Message>, EmptyView> {
+public extension AssetLibrarySource<TextPresetsGrid, AssetPreview<Message>, EmptyView> {
   /// Creates an ``AssetLibrarySource`` for text style-preset assets.
   /// - Parameters:
   ///   - mode: The display mode which defines the section title(s).
   ///   - source: The asset source definition.
   /// - Returns: The created `AssetLibrarySource`.
-  static func textStylePreset(_ mode: Mode, source: AssetLoader.SourceData) -> Self {
+  static func textPreset(_ mode: Mode, source: AssetLoader.SourceData) -> Self {
     self.init(mode, source: source) { Destination() } preview: { Preview.imageOrVideo }
   }
 }

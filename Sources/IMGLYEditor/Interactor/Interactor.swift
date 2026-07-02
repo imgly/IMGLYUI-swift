@@ -365,15 +365,20 @@ extension Interactor {
   /// Binding for the selected font's asset id; applies the matching typeface to the blocks on set.
   func bindFontAssetID(_ id: BlockID?, overrideScopes: Set<Scope> = []) -> Binding<String?> {
     bind(id, default: nil as String?) { engine, block in
-      self.fontLibrary.assetFor(typefaceName: try engine.block.getTypeface(block).name)?.id
+      // No resolvable typeface (e.g. curved text) means no selection, not an error.
+      guard let name = (try? engine.block.getTypeface(block))?.name else { return nil }
+      return self.fontLibrary.assetFor(typefaceName: name)?.id
     } setter: { engine, blocks, assetID, completion in
       guard let assetID,
             let typeface = self.fontLibrary.typefaceFor(id: assetID),
             let font = typeface.previewFont else {
         return false
       }
-      let changed = try blocks.filter {
-        try engine.block.get($0, property: .key(.textFontFileURI)) != font.uri
+      let changed = try blocks.filter { block in
+        // Read as String: a typeface-less block (e.g. curved text) has an empty
+        // fontFileUri, and reading it as URL would crash on URL("") == nil.
+        let currentURI: String = try engine.block.get(block, property: .key(.textFontFileURI))
+        return URL(string: currentURI) != font.uri
       }
       try changed.forEach {
         try engine.block.overrideAndRestore($0, scopes: overrideScopes) {

@@ -260,28 +260,41 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// The grouped text style-presets overview: one section per asset group of the
-  /// `ly.img.text.presets` source. Shown directly by the inspector-bar "Styles" sheet.
+  /// `ly.img.text.styles` source. Shown directly by the inspector-bar "Styles" sheet.
   @AssetLibraryBuilder public static var textStylePresetGroups: AssetLibraryContent {
-    AssetLibrarySource.textStylePreset(
-      .titleForGroup { TextStylePresetsGrid.sectionTitle(for: $0) },
-      source: .init(id: "ly.img.text.presets"),
+    AssetLibrarySource.textPreset(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_text_styles")),
+      source: .init(id: "ly.img.text.styles"),
     )
   }
 
   /// The default text style-presets content: a single section whose "See All" reveals the
   /// grouped overview. Used in the "Add Text" flow.
-  @AssetLibraryBuilder public static var textStylePresets: AssetLibraryContent {
+  @AssetLibraryBuilder public static var textPresets: AssetLibraryContent {
     AssetLibraryGroup(.imgly.localized("ly_img_editor_asset_library_section_text_style_presets")) {
       textStylePresetGroups
     }
   }
 
-  /// The default text asset library content: text style presets and font combinations.
+  /// The default text asset library content: plain text, text styles, text combinations, and curved text.
   @AssetLibraryBuilder public static var text: AssetLibraryContent {
-    textStylePresets
+    AssetLibraryGroup(.imgly.localized("ly_img_editor_asset_library_section_plain_text")) {
+      AssetLibrarySource.textPreset(
+        .titleForGroup { TextPresetsGrid.sectionTitle(for: $0) },
+        source: .init(id: "ly.img.text"),
+      )
+    }
+    AssetLibrarySource.textPreset(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_text_styles")),
+      source: .init(id: "ly.img.text.styles"),
+    )
     AssetLibrarySource.textComponent(
       .title(.imgly.localized("ly_img_editor_asset_library_section_font_combinations")),
       source: .init(id: "ly.img.text.components"),
+    )
+    AssetLibrarySource.textPreset(
+      .title(.imgly.localized("ly_img_editor_asset_library_section_curve_text")),
+      source: .init(id: "ly.img.text.curves"),
     )
   }
 
