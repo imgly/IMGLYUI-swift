@@ -45,6 +45,8 @@ struct EffectOptions<Item: View>: View {
       .imgly.assetLoader(sources: sources, order: .sorted, perPage: 65)
       .frame(height: 110, alignment: .top)
       .environmentObject(searchState)
+      // Clear the floating iOS 26 Liquid Glass title bar; no-op on the legacy design.
+      .padding(.top, usesLegacyDesign ? 0 : 44)
       Spacer()
     }
     .background(Color(.systemGroupedBackground))

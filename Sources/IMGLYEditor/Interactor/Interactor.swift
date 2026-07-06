@@ -239,6 +239,7 @@ import SwiftUI
     pageTask?.cancel()
     clickedTask?.cancel()
     onLoadedTask?.cancel()
+    assetSourceUpdatedTask?.cancel()
     blockTasks.forEach { $0.value.cancel() }
     blockTasks.removeAll()
   }
@@ -251,6 +252,7 @@ import SwiftUI
     historyTask = observeHistory()
     pageTask = observePage()
     clickedTask = observeClicked()
+    assetSourceUpdatedTask = observeAssetSourceUpdated()
     onLoadedTask?.cancel()
     keyboardPublisher.assign(to: &$isKeyboardPresented)
   }
@@ -271,6 +273,7 @@ import SwiftUI
     pageTask?.cancel()
     clickedTask?.cancel()
     onLoadedTask?.cancel()
+    assetSourceUpdatedTask?.cancel()
     _engine = nil
     timelineProperties.timeline = nil
     timelineProperties.thumbnailsManager.destroyProviders()
@@ -302,6 +305,7 @@ import SwiftUI
   private var pageTask: Task<Void, Never>?
   private var clickedTask: Task<Void, Never>?
   private var onLoadedTask: Task<Void, Never>?
+  private var assetSourceUpdatedTask: Task<Void, Never>?
   var blockTasks = [BlockID: Task<Void, Never>]()
 }
 
@@ -1952,6 +1956,26 @@ extension Interactor {
       }
       for await _ in engine.block.onClicked {
         openPlaceholderSheetIfNeeded()
+      }
+    }
+  }
+
+  /// Bridges engine asset-source changes to the asset library. When
+  /// `engine.asset.assetSourceContentsChanged(sourceID:)` fires — whether from
+  /// an `addAsset`/`removeAsset` call or an explicit notification — the open
+  /// library re-queries the affected source via the `.AssetSourceDidChange`
+  /// signal it already listens for.
+  func observeAssetSourceUpdated() -> Task<Void, Never> {
+    Task {
+      guard let engine else {
+        return
+      }
+      for await sourceID in engine.asset.onAssetSourceUpdated {
+        NotificationCenter.default.post(
+          name: .AssetSourceDidChange,
+          object: nil,
+          userInfo: ["sourceID": sourceID],
+        )
       }
     }
   }
