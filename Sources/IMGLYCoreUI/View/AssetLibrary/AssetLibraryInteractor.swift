@@ -73,9 +73,7 @@ import UIKit
     guard result.assets.count == 1, let asset = result.assets.first else {
       throw Error(errorDescription: "Could not retrieve uploaded asset.")
     }
-    // `addAsset` above fires `engine.asset.onAssetSourceUpdated`, which the
-    // editor's Interactor bridges to `.AssetSourceDidChange`, so the open
-    // library re-queries this source without a manual post here.
+    NotificationCenter.default.post(name: .AssetSourceDidChange, object: nil, userInfo: ["sourceID": sourceID])
 
     return asset
   }

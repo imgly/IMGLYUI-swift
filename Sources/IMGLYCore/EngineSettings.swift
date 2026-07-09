@@ -16,22 +16,17 @@ public struct EngineSettings: Sendable {
   /// ensuring they're counted once. Providing this aids in better data accuracy.
   ///   - baseURL: It is used to initialize the engine's `basePath` setting before the editor's `onCreate` callback is
   /// run. It is the foundational URL for constructing absolute paths from relative ones. This URL enables the loading
-  /// of specific scenes or assets using their relative paths. Pass `nil` to use the default public IMG.LY CDN, which
-  /// is intended for evaluation and demos only; for production, point it at self-hosted or app-bundled assets.
+  /// of specific scenes or assets using their relative paths.
   ///   - host: The integration context embedding the engine, used for license matching.
   public init(
     license: String? = nil,
     userID: String? = nil,
-    baseURL: URL? = nil,
+    baseURL: URL = .init(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.77.1-rc.0/assets")!,
     host: String = ""
   ) {
     self.license = license
     self.userID = userID
-    self.baseURL = baseURL ?? Self.defaultBaseURL
+    self.baseURL = baseURL
     self.host = host
   }
-
-  /// The default base URL used when no `baseURL` is provided: the public CE.SDK CDN.
-  private static let defaultBaseURL =
-    URL(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.78.0-rc.0/assets")!
 }
