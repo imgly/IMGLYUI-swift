@@ -10,6 +10,8 @@ struct TextFormatOptions: View {
 
   private var fontLibrary: FontLibrary { interactor.fontLibrary }
 
+  private var isTextOnPath: Bool { interactor.isTextOnPath(id) }
+
   var body: some View {
     List {
       if interactor.sheetContent(id) == .text {
@@ -20,7 +22,9 @@ struct TextFormatOptions: View {
         letterOptions
         if interactor.isAllowed(id, scope: .layerResize) {
           frameBehavior
+            .disabled(isTextOnPath)
           clipping
+            .disabled(isTextOnPath)
         }
       }
     }
@@ -273,6 +277,7 @@ struct TextFormatOptions: View {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"))
     }
     listStyleSelection
+      .disabled(isTextOnPath)
     Section {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_line_height"),
@@ -282,6 +287,7 @@ struct TextFormatOptions: View {
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_line_height"))
     }
+    .disabled(isTextOnPath)
     Section {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"),
@@ -291,6 +297,7 @@ struct TextFormatOptions: View {
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"))
     }
+    .disabled(isTextOnPath)
   }
 
   @ViewBuilder var listStyleSelection: some View {

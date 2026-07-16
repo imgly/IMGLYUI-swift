@@ -20,7 +20,7 @@ class AssetLibraryInteractorMock: ObservableObject {
       let engine = try await Engine(license: secrets.licenseKey)
       self.engine = engine
       try engine.scene.createVideo()
-      let baseURL = URL(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.78.0-rc.2/assets")!
+      let baseURL = URL(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.78.0-rc.3/assets")!
       try engine.editor.setSettingString("basePath", value: baseURL.absoluteString)
       let defaultSourceIDs = [
         "ly.img.sticker", "ly.img.vector.shape", "ly.img.filter", "ly.img.color.palette",

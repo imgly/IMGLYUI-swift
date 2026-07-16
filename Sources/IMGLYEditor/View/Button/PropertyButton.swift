@@ -22,11 +22,15 @@ struct GenericPropertyButton<T: Equatable, Label: View>: View {
   var allowsDeselection = true
   @ViewBuilder let label: () -> Label
 
+  // The explicit foreground color below suppresses SwiftUI's automatic grey-out of disabled
+  // button labels, so an ambient `.disabled(true)` must be folded in manually.
+  @Environment(\.isEnabled) private var isEnabled
+
   private var isSelected: Bool { selection == property }
-  private var isDisabled: Bool { selection == nil }
+  private var hasNoSelection: Bool { selection == nil }
 
   private var foregroundColor: Color {
-    if isDisabled { return .secondary }
+    if hasNoSelection || !isEnabled { return .secondary }
     return isSelected ? .accentColor : .primary
   }
 
@@ -37,7 +41,7 @@ struct GenericPropertyButton<T: Equatable, Label: View>: View {
       label()
     }
     .foregroundColor(foregroundColor)
-    .disabled(isDisabled)
+    .disabled(hasNoSelection)
   }
 }
 

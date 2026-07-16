@@ -788,6 +788,16 @@ extension Interactor {
     }
   }
 
+  /// Whether the block's text is laid out on a path. The engine lays out text on a path as a
+  /// single line, so multi-line options (list style, line height, paragraph spacing, frame
+  /// behavior and clipping) have no effect and are disabled.
+  func isTextOnPath(_ id: BlockID?) -> Bool {
+    guard let id else { return false }
+    return get(id) { engine, block in
+      try engine.block.getTextOnPath(block) != nil
+    } ?? false
+  }
+
   func isAllowed(_ id: BlockID?, _ mode: SheetMode) -> Bool {
     switch mode {
     case .resize:

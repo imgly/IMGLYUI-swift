@@ -289,10 +289,19 @@ private struct ListStyleMenu: View {
 
   let blockID: Interactor.BlockID?
 
+  private var isTextOnPath: Bool { interactor.isTextOnPath(blockID) }
+
   var body: some View {
     let selection = interactor.bindListStyle(blockID)
     let active = selection.wrappedValue.map { $0 != IMGLYEngine.ListStyle.none } ?? false
     let restingStyle: IMGLYEngine.ListStyle = selection.wrappedValue == .ordered ? .ordered : .unordered
+    let triggerColor: SwiftUI.Color = if isTextOnPath {
+      .secondary
+    } else if active {
+      .accentColor
+    } else {
+      .primary
+    }
 
     FormattingMenuButton(
       accessibilityLabelKey: "ly_img_editor_edit_text_label_list_style",
@@ -318,8 +327,9 @@ private struct ListStyleMenu: View {
       ],
     ) {
       restingStyle.icon
-        .foregroundColor(active ? .accentColor : .primary)
+        .foregroundColor(triggerColor)
     }
+    .disabled(isTextOnPath)
   }
 }
 
