@@ -75,7 +75,7 @@ struct ResizeOverlay: View {
     }, apply: viewModel.apply)
   }
 
-  @ViewBuilder private func textField(
+  private func textField(
     title: LocalizedStringResource,
     textFieldTitle: LocalizedStringResource,
     text: Binding<CGFloat>,

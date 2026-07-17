@@ -22,7 +22,9 @@ final class CaptureService: NSObject, @unchecked Sendable {
   private let videoFileExtension = "mp4"
   private let videoCodec = AVVideoCodecType.h264
 
-  static var isMultiCamSupported: Bool { AVCaptureMultiCamSession.isMultiCamSupported }
+  static var isMultiCamSupported: Bool {
+    AVCaptureMultiCamSession.isMultiCamSupported
+  }
 
   // MARK: -
 
@@ -52,8 +54,13 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
   private var remainingRecordingDuration: CMTime = .positiveInfinity
 
-  private var requiresAudio: Bool { captureType != .photo }
-  private var requiresPhotoOutput: Bool { captureType != .video }
+  private var requiresAudio: Bool {
+    captureType != .photo
+  }
+
+  private var requiresPhotoOutput: Bool {
+    captureType != .video
+  }
 
   // MARK: -
 

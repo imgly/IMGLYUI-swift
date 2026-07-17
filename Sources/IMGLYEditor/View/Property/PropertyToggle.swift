@@ -18,7 +18,7 @@ struct PropertyToggle: View {
     property: Property,
     selection: Interactor.BlockID? = nil,
     defaultValue: Bool,
-    assetContext: EffectProperty.AssetContext? = nil
+    assetContext: EffectProperty.AssetContext? = nil,
   ) {
     self.label = label
     self.property = property

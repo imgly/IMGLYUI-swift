@@ -11,7 +11,7 @@ import SwiftUI
   @_spi(Internal) public init(
     title: LocalizedStringResource,
     message: String? = nil,
-    buttons: [ButtonState]
+    buttons: [ButtonState],
   ) {
     id = UUID()
     self.title = title
@@ -33,7 +33,7 @@ import SwiftUI
   @_spi(Internal) public init(
     title: LocalizedStringResource,
     role: ButtonRole? = nil,
-    action: @escaping @MainActor () -> Void
+    action: @escaping @MainActor () -> Void,
   ) {
     id = UUID()
     self.title = title

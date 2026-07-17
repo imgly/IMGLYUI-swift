@@ -91,23 +91,31 @@ public extension EditorEvent where Self == EditorEvents.ShareFile {
   /// Creates an ``EditorEvent`` to show the share sheet for the given URL.
   /// - Parameter url: The URL to share.
   /// - Returns: The created ``EditorEvents/ShareFile`` event.
-  static func shareFile(_ url: URL) -> Self { Self(url: url) }
+  static func shareFile(_ url: URL) -> Self {
+    Self(url: url)
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.OnClose {
   /// Creates an ``EditorEvent`` to trigger the onClose callback.
   /// - Returns: The created ``EditorEvents/OnClose`` event.
-  static var onClose: Self { Self() }
+  static var onClose: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.CloseEditor {
   /// Creates an ``EditorEvent`` to close the editor.
-  static var closeEditor: Self { Self() }
+  static var closeEditor: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.ShowCloseConfirmationAlert {
   /// Creates an ``EditorEvent`` to show the close confirmation alert.
-  static var showCloseConfirmationAlert: Self { Self() }
+  static var showCloseConfirmationAlert: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.ShowErrorAlert {
@@ -126,14 +134,18 @@ public extension EditorEvent where Self == EditorEvents.SetViewMode {
   /// ``EditorViewMode``s for recommendations.
   /// - Parameter viewMode: The view mode to set.
   /// - Returns: The created ``EditorEvents/SetViewMode`` event.
-  static func setViewMode(_ viewMode: EditorViewMode) -> Self { Self(viewMode: viewMode) }
+  static func setViewMode(_ viewMode: EditorViewMode) -> Self {
+    Self(viewMode: viewMode)
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.SetExtraCanvasInsets {
   /// Creates an ``EditorEvent`` to set extra zoom insets for the canvas..
   /// - Parameter insets: The extra insets to set.
   /// - Returns: The created ``EditorEvents/SetExtraCanvasInsets`` event.
-  static func setExtraCanvasInsets(_ insets: CGFloat) -> Self { Self(insets: insets) }
+  static func setExtraCanvasInsets(_ insets: CGFloat) -> Self {
+    Self(insets: insets)
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.SetVideoDurationConstraints {
@@ -163,26 +175,34 @@ public extension EditorEvent where Self == EditorEvents.Export.Start {
   /// Creates an ``EditorEvent`` to start the export process. This event triggers the
   /// ``EditorConfiguration/Builder/onExport(_:)``
   /// callback.
-  static var startExport: Self { Self() }
+  static var startExport: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Export.Cancel {
   /// Creates an ``EditorEvent`` to cancel the export process if it is running.
-  static var cancelExport: Self { Self() }
+  static var cancelExport: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Export.Progress {
   /// Creates an ``EditorEvent`` to show the export progress sheet for the given state.
   /// - Parameter progress: The export progress state.
   /// - Returns: The created ``EditorEvents/Export/Progress`` event.
-  static func exportProgress(_ progress: ExportProgress = .spinner) -> Self { Self(progress: progress) }
+  static func exportProgress(_ progress: ExportProgress = .spinner) -> Self {
+    Self(progress: progress)
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Export.Completed {
   /// Creates an ``EditorEvent`` to show the export completed sheet and to perform the given `action` after dismissal.
   /// - Parameter action: The action to perform after the sheet is dismissed.
   /// - Returns: The created ``EditorEvents/Export/Completed`` event.
-  static func exportCompleted(action: @escaping () -> Void = {}) -> Self { Self(action: action) }
+  static func exportCompleted(action: @escaping () -> Void = {}) -> Self {
+    Self(action: action)
+  }
 }
 
 public extension EditorEvents {
@@ -232,10 +252,12 @@ public extension EditorEvents.Selection {
 
 public extension EditorEvents.AddFrom {
   /// Default asset source IDs for adding assets based on the asset's ``IMGLYCoreUI/MediaType``.
-  static var defaultAssetSourceIDs: [MediaType: String] { [
-    .image: "ly.img.image.upload",
-    .movie: "ly.img.video.upload",
-  ] }
+  static var defaultAssetSourceIDs: [MediaType: String] {
+    [
+      .image: "ly.img.image.upload",
+      .movie: "ly.img.video.upload",
+    ]
+  }
 
   /// An event for adding assets from the photo roll.
   /// The behavior depends on the mode passed to ``IMGLYCore/PhotoRollAssetSource``:
@@ -289,7 +311,9 @@ public extension EditorEvent where Self == EditorEvents.Sheet.Open {
   /// Creates an ``EditorEvent`` to open a sheet of a specific `type`.
   /// - Parameter type: The type of the sheet to open.
   /// - Returns: The created ``EditorEvents/Sheet/Open`` event.
-  static func openSheet(type: SheetType) -> Self { Self(type: type) }
+  static func openSheet(type: SheetType) -> Self {
+    Self(type: type)
+  }
 
   /// Creates an ``EditorEvent`` to open a sheet with any `content`.
   /// - Attention: `List` or `NavigationView` must be used as `content` for non-floating sheet `style`s.
@@ -309,59 +333,81 @@ public extension EditorEvent where Self == EditorEvents.Sheet.Open {
 
 public extension EditorEvent where Self == EditorEvents.Sheet.Close {
   /// Creates an ``EditorEvent`` to close the sheet that is currently open.
-  static var closeSheet: Self { Self() }
+  static var closeSheet: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Selection.EnterTextEditMode {
   /// Creates an ``EditorEvent`` to enter text editing mode for the selected design block.
-  static var enterTextEditModeForSelection: Self { Self() }
+  static var enterTextEditModeForSelection: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Selection.Duplicate {
   /// Creates an ``EditorEvent`` to duplicate the selected design block.
-  static var duplicateSelection: Self { Self() }
+  static var duplicateSelection: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Selection.Split {
   /// Creates an ``EditorEvent`` to split the selected design block in a video scene.
-  static var splitSelection: Self { Self() }
+  static var splitSelection: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Selection.MoveAsClip {
   /// Creates an ``EditorEvent`` to move the selected design block into the background track as clip in a video scene.
-  static var moveSelectionAsClip: Self { Self() }
+  static var moveSelectionAsClip: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Selection.MoveAsOverlay {
   /// Creates an ``EditorEvent`` to move the selected design block from the background track to an overlay in a video
   /// scene.
-  static var moveSelectionAsOverlay: Self { Self() }
+  static var moveSelectionAsOverlay: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Selection.EnterGroup {
   /// Creates an ``EditorEvent`` to change selection from a selected group to the first block within that group.
-  static var enterGroupForSelection: Self { Self() }
+  static var enterGroupForSelection: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Selection.SelectGroup {
   /// Creates an ``EditorEvent`` to change selection from the selected design block to the group design block that
   /// contains the selected design block.
-  static var selectGroupForSelection: Self { Self() }
+  static var selectGroupForSelection: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Selection.Delete {
   /// Creates an ``EditorEvent`` to delete the selected design block.
-  static var deleteSelection: Self { Self() }
+  static var deleteSelection: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Selection.BringForward {
   /// Creates an ``EditorEvent`` to bring forward the selected design block.
-  static var bringSelectionForward: Self { Self() }
+  static var bringSelectionForward: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Selection.SendBackward {
   /// Creates an ``EditorEvent`` to send backward the selected design block.
-  static var sendSelectionBackward: Self { Self() }
+  static var sendSelectionBackward: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {
@@ -379,7 +425,9 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.PhotoRoll {
   }
 
   /// Creates an ``EditorEvent`` to add assets from the photo roll.
-  static var addFromPhotoRoll: Self { Self(addToBackgroundTrack: false) }
+  static var addFromPhotoRoll: Self {
+    Self(addToBackgroundTrack: false)
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.AddFrom.SystemPhotoRoll {
@@ -408,7 +456,9 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYPhotoRoll {
   Deprecated in v1.66.0. Please see the changelog for migration details:
   https://img.ly/docs/cesdk/changelog/v1-66-0/
   """)
-  static var addFromIMGLYPhotoRoll: Self { Self() }
+  static var addFromIMGLYPhotoRoll: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.AddFrom.SystemCamera {
@@ -440,12 +490,16 @@ public extension EditorEvent where Self == EditorEvents.AddFrom.IMGLYCamera {
 
 public extension EditorEvent where Self == EditorEvents.Navigation.ToPreviousPage {
   /// Creates an ``EditorEvent`` to navigate to the previous page.
-  static var navigateToPreviousPage: Self { Self() }
+  static var navigateToPreviousPage: Self {
+    Self()
+  }
 }
 
 public extension EditorEvent where Self == EditorEvents.Navigation.ToNextPage {
   /// Creates an ``EditorEvent`` to navigate to the next page.
-  static var navigateToNextPage: Self { Self() }
+  static var navigateToNextPage: Self {
+    Self()
+  }
 }
 
 public extension EditorEvents {

@@ -6,7 +6,9 @@ struct FontSheet: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
   @Environment(\.imglyFontFamilies) private var fontFamilies
-  private var fontLibrary: FontLibrary { interactor.fontLibrary }
+  private var fontLibrary: FontLibrary {
+    interactor.fontLibrary
+  }
 
   var assets: [AssetLoader.Asset] {
     if let fontFamilies {

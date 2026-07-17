@@ -22,7 +22,7 @@ public struct AssetLibraryCategory: Sendable, Equatable {
     id: String,
     title: LocalizedStringResource,
     icon: Image,
-    sections: [AssetLibrarySection]
+    sections: [AssetLibrarySection],
   ) {
     self.id = id
     self.title = title

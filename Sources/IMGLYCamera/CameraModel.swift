@@ -133,7 +133,7 @@ final class CameraModel: ObservableObject {
     _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
     mode: CameraMode = .standard,
-    onDismiss: CameraOnDismissCallback
+    onDismiss: CameraOnDismissCallback,
   ) {
     self.onDismiss = onDismiss
     self.settings = settings

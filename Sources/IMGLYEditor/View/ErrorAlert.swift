@@ -6,7 +6,9 @@ struct ErrorAlert: ViewModifier {
   let isSheet: Bool
 
   @State private var error = AlertState()
-  private var isActive: Bool { isSheet == interactor.sheet.isPresented }
+  private var isActive: Bool {
+    isSheet == interactor.sheet.isPresented
+  }
 
   @Environment(\.dismiss) private var dismiss
 

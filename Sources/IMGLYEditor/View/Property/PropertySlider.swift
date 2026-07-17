@@ -239,7 +239,9 @@ private extension PropertySlider {
   private static func floatClosures() -> AssetClosures<T> {
     AssetClosures(
       extractValue: { prop in
-        if case let .float(_, value, _, _, _, _) = prop { return value as? T }
+        if case let .float(_, value, _, _, _, _) = prop {
+          return value as? T
+        }
         return nil
       },
       buildUpdatedProperty: { prop, value in
@@ -258,7 +260,9 @@ private extension PropertySlider {
   private static func doubleClosures() -> AssetClosures<T> {
     AssetClosures(
       extractValue: { prop in
-        if case let .double(_, value, _, _, _, _) = prop { return value as? T }
+        if case let .double(_, value, _, _, _, _) = prop {
+          return value as? T
+        }
         return nil
       },
       buildUpdatedProperty: { prop, value in
@@ -277,7 +281,9 @@ private extension PropertySlider {
   private static func intClosures() -> AssetClosures<T> {
     AssetClosures(
       extractValue: { prop in
-        if case let .int(_, value, _, _, _, _) = prop { return T(exactly: value) ?? T(value) }
+        if case let .int(_, value, _, _, _, _) = prop {
+          return T(exactly: value) ?? T(value)
+        }
         return nil
       },
       buildUpdatedProperty: { prop, value in

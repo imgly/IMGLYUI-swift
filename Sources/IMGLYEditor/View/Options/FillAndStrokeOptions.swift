@@ -57,7 +57,9 @@ struct FillAndStrokeOptions: View {
   // The `PropertyGetter` for retrieving the fill type.
   let fillTypeGetter: Interactor.PropertyGetter<ColorFillType> = { engine, id, propertyBlock, _ in
     let fillEnabled = try engine.block.isFillEnabled(id)
-    if !fillEnabled { return ColorFillType.none }
+    if !fillEnabled {
+      return ColorFillType.none
+    }
     return try engine.block.get(id, propertyBlock, property: .key(.type))
   }
 
@@ -70,8 +72,7 @@ struct FillAndStrokeOptions: View {
       let changed = try blocks.filter {
         let fillType: ColorFillType = try engine.block.get($0, propertyBlock, property: .key(.type))
         let enabledChanged = try engine.block.isFillEnabled($0) == isNone
-        let hasChanged = fillType != (isNone ? fallbackValue : value) || enabledChanged
-        return hasChanged
+        return fillType != (isNone ? fallbackValue : value) || enabledChanged
       }
 
       try changed.forEach {

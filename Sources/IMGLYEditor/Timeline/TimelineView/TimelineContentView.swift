@@ -73,7 +73,11 @@ struct TimelineContentView: View {
     let isVoiceOverRecordModeRecording = timeline.interactor?.isVoiceOverRecordModeRecording == true
     let maxPlaybackPoints = timelineProperties.player.maxPlaybackDuration.map { timeline.convertToPoints(time: $0) }
     let isPlayheadStickyToMax = maxPlaybackPoints.map { scrollOffsetX >= $0 } ?? false
-    let isClipDragging = if case .dragging = timelineProperties.dragDropState { true } else { false }
+    let isClipDragging = if case .dragging = timelineProperties.dragDropState {
+      true
+    } else {
+      false
+    }
     let playheadOffset: CGFloat = if let maxPlaybackPoints, scrollOffsetX >= maxPlaybackPoints {
       maxPlaybackPoints - scrollOffsetX
     } else if horizontalScrollViewDelegate.isDraggingOrDecelerating || isClipDragging {
@@ -339,7 +343,9 @@ struct TimelineContentView: View {
       guard !horizontalScrollViewDelegate.isDraggingOrDecelerating else { return }
       // Auto-scroll owns the scroll position during a clip drag — running
       // updateHorizontalOffset here would feedback-loop with `tickAutoScroll`.
-      if case .dragging = timelineProperties.dragDropState { return }
+      if case .dragging = timelineProperties.dragDropState {
+        return
+      }
       updateHorizontalOffset()
     }
 
@@ -355,7 +361,11 @@ struct TimelineContentView: View {
     }
 
     .onChange(of: horizontalScrollViewDelegate.contentOffset) { newValue in
-      let isClipDragging = if case .dragging = timelineProperties.dragDropState { true } else { false }
+      let isClipDragging = if case .dragging = timelineProperties.dragDropState {
+        true
+      } else {
+        false
+      }
       if horizontalScrollViewDelegate.isDraggingOrDecelerating || isClipDragging {
         let time = timeline.convertToTime(points: newValue.x)
         timeline.interactor?.setPlayheadPosition(time)
@@ -391,7 +401,9 @@ struct TimelineContentView: View {
       dragAutoScrollTask = nil
       return
     }
-    if dragAutoScrollTask != nil { return } // task re-reads state each tick
+    if dragAutoScrollTask != nil {
+      return
+    } // task re-reads state each tick
     let clipID = context.clipID
     dragAutoScrollTask = Task { @MainActor in
       while !Task.isCancelled {
@@ -421,7 +433,9 @@ struct TimelineContentView: View {
           axis: .vertical,
         )
 
-        if !horizontalScrolled, !verticalScrolled { break }
+        if !horizontalScrolled, !verticalScrolled {
+          break
+        }
 
         try? await Task.sleep(nanoseconds: 16_666_666) // ~60fps
       }
@@ -467,11 +481,15 @@ struct TimelineContentView: View {
       speed = dragAutoScrollBaseSpeed + overshoot * dragAutoScrollDistanceMultiplier
     }
 
-    if speed == 0 { return false }
+    if speed == 0 {
+      return false
+    }
 
     let proposed = currentOffset + speed
     let clamped = max(0, min(maxOffset, proposed))
-    if clamped == currentOffset { return false }
+    if clamped == currentOffset {
+      return false
+    }
 
     if axis == .horizontal {
       scrollView.contentOffset.x = clamped

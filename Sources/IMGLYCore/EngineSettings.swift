@@ -23,7 +23,7 @@ public struct EngineSettings: Sendable {
     license: String? = nil,
     userID: String? = nil,
     baseURL: URL? = nil,
-    host: String = ""
+    host: String = "",
   ) {
     self.license = license
     self.userID = userID
@@ -33,5 +33,5 @@ public struct EngineSettings: Sendable {
 
   /// The default base URL used when no `baseURL` is provided: the public CE.SDK CDN.
   private static let defaultBaseURL =
-    URL(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.78.0/assets")!
+    URL(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.79.0-rc.0/assets")!
 }

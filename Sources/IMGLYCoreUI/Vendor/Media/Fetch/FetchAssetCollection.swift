@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Fetches a set of asset collections from the `Photos` framework
 @MainActor @propertyWrapper
-@_spi(Internal) public struct FetchAssetCollection<Result>: DynamicProperty where Result: PHAssetCollection {
+@_spi(Internal) public struct FetchAssetCollection<Result: PHAssetCollection>: DynamicProperty {
   @ObservedObject
   private(set) var observer: ResultsObserver<Result>
 

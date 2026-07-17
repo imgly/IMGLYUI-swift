@@ -139,7 +139,7 @@ struct KeyboardToolbar: View {
 private struct IslandChrome: ViewModifier {
   let usesLegacyDesign: Bool
 
-  @ViewBuilder func body(content: Content) -> some View {
+  func body(content: Content) -> some View {
     if #available(iOS 26.0, *), !usesLegacyDesign {
       content
         .glassEffect(.regular.interactive(), in: Capsule())
@@ -289,7 +289,9 @@ private struct ListStyleMenu: View {
 
   let blockID: Interactor.BlockID?
 
-  private var isTextOnPath: Bool { interactor.isTextOnPath(blockID) }
+  private var isTextOnPath: Bool {
+    interactor.isTextOnPath(blockID)
+  }
 
   var body: some View {
     let selection = interactor.bindListStyle(blockID)

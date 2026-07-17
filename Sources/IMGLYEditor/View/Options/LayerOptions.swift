@@ -6,7 +6,7 @@ struct LayerOptions: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  @ViewBuilder var layerButtons: some View {
+  var layerButtons: some View {
     VStack(spacing: 8) {
       HStack(spacing: 8) {
         ActionButton(.toFront)
@@ -32,7 +32,7 @@ struct LayerOptions: View {
             PropertySlider<Float>(
               .imgly.localized("ly_img_editor_sheet_layer_label_opacity"),
               in: 0 ... 1,
-              property: .key(.opacity)
+              property: .key(.opacity),
             )
           } header: {
             Text(.imgly.localized("ly_img_editor_sheet_layer_label_opacity"))
@@ -44,7 +44,7 @@ struct LayerOptions: View {
           Section {
             PropertyNavigationLink<BlendMode>(
               .imgly.localized("ly_img_editor_sheet_layer_label_blend_mode"),
-              property: .key(.blendMode)
+              property: .key(.blendMode),
             )
           }
         }

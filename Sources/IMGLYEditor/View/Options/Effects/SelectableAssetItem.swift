@@ -24,7 +24,7 @@ struct SelectableAssetItem<Content: View>: View {
     }
   }
 
-  @ViewBuilder var overlay: some View {
+  var overlay: some View {
     ZStack {
       Color.black.opacity(0.5)
       image

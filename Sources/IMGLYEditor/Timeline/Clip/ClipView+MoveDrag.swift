@@ -241,8 +241,16 @@ extension ClipView {
     } else {
       nil
     }
-    let previousTargetTrackID: UUID? = if case let .existingTrack(id, _, _, _) = previousDropTarget { id } else { nil }
-    let newTargetTrackID: UUID? = if case let .existingTrack(id, _, _, _) = newDropTarget { id } else { nil }
+    let previousTargetTrackID: UUID? = if case let .existingTrack(id, _, _, _) = previousDropTarget {
+      id
+    } else {
+      nil
+    }
+    let newTargetTrackID: UUID? = if case let .existingTrack(id, _, _, _) = newDropTarget {
+      id
+    } else {
+      nil
+    }
 
     // Pointer crossed into a different track: clear the old preview, snapshot the new.
     if previousTargetTrackID != newTargetTrackID {
@@ -542,7 +550,9 @@ extension ClipView {
     }
 
     if pointerY < firstByY.frame.minY {
-      if sourceIsSolo, firstByY.track.id == sourceTrackID { return fallbackToNearest() }
+      if sourceIsSolo, firstByY.track.id == sourceTrackID {
+        return fallbackToNearest()
+      }
       return DropResolution(
         target: .newTrack(insertAt: dataSource.tracks.count, timeOffset: dropTime),
         snapPosition: nil,
@@ -550,7 +560,9 @@ extension ClipView {
     }
 
     if pointerY > lastByY.frame.maxY {
-      if sourceIsSolo, lastByY.track.id == sourceTrackID { return fallbackToNearest() }
+      if sourceIsSolo, lastByY.track.id == sourceTrackID {
+        return fallbackToNearest()
+      }
       return DropResolution(
         target: .newTrack(insertAt: lastByY.datasourceIndex, timeOffset: dropTime),
         snapPosition: nil,
@@ -562,7 +574,9 @@ extension ClipView {
       let lower = sortedByY[i + 1]
       guard pointerY > upper.frame.maxY, pointerY < lower.frame.minY else { continue }
       let sourceAdjacent = upper.track.id == sourceTrackID || lower.track.id == sourceTrackID
-      if sourceIsSolo, sourceAdjacent { return fallbackToNearest() }
+      if sourceIsSolo, sourceAdjacent {
+        return fallbackToNearest()
+      }
       return DropResolution(target: .newTrack(insertAt: upper.datasourceIndex, timeOffset: dropTime), snapPosition: nil)
     }
 
@@ -673,7 +687,9 @@ extension ClipView {
     for (i, entry) in others.enumerated() {
       guard let otherDur = entry.clip.duration else { continue }
       let otherMid = entry.originalStart + CMTime(seconds: otherDur.seconds / 2)
-      if pointerTime < otherMid { return i }
+      if pointerTime < otherMid {
+        return i
+      }
     }
     return others.count
   }

@@ -6,11 +6,6 @@ private struct AdaptiveLabelStyle<Compact: LabelStyle, Normal: LabelStyle>: Labe
   let compactStyle: Compact
   let normalStyle: Normal
 
-  init(compactStyle: Compact, normalStyle: Normal) {
-    self.compactStyle = compactStyle
-    self.normalStyle = normalStyle
-  }
-
   func makeBody(configuration: Configuration) -> some View {
     if verticalSizeClass == .compact {
       Label(configuration)

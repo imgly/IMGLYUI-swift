@@ -16,8 +16,13 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
     return hasher.finalize()
   }
 
-  public var sources: [AssetLoader.SourceData] { [source] }
-  public var view: AnyView { AnyView(erasing: body) }
+  public var sources: [AssetLoader.SourceData] {
+    [source]
+  }
+
+  public var view: AnyView {
+    AnyView(erasing: body)
+  }
 
   /// The `Destination` content view of the asset source without section(s).
   public var content: some View {
@@ -41,7 +46,13 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
     /// resulting behavior is identical to the single `.title` mode and the `.titleForGroup` closure should return a
     /// valid title.
     case titleForGroup((_ group: String?)
-      -> LocalizedStringResource = { if let group = $0 { "\(group)" } else { "Assets" } })
+      -> LocalizedStringResource = {
+        if let group = $0 {
+          "\(group)"
+        } else {
+          "Assets"
+        }
+      })
   }
 
   /// Creates one or more sections for an asset `source` depending on the used display `mode`. Each section is displayed
@@ -71,7 +82,7 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
     self.accessory = accessory
   }
 
-  @ViewBuilder private func sections(_ groups: [String]) -> some View {
+  private func sections(_ groups: [String]) -> some View {
     ForEach(groups, id: \.self) { group in
       let sources = [source.narrowed(to: group)]
       AssetLibrarySectionView(title(group)) {

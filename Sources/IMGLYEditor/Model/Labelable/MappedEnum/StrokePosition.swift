@@ -22,5 +22,7 @@ enum StrokePosition: String, MappedEnum, Labelable {
     }
   }
 
-  var isSystemImage: Bool { false }
+  var isSystemImage: Bool {
+    false
+  }
 }

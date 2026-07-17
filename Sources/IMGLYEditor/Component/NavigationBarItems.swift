@@ -13,21 +13,44 @@ public extension NavigationBar.Buttons {
 
 public extension NavigationBar.Buttons.ID {
   /// The id of the ``NavigationBar/Buttons/closeEditor(action:label:isEnabled:isVisible:)`` button.
-  static var closeEditor: EditorComponentID { "ly.img.component.navigationBar.button.closeEditor" }
+  static var closeEditor: EditorComponentID {
+    "ly.img.component.navigationBar.button.closeEditor"
+  }
+
   /// The id of the ``NavigationBar/Buttons/undo(action:label:isEnabled:isVisible:)`` button.
-  static var undo: EditorComponentID { "ly.img.component.navigationBar.button.undo" }
+  static var undo: EditorComponentID {
+    "ly.img.component.navigationBar.button.undo"
+  }
+
   /// The id of the ``NavigationBar/Buttons/redo(action:label:isEnabled:isVisible:)`` button.
-  static var redo: EditorComponentID { "ly.img.component.navigationBar.button.redo" }
+  static var redo: EditorComponentID {
+    "ly.img.component.navigationBar.button.redo"
+  }
+
   /// The id of the ``NavigationBar/Buttons/export(action:label:isEnabled:isVisible:)`` button.
-  static var export: EditorComponentID { "ly.img.component.navigationBar.button.export" }
+  static var export: EditorComponentID {
+    "ly.img.component.navigationBar.button.export"
+  }
+
   /// The id of the ``NavigationBar/Buttons/togglePreviewMode(action:label:isEnabled:isVisible:)`` button.
-  static var togglePreviewMode: EditorComponentID { "ly.img.component.navigationBar.button.togglePreviewMode" }
+  static var togglePreviewMode: EditorComponentID {
+    "ly.img.component.navigationBar.button.togglePreviewMode"
+  }
+
   /// The id of the ``NavigationBar/Buttons/togglePagesMode(action:label:isEnabled:isVisible:)`` button.
-  static var togglePagesMode: EditorComponentID { "ly.img.component.navigationBar.button.togglePagesMode" }
+  static var togglePagesMode: EditorComponentID {
+    "ly.img.component.navigationBar.button.togglePagesMode"
+  }
+
   /// The id of the ``NavigationBar/Buttons/previousPage(action:label:isEnabled:isVisible:)`` button.
-  static var previousPage: EditorComponentID { "ly.img.component.navigationBar.button.previousPage" }
+  static var previousPage: EditorComponentID {
+    "ly.img.component.navigationBar.button.previousPage"
+  }
+
   /// The id of the ``NavigationBar/Buttons/nextPage(action:label:isEnabled:isVisible:)`` button.
-  static var nextPage: EditorComponentID { "ly.img.component.navigationBar.button.nextPage" }
+  static var nextPage: EditorComponentID {
+    "ly.img.component.navigationBar.button.nextPage"
+  }
 }
 
 @MainActor

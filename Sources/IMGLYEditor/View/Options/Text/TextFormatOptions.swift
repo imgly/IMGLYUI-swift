@@ -8,9 +8,13 @@ struct TextFormatOptions: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  private var fontLibrary: FontLibrary { interactor.fontLibrary }
+  private var fontLibrary: FontLibrary {
+    interactor.fontLibrary
+  }
 
-  private var isTextOnPath: Bool { interactor.isTextOnPath(id) }
+  private var isTextOnPath: Bool {
+    interactor.isTextOnPath(id)
+  }
 
   var body: some View {
     List {
@@ -52,7 +56,7 @@ struct TextFormatOptions: View {
     }
   }
 
-  @ViewBuilder var fontWeightSelection: some View {
+  var fontWeightSelection: some View {
     HStack(spacing: 32) {
       PropertyButton(property: .bold, selection: interactor.bindBoldToggle(id))
       PropertyButton(property: .italic, selection: interactor.bindItalicToggle(id))
@@ -122,14 +126,14 @@ struct TextFormatOptions: View {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_font_size"),
         in: fontSizeRange,
-        property: .key(.textFontSize)
+        property: .key(.textFontSize),
       )
     } header: {
       Text(String(localized: .imgly.localized("ly_img_editor_sheet_format_text_label_font_size")) + unitSuffix)
     }
   }
 
-  @ViewBuilder var alignmentSelection: some View {
+  var alignmentSelection: some View {
     Section {
       HStack {
         let alignmentX: Binding<HorizontalAlignment?> = interactor.bind(id, property: .key(.textHorizontalAlignment))
@@ -271,7 +275,7 @@ struct TextFormatOptions: View {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"),
         in: -0.15 ... 1.4,
-        property: .key(.textLetterSpacing)
+        property: .key(.textLetterSpacing),
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"))
@@ -282,7 +286,7 @@ struct TextFormatOptions: View {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_line_height"),
         in: 0.5 ... 2.5,
-        property: .key(.textLineHeight)
+        property: .key(.textLineHeight),
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_line_height"))
@@ -292,7 +296,7 @@ struct TextFormatOptions: View {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"),
         in: 0 ... 2.5,
-        property: .key(.textParagraphSpacing)
+        property: .key(.textParagraphSpacing),
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"))
@@ -300,7 +304,7 @@ struct TextFormatOptions: View {
     .disabled(isTextOnPath)
   }
 
-  @ViewBuilder var listStyleSelection: some View {
+  var listStyleSelection: some View {
     Section {
       HStack {
         let listStyle = interactor.bindListStyle(id)

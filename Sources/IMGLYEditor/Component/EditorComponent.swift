@@ -91,7 +91,7 @@ public protocol EditorComponent {
   /// The content and behavior of this component.
   /// - Parameter context: The context of this component.
   /// - Returns: The view representation of this component.
-  /// - Note: Don't encode the visibility in this view. Use ``isVisible(_:)`` instead.
+  /// - Note: Don't encode the visibility in this view. Use ``EditorComponent/isVisible(_:)`` instead.
   @MainActor @ViewBuilder
   func body(_ context: Context) throws -> Body
 }
@@ -112,7 +112,9 @@ extension EditorComponent {
     } catch {
       if let interactor = context.eventHandler as? Interactor {
         let error = EditorError(
-          "Could not create View for EditorComponent `\(id.value)`.\nReason:\n\(error.localizedDescription)",
+          String(localized: .imgly.localized(
+            "ly_img_editor_error_editor_component_view_creation \(id.value) \(error.localizedDescription)",
+          )),
         )
         interactor.handleErrorWithTask(error)
       }

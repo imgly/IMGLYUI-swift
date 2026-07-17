@@ -11,8 +11,13 @@ import SwiftUI
 
   @State private var canvasGeometry: Geometry?
   @State private var sheetGeometry: Geometry?
-  private var sheetGeometryIfPresented: Geometry? { interactor.sheet.isPresented ? sheetGeometry : nil }
-  private var zoomPadding: CGFloat { editorEnvironment.zoomPadding ?? 0 }
+  private var sheetGeometryIfPresented: Geometry? {
+    interactor.sheet.isPresented ? sheetGeometry : nil
+  }
+
+  private var zoomPadding: CGFloat {
+    editorEnvironment.zoomPadding ?? 0
+  }
 
   @State private var interactivePopGestureRecognizer: UIGestureRecognizer?
 
@@ -68,7 +73,9 @@ import SwiftUI
             sheetGeometry = newValue
           }
           .onChange(of: sheetGeometry) { newValue in
-            if newValue?.frame == .zero { return }
+            if newValue?.frame == .zero {
+              return
+            }
             updateZoom(for: .sheetGeometryChanged, sheetGeometry: newValue)
           }
           .imgly.errorAlert(isSheet: true)

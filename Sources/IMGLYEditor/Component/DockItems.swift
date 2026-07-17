@@ -13,60 +13,122 @@ public extension Dock.Buttons {
 
 public extension Dock.Buttons.ID {
   /// The id of the ``Dock/Buttons/elementsLibrary(action:title:icon:isEnabled:isVisible:)`` button.
-  static var elementsLibrary: EditorComponentID { "ly.img.component.dock.button.elementsLibrary" }
+  static var elementsLibrary: EditorComponentID {
+    "ly.img.component.dock.button.elementsLibrary"
+  }
+
   /// The id of the ``Dock/Buttons/audioLibrary(action:title:icon:isEnabled:isVisible:)`` button.
-  static var audioLibrary: EditorComponentID { "ly.img.component.dock.button.audioLibrary" }
+  static var audioLibrary: EditorComponentID {
+    "ly.img.component.dock.button.audioLibrary"
+  }
+
   /// The id of the ``Dock/Buttons/imagesLibrary(action:title:icon:isEnabled:isVisible:)`` button.
-  static var imagesLibrary: EditorComponentID { "ly.img.component.dock.button.imagesLibrary" }
+  static var imagesLibrary: EditorComponentID {
+    "ly.img.component.dock.button.imagesLibrary"
+  }
+
   /// The id of the ``Dock/Buttons/textLibrary(action:title:icon:isEnabled:isVisible:)`` button.
-  static var textLibrary: EditorComponentID { "ly.img.component.dock.button.textLibrary" }
+  static var textLibrary: EditorComponentID {
+    "ly.img.component.dock.button.textLibrary"
+  }
+
   /// The id of the ``Dock/Buttons/shapesLibrary(action:title:icon:isEnabled:isVisible:)`` button.
-  static var shapesLibrary: EditorComponentID { "ly.img.component.dock.button.shapesLibrary" }
+  static var shapesLibrary: EditorComponentID {
+    "ly.img.component.dock.button.shapesLibrary"
+  }
+
   /// The id of the ``Dock/Buttons/stickersLibrary(action:title:icon:isEnabled:isVisible:)`` button.
-  static var stickersLibrary: EditorComponentID { "ly.img.component.dock.button.stickersLibrary" }
+  static var stickersLibrary: EditorComponentID {
+    "ly.img.component.dock.button.stickersLibrary"
+  }
 
   /// The id of the ``Dock/Buttons/overlaysLibrary(action:title:icon:isEnabled:isVisible:)`` button.
-  static var overlaysLibrary: EditorComponentID { "ly.img.component.dock.button.overlaysLibrary" }
+  static var overlaysLibrary: EditorComponentID {
+    "ly.img.component.dock.button.overlaysLibrary"
+  }
+
   /// The id of the ``Dock/Buttons/stickersAndShapesLibrary(action:title:icon:isEnabled:isVisible:)`` button.
-  static var stickersAndShapesLibrary: EditorComponentID { "ly.img.component.dock.button.stickersAndShapesLibrary" }
+  static var stickersAndShapesLibrary: EditorComponentID {
+    "ly.img.component.dock.button.stickersAndShapesLibrary"
+  }
 
   /// The id of the ``Dock/Buttons/photoRoll(action:title:icon:isEnabled:isVisible:)`` button.
-  static var photoRoll: EditorComponentID { "ly.img.component.dock.button.photoRoll" }
+  static var photoRoll: EditorComponentID {
+    "ly.img.component.dock.button.photoRoll"
+  }
+
   /// The id of the ``Dock/Buttons/systemPhotoRoll(action:title:icon:isEnabled:isVisible:)`` button.
   @available(*, deprecated, message: """
   Deprecated in v1.66.0. Please see the changelog for migration details:
   https://img.ly/docs/cesdk/changelog/v1-66-0/
   """)
-  static var systemPhotoRoll: EditorComponentID { "ly.img.component.dock.button.systemPhotoRoll" }
+  static var systemPhotoRoll: EditorComponentID {
+    "ly.img.component.dock.button.systemPhotoRoll"
+  }
+
   /// The id of the ``Dock/Buttons/imglyPhotoRoll(action:title:icon:isEnabled:isVisible:)`` button.
   @available(*, deprecated, message: """
   Deprecated in v1.66.0. Please see the changelog for migration details:
   https://img.ly/docs/cesdk/changelog/v1-66-0/
   """)
-  static var imglyPhotoRoll: EditorComponentID { "ly.img.component.dock.button.imglyPhotoRoll" }
+  static var imglyPhotoRoll: EditorComponentID {
+    "ly.img.component.dock.button.imglyPhotoRoll"
+  }
+
   /// The id of the ``Dock/Buttons/systemCamera(action:title:icon:isEnabled:isVisible:)`` button.
-  static var systemCamera: EditorComponentID { "ly.img.component.dock.button.systemCamera" }
+  static var systemCamera: EditorComponentID {
+    "ly.img.component.dock.button.systemCamera"
+  }
+
   /// The id of the ``Dock/Buttons/imglyCamera(action:title:icon:isEnabled:isVisible:)`` button.
-  static var imglyCamera: EditorComponentID { "ly.img.component.dock.button.imglyCamera" }
+  static var imglyCamera: EditorComponentID {
+    "ly.img.component.dock.button.imglyCamera"
+  }
+
   /// The id of the ``Dock/Buttons/voiceover(action:title:icon:isEnabled:isVisible:)`` button.
-  static var voiceover: EditorComponentID { "ly.img.component.dock.button.voiceover" }
+  static var voiceover: EditorComponentID {
+    "ly.img.component.dock.button.voiceover"
+  }
 
   /// The id of the ``Dock/Buttons/reorder(action:title:icon:isEnabled:isVisible:)`` button.
-  static var reorder: EditorComponentID { "ly.img.component.dock.button.reorder" }
+  static var reorder: EditorComponentID {
+    "ly.img.component.dock.button.reorder"
+  }
+
   /// The id of the ``Dock/Buttons/adjustments(action:title:icon:isEnabled:isVisible:)`` button.
-  static var adjustments: EditorComponentID { "ly.img.component.dock.button.adjustments" }
+  static var adjustments: EditorComponentID {
+    "ly.img.component.dock.button.adjustments"
+  }
+
   /// The id of the ``Dock/Buttons/filter(action:title:icon:isEnabled:isVisible:)`` button.
-  static var filter: EditorComponentID { "ly.img.component.dock.button.filter" }
+  static var filter: EditorComponentID {
+    "ly.img.component.dock.button.filter"
+  }
+
   /// The id of the ``Dock/Buttons/effect(action:title:icon:isEnabled:isVisible:)`` button.
-  static var effect: EditorComponentID { "ly.img.component.dock.button.effect" }
+  static var effect: EditorComponentID {
+    "ly.img.component.dock.button.effect"
+  }
+
   /// The id of the ``Dock/Buttons/blur(action:title:icon:isEnabled:isVisible:)`` button.
-  static var blur: EditorComponentID { "ly.img.component.dock.button.blur" }
+  static var blur: EditorComponentID {
+    "ly.img.component.dock.button.blur"
+  }
+
   /// The id of the ``Dock/Buttons/crop(action:title:icon:isEnabled:isVisible:)`` button.
-  static var crop: EditorComponentID { "ly.img.component.dock.button.crop" }
+  static var crop: EditorComponentID {
+    "ly.img.component.dock.button.crop"
+  }
+
   /// The id of the ``Dock/Buttons/resize(action:title:icon:isEnabled:isVisible:)`` button.
-  static var resize: EditorComponentID { "ly.img.component.dock.button.resize" }
+  static var resize: EditorComponentID {
+    "ly.img.component.dock.button.resize"
+  }
+
   /// The id of the ``Dock/Buttons/assetLibrary(action:title:icon:isEnabled:isVisible:modifier:)`` button.
-  static var assetLibrary: EditorComponentID { "ly.img.component.dock.button.assetLibrary" }
+  static var assetLibrary: EditorComponentID {
+    "ly.img.component.dock.button.assetLibrary"
+  }
 }
 
 @MainActor

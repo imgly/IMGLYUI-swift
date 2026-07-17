@@ -18,7 +18,7 @@ struct FontSizeSheet: View {
     }
   }
 
-  @ViewBuilder func propertyButton(property: SizeLetter) -> some View {
+  func propertyButton(property: SizeLetter) -> some View {
     GenericPropertyButton(property: property, selection: fontSizeLetter) {
       Label {
         Text(property.localizedStringResource)

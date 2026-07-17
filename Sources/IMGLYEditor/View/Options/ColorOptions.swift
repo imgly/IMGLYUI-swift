@@ -53,7 +53,9 @@ struct ColorOptions: View {
     }
   }
 
-  private var isEnabled: Bool { isEnabledBinding?.wrappedValue ?? true }
+  private var isEnabled: Bool {
+    isEnabledBinding?.wrappedValue ?? true
+  }
 
   /// Single-colour view onto `colors` for the colour pickers; a mixed selection shows its first colour.
   private var color: Binding<CGColor> {

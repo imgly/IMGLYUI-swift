@@ -9,7 +9,7 @@ import SwiftUI
   @_spi(Internal) public init(
     @ViewBuilder centered: () -> Centered,
     @ViewBuilder leading: () -> Leading,
-    @ViewBuilder trailing: () -> Trailing
+    @ViewBuilder trailing: () -> Trailing,
   ) {
     self.leading = leading()
     self.centered = centered()

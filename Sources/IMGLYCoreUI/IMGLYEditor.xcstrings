@@ -3282,6 +3282,91 @@
         }
       }
     },
+    "ly_img_editor_error_canvas_menu_view_creation %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht für Canvas Menu konnte nicht erstellt werden.\nGrund:\n%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create View for Canvas Menu.\nReason:\n%@"
+          }
+        }
+      }
+    },
+    "ly_img_editor_error_dock_view_creation %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht für Dock konnte nicht erstellt werden.\nGrund:\n%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create View for Dock.\nReason:\n%@"
+          }
+        }
+      }
+    },
+    "ly_img_editor_error_editor_component_view_creation %@ %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht für EditorComponent `%1$@` konnte nicht erstellt werden.\nGrund:\n%2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create View for EditorComponent `%1$@`.\nReason:\n%2$@"
+          }
+        }
+      }
+    },
+    "ly_img_editor_error_inspector_bar_view_creation %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht für Inspector Bar konnte nicht erstellt werden.\nGrund:\n%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create View for Inspector Bar.\nReason:\n%@"
+          }
+        }
+      }
+    },
+    "ly_img_editor_error_navigation_bar_view_creation %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht für Navigation Bar konnte nicht erstellt werden.\nGrund:\n%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create View for Navigation Bar.\nReason:\n%@"
+          }
+        }
+      }
+    },
     "ly_img_editor_inspector_bar_button_adjustments" : {
       "extractionState" : "manual",
       "localizations" : {

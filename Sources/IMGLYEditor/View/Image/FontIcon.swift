@@ -4,7 +4,9 @@ import SwiftUI
 @_spi(Internal) public struct FontIcon: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
-  private var fontLibrary: FontLibrary { interactor.fontLibrary }
+  private var fontLibrary: FontLibrary {
+    interactor.fontLibrary
+  }
 
   @_spi(Internal) public init() {}
 

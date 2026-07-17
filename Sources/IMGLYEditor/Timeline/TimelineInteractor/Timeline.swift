@@ -42,7 +42,7 @@ final class Timeline: ObservableObject {
 
   init(
     interactor: any TimelineInteractor,
-    configuration: TimelineConfiguration
+    configuration: TimelineConfiguration,
   ) {
     self.interactor = interactor
     pointsToSecondsRatio = configuration.pointsToSecondsRatio

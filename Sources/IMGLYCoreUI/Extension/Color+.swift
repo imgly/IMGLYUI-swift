@@ -6,14 +6,20 @@
 import SwiftUI
 
 extension Color: HSBAConvertible {
-  var hsba: HSBA? { HSBA(self) }
+  var hsba: HSBA? {
+    HSBA(self)
+  }
 }
 
 @_spi(Internal) public extension Color {
   #if os(iOS)
-    private var nativeColor: UIColor { UIColor(self) }
+    private var nativeColor: UIColor {
+      UIColor(self)
+    }
   #elseif os(macOS)
-    private var nativeColor: NSColor { NSColor(self) }
+    private var nativeColor: NSColor {
+      NSColor(self)
+    }
   #endif
 
   var asCGColor: CGColor {

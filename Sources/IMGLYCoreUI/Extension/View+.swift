@@ -7,7 +7,9 @@ import UniformTypeIdentifiers
 
 public extension View {
   /// Gets a namespace holder for `IMGLY` compatible types.
-  var imgly: IMGLY<Self> { .init(self) }
+  var imgly: IMGLY<Self> {
+    .init(self)
+  }
 }
 
 // MARK: - Internal interface
@@ -58,29 +60,68 @@ public extension View {
     wrapped.modifier(AssetLoader(sources: sources, search: search, order: order, perPage: perPage))
   }
 
-  func assetGrid(axis: Axis) -> some View { wrapped.environment(\.imglyAssetGridAxis, axis) }
-  func assetGrid(items: [GridItem]) -> some View { wrapped.environment(
-    \.imglyAssetGridItems,
-    AssetGridItems(gridItems: items),
-  ) }
-  func assetGrid(spacing: CGFloat?) -> some View { wrapped.environment(\.imglyAssetGridSpacing, spacing) }
-  func assetGrid(edges: Edge.Set) -> some View { wrapped.environment(\.imglyAssetGridEdges, edges) }
-  func assetGrid(padding: CGFloat?) -> some View { wrapped.environment(\.imglyAssetGridPadding, padding) }
+  func assetGrid(axis: Axis) -> some View {
+    wrapped.environment(\.imglyAssetGridAxis, axis)
+  }
+
+  func assetGrid(items: [GridItem]) -> some View {
+    wrapped.environment(
+      \.imglyAssetGridItems,
+      AssetGridItems(gridItems: items),
+    )
+  }
+
+  func assetGrid(spacing: CGFloat?) -> some View {
+    wrapped.environment(\.imglyAssetGridSpacing, spacing)
+  }
+
+  func assetGrid(edges: Edge.Set) -> some View {
+    wrapped.environment(\.imglyAssetGridEdges, edges)
+  }
+
+  func assetGrid(padding: CGFloat?) -> some View {
+    wrapped.environment(\.imglyAssetGridPadding, padding)
+  }
+
   func assetGrid(messageTextOnly: Bool)
-    -> some View { wrapped.environment(\.imglyAssetGridMessageTextOnly, messageTextOnly) }
-  func assetGrid(maxItemCount: Int) -> some View { wrapped.environment(\.imglyAssetGridMaxItemCount, maxItemCount) }
+    -> some View {
+    wrapped.environment(\.imglyAssetGridMessageTextOnly, messageTextOnly)
+  }
+
+  func assetGrid(maxItemCount: Int) -> some View {
+    wrapped.environment(\.imglyAssetGridMaxItemCount, maxItemCount)
+  }
+
   func assetGridPlaceholderCount(_ placeholderCount: @escaping AssetGridPlaceholderCount)
-    -> some View { wrapped.environment(\.imglyAssetGridPlaceholderCount, placeholderCount) }
+    -> some View {
+    wrapped.environment(\.imglyAssetGridPlaceholderCount, placeholderCount)
+  }
+
   func assetGrid(sourcePadding: CGFloat)
-    -> some View { wrapped.environment(\.imglyAssetGridSourcePadding, sourcePadding) }
+    -> some View {
+    wrapped.environment(\.imglyAssetGridSourcePadding, sourcePadding)
+  }
+
   func assetGridItemIndex(_ itemIndex: @escaping AssetGridItemIndex)
-    -> some View { wrapped.environment(\.imglyAssetGridItemIndex, itemIndex) }
+    -> some View {
+    wrapped.environment(\.imglyAssetGridItemIndex, itemIndex)
+  }
+
   func assetGridOnAppear(_ onAppear: @escaping AssetGridOnAppear)
-    -> some View { wrapped.environment(\.imglyAssetGridOnAppear, onAppear) }
+    -> some View {
+    wrapped.environment(\.imglyAssetGridOnAppear, onAppear)
+  }
+
   func assetGrid(excludedSources: Set<String>)
-    -> some View { wrapped.environment(\.imglyAssetGridExcludedSources, excludedSources) }
+    -> some View {
+    wrapped.environment(\.imglyAssetGridExcludedSources, excludedSources)
+  }
+
   func assetGrid(shouldShowSingleItem: Bool)
-    -> some View { wrapped.environment(\.imglyAssetGridShouldShowSingleItem, shouldShowSingleItem) }
+    -> some View {
+    wrapped.environment(\.imglyAssetGridShouldShowSingleItem, shouldShowSingleItem)
+  }
+
   @MainActor
   func buildInfo(ciBuildsHost: String, githubRepo: String) -> some View {
     wrapped.safeAreaInset(edge: .bottom, spacing: 0) {

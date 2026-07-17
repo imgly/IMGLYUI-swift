@@ -9,7 +9,9 @@ import SwiftUI
 @_spi(Internal) public protocol MappedType: Equatable {}
 
 extension MappedType {
-  static var objectIdentifier: ObjectIdentifier { ObjectIdentifier(Self.self) }
+  static var objectIdentifier: ObjectIdentifier {
+    ObjectIdentifier(Self.self)
+  }
 }
 
 @_spi(Internal) extension Bool: MappedType {}
@@ -215,15 +217,15 @@ extension MappedType {
     return !changed.isEmpty
   }
 
-  func enumValues<T>(property: Property) throws -> [T]
-    where T: CaseIterable & RawRepresentable, T.RawValue == String {
+  func enumValues<T: CaseIterable & RawRepresentable>(property: Property) throws -> [T]
+    where T.RawValue == String {
     try enumValues(property: property.rawValue)
   }
 
   /// Get all enum cases orderend as defined by the enum `type` `T` and verify if all cases for the `property` are
   /// mapped.
-  func enumValues<T>(property: String) throws -> [T]
-    where T: CaseIterable & RawRepresentable, T.RawValue == String {
+  func enumValues<T: CaseIterable & RawRepresentable>(property: String) throws -> [T]
+    where T.RawValue == String {
     let orderedCases = T.allCases.map(\.self) // Same order as defined in enum types.
     let cases = Set<String>(orderedCases.map(\.rawValue))
     let values = Set<String>(try getEnumValues(ofProperty: property))
@@ -258,13 +260,27 @@ extension MappedType {
     initialCropTranslationX: Float,
     initialCropTranslationY: Float,
   ) throws -> Bool {
-    if try getContentFillMode(id) != .crop { return true }
-    if try getCropRotation(id) != 0 { return true }
-    if try getCropScaleX(id) < 1 { return true }
-    if try getCropScaleY(id) < 1 { return true }
-    if try getCropScaleRatio(id) != 1 { return true }
-    if try getCropTranslationX(id) != initialCropTranslationX { return true }
-    if try getCropTranslationY(id) != initialCropTranslationY { return true }
+    if try getContentFillMode(id) != .crop {
+      return true
+    }
+    if try getCropRotation(id) != 0 {
+      return true
+    }
+    if try getCropScaleX(id) < 1 {
+      return true
+    }
+    if try getCropScaleY(id) < 1 {
+      return true
+    }
+    if try getCropScaleRatio(id) != 1 {
+      return true
+    }
+    if try getCropTranslationX(id) != initialCropTranslationX {
+      return true
+    }
+    if try getCropTranslationY(id) != initialCropTranslationY {
+      return true
+    }
     return false
   }
 }
@@ -323,7 +339,9 @@ extension MappedType {
   /// audio-bearing tracks pinned to the audio lane.
   func isAudioLike(_ id: DesignBlockID) throws -> Bool {
     let type = try getType(id)
-    if type == DesignBlockType.audio.rawValue { return true }
+    if type == DesignBlockType.audio.rawValue {
+      return true
+    }
     guard type == DesignBlockType.track.rawValue,
           let firstChild = try getChildren(id).first else { return false }
     return try getType(firstChild) == DesignBlockType.audio.rawValue
@@ -460,7 +478,6 @@ extension MappedType {
 @_spi(Internal) public extension BlockAPI {
   func getKind(_ id: DesignBlockID) throws -> BlockKind {
     let string: String = try getKind(id)
-    let kind = BlockKind(rawValue: string)
-    return kind
+    return BlockKind(rawValue: string)
   }
 }

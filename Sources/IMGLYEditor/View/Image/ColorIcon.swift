@@ -43,8 +43,7 @@ import SwiftUI
     } else if fillType == .gradient {
       let colorStops: [Interactor.GradientColorStop] = try engine.block
         .get(id, .fill, property: .key(.fillGradientColors))
-      let colors = colorStops.compactMap(\.color.cgColor)
-      return colors
+      return colorStops.compactMap(\.color.cgColor)
     }
     return [.imgly.black]
   }

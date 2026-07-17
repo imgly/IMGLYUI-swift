@@ -121,15 +121,16 @@ struct CropOptions: View {
 
   private var transformMode: TransformMode {
     guard let id else { return .cropAndResize }
-    if !isPage { return .crop }
+    if !isPage {
+      return .crop
+    }
     let hasImageFill = interactor.get(id, .fill, property: .key(.type)) == Interactor.FillType.image.rawValue
     return hasImageFill ? .cropAndResize : .resize
   }
 
   private var isPage: Bool {
     guard let id else { return true }
-    let isPage = interactor.get(id, property: .key(.type)) == Interactor.BlockType.page.rawValue
-    return isPage
+    return interactor.get(id, property: .key(.type)) == Interactor.BlockType.page.rawValue
   }
 }
 
@@ -142,10 +143,21 @@ private extension BinaryFloatingPoint {
     return wrappedValue
   }
 
-  var toDegrees: Self { self * Self(180 / Double.pi) }
-  var toRadians: Self { self * Self(Double.pi / 180) }
-  var normalizedDegrees: Self { wrappedAround(maxValue: 360) }
-  var normalizedRadians: Self { wrappedAround(maxValue: 2 * .pi) }
+  var toDegrees: Self {
+    self * Self(180 / Double.pi)
+  }
+
+  var toRadians: Self {
+    self * Self(Double.pi / 180)
+  }
+
+  var normalizedDegrees: Self {
+    wrappedAround(maxValue: 360)
+  }
+
+  var normalizedRadians: Self {
+    wrappedAround(maxValue: 2 * .pi)
+  }
 
   typealias DecomposedDegrees = (rotationDegrees: Self, straightenDegrees: Self)
 

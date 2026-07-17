@@ -51,7 +51,9 @@ import SwiftUI
 
   /// Whether this editor accepts video resources from capture / upload flows. Aliases
   /// `includeAVResources`; promote to a stored property to decouple.
-  @_spi(Internal) public var acceptsVideoCapture: Bool { includeAVResources }
+  @_spi(Internal) public var acceptsVideoCapture: Bool {
+    includeAVResources
+  }
 
   // MARK: - BottomPanel
 

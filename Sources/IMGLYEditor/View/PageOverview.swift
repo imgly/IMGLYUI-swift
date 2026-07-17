@@ -21,7 +21,9 @@ extension PageOverviewState: CustomStringConvertible {
 }
 
 struct Page: Identifiable, Equatable {
-  var id: String { uuid }
+  var id: String {
+    uuid
+  }
 
   let uuid: String
   let block: Interactor.BlockID
@@ -41,7 +43,7 @@ private struct PageGrid: View {
   @State private var draggedPage: Page?
   @State private var pagesOnDrag: [Page] = []
 
-  @ViewBuilder private var addPageThumbnailButton: some View {
+  private var addPageThumbnailButton: some View {
     SelectableItem(title: "", selected: false) {
       Button {
         interactor.actionButtonTapped(for: .addPage(interactor.pageCount))
@@ -164,7 +166,9 @@ private struct PageThumbnail: View {
   private let minHeight: CGFloat = 100
   private let maxHeight: CGFloat = 288
 
-  private var isInitialLoading: Bool { image == nil }
+  private var isInitialLoading: Bool {
+    image == nil
+  }
 
   // Should be optional to properly propose the `idealHeight` and thus `height` derived from measured `width`.
   private var idealHeight: CGFloat? {

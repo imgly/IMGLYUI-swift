@@ -12,7 +12,7 @@ struct CustomizableTitledSheet<Content: View, Leading: View, Trailing: View>: Vi
     @ViewBuilder leading: @escaping () -> Leading,
     @ViewBuilder trailing: @escaping () -> Trailing = { SheetDismissButton()
       .buttonStyle(.borderless)
-    }
+    },
   ) {
     self.title = title
     self.content = content

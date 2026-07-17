@@ -70,10 +70,18 @@ enum AnimationPropertyDefinitions {
   private static func radiansToDirectionString(_ radians: Float) -> String {
     let twoPi = Float.pi * 2
     var dir = radians.truncatingRemainder(dividingBy: twoPi)
-    if dir < 0 { dir += twoPi }
-    if dir <= 0.25 * .pi || dir > 1.75 * .pi { return "Right" }
-    if dir <= 0.75 * .pi { return "Down" }
-    if dir <= 1.25 * .pi { return "Left" }
+    if dir < 0 {
+      dir += twoPi
+    }
+    if dir <= 0.25 * .pi || dir > 1.75 * .pi {
+      return "Right"
+    }
+    if dir <= 0.75 * .pi {
+      return "Down"
+    }
+    if dir <= 1.25 * .pi {
+      return "Left"
+    }
     return "Up"
   }
 

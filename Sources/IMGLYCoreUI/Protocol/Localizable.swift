@@ -6,7 +6,9 @@ import Foundation
 }
 
 @_spi(Internal) public extension Localizable {
-  var localizationTable: LocalizationTable { .imglyCoreUI }
+  var localizationTable: LocalizationTable {
+    .imglyCoreUI
+  }
 
   var localizedStringResource: LocalizedStringResource {
     .imgly.localized(localizationValue, table: localizationTable)

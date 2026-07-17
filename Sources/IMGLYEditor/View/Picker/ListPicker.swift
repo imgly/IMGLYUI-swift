@@ -1,7 +1,6 @@
 import SwiftUI
 
-struct ListPicker<Data, ElementLabel: View>: View where
-  Data: RandomAccessCollection,
+struct ListPicker<Data: RandomAccessCollection, ElementLabel: View>: View where
   Data.Element: RandomAccessCollection & Hashable,
   Data.Element.Element: Identifiable {
   let data: Data
@@ -9,7 +8,9 @@ struct ListPicker<Data, ElementLabel: View>: View where
 
   @ViewBuilder let elementLabel: (_ element: Data.Element.Element, _ isSelected: Bool) -> ElementLabel
 
-  private func isSelecetd(_ element: Data.Element.Element) -> Bool { selection == element.id }
+  private func isSelecetd(_ element: Data.Element.Element) -> Bool {
+    selection == element.id
+  }
 
   var body: some View {
     ScrollViewReader { proxy in

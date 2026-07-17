@@ -61,10 +61,18 @@ enum DragDropState: Equatable {
   }
 
   var context: DragContext? {
-    if case let .dragging(context) = self { context } else { nil }
+    if case let .dragging(context) = self {
+      context
+    } else {
+      nil
+    }
   }
 
   var isDragging: Bool {
-    if case .dragging = self { true } else { false }
+    if case .dragging = self {
+      true
+    } else {
+      false
+    }
   }
 }

@@ -123,7 +123,9 @@ extension ClipSpeedOptions {
     }
 
     func previousStepValue(_ current: Float) -> Float? {
-      if current <= ClipSpeedDefaults.minSpeed + ClipSpeedDefaults.compareEpsilon { return nil }
+      if current <= ClipSpeedDefaults.minSpeed + ClipSpeedDefaults.compareEpsilon {
+        return nil
+      }
       let stepIndex = current / ClipSpeedDefaults.step
       let targetStep: Double = if isOnStep(current) {
         Double((stepIndex - 1).rounded(.down))
@@ -136,7 +138,9 @@ extension ClipSpeedOptions {
 
     func nextStepValue(_ current: Float) -> Float? {
       let maxSpeed = state.maxSpeed
-      if current >= maxSpeed - ClipSpeedDefaults.compareEpsilon { return nil }
+      if current >= maxSpeed - ClipSpeedDefaults.compareEpsilon {
+        return nil
+      }
       let stepIndex = current / ClipSpeedDefaults.step
       let targetStep: Double = if isOnStep(current) {
         Double((stepIndex + 1).rounded(.up))

@@ -21,7 +21,9 @@ private struct Random: RandomNumberGenerator {
 }
 
 @_spi(Internal) public extension Engine {
-  private var engine: Engine { self }
+  private var engine: Engine {
+    self
+  }
 
   private static var rng: RandomNumberGenerator = ProcessInfo
     .isUITesting ? Random(seed: 0) : SystemRandomNumberGenerator()

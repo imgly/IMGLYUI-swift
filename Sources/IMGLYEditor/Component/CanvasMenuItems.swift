@@ -13,15 +13,29 @@ public extension CanvasMenu.Buttons {
 
 public extension CanvasMenu.Buttons.ID {
   /// The id of the ``CanvasMenu/Buttons/bringForward(action:label:isEnabled:isVisible:)`` button.
-  static var bringForward: EditorComponentID { "ly.img.component.canvasMenu.button.bringForward" }
+  static var bringForward: EditorComponentID {
+    "ly.img.component.canvasMenu.button.bringForward"
+  }
+
   /// The id of the ``CanvasMenu/Buttons/sendBackward(action:label:isEnabled:isVisible:)`` button.
-  static var sendBackward: EditorComponentID { "ly.img.component.canvasMenu.button.sendBackward" }
+  static var sendBackward: EditorComponentID {
+    "ly.img.component.canvasMenu.button.sendBackward"
+  }
+
   /// The id of the ``CanvasMenu/Buttons/duplicate(action:label:isEnabled:isVisible:)`` button.
-  static var duplicate: EditorComponentID { "ly.img.component.canvasMenu.button.duplicate" }
+  static var duplicate: EditorComponentID {
+    "ly.img.component.canvasMenu.button.duplicate"
+  }
+
   /// The id of the ``CanvasMenu/Buttons/delete(action:label:isEnabled:isVisible:)`` button.
-  static var delete: EditorComponentID { "ly.img.component.canvasMenu.button.delete" }
+  static var delete: EditorComponentID {
+    "ly.img.component.canvasMenu.button.delete"
+  }
+
   /// The id of the ``CanvasMenu/Buttons/selectGroup(action:label:isEnabled:isVisible:)`` button.
-  static var selectGroup: EditorComponentID { "ly.img.component.canvasMenu.button.selectGroup" }
+  static var selectGroup: EditorComponentID {
+    "ly.img.component.canvasMenu.button.selectGroup"
+  }
 }
 
 public extension CanvasMenu {

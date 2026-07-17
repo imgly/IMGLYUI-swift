@@ -92,7 +92,6 @@ struct VoiceOverSheet: View {
     .interactiveDismissDisabled()
   }
 
-  @ViewBuilder
   private func sideButton(
     title: LocalizedStringResource,
     systemImage: String,

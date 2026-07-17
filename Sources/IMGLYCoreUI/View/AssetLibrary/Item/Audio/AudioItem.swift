@@ -59,7 +59,7 @@ struct AudioItem: View {
       }
   }
 
-  @ViewBuilder private var item: some View {
+  private var item: some View {
     HStack(spacing: 0) {
       thumbnail
         .padding(.trailing, 16)
@@ -96,7 +96,7 @@ struct AudioItem: View {
     .padding([.top, .bottom], 8)
   }
 
-  @ViewBuilder private var thumbnail: some View {
+  private var thumbnail: some View {
     ZStack {
       let roundedCorners = isPlaying || isLoading
       ImageItem(asset: asset)

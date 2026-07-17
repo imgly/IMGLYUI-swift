@@ -50,7 +50,7 @@ public struct AssetLibrarySection: Sendable, Equatable {
     title: LocalizedStringResource?,
     source: AssetLoader.SourceData,
     contentType: ContentType,
-    groupTitleKeyPrefix: String? = nil
+    groupTitleKeyPrefix: String? = nil,
   ) {
     self.id = id
     self.title = title

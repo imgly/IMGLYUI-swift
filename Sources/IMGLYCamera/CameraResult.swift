@@ -21,7 +21,9 @@ public extension [Capture] {
   /// that previously consumed `CameraResult.recording([Recording])`.
   var videos: [Recording] {
     compactMap { capture in
-      if case let .video(recording) = capture { return recording }
+      if case let .video(recording) = capture {
+        return recording
+      }
       return nil
     }
   }

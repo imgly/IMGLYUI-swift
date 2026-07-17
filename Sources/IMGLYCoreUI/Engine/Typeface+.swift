@@ -11,16 +11,35 @@ import IMGLYEngine
 }
 
 private extension Font {
-  var isRegular: Bool { weight == .normal }
-  var isBold: Bool { weight == .bold }
-  var isItalic: Bool { style == .italic }
+  var isRegular: Bool {
+    weight == .normal
+  }
+
+  var isBold: Bool {
+    weight == .bold
+  }
+
+  var isItalic: Bool {
+    style == .italic
+  }
 }
 
 @_spi(Internal) public extension Typeface {
-  private var regularFont: IMGLYEngine.Font? { font(for: .init(bold: false, italic: false)) }
-  private var boldItalicFont: IMGLYEngine.Font? { font(for: .init(bold: true, italic: true)) }
-  private var boldFont: IMGLYEngine.Font? { font(for: .init(bold: true, italic: false)) }
-  private var italicFont: IMGLYEngine.Font? { font(for: .init(bold: false, italic: true)) }
+  private var regularFont: IMGLYEngine.Font? {
+    font(for: .init(bold: false, italic: false))
+  }
+
+  private var boldItalicFont: IMGLYEngine.Font? {
+    font(for: .init(bold: true, italic: true))
+  }
+
+  private var boldFont: IMGLYEngine.Font? {
+    font(for: .init(bold: true, italic: false))
+  }
+
+  private var italicFont: IMGLYEngine.Font? {
+    font(for: .init(bold: false, italic: true))
+  }
 
   var previewFont: IMGLYEngine.Font? {
     regularFont ?? boldFont ?? italicFont ?? boldItalicFont ?? fonts.first

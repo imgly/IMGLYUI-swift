@@ -26,11 +26,18 @@ struct GenericPropertyButton<T: Equatable, Label: View>: View {
   // button labels, so an ambient `.disabled(true)` must be folded in manually.
   @Environment(\.isEnabled) private var isEnabled
 
-  private var isSelected: Bool { selection == property }
-  private var hasNoSelection: Bool { selection == nil }
+  private var isSelected: Bool {
+    selection == property
+  }
+
+  private var hasNoSelection: Bool {
+    selection == nil
+  }
 
   private var foregroundColor: Color {
-    if hasNoSelection || !isEnabled { return .secondary }
+    if hasNoSelection || !isEnabled {
+      return .secondary
+    }
     return isSelected ? .accentColor : .primary
   }
 

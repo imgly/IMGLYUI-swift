@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ResizePicker<Data, Item: View>: View where Data: RandomAccessCollection, Data.Element: Hashable {
+struct ResizePicker<Data: RandomAccessCollection, Item: View>: View where Data.Element: Hashable {
   let title: LocalizedStringResource
   let data: Data
   @Binding var selection: Data.Element

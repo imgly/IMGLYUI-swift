@@ -14,7 +14,7 @@ public struct AssetPreview<Empty: View>: View {
   ///   - empty: A view to display when the grid is empty.
   public init(
     height: CGFloat?,
-    @ViewBuilder empty: @escaping () -> Empty = { Message.noElements }
+    @ViewBuilder empty: @escaping () -> Empty = { Message.noElements },
   ) {
     self.height = height
     self.empty = empty

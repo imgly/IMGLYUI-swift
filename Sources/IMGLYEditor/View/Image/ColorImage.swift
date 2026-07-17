@@ -20,7 +20,9 @@ extension ImagePaint {
 }
 
 extension ShapeStyle where Self == ImagePaint {
-  static var transparentColorPattern: Self { .transparentColorPattern }
+  static var transparentColorPattern: Self {
+    .transparentColorPattern
+  }
 }
 
 struct FillColorImage: View {
@@ -76,7 +78,7 @@ struct FillColorImage: View {
 
 extension FillColorImage {
   init(isEnabled: Bool, color: Binding<CGColor>) {
-    let binding = Binding<[CGColor]>.init {
+    let binding = Binding<[CGColor]> {
       [color.wrappedValue]
     } set: { value in
       if let new = value.first {
@@ -120,7 +122,7 @@ struct ColorImage_Previews: PreviewProvider {
     .constant(color.asCGColor)
   }
 
-  @ViewBuilder static var colors: some View {
+  static var colors: some View {
     VStack {
       HStack {
         FillColorImage(isEnabled: true, color: constant(.red))

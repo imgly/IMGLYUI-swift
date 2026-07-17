@@ -26,12 +26,12 @@ public struct AssetLibraryTabView<Content: View, Label: View>: View {
   @Environment(\.imglyAssetLibraryTitleDisplayMode) private var titleDisplayMode
 
   @MainActor
-  @ViewBuilder var tabContent: some View {
+  var tabContent: some View {
     TabContent(title: title, content: content)
       .environmentObject(configuration)
   }
 
-  @ViewBuilder var labelContent: some View {
+  var labelContent: some View {
     label(title)
   }
 
@@ -70,14 +70,26 @@ private struct TabContent<Content: View>: View {
       .navigationTitle(Text(title))
       .toolbar {
         if !searchState.isPresented {
-          ToolbarItem {
-            HStack(spacing: 16) {
-              if configuration.isSearchAllowed {
-                SearchButton()
-                dismissButtonView
-              } else {
-                dismissButtonView
-                  .buttonStyle(.plain)
+          if #available(iOS 26.0, *), !usesLegacyDesign, configuration.isSearchAllowed {
+            // Liquid Glass: search and the dismiss chevron each get their own glass group, so the
+            // chevron stays isolated (a ToolbarSpacer between the items is what splits the glass).
+            ToolbarItem(placement: .topBarTrailing) {
+              SearchButton()
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
+              dismissButtonView
+            }
+          } else {
+            ToolbarItem {
+              HStack(spacing: 16) {
+                if configuration.isSearchAllowed {
+                  SearchButton()
+                  dismissButtonView
+                } else {
+                  dismissButtonView
+                    .buttonStyle(.plain)
+                }
               }
             }
           }

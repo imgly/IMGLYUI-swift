@@ -11,7 +11,7 @@ import SwiftUI
 
   @_spi(Internal) public let config: EngineConfiguration
 
-  @ViewBuilder var spinner: some View {
+  var spinner: some View {
     ProgressView()
       .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
@@ -34,13 +34,22 @@ import SwiftUI
 
   @Published @_spi(Internal) public private(set) var isCreating = true
   @Published private(set) var viewMode = EditorViewMode.edit
-  var isPreviewMode: Bool { viewMode == .preview }
-  var isPagesMode: Bool { viewMode == .pages }
+  var isPreviewMode: Bool {
+    viewMode == .preview
+  }
+
+  var isPagesMode: Bool {
+    viewMode == .pages
+  }
+
   @Published private(set) var isExporting = false
   @Published @_spi(Internal) public private(set) var isAddingAsset = false
 
   @Published var error = AlertState()
-  @Published var sheet = SheetState() { didSet { sheetChanged(oldValue) } }
+  @Published var sheet = SheetState() {
+    didSet { sheetChanged(oldValue) }
+  }
+
   private var nextSheet: SheetState? {
     didSet {
       if nextSheet != nil, sheet.isPresented {
@@ -75,11 +84,23 @@ import SwiftUI
   }
 
   @Published var verticalSizeClass: UserInterfaceSizeClass?
-  @Published @_spi(Internal) public private(set) var page = 0 { didSet { pageChanged(oldValue) } }
-  @Published var pageOverview = PageOverviewState() { didSet { pageOverviewChanged(oldValue) } }
+  @Published @_spi(Internal) public private(set) var page = 0 {
+    didSet { pageChanged(oldValue) }
+  }
+
+  @Published var pageOverview = PageOverviewState() {
+    didSet { pageOverviewChanged(oldValue) }
+  }
+
   @Published @_spi(Internal) public var selectionColors = SelectionColors()
-  @Published private(set) var selection: Selection? { didSet { selectionChanged(oldValue) } }
-  @Published private(set) var editMode: EditMode = .transform { didSet { editModeChanged(oldValue) } }
+  @Published private(set) var selection: Selection? {
+    didSet { selectionChanged(oldValue) }
+  }
+
+  @Published private(set) var editMode: EditMode = .transform {
+    didSet { editModeChanged(oldValue) }
+  }
+
   @Published private(set) var textCursorPosition: CGPoint?
   @Published private(set) var canUndo = false
   @Published private(set) var canRedo = false
@@ -109,12 +130,20 @@ import SwiftUI
   var voiceOverRecordCoordinator: VoiceOverRecordCoordinator?
 
   var uploadAssetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
-  var imageUploadAssetSourceID: String { uploadAssetSourceIDs[.image] ?? "ly.img.image.upload" }
-  var videoUploadAssetSourceID: String { uploadAssetSourceIDs[.movie] ?? "ly.img.video.upload" }
+  var imageUploadAssetSourceID: String {
+    uploadAssetSourceIDs[.image] ?? "ly.img.image.upload"
+  }
+
+  var videoUploadAssetSourceID: String {
+    uploadAssetSourceIDs[.movie] ?? "ly.img.video.upload"
+  }
 
   var isAddingCameraRecording = false
 
-  @_spi(Internal) public var zoomModel = ZoomModel() { didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) } }
+  @_spi(Internal) public var zoomModel = ZoomModel() {
+    didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) }
+  }
+
   var defaultPinchAction: String = ""
 
   var pageCount: Int {
@@ -334,16 +363,46 @@ extension Interactor {
     }
   }
 
-  func canBringForward(_ id: BlockID?) -> Bool { block(id, engine?.block.canBringForward) ?? false }
-  func canBringBackward(_ id: BlockID?) -> Bool { block(id, engine?.block.canBringBackward) ?? false }
-  func supportsFill(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsFill) ?? false }
-  func supportsStroke(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsStroke) ?? false }
-  func supportsBackground(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBackgroundColor) ?? false }
-  func supportsOpacity(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsOpacity) ?? false }
-  func supportsBlendMode(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlendMode) ?? false }
-  func supportsBlur(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlur) ?? false }
-  func supportsCrop(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsCrop) ?? false }
-  func canRevertToOriginalRatio(_ id: BlockID?) -> Bool { block(id, engine?.block.canRevertToOriginalRatio) ?? false }
+  func canBringForward(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.canBringForward) ?? false
+  }
+
+  func canBringBackward(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.canBringBackward) ?? false
+  }
+
+  func supportsFill(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.supportsFill) ?? false
+  }
+
+  func supportsStroke(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.supportsStroke) ?? false
+  }
+
+  func supportsBackground(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.supportsBackgroundColor) ?? false
+  }
+
+  func supportsOpacity(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.supportsOpacity) ?? false
+  }
+
+  func supportsBlendMode(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.supportsBlendMode) ?? false
+  }
+
+  func supportsBlur(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.supportsBlur) ?? false
+  }
+
+  func supportsCrop(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.supportsCrop) ?? false
+  }
+
+  func canRevertToOriginalRatio(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.canRevertToOriginalRatio) ?? false
+  }
+
   func canResetCrop(_ id: BlockID?, initialCropTranslationX: Float, initialCropTranslationY: Float) -> Bool {
     block(id) { [self] in
       try engine?.block.canResetCrop(
@@ -354,10 +413,22 @@ extension Interactor {
     } ?? false
   }
 
-  func isSolidFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .solid) }
-  func isGradientFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .gradient) }
-  func isColorFill(_ id: DesignBlockID?) -> Bool { isSolidFill(id) || isGradientFill(id) }
-  func isLineOrigin(_ id: BlockID?) -> Bool { block(id, engine?.block.isLineOrigin) ?? false }
+  func isSolidFill(_ id: DesignBlockID?) -> Bool {
+    isColorFillType(id, type: .solid)
+  }
+
+  func isGradientFill(_ id: DesignBlockID?) -> Bool {
+    isColorFillType(id, type: .gradient)
+  }
+
+  func isColorFill(_ id: DesignBlockID?) -> Bool {
+    isSolidFill(id) || isGradientFill(id)
+  }
+
+  func isLineOrigin(_ id: BlockID?) -> Bool {
+    block(id, engine?.block.isLineOrigin) ?? false
+  }
+
   func isVisibleAtCurrentPlaybackTime(_ id: BlockID?) -> Bool {
     block(id, engine?.block.isVisibleAtCurrentPlaybackTime) ?? false
   }
@@ -674,12 +745,12 @@ extension Interactor {
     _ engine: Engine,
     _ block: DesignBlockID,
     _ propertyBlock: PropertyBlock?,
-    _ property: Property
+    _ property: Property,
   ) throws -> T
 
   typealias RawGetter<T> = @MainActor (
     _ engine: Engine,
-    _ block: DesignBlockID
+    _ block: DesignBlockID,
   ) throws -> T
 
   enum Getter {
@@ -696,14 +767,14 @@ extension Interactor {
     _ propertyBlock: PropertyBlock?,
     _ property: Property,
     _ value: T,
-    _ completion: PropertyCompletion?
+    _ completion: PropertyCompletion?,
   ) throws -> Bool
 
   typealias RawSetter<T> = @MainActor (
     _ engine: Engine,
     _ blocks: [DesignBlockID],
     _ value: T,
-    _ completion: PropertyCompletion?
+    _ completion: PropertyCompletion?,
   ) throws -> Bool
 
   @MainActor
@@ -732,7 +803,7 @@ extension Interactor {
   typealias PropertyCompletion = @MainActor (
     _ engine: Engine,
     _ blocks: [DesignBlockID],
-    _ didChange: Bool
+    _ didChange: Bool,
   ) throws -> Bool
 
   @MainActor
@@ -759,8 +830,8 @@ extension Interactor {
     }
   }
 
-  func enumValues<T>(property: Property) -> [T]
-    where T: CaseIterable & RawRepresentable, T.RawValue == String {
+  func enumValues<T: CaseIterable & RawRepresentable>(property: Property) -> [T]
+    where T.RawValue == String {
     guard let engine else {
       return []
     }
@@ -1501,7 +1572,9 @@ extension Interactor {
       }
       do {
         if !isPreviewMode {
-          if sheet.isFloating, sheet.isPresented { return }
+          if sheet.isFloating, sheet.isPresented {
+            return
+          }
           // Re-check edit mode at execution time - if we're in text mode now, never zoom to page
           // even if it was requested earlier. This handles race conditions where the edit mode
           // changes between when the task was created and when it executes.

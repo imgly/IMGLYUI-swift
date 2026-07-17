@@ -53,7 +53,6 @@ struct TrackView: View {
     }
   }
 
-  @ViewBuilder
   private func clipView(for clip: Clip) -> some View {
     ClipView(
       clip: clip,

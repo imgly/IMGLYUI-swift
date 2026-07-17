@@ -210,7 +210,9 @@ public extension SheetType where Self == SheetTypes.Reorder {
   /// Creates a ``SheetType`` that is used to reorder videos on the background track.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is
   /// - Returns: The created ``SheetTypes/Reorder`` sheet type.
-  static func reorder(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
+  static func reorder(style: SheetStyle = .only(detent: .imgly.medium)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.Adjustments {
@@ -281,28 +283,36 @@ public extension SheetType where Self == SheetTypes.Resize {
   /// - Returns: The created ``SheetTypes/Resize`` sheet type.
   static func resize(
     style: SheetStyle = .only(detent: .imgly.small),
-  ) -> Self { Self(style: style) }
+  ) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.Layer {
   /// Creates a ``SheetType`` that is used to control the layering of design blocks.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/Layer`` sheet type.
-  static func layer(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
+  static func layer(style: SheetStyle = .only(detent: .imgly.medium)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.FormatText {
   /// Creates a ``SheetType`` that is used to control formatting of text blocks.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/FormatText`` sheet type.
-  static func formatText(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
+  static func formatText(style: SheetStyle = .only(detent: .imgly.medium)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.TextOnPath {
   /// Creates a ``SheetType`` that is used to control placing text along an SVG baseline path.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/TextOnPath`` sheet type.
-  static func textOnPath(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
+  static func textOnPath(style: SheetStyle = .only(detent: .imgly.medium)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.Shape {
@@ -311,7 +321,9 @@ public extension SheetType where Self == SheetTypes.Shape {
   /// style is used.
   /// - Returns: The created ``SheetTypes/Shape`` sheet type.
   static func shape(style: SheetStyle = .default(detent: .imgly.small, detents: [.imgly.tiny, .imgly.small]))
-    -> Self { Self(style: style) }
+    -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.FillStroke {
@@ -330,28 +342,36 @@ public extension SheetType where Self == SheetTypes.Volume {
   /// Creates a ``SheetType`` that is used to control the volume of audio/video.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/Volume`` sheet
-  static func volume(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self { Self(style: style) }
+  static func volume(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.ClipSpeed {
   /// Creates a ``SheetType`` that is used to control the playback speed of clips.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/ClipSpeed`` sheet type.
-  static func clipSpeed(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self { Self(style: style) }
+  static func clipSpeed(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.TextBackground {
   /// Creates a ``SheetType`` that is used to control the text background properties.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/TextBackground`` sheet
-  static func textBackground(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
+  static func textBackground(style: SheetStyle = .only(detent: .imgly.medium)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.Animation {
   /// Creates a ``SheetType`` that is used to configure animations on design blocks.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/Animation`` sheet type.
-  static func animation(style: SheetStyle = .only(detent: .imgly.small)) -> Self { Self(style: style) }
+  static func animation(style: SheetStyle = .only(detent: .imgly.small)) -> Self {
+    Self(style: style)
+  }
 }
 
 // MARK: - Postcard

@@ -25,7 +25,7 @@ class VideoRecorder: @unchecked Sendable {
   init(
     audioSettings: [String: Any],
     videoSettings: [String: Any],
-    videoTransform: CGAffineTransform
+    videoTransform: CGAffineTransform,
   ) {
     self.audioSettings = audioSettings
     self.videoSettings = videoSettings

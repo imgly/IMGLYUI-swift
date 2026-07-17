@@ -83,7 +83,9 @@ public enum CameraMode: Equatable, Sendable {
 }
 
 private extension CameraMode {
-  var fullScreen: CGRect { CGRect(x: 0, y: 0, width: 1080, height: 1920) }
+  var fullScreen: CGRect {
+    CGRect(x: 0, y: 0, width: 1080, height: 1920)
+  }
 
   var topRect: CGRect {
     fullScreen.divided(atDistance: fullScreen.midY, from: .minYEdge).slice

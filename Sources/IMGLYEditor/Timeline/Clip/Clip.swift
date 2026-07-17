@@ -106,7 +106,9 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   @Published var previewTimeOffset: CMTime?
 
   /// Value the view should render — preview during drag, authoritative otherwise.
-  var displayTimeOffset: CMTime { previewTimeOffset ?? timeOffset }
+  var displayTimeOffset: CMTime {
+    previewTimeOffset ?? timeOffset
+  }
 
   func applyPreview(timeOffset newOffset: CMTime) {
     previewTimeOffset = newOffset

@@ -20,9 +20,18 @@ struct BuildInfo: View {
     return "\(name) \(version)\(shortHash) (\(build))\n\(branch)"
   }
 
-  static var name: String? { Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String }
-  static var version: String? { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String }
-  static var build: String? { Bundle.main.infoDictionary?[kCFBundleVersionKey as String] as? String }
+  static var name: String? {
+    Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String
+  }
+
+  static var version: String? {
+    Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+  }
+
+  static var build: String? {
+    Bundle.main.infoDictionary?[kCFBundleVersionKey as String] as? String
+  }
+
   static var target: String? {
     ProcessInfo.isSwiftUIPreview ? "smoketests-app" : Bundle.main.infoDictionary?[kCFBundleNameKey as String] as? String
   }
@@ -68,7 +77,7 @@ struct BuildInfo: View {
     }
   }
 
-  @ViewBuilder func buildInfo(_ info: String) -> some View {
+  func buildInfo(_ info: String) -> some View {
     Menu {
       menu
     } label: {
@@ -99,7 +108,7 @@ struct BuildInfo: View {
     }
   }
 
-  @ViewBuilder var updateButton: some View {
+  var updateButton: some View {
     Group {
       if case let .loaded(update) = update {
         Button {
@@ -193,7 +202,7 @@ private struct SwitchBranchSheet: View {
     }
   }
 
-  @ViewBuilder var switchButton: some View {
+  var switchButton: some View {
     Button(role: .destructive) {
       if case let .loaded(update) = state {
         UIApplication.shared.open(update.url)

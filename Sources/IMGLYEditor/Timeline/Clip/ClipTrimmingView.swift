@@ -78,8 +78,7 @@ struct ClipTrimmingView: View {
   @State private var previewSiblingOriginals: [DesignBlockID: CMTime] = [:]
 
   var duration: CMTime {
-    let duration = clip.duration ?? timeline.totalDuration - clip.timeOffset
-    return duration
+    clip.duration ?? timeline.totalDuration - clip.timeOffset
   }
 
   /// Adjacent neighbours in the same track for collision detection in multi-clip tracks.
@@ -708,7 +707,6 @@ struct ClipTrimmingView: View {
 
   private func rubberband(_ seconds: CGFloat) -> CGFloat {
     let divisor = (seconds * 0.05) + 1.0
-    let result = (1.0 - (1.0 / divisor)) * 10
-    return result
+    return (1.0 - (1.0 / divisor)) * 10
   }
 }

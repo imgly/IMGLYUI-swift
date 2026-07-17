@@ -33,7 +33,7 @@ public struct SheetStyle: Hashable {
     isFloating: Bool,
     detent: PresentationDetent,
     detents: Set<PresentationDetent>,
-    largestUndimmedDetent: PresentationDetent?
+    largestUndimmedDetent: PresentationDetent?,
   ) {
     self.init(isFloating, detent, detents, largestUndimmedDetent: largestUndimmedDetent)
   }
@@ -50,7 +50,7 @@ public struct SheetStyle: Hashable {
   public init(
     isFloating: Bool,
     detent: PresentationDetent,
-    detents: Set<PresentationDetent>
+    detents: Set<PresentationDetent>,
   ) {
     self.init(isFloating, detent, detents, largestUndimmedDetent: nil)
   }
@@ -71,8 +71,7 @@ public struct SheetStyle: Hashable {
   /// must be used. An assert is triggered on violations. By
   /// default, `nil` is used.
   /// - Returns: The created sheet style.
-  public static
-  func withPredefinedDetents(
+  public static func withPredefinedDetents(
     isFloating: Bool,
     detent: PresentationDetent,
     detents: Set<PresentationDetent>,
@@ -95,7 +94,9 @@ public struct SheetStyle: Hashable {
 }
 
 private extension PresentationDetent {
-  var isPredefined: Bool { imgly.identifier != nil }
+  var isPredefined: Bool {
+    imgly.identifier != nil
+  }
 }
 
 extension Set<PresentationDetent> {

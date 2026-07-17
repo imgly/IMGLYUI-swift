@@ -13,7 +13,7 @@ struct FillColorOptions: View {
       MenuPicker<ColorFillType.AllCases>(
         title: .imgly.localized("ly_img_editor_sheet_fill_stroke_label_type"),
         data: ColorFillType.allCases,
-        selection: $fillType
+        selection: $fillType,
       )
       .disabled(interactor.sheet.content == .text)
       .accessibilityLabel("Fill Type")
@@ -194,11 +194,10 @@ extension GradientOptions {
       let points = [start.x, start.y, end.x, end.y]
 
       let changed = try blocks.filter { id in
-        let hasChanged = try points.enumerated().contains { index, value in
+        try points.enumerated().contains { index, value in
           let currentValue: Float = try engine.block.get(id, .fill, property: properties[index])
           return currentValue != Float(value)
         }
-        return hasChanged
       }
 
       try changed.forEach { id in
@@ -211,14 +210,13 @@ extension GradientOptions {
       return try (completion?(engine, blocks, didChange) ?? false) || didChange
     }
 
-    let gradientAngleBinding: Binding<Double> = interactor.bind(
+    return interactor.bind(
       id,
       property: .key(.fillGradientColors),
       default: 0,
       getter: gradientAngleGetter,
       setter: gradientAngleSetter,
     )
-    return gradientAngleBinding
   }
 
   private func angleToControlPoints(angle: Double) -> (CGPoint, CGPoint) {
@@ -261,7 +259,6 @@ extension GradientOptions {
   private func controlPointsToAngle(points: (CGPoint, CGPoint)) -> Double {
     let x = points.1.x - points.0.x
     let y = points.1.y - points.0.y
-    let angle = (atan2(y, x) * 180) / Double.pi
-    return angle
+    return (atan2(y, x) * 180) / Double.pi
   }
 }

@@ -22,7 +22,9 @@ public struct Camera: View {
   }
 
   var isPreviewingPhoto: Bool {
-    if case .previewingPhoto = camera.state { return true }
+    if case .previewingPhoto = camera.state {
+      return true
+    }
     return false
   }
 
@@ -80,7 +82,7 @@ public struct Camera: View {
   public init(
     _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
-    onDismiss: @escaping @MainActor (Result<[Recording], CameraError>) -> Void
+    onDismiss: @escaping @MainActor (Result<[Recording], CameraError>) -> Void,
   ) {
     // The legacy `Result<[Recording], CameraError>` callback can only carry videos. Force
     // `.video` so a host accidentally configuring `.photo` or `.mixed` doesn't silently
@@ -117,7 +119,7 @@ public struct Camera: View {
     _ settings: EngineSettings,
     config: CameraConfiguration = .init(),
     mode: CameraMode = .standard,
-    onDismiss: @escaping @MainActor (Result<CameraResult, CameraError>) -> Void
+    onDismiss: @escaping @MainActor (Result<CameraResult, CameraError>) -> Void,
   ) {
     var mode = mode
     if !Camera.isModeSupported(mode) {
@@ -249,7 +251,7 @@ public struct Camera: View {
     .imgly.alert($camera.alertState)
   }
 
-  @ViewBuilder private var photoFlashOverlay: some View {
+  private var photoFlashOverlay: some View {
     Color.white
       .ignoresSafeArea()
       .opacity(isPhotoFlashing ? 1 : 0)
@@ -264,7 +266,9 @@ public struct Camera: View {
   }
 
   private func isPreviewingPhoto(in state: CameraModel.CameraState) -> Bool {
-    if case .previewingPhoto = state { return true }
+    if case .previewingPhoto = state {
+      return true
+    }
     return false
   }
 
@@ -387,7 +391,7 @@ struct Camera_Previews: PreviewProvider {
 // MARK: -
 
 extension Camera {
-  @ViewBuilder var countdownView: some View {
+  var countdownView: some View {
     HStack {
       if camera.state == .countingDown {
         CountdownTimerView(countdownTimer: camera.countdownTimer)
@@ -397,7 +401,7 @@ extension Camera {
     .animation(.easeInOut(duration: 0.2).delay(camera.state != .countingDown ? 0.4 : 0), value: camera.state)
   }
 
-  @ViewBuilder var cancelButton: some View {
+  var cancelButton: some View {
     Button {
       if camera.recordingsManager.hasRecordings || camera.state == .recording {
         isShowingDeleteAllDialog = true
@@ -433,7 +437,7 @@ extension Camera {
     }
   }
 
-  @ViewBuilder var deleteLastRecordingButton: some View {
+  var deleteLastRecordingButton: some View {
     Button {
       isShowingDeleteDialog = true
     } label: {
@@ -465,7 +469,7 @@ extension Camera {
     }
   }
 
-  @ViewBuilder var doneButton: some View {
+  var doneButton: some View {
     Button {
       HapticsHelper.shared.cameraSelectFeature()
       camera.done()
@@ -480,7 +484,7 @@ extension Camera {
     .buttonStyle(CameraActionButtonStyle(style: .default))
   }
 
-  @ViewBuilder var flipButton: some View {
+  var flipButton: some View {
     Button {
       HapticsHelper.shared.cameraSelectFeature()
       camera.flipCamera()
@@ -493,7 +497,7 @@ extension Camera {
     .buttonStyle(CameraToolButtonStyle())
   }
 
-  @ViewBuilder var swapPlaceButton: some View {
+  var swapPlaceButton: some View {
     Button {
       HapticsHelper.shared.cameraSelectFeature()
       camera.swapReactionVideoPosition()
@@ -504,7 +508,7 @@ extension Camera {
     .buttonStyle(CameraToolButtonStyle())
   }
 
-  @ViewBuilder var flashButton: some View {
+  var flashButton: some View {
     Button {
       HapticsHelper.shared.cameraSelectFeature()
       camera.toggleFlashMode()

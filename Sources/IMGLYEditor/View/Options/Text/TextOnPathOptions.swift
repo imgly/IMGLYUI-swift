@@ -50,12 +50,6 @@ struct TextOnPathOptions: View {
 
   // MARK: - Body
 
-  /// Include EffectOptions' iOS 26 floating-nav-bar inset (44) in the fixed presets-strip height, so
-  /// the grid doesn't overflow the strip and overlap the controls list below it (IOS-908).
-  private var presetsStripHeight: CGFloat {
-    126 + (usesLegacyDesign ? 0 : 44)
-  }
-
   var body: some View {
     let selection = interactor.bind(id, getter: Self.selectionGetter, setter: Self.selectionSetter)
     let hasPath = selection.wrappedValue?.identifier != nil
@@ -73,7 +67,7 @@ struct TextOnPathOptions: View {
         sources: [.init(id: Self.sourceID)],
         sheetState: $sheetState,
       )
-      .frame(height: hasPath ? presetsStripHeight : nil, alignment: .top)
+      .frame(height: hasPath ? 126 : nil, alignment: .top)
 
       if hasPath {
         List {
@@ -85,7 +79,7 @@ struct TextOnPathOptions: View {
     }
   }
 
-  @ViewBuilder private var pathPositionRow: some View {
+  private var pathPositionRow: some View {
     HStack {
       Text(.imgly.localized("ly_img_editor_sheet_text_on_path_label_path_position"))
       Spacer()
@@ -100,7 +94,7 @@ struct TextOnPathOptions: View {
     }
   }
 
-  @ViewBuilder private var directionRow: some View {
+  private var directionRow: some View {
     HStack {
       Text(.imgly.localized("ly_img_editor_sheet_text_on_path_label_direction"))
       Spacer()
@@ -113,7 +107,7 @@ struct TextOnPathOptions: View {
     }
   }
 
-  @ViewBuilder private var offsetSection: some View {
+  private var offsetSection: some View {
     Section {
       // The offset is a proportion of the path length.
       PropertySlider<Float>(

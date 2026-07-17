@@ -5,7 +5,9 @@ enum EffectSheetState {
   case properties(AssetProperties)
 
   var isProperties: Bool {
-    if case .properties = self { return true }
+    if case .properties = self {
+      return true
+    }
     return false
   }
 }

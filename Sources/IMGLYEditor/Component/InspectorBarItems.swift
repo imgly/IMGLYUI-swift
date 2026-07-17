@@ -15,57 +15,134 @@ public extension InspectorBar.Buttons {
 
 public extension InspectorBar.Buttons.ID {
   /// The id of the ``InspectorBar/Buttons/addVoiceoverRecording(action:title:icon:isEnabled:isVisible:)`` button.
-  static var addVoiceoverRecording: EditorComponentID { "ly.img.component.inspectorBar.button.addVoiceoverRecording" }
+  static var addVoiceoverRecording: EditorComponentID {
+    "ly.img.component.inspectorBar.button.addVoiceoverRecording"
+  }
+
   /// The id of the ``InspectorBar/Buttons/reorder(action:title:icon:isEnabled:isVisible:)`` button.
-  static var reorder: EditorComponentID { "ly.img.component.inspectorBar.button.reorder" }
+  static var reorder: EditorComponentID {
+    "ly.img.component.inspectorBar.button.reorder"
+  }
+
   /// The id of the ``InspectorBar/Buttons/adjustments(action:title:icon:isEnabled:isVisible:)`` button.
-  static var adjustments: EditorComponentID { "ly.img.component.inspectorBar.button.adjustments" }
+  static var adjustments: EditorComponentID {
+    "ly.img.component.inspectorBar.button.adjustments"
+  }
+
   /// The id of the ``InspectorBar/Buttons/filter(action:title:icon:isEnabled:isVisible:)`` button.
-  static var filter: EditorComponentID { "ly.img.component.inspectorBar.button.filter" }
+  static var filter: EditorComponentID {
+    "ly.img.component.inspectorBar.button.filter"
+  }
+
   /// The id of the ``InspectorBar/Buttons/effect(action:title:icon:isEnabled:isVisible:)`` button.
-  static var effect: EditorComponentID { "ly.img.component.inspectorBar.button.effect" }
+  static var effect: EditorComponentID {
+    "ly.img.component.inspectorBar.button.effect"
+  }
+
   /// The id of the ``InspectorBar/Buttons/blur(action:title:icon:isEnabled:isVisible:)`` button.
-  static var blur: EditorComponentID { "ly.img.component.inspectorBar.button.blur" }
+  static var blur: EditorComponentID {
+    "ly.img.component.inspectorBar.button.blur"
+  }
+
   /// The id of the ``InspectorBar/Buttons/volume(action:title:icon:isEnabled:isVisible:)`` button.
-  static var volume: EditorComponentID { "ly.img.component.inspectorBar.button.volume" }
+  static var volume: EditorComponentID {
+    "ly.img.component.inspectorBar.button.volume"
+  }
+
   /// The id of the ``InspectorBar/Buttons/clipSpeed(action:title:icon:isEnabled:isVisible:)`` button.
-  static var clipSpeed: EditorComponentID { "ly.img.component.inspectorBar.button.clipSpeed" }
+  static var clipSpeed: EditorComponentID {
+    "ly.img.component.inspectorBar.button.clipSpeed"
+  }
+
   /// The id of the ``InspectorBar/Buttons/crop(action:title:icon:isEnabled:isVisible:)`` button.
-  static var crop: EditorComponentID { "ly.img.component.inspectorBar.button.crop" }
+  static var crop: EditorComponentID {
+    "ly.img.component.inspectorBar.button.crop"
+  }
+
   /// The id of the ``InspectorBar/Buttons/duplicate(action:title:icon:isEnabled:isVisible:)`` button.
-  static var duplicate: EditorComponentID { "ly.img.component.inspectorBar.button.duplicate" }
+  static var duplicate: EditorComponentID {
+    "ly.img.component.inspectorBar.button.duplicate"
+  }
+
   /// The id of the ``InspectorBar/Buttons/layer(action:title:icon:isEnabled:isVisible:)`` button.
-  static var layer: EditorComponentID { "ly.img.component.inspectorBar.button.layer" }
+  static var layer: EditorComponentID {
+    "ly.img.component.inspectorBar.button.layer"
+  }
+
   /// The id of the ``InspectorBar/Buttons/split(action:title:icon:isEnabled:isVisible:)`` button.
-  static var split: EditorComponentID { "ly.img.component.inspectorBar.button.split" }
+  static var split: EditorComponentID {
+    "ly.img.component.inspectorBar.button.split"
+  }
+
   /// The id of the ``InspectorBar/Buttons/fillStroke(action:title:icon:isEnabled:isVisible:)`` button.
-  static var fillStroke: EditorComponentID { "ly.img.component.inspectorBar.button.fillStroke" }
+  static var fillStroke: EditorComponentID {
+    "ly.img.component.inspectorBar.button.fillStroke"
+  }
+
   /// The id of the ``InspectorBar/Buttons/moveAsClip(action:title:icon:isEnabled:isVisible:)`` button.
-  static var moveAsClip: EditorComponentID { "ly.img.component.inspectorBar.button.moveAsClip" }
+  static var moveAsClip: EditorComponentID {
+    "ly.img.component.inspectorBar.button.moveAsClip"
+  }
+
   /// The id of the ``InspectorBar/Buttons/moveAsOverlay(action:title:icon:isEnabled:isVisible:)`` button.
-  static var moveAsOverlay: EditorComponentID { "ly.img.component.inspectorBar.button.moveAsOverlay" }
+  static var moveAsOverlay: EditorComponentID {
+    "ly.img.component.inspectorBar.button.moveAsOverlay"
+  }
+
   /// The id of the ``InspectorBar/Buttons/replace(action:title:icon:isEnabled:isVisible:)`` button
-  static var replace: EditorComponentID { "ly.img.component.inspectorBar.button.replace" }
+  static var replace: EditorComponentID {
+    "ly.img.component.inspectorBar.button.replace"
+  }
+
   /// The id of the ``InspectorBar/Buttons/enterGroup(action:title:icon:isEnabled:isVisible:)`` button.
-  static var enterGroup: EditorComponentID { "ly.img.component.inspectorBar.button.enterGroup" }
+  static var enterGroup: EditorComponentID {
+    "ly.img.component.inspectorBar.button.enterGroup"
+  }
+
   /// The id of the ``InspectorBar/Buttons/selectGroup(action:title:icon:isEnabled:isVisible:)`` button.
-  static var selectGroup: EditorComponentID { "ly.img.component.inspectorBar.button.selectGroup" }
+  static var selectGroup: EditorComponentID {
+    "ly.img.component.inspectorBar.button.selectGroup"
+  }
+
   /// The id of the ``InspectorBar/Buttons/delete(action:title:icon:isEnabled:isVisible:)`` button.
-  static var delete: EditorComponentID { "ly.img.component.inspectorBar.button.delete" }
+  static var delete: EditorComponentID {
+    "ly.img.component.inspectorBar.button.delete"
+  }
+
   /// The id of the ``InspectorBar/Buttons/editText(action:title:icon:isEnabled:isVisible:)`` button.
-  static var editText: EditorComponentID { "ly.img.component.inspectorBar.button.editText" }
+  static var editText: EditorComponentID {
+    "ly.img.component.inspectorBar.button.editText"
+  }
+
   /// The id of the ``InspectorBar/Buttons/formatText(action:title:icon:isEnabled:isVisible:)`` button.
-  static var formatText: EditorComponentID { "ly.img.component.inspectorBar.button.formatText" }
+  static var formatText: EditorComponentID {
+    "ly.img.component.inspectorBar.button.formatText"
+  }
+
   /// The id of the ``InspectorBar/Buttons/shape(action:title:icon:isEnabled:isVisible:)`` button.
-  static var shape: EditorComponentID { "ly.img.component.inspectorBar.button.shape" }
+  static var shape: EditorComponentID {
+    "ly.img.component.inspectorBar.button.shape"
+  }
+
   /// The id of the ``InspectorBar/Buttons/textBackground(action:title:icon:isEnabled:isVisible:)`` button.
-  static var textBackground: EditorComponentID { "ly.img.component.inspectorBar.button.textBackground" }
+  static var textBackground: EditorComponentID {
+    "ly.img.component.inspectorBar.button.textBackground"
+  }
+
   /// The id of the ``InspectorBar/Buttons/animation(action:title:icon:isEnabled:isVisible:)`` button.
-  static var animation: EditorComponentID { "ly.img.component.inspectorBar.button.animation" }
+  static var animation: EditorComponentID {
+    "ly.img.component.inspectorBar.button.animation"
+  }
+
   /// The id of the ``InspectorBar/Buttons/textPresets(action:title:icon:isEnabled:isVisible:)`` button.
-  static var textPresets: EditorComponentID { "ly.img.component.inspectorBar.button.textPresets" }
+  static var textPresets: EditorComponentID {
+    "ly.img.component.inspectorBar.button.textPresets"
+  }
+
   /// The id of the ``InspectorBar/Buttons/textOnPath(action:title:icon:isEnabled:isVisible:)`` button.
-  static var textOnPath: EditorComponentID { "ly.img.component.inspectorBar.button.textOnPath" }
+  static var textOnPath: EditorComponentID {
+    "ly.img.component.inspectorBar.button.textOnPath"
+  }
 }
 
 @MainActor

@@ -15,7 +15,7 @@ public enum OnCreate {
   /// The handler type that receives an `existing` closure for chaining.
   public typealias Handler = @MainActor (
     _ engine: Engine,
-    _ existing: () async throws -> Void
+    _ existing: () async throws -> Void,
   ) async throws -> Void
 
   /// The default callback which creates a new scene.
@@ -103,7 +103,7 @@ public enum OnExport {
   public typealias Handler = @MainActor (
     _ engine: Engine,
     _ eventHandler: EditorEventHandler,
-    _ existing: () async throws -> Void
+    _ existing: () async throws -> Void,
   ) async throws -> Void
 
   /// Creates a callback that exports the scene as a static file (e.g., PDF, PNG), writes it to a temporary file,
@@ -217,7 +217,7 @@ public enum OnUpload {
   public typealias Callback = @MainActor (
     _ engine: Engine,
     _ sourceID: String,
-    _ asset: AssetDefinition
+    _ asset: AssetDefinition,
   ) async throws -> AssetDefinition
 
   /// The handler type that receives an `existing` closure for chaining.
@@ -226,7 +226,7 @@ public enum OnUpload {
     _ engine: Engine,
     _ sourceID: String,
     _ asset: AssetDefinition,
-    _ existing: (AssetDefinition) async throws -> AssetDefinition
+    _ existing: (AssetDefinition) async throws -> AssetDefinition,
   ) async throws -> AssetDefinition
 
   /// The default callback which forwards the unmodified `AssetDefinition`.
@@ -240,14 +240,14 @@ public enum OnClose {
   /// The callback type.
   public typealias Callback = @MainActor (
     _ engine: Engine,
-    _ eventHandler: EditorEventHandler
+    _ eventHandler: EditorEventHandler,
   ) -> Void
 
   /// The handler type that receives an `existing` closure for chaining.
   public typealias Handler = @MainActor (
     _ engine: Engine,
     _ eventHandler: EditorEventHandler,
-    _ existing: () -> Void
+    _ existing: () -> Void,
   ) -> Void
 
   /// The default callback that displays the close confirmation alert if there are any unsaved changes, else closes the
@@ -268,14 +268,14 @@ public enum OnError {
   /// The callback type.
   public typealias Callback = @MainActor (
     _ error: Swift.Error,
-    _ eventHandler: EditorEventHandler
+    _ eventHandler: EditorEventHandler,
   ) -> Void
 
   /// The handler type that receives an `existing` closure for chaining.
   public typealias Handler = @MainActor (
     _ error: Swift.Error,
     _ eventHandler: EditorEventHandler,
-    _ existing: () -> Void
+    _ existing: () -> Void,
   ) -> Void
 
   /// The default callback that displays the error alert.
@@ -293,7 +293,7 @@ public enum OnLoaded {
   /// The handler type that receives an `existing` closure for chaining.
   public typealias Handler = @MainActor (
     _ context: OnLoaded.Context,
-    _ existing: () async throws -> Void
+    _ existing: () async throws -> Void,
   ) async throws -> Void
 
   /// The default empty callback.
@@ -308,7 +308,9 @@ public enum OnLoaded {
       operations.append(operation)
     }
 
-    var isEmpty: Bool { operations.isEmpty }
+    var isEmpty: Bool {
+      operations.isEmpty
+    }
 
     /// Runs all collected operations concurrently.
     /// Blocks until all complete or one throws. Cancelling the parent task cancels all operations.
@@ -379,14 +381,14 @@ public enum OnChanged {
   /// The callback type.
   public typealias Callback = @Sendable @MainActor (
     _ update: OnChanged.EditorStateChange,
-    _ context: OnChanged.Context
+    _ context: OnChanged.Context,
   ) throws -> Void
 
   /// The handler type that receives an `existing` closure for chaining.
   public typealias Handler = @Sendable @MainActor (
     _ update: OnChanged.EditorStateChange,
     _ context: OnChanged.Context,
-    _ existing: () throws -> Void
+    _ existing: () throws -> Void,
   ) throws -> Void
 
   /// The default callback.
@@ -492,7 +494,7 @@ public enum OnChanged {
     onUpload: @escaping OnUpload.Callback = OnUpload.default,
     onClose: @escaping OnClose.Callback = OnClose.default,
     onError: @escaping OnError.Callback = OnError.default,
-    onChanged: @escaping OnChanged.Callback = OnChanged.default
+    onChanged: @escaping OnChanged.Callback = OnChanged.default,
   ) {
     self.onCreate = onCreate
     self.onLoaded = onLoaded

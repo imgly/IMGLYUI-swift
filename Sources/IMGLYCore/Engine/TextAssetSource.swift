@@ -22,7 +22,7 @@ public final class TextAssetSource: NSObject {
   public convenience init(
     engine: Engine,
     typefaceName: String = "Roboto",
-    typefaceSourceID: String = "ly.img.typeface"
+    typefaceSourceID: String = "ly.img.typeface",
   ) async throws {
     guard let asset = try await engine.asset.findAssets(
       sourceID: typefaceSourceID,
@@ -81,7 +81,9 @@ public final class TextAssetSource: NSObject {
 extension TextAssetSource: AssetSource {
   public static let id = "ly.img.asset.source.text"
 
-  public var id: String { Self.id }
+  public var id: String {
+    Self.id
+  }
 
   public func findAssets(queryData: AssetQueryData) async throws -> AssetQueryResult {
     let query = queryData.query?.lowercased() ?? ""
@@ -117,9 +119,15 @@ extension TextAssetSource: AssetSource {
     return .init(value: id)
   }
 
-  public var supportedMIMETypes: [String]? { nil }
+  public var supportedMIMETypes: [String]? {
+    nil
+  }
 
-  public var credits: AssetCredits? { nil }
+  public var credits: AssetCredits? {
+    nil
+  }
 
-  public var license: AssetLicense? { nil }
+  public var license: AssetLicense? {
+    nil
+  }
 }

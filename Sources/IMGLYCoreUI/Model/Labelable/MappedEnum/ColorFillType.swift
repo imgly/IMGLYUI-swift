@@ -15,7 +15,9 @@ import IMGLYEngine
     }
   }
 
-  @_spi(Internal) public var imageName: String? { nil }
+  @_spi(Internal) public var imageName: String? {
+    nil
+  }
 
   func fillType() throws -> FillType {
     guard let fillType = FillType(rawValue: rawValue) else {

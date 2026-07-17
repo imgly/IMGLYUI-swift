@@ -3,8 +3,8 @@ import SwiftUI
 
 /// Custom view that looks like `.pickerStyle(.menu)` but allows to use a custom label for the selection next to the
 /// up&down chevron.
-struct MenuPicker<Data>: View
-  where Data: RandomAccessCollection, Data.Element: Labelable {
+struct MenuPicker<Data: RandomAccessCollection>: View
+  where Data.Element: Labelable {
   let title: LocalizedStringResource
   let data: Data
   @Binding var selection: Data.Element?

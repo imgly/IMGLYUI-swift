@@ -433,7 +433,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// The default label for the elements tab.
-  @ViewBuilder public static func elementsLabel(_ title: LocalizedStringResource) -> some View {
+  public static func elementsLabel(_ title: LocalizedStringResource) -> some View {
     Label {
       Text(title)
     } icon: {
@@ -446,12 +446,12 @@ public struct DefaultAssetLibrary: AssetLibrary {
   Deprecated in v1.60.0. Please see the changelog for migration details:
   https://img.ly/docs/cesdk/changelog/v1-60-0/
   """)
-  @ViewBuilder public static func uploadsLabel(_ title: LocalizedStringResource) -> some View {
+  public static func uploadsLabel(_ title: LocalizedStringResource) -> some View {
     photoRollLabel(title)
   }
 
   /// The default label for the photo roll tab.
-  @ViewBuilder public static func photoRollLabel(_ title: LocalizedStringResource) -> some View {
+  public static func photoRollLabel(_ title: LocalizedStringResource) -> some View {
     Label {
       Text(title)
     } icon: {
@@ -460,7 +460,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// The default label for the videos tab.
-  @ViewBuilder public static func videosLabel(_ title: LocalizedStringResource) -> some View {
+  public static func videosLabel(_ title: LocalizedStringResource) -> some View {
     Label {
       Text(title)
     } icon: {
@@ -469,7 +469,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// The default label for the audio tab.
-  @ViewBuilder public static func audioLabel(_ title: LocalizedStringResource) -> some View {
+  public static func audioLabel(_ title: LocalizedStringResource) -> some View {
     Label {
       Text(title)
     } icon: {
@@ -478,7 +478,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// The default label for the images tab.
-  @ViewBuilder public static func imagesLabel(_ title: LocalizedStringResource) -> some View {
+  public static func imagesLabel(_ title: LocalizedStringResource) -> some View {
     Label {
       Text(title)
     } icon: {
@@ -487,7 +487,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// The default label for the text tab.
-  @ViewBuilder public static func textLabel(_ title: LocalizedStringResource) -> some View {
+  public static func textLabel(_ title: LocalizedStringResource) -> some View {
     Label {
       Text(title)
     } icon: {
@@ -496,7 +496,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// The default label for the shapes tab.
-  @ViewBuilder public static func shapesLabel(_ title: LocalizedStringResource) -> some View {
+  public static func shapesLabel(_ title: LocalizedStringResource) -> some View {
     Label {
       Text(title)
     } icon: {
@@ -505,7 +505,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
   }
 
   /// The default label for the stickers tab.
-  @ViewBuilder public static func stickersLabel(_ title: LocalizedStringResource) -> some View {
+  public static func stickersLabel(_ title: LocalizedStringResource) -> some View {
     // Fixes light/dark mode fill issue with `"face.smiling"` for iOS 16.
     Label {
       Text(title)
@@ -514,7 +514,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
-  @ViewBuilder public var photoRollTab: some View {
+  public var photoRollTab: some View {
     AssetLibraryTabView(.imgly.localized("ly_img_editor_asset_library_title_photo_roll")) {
       photoRoll().content
     } label: {
@@ -522,7 +522,7 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
-  @ViewBuilder public var elementsTab: some View {
+  public var elementsTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_elements")) {
       elements()
     } label: {
@@ -530,62 +530,62 @@ public struct DefaultAssetLibrary: AssetLibrary {
     }
   }
 
-  @ViewBuilder public var videosTab: some View {
+  public var videosTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_videos")) { videos } label: {
       Self.videosLabel($0)
     }
   }
 
-  @ViewBuilder public var audioTab: some View {
+  public var audioTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_audio")) { audio } label: {
       Self.audioLabel($0)
     }
   }
 
-  @ViewBuilder public var imagesTab: some View {
+  public var imagesTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_images")) { images } label: {
       Self.imagesLabel($0)
     }
   }
 
-  @ViewBuilder public var textTab: some View {
+  public var textTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_text")) { text } label: {
       Self.textLabel($0)
     }
   }
 
-  @ViewBuilder public var shapesTab: some View {
+  public var shapesTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_shapes")) { shapes } label: {
       Self.shapesLabel($0)
     }
   }
 
-  @ViewBuilder public var stickersTab: some View {
+  public var stickersTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_stickers")) { stickers } label: {
       Self.stickersLabel($0)
     }
   }
 
-  @ViewBuilder public var clipsTab: some View {
+  public var clipsTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_clips")) { videosAndImages } label: { _ in
       EmptyView()
     }
   }
 
-  @ViewBuilder public var overlaysTab: some View {
+  public var overlaysTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_overlays")) { videosAndImages } label: { _ in
       EmptyView()
     }
   }
 
-  @ViewBuilder public var stickersAndShapesTab: some View {
+  public var stickersAndShapesTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_stickers_and_shapes")) {
       stickers
       shapes
     } label: { _ in EmptyView() }
   }
 
-  @ViewBuilder func tabViews(_ tabs: some RandomAccessCollection<Tab>) -> some View {
+  func tabViews(_ tabs: some RandomAccessCollection<Tab>) -> some View {
     ForEach(tabs, id: \.self) {
       tabView($0)
     }

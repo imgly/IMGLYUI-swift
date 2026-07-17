@@ -6,12 +6,29 @@ import IMGLYEngine
 import SwiftUI
 
 class AnyTimelineInteractor: TimelineInteractor {
-  var timelineProperties: TimelineProperties { interactor.timelineProperties }
-  var isLoopingPlaybackEnabled: Bool { interactor.isLoopingPlaybackEnabled }
-  var isVoiceOverRecordModeActive: Bool { interactor.isVoiceOverRecordModeActive }
-  var isVoiceOverRecordModeRecording: Bool { interactor.isVoiceOverRecordModeRecording }
-  var hasVoiceOverRecordModeRecordedAudio: Bool { interactor.hasVoiceOverRecordModeRecordedAudio }
-  var voiceOverRecordModeTarget: DesignBlockID? { interactor.voiceOverRecordModeTarget }
+  var timelineProperties: TimelineProperties {
+    interactor.timelineProperties
+  }
+
+  var isLoopingPlaybackEnabled: Bool {
+    interactor.isLoopingPlaybackEnabled
+  }
+
+  var isVoiceOverRecordModeActive: Bool {
+    interactor.isVoiceOverRecordModeActive
+  }
+
+  var isVoiceOverRecordModeRecording: Bool {
+    interactor.isVoiceOverRecordModeRecording
+  }
+
+  var hasVoiceOverRecordModeRecordedAudio: Bool {
+    interactor.hasVoiceOverRecordModeRecordedAudio
+  }
+
+  var voiceOverRecordModeTarget: DesignBlockID? {
+    interactor.voiceOverRecordModeTarget
+  }
 
   func setTrim(clip: Clip, timeOffset: CMTime, trimOffset: CMTime, duration: CMTime) {
     interactor.setTrim(clip: clip, timeOffset: timeOffset, trimOffset: trimOffset, duration: duration)
@@ -101,7 +118,7 @@ class AnyTimelineInteractor: TimelineInteractor {
                                timeRange: ClosedRange<Double>,
                                numberOfSamples: Int) async throws -> AsyncThrowingStream<
     IMGLYEngine.AudioThumbnail,
-    Swift.Error
+    Swift.Error,
   > {
     try await interactor.generateAudioThumbnails(
       clip: clip,

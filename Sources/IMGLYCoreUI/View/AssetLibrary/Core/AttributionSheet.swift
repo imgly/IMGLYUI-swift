@@ -7,8 +7,13 @@ struct AttributionSheet: ViewModifier {
   let asset: AssetLoader.Asset
   let onShowAttribution: () -> Void
 
-  var assetLicense: AttributedString? { asset.result.license?.link }
-  var sourceLicense: AttributedString? { interactor.getLicense(sourceID: asset.sourceID)?.link }
+  var assetLicense: AttributedString? {
+    asset.result.license?.link
+  }
+
+  var sourceLicense: AttributedString? {
+    interactor.getLicense(sourceID: asset.sourceID)?.link
+  }
 
   func body(content: Content) -> some View {
     content
@@ -27,10 +32,21 @@ struct Attribution: View {
 
   let asset: AssetLoader.Asset
 
-  var assetCredits: AttributedString? { asset.result.credits?.link }
-  var assetLicense: AttributedString? { asset.result.license?.link }
-  var sourceCredits: AttributedString? { interactor.getCredits(sourceID: asset.sourceID)?.link }
-  var sourceLicense: AttributedString? { interactor.getLicense(sourceID: asset.sourceID)?.link }
+  var assetCredits: AttributedString? {
+    asset.result.credits?.link
+  }
+
+  var assetLicense: AttributedString? {
+    asset.result.license?.link
+  }
+
+  var sourceCredits: AttributedString? {
+    interactor.getCredits(sourceID: asset.sourceID)?.link
+  }
+
+  var sourceLicense: AttributedString? {
+    interactor.getLicense(sourceID: asset.sourceID)?.link
+  }
 
   var label: String? {
     asset.result.label ?? asset.result.filename ?? asset.result.id

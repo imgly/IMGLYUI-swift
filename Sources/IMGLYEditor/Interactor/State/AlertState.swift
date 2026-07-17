@@ -23,7 +23,7 @@ struct AlertState: BatchMutable, Equatable {
       dismissTitle: String = String(localized: .imgly.localized("ly_img_editor_dialog_error_generic_button_dismiss")),
       dismissCallback: (() -> Void)? = nil,
       confirmTitle: String? = nil,
-      confirmCallback: (() -> Void)? = nil
+      confirmCallback: (() -> Void)? = nil,
     ) {
       self.title = title
       self.message = message

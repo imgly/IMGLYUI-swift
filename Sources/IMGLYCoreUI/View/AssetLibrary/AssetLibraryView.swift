@@ -71,7 +71,6 @@ public struct AssetLibraryView: AssetLibrary {
     }
   }
 
-  @ViewBuilder
   private func tabViews(for categories: some RandomAccessCollection<AssetLibraryCategory>) -> some View {
     ForEach(categories, id: \.id) { category in
       if category.id == AssetLibraryCategory.ID.elements {
@@ -103,52 +102,40 @@ public struct AssetLibraryView: AssetLibrary {
   @ViewBuilder public var videosTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.videos) {
       tabView(for: category)
-    } else {
-      EmptyView()
     }
   }
 
   @ViewBuilder public var audioTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.audio) {
       tabView(for: category)
-    } else {
-      EmptyView()
     }
   }
 
   @ViewBuilder public var imagesTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.images) {
       tabView(for: category)
-    } else {
-      EmptyView()
     }
   }
 
   @ViewBuilder public var textTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.text) {
       tabView(for: category)
-    } else {
-      EmptyView()
     }
   }
 
   @ViewBuilder public var shapesTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.shapes) {
       tabView(for: category)
-    } else {
-      EmptyView()
     }
   }
 
   @ViewBuilder public var stickersTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.stickers) {
       tabView(for: category)
-    } else {
-      EmptyView()
     }
   }
 
-  @ViewBuilder public var photoRollTab: some View {
+  public var photoRollTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_photo_roll")) {
       AssetLibrarySource.photoRoll(
         .title(.imgly.localized("ly_img_editor_asset_library_section_photo_roll")),
@@ -159,7 +146,7 @@ public struct AssetLibraryView: AssetLibrary {
     }
   }
 
-  @ViewBuilder public var clipsTab: some View {
+  public var clipsTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_clips")) {
       videosAndImagesContent
     } label: { _ in
@@ -167,7 +154,7 @@ public struct AssetLibraryView: AssetLibrary {
     }
   }
 
-  @ViewBuilder public var overlaysTab: some View {
+  public var overlaysTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_overlays")) {
       videosAndImagesContent
     } label: { _ in
@@ -175,7 +162,7 @@ public struct AssetLibraryView: AssetLibrary {
     }
   }
 
-  @ViewBuilder public var stickersAndShapesTab: some View {
+  public var stickersAndShapesTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_stickers_and_shapes")) {
       stickersAndShapesContent
     } label: { _ in
@@ -189,7 +176,6 @@ public struct AssetLibraryView: AssetLibrary {
     categories.first { $0.id == id }
   }
 
-  @ViewBuilder
   private func tabView(for category: AssetLibraryCategory) -> some View {
     AssetLibraryTab(category.title) {
       sectionsContent(for: category)

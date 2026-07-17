@@ -4,7 +4,9 @@ import SwiftUI
 struct Sheet: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.colorScheme) private var colorScheme
-  private var sheet: SheetState { interactor.sheet }
+  private var sheet: SheetState {
+    interactor.sheet
+  }
 
   @Environment(\.verticalSizeClass) private var verticalSizeClass
 

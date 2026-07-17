@@ -13,11 +13,15 @@ struct BottomBar: View {
 
   private let leadingPadding: CGFloat = 60
 
-  private var isCloseButtonEnabled: Bool { content != .pageOverview }
+  private var isCloseButtonEnabled: Bool {
+    content != .pageOverview
+  }
 
-  private var isRoot: Bool { content == nil }
+  private var isRoot: Bool {
+    content == nil
+  }
 
-  @ViewBuilder func button(_ mode: SheetMode) -> some View {
+  func button(_ mode: SheetMode) -> some View {
     Button {
       interactor.bottomBarButtonTapped(for: mode)
     } label: {
@@ -91,7 +95,7 @@ struct BottomBar: View {
 
   @State var bottomBarWidth: CGFloat?
 
-  @ViewBuilder var barItems: some View {
+  var barItems: some View {
     ScrollView(.horizontal, showsIndicators: false) {
       HStack(spacing: 0) {
         Group {
@@ -161,7 +165,7 @@ struct BottomBar: View {
     .animation(nil, value: content)
   }
 
-  @ViewBuilder var bottomBar: some View {
+  var bottomBar: some View {
     ZStack {
       BottomToolbar {
         ZStack {

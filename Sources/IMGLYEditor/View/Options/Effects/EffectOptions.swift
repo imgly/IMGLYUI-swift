@@ -11,7 +11,7 @@ struct EffectOptions<Item: View>: View {
   @EnvironmentObject private var interactor: Interactor
   @StateObject private var searchState = AssetLibrarySearchState()
 
-  @ViewBuilder private var grid: some View {
+  private var grid: some View {
     VStack {
       AssetGrid { asset in
         switch asset {

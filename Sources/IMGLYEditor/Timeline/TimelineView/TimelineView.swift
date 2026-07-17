@@ -35,8 +35,6 @@ struct TimelineView: View {
               .environment(\.imglyTimelineConfiguration, interactor.timelineProperties.configuration)
           }
       }
-    } else {
-      EmptyView()
     }
   }
 }

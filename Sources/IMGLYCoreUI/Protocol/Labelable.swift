@@ -9,8 +9,13 @@ import SwiftUI
 }
 
 @_spi(Internal) public extension Labelable {
-  var isSystemImage: Bool { true }
-  var isIconEmbeddedInText: Bool { false }
+  var isSystemImage: Bool {
+    true
+  }
+
+  var isIconEmbeddedInText: Bool {
+    false
+  }
 
   @ViewBuilder var label: some View {
     if let imageName {
@@ -41,7 +46,7 @@ import SwiftUI
     }
   }
 
-  @ViewBuilder var taggedLabel: some View {
+  var taggedLabel: some View {
     label.tag(self)
   }
 

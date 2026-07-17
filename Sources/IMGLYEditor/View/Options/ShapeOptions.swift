@@ -78,7 +78,7 @@ struct ShapeOptions: View {
     }
   }
 
-  @ViewBuilder var rectCornerRadiusSlider: some View {
+  var rectCornerRadiusSlider: some View {
     RawSlider<Float>(.imgly.localized("ly_img_editor_sheet_shape_label_round_corners"),
                      in: 0 ... 1) { engine, blocks, value, completion in
       let changed = try blocks.filter {

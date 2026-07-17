@@ -71,7 +71,7 @@ struct Canvas: View {
     return height
   }
 
-  @ViewBuilder func bottomBar(content: SheetContent?) -> some View {
+  func bottomBar(content: SheetContent?) -> some View {
     BottomBar(content: content, id: id, height: bottomBarHeight, bottomSafeAreaInset: bottomSafeAreaInset)
   }
 
@@ -130,7 +130,7 @@ struct Canvas: View {
     )
   }
 
-  @ViewBuilder var canvas: some View {
+  var canvas: some View {
     ZStack {
       if viewDebugging {
         Color.red.opacity(0.2).border(.red).padding(5)
@@ -147,7 +147,7 @@ struct Canvas: View {
     }
   }
 
-  @ViewBuilder var measureGeometry: some View {
+  var measureGeometry: some View {
     ZStack {
       if viewDebugging {
         Color.blue.opacity(0.2).border(.blue).allowsHitTesting(false)

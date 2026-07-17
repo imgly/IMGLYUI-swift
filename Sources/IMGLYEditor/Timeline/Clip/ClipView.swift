@@ -158,8 +158,12 @@ struct ClipView: View {
   }
 
   private var clipOpacity: Double {
-    if !isSelected { return 1 }
-    if clip.clipType == .voiceOver, !clip.allowsTrimming { return 1 }
+    if !isSelected {
+      return 1
+    }
+    if clip.clipType == .voiceOver, !clip.allowsTrimming {
+      return 1
+    }
     return 0
   }
 
