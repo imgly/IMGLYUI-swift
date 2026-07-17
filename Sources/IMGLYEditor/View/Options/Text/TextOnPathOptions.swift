@@ -50,6 +50,12 @@ struct TextOnPathOptions: View {
 
   // MARK: - Body
 
+  /// Include EffectOptions' iOS 26 floating-nav-bar inset (44) in the fixed presets-strip height, so
+  /// the grid doesn't overflow the strip and overlap the controls list below it (IOS-908).
+  private var presetsStripHeight: CGFloat {
+    126 + (usesLegacyDesign ? 0 : 44)
+  }
+
   var body: some View {
     let selection = interactor.bind(id, getter: Self.selectionGetter, setter: Self.selectionSetter)
     let hasPath = selection.wrappedValue?.identifier != nil
@@ -67,7 +73,7 @@ struct TextOnPathOptions: View {
         sources: [.init(id: Self.sourceID)],
         sheetState: $sheetState,
       )
-      .frame(height: hasPath ? 126 : nil, alignment: .top)
+      .frame(height: hasPath ? presetsStripHeight : nil, alignment: .top)
 
       if hasPath {
         List {
