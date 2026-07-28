@@ -16,7 +16,7 @@ import SwiftUI
         .toolbar {
           ToolbarItem(placement: .navigationBarTrailing) {
             SheetDismissButton()
-              .buttonStyle(.borderless)
+              .sheetDismissButtonStyle()
           }
         }
     }

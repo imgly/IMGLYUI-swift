@@ -27,3 +27,21 @@ struct SheetDismissButton: View {
     }
   }
 }
+
+extension View {
+  /// Styles a ``SheetDismissButton`` hosted in a titled-sheet toolbar.
+  ///
+  /// On iOS 26+ (Liquid Glass), keeping the system toolbar button style ensures the entire glass circle
+  /// remains interactive. Applying `.buttonStyle(.borderless)` detaches the tap target from the glass,
+  /// causing missed touches.
+  ///
+  /// Legacy/pre-iOS 26 retains `.borderless`. Note: Asset-library dismiss buttons should never use `.borderless`
+  /// (see `Sheet.swift`).
+  @ViewBuilder func sheetDismissButtonStyle() -> some View {
+    if #available(iOS 26.0, *), !usesLegacyDesign {
+      self
+    } else {
+      buttonStyle(.borderless)
+    }
+  }
+}

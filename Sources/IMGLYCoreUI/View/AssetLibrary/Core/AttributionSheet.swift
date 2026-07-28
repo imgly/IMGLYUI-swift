@@ -100,15 +100,9 @@ struct Attribution: View {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button {
+          SheetCloseButton(title: .imgly.localized("ly_img_editor_button_close")) {
             dismiss()
-          } label: {
-            Label(String(localized: .imgly.localized("ly_img_editor_button_close")), systemImage: "xmark.circle.fill")
-              .symbolRenderingMode(.hierarchical)
-              .foregroundColor(.secondary)
-              .font(.title2)
           }
-          .buttonStyle(.borderless)
         }
       }
     }

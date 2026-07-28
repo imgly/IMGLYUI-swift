@@ -29,7 +29,7 @@ struct NavigationLinkPicker<Data: RandomAccessCollection, ElementLabel: View, Li
         .toolbar {
           ToolbarItem(placement: .navigationBarTrailing) {
             SheetDismissButton()
-              .buttonStyle(.borderless)
+              .sheetDismissButtonStyle()
           }
         }
     } label: {

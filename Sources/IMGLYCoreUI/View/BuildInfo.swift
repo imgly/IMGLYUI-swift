@@ -169,15 +169,9 @@ private struct DevSheet<Content: View>: View {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button {
+          SheetCloseButton(title: "Cancel") {
             dismiss()
-          } label: {
-            Label("Cancel", systemImage: "xmark.circle.fill")
-              .symbolRenderingMode(.hierarchical)
-              .foregroundColor(.secondary)
-              .font(.title2)
           }
-          .buttonStyle(.borderless)
         }
       }
     }
