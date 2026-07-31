@@ -93,6 +93,16 @@ public struct SheetStyle: Hashable {
   }
 }
 
+extension SheetStyle {
+  /// Returns a copy at different detents, keeping the floating and undimmed behavior the caller configured.
+  func resized(detent: PresentationDetent, detents: Set<PresentationDetent>) -> Self {
+    // `largestUndimmedDetent` is an absolute height, so carrying it over unchanged would dim the underlying
+    // content as soon as the sheet grows past it. Re-derive it, but keep an always-dimmed sheet dimmed.
+    let largestUndimmedDetent = largestUndimmedDetent == nil ? nil : detents.largestUndimmedDetent
+    return .init(isFloating, detent, detents, largestUndimmedDetent: largestUndimmedDetent)
+  }
+}
+
 private extension PresentationDetent {
   var isPredefined: Bool {
     imgly.identifier != nil

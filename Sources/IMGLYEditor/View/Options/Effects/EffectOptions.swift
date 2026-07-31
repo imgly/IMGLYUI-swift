@@ -1,12 +1,13 @@
 @_spi(Internal) import IMGLYCoreUI
 import SwiftUI
 
-struct EffectOptions<Item: View>: View {
+struct EffectOptions<Item: View, Properties: View>: View {
   @Binding var selection: AssetSelection?
   @ViewBuilder var item: (AssetLoader.Asset, Binding<EffectSheetState>) -> Item
   let identifier: ((AssetLoader.Asset) -> AnyHashable?)?
   let sources: [AssetLoader.SourceData]
   @Binding var sheetState: EffectSheetState
+  @ViewBuilder var properties: (AssetProperties) -> Properties
 
   @EnvironmentObject private var interactor: Interactor
   @StateObject private var searchState = AssetLibrarySearchState()
@@ -57,14 +58,46 @@ struct EffectOptions<Item: View>: View {
     case .selection:
       grid
     case let .properties(asset):
-      EffectPropertyOptions(
-        title: asset.title,
-        properties: refreshedProperties(from: asset),
-        backTitle: asset.backTitle,
-        previousDetent: asset.previousDetent,
-        sheetState: $sheetState,
-      )
+      properties(asset)
     }
+  }
+}
+
+extension EffectOptions where Properties == RefreshedEffectPropertyOptions {
+  /// Uses the generic ``EffectPropertyOptions`` list as the properties page.
+  init(
+    selection: Binding<AssetSelection?>,
+    @ViewBuilder item: @escaping (AssetLoader.Asset, Binding<EffectSheetState>) -> Item,
+    identifier: ((AssetLoader.Asset) -> AnyHashable?)?,
+    sources: [AssetLoader.SourceData],
+    sheetState: Binding<EffectSheetState>,
+  ) {
+    self.init(
+      selection: selection,
+      item: item,
+      identifier: identifier,
+      sources: sources,
+      sheetState: sheetState,
+      properties: { RefreshedEffectPropertyOptions(asset: $0, sheetState: sheetState) },
+    )
+  }
+}
+
+/// Renders the generic `EffectPropertyOptions` after refreshing asset-backed property values from the engine.
+struct RefreshedEffectPropertyOptions: View {
+  let asset: AssetProperties
+  @Binding var sheetState: EffectSheetState
+
+  @EnvironmentObject private var interactor: Interactor
+
+  var body: some View {
+    EffectPropertyOptions(
+      title: asset.title,
+      properties: refreshedProperties(from: asset),
+      backTitle: asset.backTitle,
+      previousStyle: asset.previousStyle,
+      sheetState: $sheetState,
+    )
   }
 
   private func refreshedProperties(from asset: AssetProperties) -> [EffectProperty] {

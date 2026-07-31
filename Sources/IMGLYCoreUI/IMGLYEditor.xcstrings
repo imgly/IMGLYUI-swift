@@ -8802,6 +8802,23 @@
         }
       }
     },
+    "ly_img_editor_sheet_text_on_path_label_alignment" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausrichtung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alignment"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_text_on_path_label_direction" : {
       "extractionState" : "manual",
       "localizations" : {

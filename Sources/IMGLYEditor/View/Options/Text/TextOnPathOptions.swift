@@ -1,5 +1,6 @@
 @_spi(Internal) import IMGLYCore
 @_spi(Internal) import IMGLYCoreUI
+@_spi(Internal) import enum IMGLYCoreUI.HorizontalAlignment
 import IMGLYEngine
 import SwiftUI
 
@@ -52,30 +53,88 @@ struct TextOnPathOptions: View {
 
   var body: some View {
     let selection = interactor.bind(id, getter: Self.selectionGetter, setter: Self.selectionSetter)
-    let hasPath = selection.wrappedValue?.identifier != nil
 
-    VStack(spacing: 0) {
-      EffectOptions(
-        selection: selection,
-        item: { asset, _ in
-          TextOnPathItem(
-            asset: asset,
-            selection: selection,
-          )
-        },
-        identifier: { $0.result.id },
-        sources: [.init(id: Self.sourceID)],
-        sheetState: $sheetState,
-      )
-      .frame(height: hasPath ? 126 : nil, alignment: .top)
-
-      if hasPath {
-        List {
-          pathPositionRow
-          directionRow
-          offsetSection
+    EffectOptions(
+      selection: selection,
+      item: { asset, sheetBinding in
+        TextOnPathItem(
+          asset: asset,
+          selection: selection,
+          sheetState: sheetBinding,
+        )
+      },
+      identifier: { $0.result.id },
+      sources: [.init(id: Self.sourceID)],
+      sheetState: $sheetState,
+      properties: { asset in
+        pathProperties(for: asset)
+      },
+    )
+    .onChange(of: selection.wrappedValue?.identifier) { (_: String?) in
+      if case let .properties(asset) = sheetState {
+        sheetState = .selection
+        interactor.sheet.commit { model in
+          model.style = asset.previousStyle
         }
       }
+    }
+  }
+
+  private func pathProperties(for asset: AssetProperties) -> some View {
+    List {
+      alignmentRow
+      pathPositionRow
+      directionRow
+      offsetSection
+    }
+    .navigationTitle(asset.title)
+    .toolbar {
+      ToolbarItem(placement: .navigationBarLeading) {
+        Button {
+          Task {
+            sheetState = .selection
+            interactor.sheet.commit { model in
+              model.style = asset.previousStyle
+            }
+          }
+        } label: {
+          NavigationLabel(asset.backTitle, direction: .backward)
+        }
+      }
+    }
+  }
+
+  /// The `auto` icon reflects the direction the engine resolves for the block's script.
+  private var alignmentRow: some View {
+    HStack {
+      Text(.imgly.localized("ly_img_editor_sheet_text_on_path_label_alignment"))
+      Spacer()
+      let alignment: Binding<HorizontalAlignment?> = interactor.bind(id, property: .key(.textHorizontalAlignment))
+      let effectiveAlignment: HorizontalAlignment? = id.flatMap { blockID in
+        interactor.get(blockID) { engine, block in
+          HorizontalAlignment(try engine.block.getTextEffectiveHorizontalAlignment(block))
+        }
+      }
+      HStack(spacing: 16) {
+        PropertyButton(property: .left, selection: alignment)
+        PropertyButton(property: .center, selection: alignment)
+        PropertyButton(property: .right, selection: alignment)
+        GenericPropertyButton(property: HorizontalAlignment.auto, selection: alignment) {
+          Label {
+            Text(HorizontalAlignment.auto.localizedStringResource)
+          } icon: {
+            Image(
+              HorizontalAlignment.auto.autoImageName(
+                forEffectiveAlignment: alignment.wrappedValue == .auto ? effectiveAlignment : nil,
+              ),
+              bundle: .module,
+            )
+          }
+          .symbolRenderingMode(.monochrome)
+        }
+      }
+      .labelStyle(.iconOnly)
+      .buttonStyle(.borderless)
     }
   }
 

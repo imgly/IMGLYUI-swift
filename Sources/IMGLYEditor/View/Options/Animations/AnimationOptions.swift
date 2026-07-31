@@ -148,7 +148,7 @@ struct AnimationOptions: View {
         if case let .properties(asset) = sheetState {
           sheetState = .selection
           interactor.sheet.commit { model in
-            model.style = .only(detent: asset.previousDetent)
+            model.style = asset.previousStyle
           }
         }
       }

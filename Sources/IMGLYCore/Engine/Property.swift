@@ -41,6 +41,7 @@ import Foundation
 
   case playbackPlaying = "playback/playing"
 
+  case textText = "text/text"
   case textFontFileURI = "text/fontFileUri"
   case textFontSize = "text/fontSize"
   case textHorizontalAlignment = "text/horizontalAlignment"

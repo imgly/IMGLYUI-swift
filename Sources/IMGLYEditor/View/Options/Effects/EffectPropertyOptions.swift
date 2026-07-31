@@ -6,7 +6,7 @@ struct EffectPropertyOptions: View {
   let title: String
   let properties: [EffectProperty]
   let backTitle: LocalizedStringResource
-  var previousDetent: PresentationDetent = .imgly.tiny
+  var previousStyle: SheetStyle = .only(detent: .imgly.tiny)
 
   @Binding var sheetState: EffectSheetState
   @EnvironmentObject private var interactor: Interactor
@@ -87,7 +87,7 @@ struct EffectPropertyOptions: View {
           Task {
             sheetState = .selection
             interactor.sheet.commit { model in
-              model.style = .only(detent: previousDetent)
+              model.style = previousStyle
             }
           }
         } label: {

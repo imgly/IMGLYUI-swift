@@ -310,7 +310,7 @@ public extension SheetType where Self == SheetTypes.TextOnPath {
   /// Creates a ``SheetType`` that is used to control placing text along an SVG baseline path.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/TextOnPath`` sheet type.
-  static func textOnPath(style: SheetStyle = .only(detent: .imgly.medium)) -> Self {
+  static func textOnPath(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self {
     Self(style: style)
   }
 }
