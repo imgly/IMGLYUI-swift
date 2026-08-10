@@ -704,6 +704,9 @@ extension Interactor: TimelineInteractor {
         return
       }
 
+      let wasBackgroundClip = timelineProperties.dataSource.findTrack(containing: clip)
+        === timelineProperties.dataSource.backgroundTrack
+
       do {
         _ = try engine.block.split(
           clip.id,
@@ -712,6 +715,12 @@ extension Interactor: TimelineInteractor {
         )
 
         addUndoStep()
+        cleanUpEmptyTracks()
+        if wasBackgroundClip {
+          packBackgroundChildren(engine: engine)
+        }
+        refreshTimeline()
+        timelineProperties.suppressNextDirtyRefresh = true
 
         // `createParentTrackIfNeeded` re-parents both halves into a new track, which
         // snaps the playhead back to the first half's start. Restore it.
