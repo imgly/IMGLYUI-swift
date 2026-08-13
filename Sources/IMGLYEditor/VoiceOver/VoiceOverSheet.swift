@@ -86,8 +86,8 @@ struct VoiceOverSheet: View {
       }
     }
     .padding(.top, VoiceOverSheetLayout.topPadding)
-    .frame(height: VoiceOverSheetLayout.controlsHeight, alignment: .top)
-    .frame(maxWidth: .infinity, alignment: .center)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    .ignoresSafeArea(.container, edges: .bottom)
     .preference(key: PresentationDragIndicatorHiddenKey.self, value: true)
     .interactiveDismissDisabled()
   }
