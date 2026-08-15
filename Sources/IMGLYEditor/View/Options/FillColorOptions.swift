@@ -15,7 +15,8 @@ struct FillColorOptions: View {
         data: ColorFillType.allCases,
         selection: $fillType,
       )
-      .disabled(interactor.sheet.content == .text)
+      // Text and captions support only a solid fill — no gradient (captions also sync only the solid color).
+      .disabled(interactor.sheet.content == .text || interactor.sheet.content == .caption)
       .accessibilityLabel("Fill Type")
 
       if interactor.isGradientFill(id), fillType == .gradient {
@@ -46,8 +47,13 @@ struct FillColorOptions: View {
   ///         gradient color fill mode.
   let colorsGetter: Interactor.PropertyGetter<[CGColor]> = { engine, id, _, property in
     do {
-      if try engine.block.getType(id) == Interactor.BlockType.text.rawValue {
-        let range = try engine.block.effectiveTextRange(id)
+      // A caption's visible colour is a run colour (like text), not `fill/solid/color`, so read it via the
+      // text-colour API. Captions use the whole-block range: the engine only registers the caption-track
+      // colour sync for a whole-block `setTextColor` (from<0 && to<0). Text uses its selected range.
+      let type = try engine.block.getType(id)
+      let isCaption = type == Interactor.BlockType.caption.rawValue
+      if type == Interactor.BlockType.text.rawValue || isCaption {
+        let range = isCaption ? nil : try engine.block.effectiveTextRange(id)
         var distinct: [Interactor.Color] = []
         for color in try engine.block.getTextColors(id, in: range) where !distinct.contains(color) {
           distinct.append(color)
@@ -72,9 +78,11 @@ struct FillColorOptions: View {
       try blocks.forEach {
         let blockType = try engine.block.getType($0)
 
-        if blockType == Interactor.BlockType.text.rawValue {
-          // Apply the colour to the effective text range.
-          let range = try engine.block.effectiveTextRange($0)
+        let isCaption = blockType == Interactor.BlockType.caption.rawValue
+        if blockType == Interactor.BlockType.text.rawValue || isCaption {
+          // Whole-block range for captions: the engine only registers the caption-track colour sync for a
+          // whole-block `setTextColor` (from<0 && to<0). Text uses its selected range.
+          let range = isCaption ? nil : try engine.block.effectiveTextRange($0)
           let originalColors = try engine.block.getTextColors($0, in: range)
           let isUnchanged = !originalColors.isEmpty && originalColors.allSatisfy { $0 == color }
           if !isUnchanged {

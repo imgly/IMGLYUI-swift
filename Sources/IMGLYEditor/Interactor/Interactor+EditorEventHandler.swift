@@ -106,7 +106,13 @@ extension Interactor: EditorEventHandler {
       }
     case is EditorEvents.Selection.Delete:
       pause()
-      bottomBarButtonTapped(for: .delete)
+      let captionsInteractor = CaptionsInteractor(self)
+      if let caption = captionsInteractor.selectedCaption() {
+        // Route caption deletes through the domain layer so an emptied caption track is cleaned up too.
+        captionsInteractor.deleteCaption(caption)
+      } else {
+        bottomBarButtonTapped(for: .delete)
+      }
     case is EditorEvents.Selection.BringForward:
       actionButtonTapped(for: .bringForward)
     case is EditorEvents.Selection.SendBackward:
@@ -169,6 +175,8 @@ extension Interactor: EditorEventHandler {
       openVoiceOver(style: sheet.style)
     case let sheet as SheetTypes.Reorder:
       self.sheet = .init(sheet)
+    case let sheet as SheetTypes.Captions:
+      self.sheet = .init(sheet)
     case let sheet as SheetTypes.Adjustments:
       clampPlayheadPositionToSelectedClip()
       if let content = sheetContent(sheet.id) ?? sheetContentForSelection {
@@ -185,6 +193,11 @@ extension Interactor: EditorEventHandler {
         self.sheet = .init(sheet, content)
       }
     case let sheet as SheetTypes.Blur:
+      clampPlayheadPositionToSelectedClip()
+      if let content = sheetContent(sheet.id) ?? sheetContentForSelection {
+        self.sheet = .init(sheet, content)
+      }
+    case let sheet as SheetTypes.CaptionStyle:
       clampPlayheadPositionToSelectedClip()
       if let content = sheetContent(sheet.id) ?? sheetContentForSelection {
         self.sheet = .init(sheet, content)

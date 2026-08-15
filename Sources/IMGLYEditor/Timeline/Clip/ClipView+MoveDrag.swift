@@ -74,6 +74,19 @@ extension ClipView {
 
     timeline.snapIndicatorLinePositions.removeAll()
 
+    if clip.clipType == .caption {
+      // Commit before clearing the preview so the clip doesn't flash back for a frame.
+      let newOffset = clip.previewTimeOffset
+      if !cancelled, let newOffset, newOffset != clip.timeOffset {
+        timeline.interactor?.commitPreviewedOffsets([clip.id: newOffset])
+        timeline.interactor?.addUndoStep()
+        HapticsHelper.shared.timelineReorderFinish()
+      }
+      clearPreviewShadowAndSnapshots()
+      offsetDelta = .zero
+      return
+    }
+
     if cancelled {
       clearPreviewShadowAndSnapshots()
       offsetDelta = .zero
@@ -178,7 +191,8 @@ extension ClipView {
     }
   }
 
-  /// `dataSource.tracks` doesn't include the background track, so plain lookups skip it.
+  /// `dataSource.tracks` doesn't include the background track or the caption lane,
+  /// so plain lookups skip them.
   private func findTrack(id: UUID) -> Track? {
     let dataSource = timelineProperties.dataSource
     if let foreground = dataSource.tracks.first(where: { $0.id == id }) {
@@ -186,6 +200,9 @@ extension ClipView {
     }
     if dataSource.backgroundTrack.id == id {
       return dataSource.backgroundTrack
+    }
+    if dataSource.captionTrack.id == id {
+      return dataSource.captionTrack
     }
     return nil
   }
@@ -214,6 +231,11 @@ extension ClipView {
   }
 
   private func updateMoveDragDropPreview(proposedDelta: CMTime) {
+    if clip.clipType == .caption {
+      updateCaptionMovePreview()
+      return
+    }
+
     let draggedDuration = clip.duration ?? timeline.totalDuration - clip.timeOffset
 
     // Apply the scroll delta since drag start so the drop slot keeps tracking the
@@ -284,6 +306,60 @@ extension ClipView {
     )
   }
 
+  /// Slides the caption within its lane, clamped to its neighbours. No drop target —
+  /// the clip renders in-lane from its own preview offset.
+  private func updateCaptionMovePreview() {
+    guard case let .dragging(context) = timelineProperties.dragDropState else { return }
+    let dataSource = timelineProperties.dataSource
+    let duration = clip.duration ?? .zero
+
+    // Measure in window space, not the gesture's `translation`: the gesture host moves
+    // with the clip as we apply the preview, which would halve the speed and jitter.
+    let fingerDelta = timeline.convertToTime(points:
+      context.currentTouchLocation.x - context.initialTouchLocation.x)
+
+    // Compensate for auto-scroll so the clip tracks a stationary finger.
+    let scrollDelta = timeline.convertToTime(points:
+      timelineProperties.horizontalScrollOffsetPoints - context.initialScrollOffset)
+
+    // Neighbours read authored offsets; the dragged clip's own `timeOffset` is untouched.
+    let (previous, next) = dataSource.neighborClips(of: clip, in: dataSource.captionTrack)
+    let lowerBound = previous.flatMap { prev in
+      prev.duration.map { prev.timeOffset + $0 }
+    } ?? .zero
+    // `max(lowerBound, …)` guards against already-overlapping imported captions.
+    let upperBound = next.map { max(lowerBound, $0.timeOffset - duration) } ?? .positiveInfinity
+
+    let desired = max(.zero, context.initialTimeOffset + fingerDelta + scrollDelta)
+    let clamped = max(lowerBound, min(upperBound, desired))
+
+    let (snapped, snapPosition) = applyDropSnap(
+      unsnappedDropStart: clamped,
+      draggedDuration: duration,
+      lowerBound: lowerBound,
+      upperBound: upperBound,
+    )
+    if clip.previewTimeOffset != snapped {
+      clip.applyPreview(timeOffset: snapped)
+    }
+
+    publishSnapIndicator(snapPosition)
+  }
+
+  /// Publishes the snap-indicator line for `snapPosition` (or clears it when `nil`) and
+  /// fires the snap haptic when the drag first enters a snap zone. Returns `true` when it
+  /// consumed the transition (entered a non-empty snap zone) so callers can stop there.
+  @discardableResult
+  private func publishSnapIndicator(_ snapPosition: CMTime?) -> Bool {
+    let previous = timeline.snapIndicatorLinePositions
+    let new = snapPosition.map { [$0] } ?? []
+    guard previous != new else { return false }
+    timeline.snapIndicatorLinePositions = new
+    guard !new.isEmpty else { return false }
+    HapticsHelper.shared.timelineReorderSnap()
+    return true
+  }
+
   /// Updates `snapIndicatorLinePositions` and fires the snap haptic on a transition
   /// into a snap zone or onto a different drop slot.
   private func publishSnapAndHaptic(
@@ -291,14 +367,8 @@ extension ClipView {
     newDropTarget: DropTarget?,
     newSnapPosition: CMTime?,
   ) {
-    let previousSnapPositions = timeline.snapIndicatorLinePositions
-    let newSnapPositions = newSnapPosition.map { [$0] } ?? []
-    if previousSnapPositions != newSnapPositions {
-      timeline.snapIndicatorLinePositions = newSnapPositions
-      if !newSnapPositions.isEmpty {
-        HapticsHelper.shared.timelineReorderSnap()
-        return
-      }
+    if publishSnapIndicator(newSnapPosition) {
+      return
     }
 
     if shouldFireSnapHaptic(previous: previousDropTarget, new: newDropTarget) {
@@ -334,6 +404,15 @@ extension ClipView {
     draggedDuration: CMTime,
   ) -> DropResolution? {
     let dataSource = timelineProperties.dataSource
+
+    // Reject any non-caption clip released over the caption lane (open-ended upward,
+    // so it can't drop in or spawn a new top track above the lane).
+    if dataSource.hasCaptionClips,
+       let captionFrame = timelineProperties.trackFrames[dataSource.captionTrack.id],
+       pointerY <= captionFrame.maxY {
+      return nil
+    }
+
     // Foreground rows live inside the vertical scroll view; the bg row is a
     // `.bottomLeading` overlay that doesn't clip them, so fg frames published under
     // the overlay would otherwise win on a naive maxY hit-test. Cap fg maxY at the
@@ -864,29 +943,32 @@ extension ClipView {
   private func snapDetentsExcludingDraggedClip() -> [CMTime] {
     let dataSource = timelineProperties.dataSource
     var detents: [CMTime] = [.zero]
+    // Dedupe with a seen-set while appending in order, keyed by seconds because
+    // equal `CMTime`s with different timescales may hash differently.
+    var seenSeconds: Set<Double> = [CMTime.zero.seconds]
     var bgCursor = CMTime.zero
     for bgClip in dataSource.backgroundTrack.clips {
       guard let duration = bgClip.duration else { continue }
       // swiftlint:disable:next shorthand_operator
       bgCursor = bgCursor + duration
-      if bgClip.id != clip.id, !detents.contains(bgCursor) {
+      if bgClip.id != clip.id, seenSeconds.insert(bgCursor.seconds).inserted {
         detents.append(bgCursor)
       }
     }
-    for fgClip in dataSource.foregroundClips() where fgClip.id != clip.id {
+    for fgClip in dataSource.foregroundClips() + dataSource.captionTrack.clips where fgClip.id != clip.id {
       let start = fgClip.timeOffset
-      if !detents.contains(start) {
+      if seenSeconds.insert(start.seconds).inserted {
         detents.append(start)
       }
       if let duration = fgClip.duration {
         let end = start + duration
-        if !detents.contains(end) {
+        if seenSeconds.insert(end.seconds).inserted {
           detents.append(end)
         }
       }
     }
     let playhead = timelineProperties.player.playheadPosition
-    if !detents.contains(playhead) {
+    if seenSeconds.insert(playhead.seconds).inserted {
       detents.append(playhead)
     }
     return detents

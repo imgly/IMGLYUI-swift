@@ -322,16 +322,24 @@ extension MappedType {
   /// Get all reorderable children for a given parent and contained child.
   /// This method filters out children that are not reorderable with the given child.
   func getReorderableChildren(_ parent: DesignBlockID, child: DesignBlockID) throws -> [IMGLYEngine.DesignBlockID] {
-    let childIsAlwaysOnTop = try isAlwaysOnTop(child)
+    let childIsAlwaysOnTop = try isAlwaysOnTopLike(child)
     let childIsAlwaysOnBottom = try isAlwaysOnBottom(child)
     let childIsAudioLike = try isAudioLike(child)
 
     return try getChildren(parent).filter {
-      let matchingIsAlwaysOnTop = try childIsAlwaysOnTop == isAlwaysOnTop($0)
+      let matchingIsAlwaysOnTop = try childIsAlwaysOnTop == isAlwaysOnTopLike($0)
       let matchingIsAlwaysOnBottom = try childIsAlwaysOnBottom == isAlwaysOnBottom($0)
       let matchingIsAudioLike = try childIsAudioLike == isAudioLike($0)
       return matchingIsAlwaysOnTop && matchingIsAlwaysOnBottom && matchingIsAudioLike
     }
+  }
+
+  /// Always-on-top block, or a caption track. The engine sets the flag on the caption blocks
+  /// rather than on the track carrying them, so at page level a caption track would otherwise
+  /// look like an ordinary peer of the other tracks — offering a reorder that renders
+  /// identically, because captions are hoisted above the whole page regardless of track order.
+  func isAlwaysOnTopLike(_ id: DesignBlockID) throws -> Bool {
+    try isAlwaysOnTop(id) || getType(id) == DesignBlockType.captionTrack.rawValue
   }
 
   /// Audio block, or a track whose first child is audio. Mirrors the engine's

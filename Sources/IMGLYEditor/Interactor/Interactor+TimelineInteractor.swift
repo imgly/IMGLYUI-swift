@@ -139,16 +139,21 @@ extension Interactor: TimelineInteractor {
     }
 
     if events.contains(where: { $0.type == .updated }) {
-      var clipsToUpdate = Set<Clip>()
+      // Style changes fan out as many events per block (and per fill/effect),
+      // so dedupe the block IDs before resolving them to clips.
+      let updatedBlocks = Set(events.lazy.filter { $0.type == .updated }.map(\.block))
 
-      for event in events {
-        guard event.type == .updated else { continue }
-        if let clip = timelineProperties.dataSource.findClip(containing: event.block) {
+      var clipsToUpdate = Set<Clip>()
+      for block in updatedBlocks {
+        if let clip = timelineProperties.dataSource.findClip(containing: block) {
           clipsToUpdate.insert(clip)
         }
       }
       for clip in clipsToUpdate {
-        refresh(clip: clip)
+        refresh(clip: clip, updatingSnapDetents: false)
+      }
+      if !clipsToUpdate.isEmpty {
+        timelineProperties.dataSource.updateSnapDetents()
       }
       // Once per batch — reading page duration triggers `Track::layout()`, which
       // amplifies its gap-handling bug on intermediate state.
@@ -446,10 +451,11 @@ extension Interactor: TimelineInteractor {
         packBackgroundChildren(engine: engine)
       }
     } else if targetTrack !== timelineProperties.dataSource.backgroundTrack {
-      refresh(clip: clip)
+      refresh(clip: clip, updatingSnapDetents: false)
       for sibling in targetTrack.clips where sibling.id != clip.id {
-        refresh(clip: sibling)
+        refresh(clip: sibling, updatingSnapDetents: false)
       }
+      timelineProperties.dataSource.updateSnapDetents()
       return
     }
     // Cross-track or BG reorder — refreshTimeline rebuilds with reused instances and
@@ -547,9 +553,10 @@ extension Interactor: TimelineInteractor {
     }
     for blockID in sortedIDs {
       if let clip = timelineProperties.dataSource.findClip(id: blockID) {
-        refresh(clip: clip)
+        refresh(clip: clip, updatingSnapDetents: false)
       }
     }
+    timelineProperties.dataSource.updateSnapDetents()
   }
 
   /// Sets a new trim to the passed `Clip` and its corresponding `DesignBlock`.
@@ -567,8 +574,9 @@ extension Interactor: TimelineInteractor {
     refresh(clip: clip)
 
     // Work around the engine's `Track::layout()` gap-handling bug by packing clips
-    // ourselves on submit (like web's `packElements`).
+    // ourselves on submit. The caption lane is exempt — its gaps are intentional.
     if !clip.isInBackgroundTrack,
+       clip.clipType != .caption,
        let track = timelineProperties.dataSource.findTrack(containing: clip),
        track.engineTrackID != nil {
       packAndPersistTrackClips(track: track)
@@ -629,8 +637,9 @@ extension Interactor: TimelineInteractor {
     }
 
     for clip in track.clips {
-      refresh(clip: clip)
+      refresh(clip: clip, updatingSnapDetents: false)
     }
+    timelineProperties.dataSource.updateSnapDetents()
   }
 
   /// Sets the time offset.
@@ -680,6 +689,13 @@ extension Interactor: TimelineInteractor {
     let playheadPosition = timelineProperties.player.playheadPosition
 
     guard let clip = timelineProperties.selectedClip else { return }
+
+    // A caption carries text as well as time, so the generic clip split — which duplicates the block —
+    // would leave both halves holding the whole line. Divide the text in the same proportion instead.
+    if (try? engine.block.getType(clip.id)) == BlockType.caption.rawValue {
+      CaptionsInteractor(self).splitCaption(clip.id, atTime: playheadPosition.seconds)
+      return
+    }
 
     let absoluteStartTime = clip.timeOffset
     let originalClipDurationOrInfinity = clip.duration ?? CMTime.positiveInfinity
@@ -759,6 +775,16 @@ extension Interactor: TimelineInteractor {
     }
   }
 
+  /// Refreshes only the thumbnails whose rendering depends on the zoom level
+  /// (video strips and audio waveforms). Text and caption thumbnails render
+  /// zoom-independently, and skipping them avoids re-reading every caption.
+  func refreshZoomDependentThumbnails() {
+    for clip in timelineProperties.dataSource.allClips()
+      where clip.clipType != .text && clip.clipType != .caption {
+      refreshThumbnail(clip: clip)
+    }
+  }
+
   /// Refreshes the thumbnail for a specific clip.
   /// - Parameter clip: The clip for which to refresh the thumbnail.
   func refreshThumbnail(clip: Clip) {
@@ -787,9 +813,12 @@ extension Interactor: TimelineInteractor {
   }
 
   /// Updates a clip representation in the timeline.
-  /// - Parameter clip: The clip to update.
-  private func refresh(clip: Clip) {
-    refresh(id: clip.id, clip: clip)
+  /// - Parameters:
+  ///   - clip: The clip to update.
+  ///   - updatingSnapDetents: Pass `false` when refreshing many clips in a batch
+  ///     and update the snap detents once after the batch instead.
+  private func refresh(clip: Clip, updatingSnapDetents: Bool = true) {
+    refresh(id: clip.id, clip: clip, updatingSnapDetents: updatingSnapDetents)
   }
 
   // swiftlint:disable cyclomatic_complexity
@@ -798,7 +827,14 @@ extension Interactor: TimelineInteractor {
   ///   - id: The engine block ID.
   ///   - existingClip: An existing clip to update, or `nil` to create a new one.
   ///   - targetTrack: When creating a new clip, the track to add it to. When `nil`, a new track is created.
-  private func refresh(id: DesignBlockID, clip existingClip: Clip?, targetTrack: Track? = nil) {
+  ///   - updatingSnapDetents: Pass `false` when refreshing many clips in a batch
+  ///     and update the snap detents once after the batch instead.
+  private func refresh(
+    id: DesignBlockID,
+    clip existingClip: Clip?,
+    targetTrack: Track? = nil,
+    updatingSnapDetents: Bool = true,
+  ) {
     guard let engine else { return }
 
     // Check if the block still exists or whether it has been deleted already.
@@ -806,6 +842,10 @@ extension Interactor: TimelineInteractor {
 
     do {
       let clip = existingClip ?? Clip(id: id)
+      let previousFillID = clip.fillID
+      let previousShapeID = clip.shapeID
+      let previousBlurID = clip.blurID
+      let previousEffectIDs = clip.effectIDs
 
       let fillID = try engine.block.supportsFill(id) ? try engine.block.getFill(id) : nil
       clip.fillID = fillID
@@ -824,6 +864,17 @@ extension Interactor: TimelineInteractor {
       clip.effectIDs = try engine.block.supportsEffects(id) ? try engine.block.getEffects(id) : []
       clip.blurID = try engine.block.supportsBlur(id) ? try engine.block.getBlur(id) : nil
 
+      // Invalidate the clip lookup only when membership or an indexed ID actually
+      // changed — batch flows like `commitPreviewedOffsets` interleave `findClip`
+      // with `refresh`, and a rebuild per clip would defeat the cache.
+      if existingClip == nil
+        || clip.fillID != previousFillID
+        || clip.shapeID != previousShapeID
+        || clip.blurID != previousBlurID
+        || clip.effectIDs != previousEffectIDs {
+        timelineProperties.dataSource.invalidateClipLookup()
+      }
+
       // Configure clip type
       let blockType = try engine.block.getType(id)
       let blockKind: BlockKind? = try? engine.block.getKind(id)
@@ -831,6 +882,8 @@ extension Interactor: TimelineInteractor {
       switch blockType {
       case DesignBlockType.audio.rawValue:
         try configureAudioClip(clip, id: id, kind: blockKind)
+      case DesignBlockType.caption.rawValue:
+        configureCaptionClip(clip)
       case DesignBlockType.graphic.rawValue:
         // Important: Don’t throw here!
         try configureGraphicClip(clip, fillType: fillType, kind: blockKind, fillID: fillID)
@@ -880,7 +933,9 @@ extension Interactor: TimelineInteractor {
         }
       }
 
-      timelineProperties.dataSource.updateSnapDetents()
+      if updatingSnapDetents {
+        timelineProperties.dataSource.updateSnapDetents()
+      }
     } catch {
       handleError(error)
     }
@@ -928,6 +983,13 @@ extension Interactor: TimelineInteractor {
     clip.clipType = .video
     clip.title = ""
     clip.footageURLString = try engine?.block.get(fillID, property: .key(.fillVideoFileURI))
+  }
+
+  private func configureCaptionClip(_ clip: Clip) {
+    clip.clipType = .caption
+    clip.configuration = timelineProperties.configuration.captionClipConfiguration
+    // Text renders on the clip body, so the label shows only the icon.
+    clip.title = ""
   }
 
   private func configureAudioClip(_ clip: Clip, id: DesignBlockID, kind: BlockKind?) throws {
@@ -1072,22 +1134,29 @@ extension Interactor: TimelineInteractor {
     do {
       let blocks = try audioFirstOrderedPageChildren(engine: engine, pageID: pageID)
       let backgroundChildren = try resolveBackgroundTrack(engine: engine)
+      let captionChildren = try resolveCaptionTrack(engine: engine, pageID: pageID)
       let cache = buildOldClipCache()
 
       func resolveClip(_ id: DesignBlockID) -> Clip? {
         guard engine.block.isValid(id) else { return nil }
         let clip = cache.clipByID[id] ?? Clip(id: id)
-        refresh(id: id, clip: clip)
+        refresh(id: id, clip: clip, updatingSnapDetents: false)
         return clip
       }
 
+      let captionTrackID = timelineProperties.dataSource.captionTrack.engineTrackID
       let newTracks = try blocks
-        .filter { $0 != timelineProperties.backgroundTrack }
+        .filter { $0 != timelineProperties.backgroundTrack && $0 != captionTrackID }
         .compactMap { try buildTrack(forBlock: $0, engine: engine, cache: cache, resolveClip: resolveClip) }
       let newBgClips = packBackground(backgroundChildren.compactMap(resolveClip))
+      let newCaptionClips = captionChildren.compactMap(resolveClip)
 
       timelineProperties.dataSource.tracks = newTracks
       timelineProperties.dataSource.backgroundTrack.clips = newBgClips
+      timelineProperties.dataSource.captionTrack.clips = newCaptionClips
+      // Membership just changed wholesale; `updateTimelineSelectionFromCanvas()`
+      // below already reads through `findClip`.
+      timelineProperties.dataSource.invalidateClipLookup()
       timelineProperties.dataSource.updateSnapDetents()
       updateTimelineSelectionFromCanvas()
     } catch {
@@ -1122,6 +1191,19 @@ extension Interactor: TimelineInteractor {
     return []
   }
 
+  /// Resolves the page's caption track and returns its current children.
+  /// Side-effect: updates the data-source caption lane's engine ID.
+  private func resolveCaptionTrack(engine: Engine, pageID: DesignBlockID) throws -> [DesignBlockID] {
+    let captionTrackID = try engine.block.getChildren(pageID)
+      .first { try engine.block.getType($0) == DesignBlockType.captionTrack.rawValue }
+    if let captionTrackID, engine.block.isValid(captionTrackID) {
+      timelineProperties.dataSource.captionTrack.engineTrackID = captionTrackID
+      return try engine.block.getChildren(captionTrackID)
+    }
+    timelineProperties.dataSource.captionTrack.engineTrackID = nil
+    return []
+  }
+
   private struct OldTrackCache {
     var trackByEngineID: [DesignBlockID: Track] = [:]
     var standaloneByClipID: [DesignBlockID: Track] = [:]
@@ -1142,6 +1224,9 @@ extension Interactor: TimelineInteractor {
       }
     }
     for clip in timelineProperties.dataSource.backgroundTrack.clips {
+      cache.clipByID[clip.id] = clip
+    }
+    for clip in timelineProperties.dataSource.captionTrack.clips {
       cache.clipByID[clip.id] = clip
     }
     return cache
@@ -1187,6 +1272,8 @@ extension Interactor: TimelineInteractor {
     do {
       let pageDuration = try engine.block.getDuration(pageID)
       let clipsDuration = timelineProperties.dataSource.allClips()
+        // Captions may sit past the content end, so they don't drive the timeline extent.
+        .filter { $0.clipType != .caption }
         .map { clip in
           let clipDuration = clip.duration?.seconds ?? max(0, pageDuration - clip.timeOffset.seconds)
           return clip.timeOffset.seconds + max(0, clipDuration)
@@ -1453,7 +1540,10 @@ extension Interactor: TimelineInteractor {
   func getTextContent(id: DesignBlockID) throws -> String {
     guard let engine else { throw Error(errorDescription: "Missing engine") }
 
-    return try engine.block.getString(id, property: "text/text")
+    let property = (try? engine.block.getType(id)) == DesignBlockType.caption.rawValue
+      ? "caption/text"
+      : "text/text"
+    return try engine.block.getString(id, property: property)
   }
 
   /// Generate thumbnails from a clip.

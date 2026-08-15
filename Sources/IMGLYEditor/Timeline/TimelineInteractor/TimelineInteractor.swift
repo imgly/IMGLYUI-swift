@@ -24,6 +24,7 @@ protocol TimelineInteractor: ObservableObject {
   func reorderBackgroundTrack(clip: Clip, toIndex index: Int)
   func refreshTimeline()
   func refreshThumbnails()
+  func refreshZoomDependentThumbnails()
   func refreshThumbnail(id: DesignBlockID)
   func startScrubbing(clip: Clip)
   func scrub(clip: Clip, time: CMTime)

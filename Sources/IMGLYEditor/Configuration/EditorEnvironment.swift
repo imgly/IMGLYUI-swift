@@ -17,6 +17,7 @@ import SwiftUI
   @_spi(Internal) public var onError: OnError.Callback?
   @_spi(Internal) public var onLoaded: OnLoaded.Callback?
   @_spi(Internal) public var onChanged: OnChanged.Callback?
+  @_spi(Internal) public var captionsGeneration: CaptionsGeneration.Callback?
 
   // MARK: - Dock
 

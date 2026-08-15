@@ -49,12 +49,9 @@ struct TextOnPathItem: View {
     guard let engine = interactor.engine, let id else { return }
     Task {
       do {
-        // Curve presets carry demo text for library insertion; the sheet only re-shapes the block.
-        let text = try? engine.block.getString(id, property: Property.key(.textText).rawValue)
+        // The engine writes the preset text only when the preset makes a new block.
+        // This block already exists, so the engine keeps its text.
         try await engine.asset.applyToBlock(sourceID: asset.sourceID, assetResult: asset.result, block: id)
-        if let text {
-          try engine.block.setString(id, property: Property.key(.textText).rawValue, value: text)
-        }
         // `setTextOnPath` (inside `applyToBlock`) clears the external-ref hint, so re-stamp it for the picker.
         try engine.block.setString(id, property: Property.key(.textPathExternalRef).rawValue, value: externalRef)
         interactor.addUndoStep()

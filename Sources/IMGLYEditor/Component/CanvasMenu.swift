@@ -68,7 +68,7 @@ public extension CanvasMenu.Context {
     public let canSendBackward: Bool
     /// Aggregate visibility gate: `true` when the editor allows reordering this selection at
     /// all (combines `canBringForward || canSendBackward` with the editor scope, the
-    /// background-track pin, and the audio-clip exclusion). Drives *visibility* of the
+    /// background-track pin, and the audio and caption exclusions). Drives *visibility* of the
     /// reorder controls; for the per-direction enabled state use ``canBringForward`` /
     /// ``canSendBackward``.
     public let canMove: Bool
@@ -104,9 +104,11 @@ public extension CanvasMenu.Context {
       }
       canBringForward = try engine.block.canBringForward(block)
       canSendBackward = try engine.block.canBringBackward(block)
-      // Audio (incl. voiceover) clips have no z-order — matches web.
-      let isAudio = type == .audio
-      let canReorderTrack = try !isAudio && !isBackgroundTrack(initialParent) && (canBringForward || canSendBackward)
+      // Audio never renders and a caption always draws on top of its page, so neither has a z-order.
+      // The inspector bar excludes Layer for the same reason.
+      let isUnordered = type == .audio || type == .caption
+      let canReorderTrack = try !isUnordered && !isBackgroundTrack(initialParent) &&
+        (canBringForward || canSendBackward)
       canMove = try engine.block.isAllowedByScope(block, key: "layer/move") && canReorderTrack
     }
   }

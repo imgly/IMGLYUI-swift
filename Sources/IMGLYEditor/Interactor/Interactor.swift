@@ -113,10 +113,21 @@ import SwiftUI
 
   @Published var isLoopingPlaybackEnabled = true
   @Published var isSelectionVisible = true
+  /// Whether the playhead sits far enough inside the selected block to divide it.
+  ///
+  /// Nothing reads this value: the split button re-reads the engine itself. It exists so that
+  /// crossing the threshold publishes a change, which is what re-evaluates the button — a detent
+  /// on the playhead alone would republish every frame of playback.
+  @Published var isSelectionSplittable = false
   @Published var isVoiceOverRecordModeActive = false
   @Published var isVoiceOverRecordModeRecording = false
   @Published var hasVoiceOverRecordModeRecordedAudio = false
   @Published var isVoiceOverRecordModeMuteOtherAudio = true
+
+  /// The in-flight caption generation. Owned here rather than by the captions sheet so that dismissing the
+  /// sheet leaves it running — transcription takes long enough that closing the sheet to look at the
+  /// timeline would otherwise throw the work away. Reopening the sheet shows it still in progress.
+  @Published var captionsGenerationTask: Task<Void, Never>?
   @Published var voiceOverRecordModeElapsedDuration: TimeInterval = 0
   @Published var voiceOverRecordModeTarget: BlockID?
 
@@ -438,7 +449,13 @@ extension Interactor {
 
 extension Interactor {
   /// Binding for the selected font's asset id; applies the matching typeface to the blocks on set.
-  func bindFontAssetID(_ id: BlockID?, overrideScopes: Set<Scope> = []) -> Binding<String?> {
+  /// - Parameter fontFileURIProperty: The property holding the block's font file URI. Defaults to
+  /// `text/fontFileUri`; pass `caption/fontFileUri` for caption blocks.
+  func bindFontAssetID(
+    _ id: BlockID?,
+    overrideScopes: Set<Scope> = [],
+    fontFileURIProperty: Property = .key(.textFontFileURI),
+  ) -> Binding<String?> {
     bind(id, default: nil as String?) { engine, block in
       // No resolvable typeface (e.g. curved text) means no selection, not an error.
       guard let name = (try? engine.block.getTypeface(block))?.name else { return nil }
@@ -452,7 +469,7 @@ extension Interactor {
       let changed = try blocks.filter { block in
         // Read as String: a typeface-less block (e.g. curved text) has an empty
         // fontFileUri, and reading it as URL would crash on URL("") == nil.
-        let currentURI: String = try engine.block.get(block, property: .key(.textFontFileURI))
+        let currentURI: String = try engine.block.get(block, property: fontFileURIProperty)
         return URL(string: currentURI) != font.uri
       }
       try changed.forEach {
@@ -465,14 +482,24 @@ extension Interactor {
     }
   }
 
+  /// The text range these run-level APIs should target: the whole block (`nil`) for captions — so the engine
+  /// registers the caption-track sync and the change fans out to every caption — or the effective (cursor)
+  /// range for regular text.
+  private static func textPropertyRange(_ engine: Engine, _ block: DesignBlockID) throws -> Range<String.Index>? {
+    if try engine.block.getType(block) == BlockType.caption.rawValue {
+      return nil
+    }
+    return try engine.block.effectiveTextRange(block)
+  }
+
   func bindBoldToggle(_ id: BlockID?) -> Binding<TextProperty?> {
     let raw: Binding<TextProperty?> = bind(id, default: nil as TextProperty?) { engine, block -> TextProperty? in
-      let range = try engine.block.effectiveTextRange(block)
+      let range = try Self.textPropertyRange(engine, block)
       guard try engine.block.canToggleBoldFont(block, in: range) else { return nil }
       return try engine.block.isBoldFont(block, in: range) ? .bold : .inactive
     } setter: { engine, blocks, _, completion in
       try blocks.forEach {
-        let range = try engine.block.effectiveTextRange($0)
+        let range = try Self.textPropertyRange(engine, $0)
         try engine.block.toggleBoldFont($0, in: range)
       }
       let didChange = !blocks.isEmpty
@@ -483,12 +510,12 @@ extension Interactor {
 
   func bindItalicToggle(_ id: BlockID?) -> Binding<TextProperty?> {
     let raw: Binding<TextProperty?> = bind(id, default: nil as TextProperty?) { engine, block -> TextProperty? in
-      let range = try engine.block.effectiveTextRange(block)
+      let range = try Self.textPropertyRange(engine, block)
       guard try engine.block.canToggleItalicFont(block, in: range) else { return nil }
       return try engine.block.isItalicFont(block, in: range) ? .italic : .inactive
     } setter: { engine, blocks, _, completion in
       try blocks.forEach {
-        let range = try engine.block.effectiveTextRange($0)
+        let range = try Self.textPropertyRange(engine, $0)
         try engine.block.toggleItalicFont($0, in: range)
       }
       let didChange = !blocks.isEmpty
@@ -511,13 +538,13 @@ extension Interactor {
 
   func bindLetterCase(_ id: BlockID?) -> Binding<TextCase?> {
     bind(id, default: nil as TextCase?) { engine, block -> TextCase? in
-      let range = try engine.block.effectiveTextRange(block)
+      let range = try Self.textPropertyRange(engine, block)
       return try engine.block.getTextCases(block, in: range).first ?? .normal
     } setter: { engine, blocks, value, completion in
       guard let value else { return false }
       var didChange = false
       for block in blocks {
-        let range = try engine.block.effectiveTextRange(block)
+        let range = try Self.textPropertyRange(engine, block)
         let isUniform = try engine.block.getTextCases(block, in: range).allSatisfy { $0 == value }
         guard !isUniform else { continue }
         try engine.block.setTextCase(block, textCase: value, in: range)
@@ -555,16 +582,16 @@ extension Interactor {
     _ id: BlockID?,
     property: TextProperty,
     line: TextDecorationLine,
-    toggle: @escaping @MainActor (Engine, DesignBlockID, Range<String.Index>) throws -> Void,
+    toggle: @escaping @MainActor (Engine, DesignBlockID, Range<String.Index>?) throws -> Void,
   ) -> Binding<TextProperty?> {
     let raw: Binding<TextProperty?> = bind(id, default: nil as TextProperty?) { engine, block -> TextProperty? in
-      let range = try engine.block.effectiveTextRange(block)
+      let range = try Self.textPropertyRange(engine, block)
       let decorations = try engine.block.getTextDecorations(block, in: range)
       let allDecorated = !decorations.isEmpty && decorations.allSatisfy { $0.line.contains(line) }
       return allDecorated ? property : .inactive
     } setter: { engine, blocks, _, completion in
       try blocks.forEach {
-        let range = try engine.block.effectiveTextRange($0)
+        let range = try Self.textPropertyRange(engine, $0)
         try toggle(engine, $0, range)
       }
       let didChange = !blocks.isEmpty
@@ -759,6 +786,16 @@ extension Interactor {
         try engine.block.get(block, propertyBlock, property: property)
       }
     }
+
+    /// Reads the size the text is laid out at. A caption keeps its size in its text runs, and the engine
+    /// reads a run's size in preference to the block property, so the property on its own reports a stale
+    /// value. Empty text has no runs to read, so it falls back to the property.
+    static func textFontSize() -> Interactor.PropertyGetter<Float> {
+      { engine, block, propertyBlock, property in
+        try engine.block.getTextFontSizes(block).first
+          ?? engine.block.get(block, propertyBlock, property: property)
+      }
+    }
   }
 
   typealias PropertySetter<T: MappedType> = @MainActor (
@@ -794,6 +831,22 @@ extension Interactor {
       { engine, blocks, propertyBlock, property, value, completion in
         let didChange = try engine.block.overrideAndRestore(blocks, scopes: overrideScopes) {
           try engine.block.set($0, propertyBlock, property: property, value: value)
+        }
+        return try (completion?(engine, blocks, didChange) ?? false) || didChange
+      }
+    }
+
+    /// Writes the size through the text API instead of the block property. A caption's size lives in its
+    /// text runs, which the engine reads in preference to `text/fontSize`, so a property write leaves the
+    /// caption looking unchanged. Passing no subrange updates the runs, the block property and the
+    /// caption's sibling sync in a single call — matching what the style presets and web both do.
+    static func textFontSize() -> Interactor.PropertySetter<Float> {
+      { engine, blocks, _, _, value, completion in
+        var didChange = false
+        for block in blocks {
+          guard try engine.block.getTextFontSizes(block).first != value else { continue }
+          try engine.block.setTextFontSize(block, fontSize: value)
+          didChange = true
         }
         return try (completion?(engine, blocks, didChange) ?? false) || didChange
       }
@@ -1869,6 +1922,7 @@ extension Interactor {
                     and kind: BlockKind? = nil) -> SheetContent? {
     switch designBlockType {
     case BlockType.text.rawValue: return .text
+    case BlockType.caption.rawValue: return .caption
     case BlockType.group.rawValue: return .group
     case BlockType.page.rawValue: return .page
     case BlockType.audio.rawValue:
@@ -1997,6 +2051,12 @@ extension Interactor {
       if isSelectionVisible != resolvedSelectionVisibility {
         isSelectionVisible = resolvedSelectionVisibility
       }
+      // Read the playhead from the engine rather than the player: this runs before the player is
+      // refreshed for this tick, so its value is still the previous one.
+      let splittable = isSplittableAtCurrentPlaybackTime(selection?.blocks.first, page: currentPage)
+      if isSelectionSplittable != splittable {
+        isSelectionSplittable = splittable
+      }
       do {
         let isLoopingPlaybackEnabled = try engine.block.isLooping(currentPage)
         if self.isLoopingPlaybackEnabled != isLoopingPlaybackEnabled {
@@ -2016,6 +2076,21 @@ extension Interactor {
       for await _ in engine.editor.onStateChanged {
         updateState()
       }
+    }
+  }
+
+  /// Whether `id` can be divided where the playhead currently is. The margin matches web's, and is far
+  /// below the timeline's `minClipDuration` because captions routinely run shorter than that.
+  private func isSplittableAtCurrentPlaybackTime(_ id: BlockID?, page: BlockID) -> Bool {
+    guard let engine, let id, engine.block.isValid(id) else { return false }
+    let margin = 0.1
+    do {
+      let playhead = try engine.block.getPlaybackTime(page)
+      let start = try engine.block.getTimeOffset(id)
+      let duration = try engine.block.getDuration(id)
+      return playhead > start + margin && playhead < start + duration - margin
+    } catch {
+      return false
     }
   }
 
@@ -2188,29 +2263,21 @@ extension Interactor {
     guard oldValue != sheet else {
       return
     }
-    if !sheet.isPresented, oldValue.isPresented, oldValue.associatedEditMode == .crop {
+    // Everything below reacts to a sheet *closing*.
+    guard !sheet.isPresented, oldValue.isPresented else { return }
+    if oldValue.associatedEditMode == .crop {
       setEditMode(.transform)
     }
-    if !sheet.isPresented,
-       oldValue.isPresented,
-       (try? engine?.editor.getSettingBool("softwareKeyboardSuspended")) == true {
+    if (try? engine?.editor.getSettingBool("softwareKeyboardSuspended")) == true {
       // A sheet that suspended the keyboard closed; clear the flag so the IME can resume.
       try? engine?.editor.setSettingBool("softwareKeyboardSuspended", value: false)
     }
-    if !sheet.isPresented,
-       oldValue.isPresented,
-       oldValue.type is SheetTypes.Voiceover {
+    if oldValue.type is SheetTypes.Voiceover {
       if ignoresNextVoiceOverSheetDismiss {
         ignoresNextVoiceOverSheetDismiss = false
         if let target = pendingVoiceOverRevealTarget {
           pendingVoiceOverRevealTarget = nil
-          DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            guard engine?.block.isValid(target) == true else { return }
-
-            timelineProperties.requestScroll(to: target)
-            select(id: target)
-          }
+          revealInTimeline(target, selecting: true)
         }
       } else if isVoiceOverRecordModeActive {
         Task { [weak self] in
@@ -2218,6 +2285,36 @@ extension Interactor {
         }
       }
     }
+    revealCaptionLaneIfNeeded(after: oldValue)
+  }
+
+  /// Reveals `blockID`'s row in the timeline, optionally selecting it. Hopped off the current runloop
+  /// turn because `sheetChanged` runs from a `@Published didSet` that SwiftUI may execute inside its own
+  /// update pass (the sheet's `isPresented` binding writes back on dismissal), where publishing is not
+  /// allowed.
+  private func revealInTimeline(_ blockID: DesignBlockID, verticalOnly: Bool = false, selecting: Bool = false) {
+    DispatchQueue.main.async { [weak self] in
+      guard let self, engine?.block.isValid(blockID) == true else { return }
+      timelineProperties.requestScroll(to: blockID, verticalOnly: verticalOnly)
+      if selecting {
+        select(id: blockID)
+      }
+    }
+  }
+
+  /// Unlike the floating voiceover sheet, both captions sheets unmount the timeline — so it comes back
+  /// scrolled to where it was before the caption lane existed. The edited caption is already the canvas
+  /// selection, hence no `selecting:`. Every caption shares the single caption lane, so the first one
+  /// resolves to the same row as any other. Vertical only because scrubbing the time axis to that first
+  /// caption would yank the timeline back to 0:00.
+  ///
+  /// Only meaningful for a sheet that just closed — `sheetChanged` has already established that.
+  private func revealCaptionLaneIfNeeded(after oldValue: SheetState) {
+    let wasCaptionsSheet = oldValue.type is SheetTypes.Captions || oldValue.type is SheetTypes.CaptionStyle
+    guard wasCaptionsSheet,
+          let target = timelineProperties.dataSource.captionTrack.clips.first else { return }
+
+    revealInTimeline(target.id, verticalOnly: true)
   }
 
   func selectionChanged(_ oldValue: Selection?) {
@@ -2240,6 +2337,10 @@ extension Interactor {
            // Don't close a replace sheet when the new selection is also a placeholder —
            // onClicked will update its content in place for a seamless transition.
            !(sheet.isReplacing && placeholderContent(for: selection) != nil),
+           // The captions sheet drives the selection itself: it selects the row being edited (matching
+           // web) and clears it whenever a merge or delete destroys that caption. None of those are the
+           // user picking a different block, so they must not close the sheet — it has its own dismiss.
+           !(sheet.type is SheetTypes.Captions),
            oldValue?.blocks != selection?.blocks {
           sheet.isPresented = false
         }

@@ -7,6 +7,9 @@ struct EffectOptions<Item: View, Properties: View>: View {
   let identifier: ((AssetLoader.Asset) -> AnyHashable?)?
   let sources: [AssetLoader.SourceData]
   @Binding var sheetState: EffectSheetState
+  /// Whether the leading "None" tile (clears the applied asset) is shown. Off for grids where None has no
+  /// meaning, e.g. caption presets.
+  var showNoneItem = true
   @ViewBuilder var properties: (AssetProperties) -> Properties
 
   @EnvironmentObject private var interactor: Interactor
@@ -27,7 +30,9 @@ struct EffectOptions<Item: View, Properties: View>: View {
       } empty: { _ in
         Message.noElements
       } first: {
-        NoneItem(selection: $selection)
+        if showNoneItem {
+          NoneItem(selection: $selection)
+        }
       } more: {
         EmptyView()
       }
@@ -71,6 +76,7 @@ extension EffectOptions where Properties == RefreshedEffectPropertyOptions {
     identifier: ((AssetLoader.Asset) -> AnyHashable?)?,
     sources: [AssetLoader.SourceData],
     sheetState: Binding<EffectSheetState>,
+    showNoneItem: Bool = true,
   ) {
     self.init(
       selection: selection,
@@ -78,6 +84,7 @@ extension EffectOptions where Properties == RefreshedEffectPropertyOptions {
       identifier: identifier,
       sources: sources,
       sheetState: sheetState,
+      showNoneItem: showNoneItem,
       properties: { RefreshedEffectPropertyOptions(asset: $0, sheetState: sheetState) },
     )
   }

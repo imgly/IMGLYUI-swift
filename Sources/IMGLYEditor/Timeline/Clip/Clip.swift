@@ -6,6 +6,7 @@ import SwiftUI
 enum ClipType {
   case invalid
   case audio
+  case caption
   case image
   case shape
   case sticker
@@ -16,10 +17,10 @@ enum ClipType {
 }
 
 extension ClipType {
-  /// True for types the background track accepts — everything except audio /
-  /// voiceover. Matches the `moveAsClip` inspector rule.
+  /// True for types the background track accepts — everything except audio,
+  /// voiceover, and caption. Matches the `moveAsClip` inspector rule.
   var allowedInBackgroundTrack: Bool {
-    self != .audio && self != .voiceOver
+    self != .audio && self != .voiceOver && self != .caption
   }
 }
 
@@ -28,6 +29,7 @@ extension ClipType: CustomStringConvertible {
     switch self {
     case .invalid: ""
     case .audio: "Audio Clip"
+    case .caption: "Caption"
     case .image: "Image"
     case .shape: "Shape"
     case .sticker: "Sticker"

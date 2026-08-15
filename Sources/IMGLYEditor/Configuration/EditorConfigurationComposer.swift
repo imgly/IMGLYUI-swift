@@ -29,6 +29,9 @@ final class EditorConfigurationComposer {
 
   // MARK: - Simple Value Properties
 
+  /// The caption generation callback to use.
+  var captionsGeneration: CaptionsGeneration.Callback?
+
   /// The color palette to use.
   var colorPalette: [NamedColor]?
 
@@ -215,6 +218,7 @@ final class EditorConfigurationComposer {
     env.onError = onError
     env.onLoaded = onLoaded
     env.onChanged = onChanged
+    env.captionsGeneration = captionsGeneration
 
     // Dock
     env.dockItems = dock.items

@@ -31,6 +31,8 @@ public extension IMGLY where Wrapped == Image {
   static let addCameraForeground = Wrapped("custom.camera.badge.plus", bundle: .module)
   /// An icon image for adding a voiceover.
   static let addVoiceover = Wrapped("custom.mic.badge.plus", bundle: .module)
+  /// An icon image for captions.
+  static let captions = Wrapped(systemName: "captions.bubble")
 
   /// An icon image for reoder.
   static let reorder = Wrapped(systemName: "rectangle.portrait.arrowtriangle.2.outward")

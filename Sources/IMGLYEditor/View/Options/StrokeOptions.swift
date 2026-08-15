@@ -29,7 +29,8 @@ struct StrokeOptions: View {
             .imgly.localized("ly_img_editor_sheet_fill_stroke_label_position"),
             property: .key(.strokePosition),
           )
-          .disabled(interactor.sheet.content == .text)
+          // Stroke position is fixed for text and captions (text-family blocks), as on text.
+          .disabled(interactor.sheet.content == .text || interactor.sheet.content == .caption)
           PropertyPicker<StrokeJoin>(
             .imgly.localized("ly_img_editor_sheet_fill_stroke_label_join"),
             property: .key(.strokeCornerGeometry),

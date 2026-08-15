@@ -7,7 +7,9 @@ struct FontSizeSheet: View {
   @Environment(\.imglySelection) private var id
 
   var fontSizeLetter: Binding<SizeLetter?> {
-    let fontSize: Binding<Float?> = interactor.bind(id, property: .key(.textFontSize))
+    let fontSize: Binding<Float?> = interactor.bind(id, property: .key(.textFontSize),
+                                                    getter: Interactor.Getter.textFontSize(),
+                                                    setter: Interactor.Setter.textFontSize())
     return .init {
       guard let fontSize = fontSize.wrappedValue else {
         return nil

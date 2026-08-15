@@ -8,7 +8,8 @@ import SwiftUI
   @_spi(Internal) public init() {}
 
   @_spi(Internal) public var body: some View {
-    let fontSize: Binding<Float?> = interactor.bind(id, property: .key(.textFontSize))
+    let fontSize: Binding<Float?> = interactor.bind(id, property: .key(.textFontSize),
+                                                    getter: Interactor.Getter.textFontSize())
 
     if let fontSize = fontSize.wrappedValue {
       FontSizeImage(fontSize: fontSize)

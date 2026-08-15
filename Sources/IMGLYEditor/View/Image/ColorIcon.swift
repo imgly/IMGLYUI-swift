@@ -31,8 +31,9 @@ import SwiftUI
     let fillType: ColorFillType = try engine.block.get(id, .fill, property: .key(.type))
     if fillType == .solid {
       let blockType = try engine.block.getType(id)
-      // A text block's run colours, so the swatch can stack mixed colours; else the solid fill.
-      if blockType == Interactor.BlockType.text.rawValue {
+      // Text and captions colour their glyphs via run colours (not `fill/solid/color`), so read those so
+      // the swatch matches what the Fill sheet writes; else the solid fill.
+      if blockType == Interactor.BlockType.text.rawValue || blockType == Interactor.BlockType.caption.rawValue {
         let textColors = try engine.block.getTextColors(id).compactMap(\.cgColor)
         if !textColors.isEmpty {
           return textColors

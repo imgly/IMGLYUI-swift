@@ -16,15 +16,35 @@ struct TextFormatOptions: View {
     interactor.isTextOnPath(id)
   }
 
+  /// Captions reuse the text formatting UI but their properties live under `caption/*` instead of `text/*`.
+  /// The direct property bindings below are namespaced via ``namespacedProperty(_:)``; bold/italic, letter
+  /// case, and decorations write the whole block so the engine fans them out across the track (list style is
+  /// hidden — the engine can't sync it).
+  private var isCaption: Bool {
+    interactor.sheetContent(id) == .caption
+  }
+
+  private var namespace: String {
+    isCaption ? "caption" : "text"
+  }
+
+  /// A property in the block's text namespace (`text/*` or `caption/*`), e.g. `namespacedProperty("fontSize")`.
+  private func namespacedProperty(_ suffix: String) -> Property {
+    Property(rawValue: "\(namespace)/\(suffix)")
+  }
+
   var body: some View {
+    let content = interactor.sheetContent(id)
     List {
-      if interactor.sheetContent(id) == .text {
+      if content == .text || content == .caption {
         fontSelection
         fontWeightSelection
         fontSizeSelection
         alignmentSelection
         letterOptions
-        if interactor.isAllowed(id, scope: .layerResize) {
+        // Frame behavior + clipping are hidden for captions: caption size is preset-controlled and synced
+        // across the track.
+        if !isCaption, interactor.isAllowed(id, scope: .layerResize) {
           frameBehavior
             .disabled(isTextOnPath)
           clipping
@@ -37,7 +57,7 @@ struct TextFormatOptions: View {
   // MARK: - @ViewBuilder
 
   @ViewBuilder var fontSelection: some View {
-    let fontAssetID = interactor.bindFontAssetID(id)
+    let fontAssetID = interactor.bindFontAssetID(id, fontFileURIProperty: namespacedProperty("fontFileUri"))
 
     NavigationLinkPicker(
       title: .imgly.localized("ly_img_editor_sheet_format_text_label_font"),
@@ -126,7 +146,9 @@ struct TextFormatOptions: View {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_font_size"),
         in: fontSizeRange,
-        property: .key(.textFontSize),
+        property: namespacedProperty("fontSize"),
+        setter: Interactor.Setter.textFontSize(),
+        getter: Interactor.Getter.textFontSize(),
       )
     } header: {
       Text(String(localized: .imgly.localized("ly_img_editor_sheet_format_text_label_font_size")) + unitSuffix)
@@ -136,7 +158,9 @@ struct TextFormatOptions: View {
   var alignmentSelection: some View {
     Section {
       HStack {
-        let alignmentX: Binding<HorizontalAlignment?> = interactor.bind(id, property: .key(.textHorizontalAlignment))
+        let alignmentX: Binding<HorizontalAlignment?> = interactor.bind(
+          id, property: namespacedProperty("horizontalAlignment"),
+        )
         let effectiveAlignmentX: HorizontalAlignment? = id.flatMap { blockID in
           interactor.get(blockID) { engine, block in
             HorizontalAlignment(try engine.block.getTextEffectiveHorizontalAlignment(block))
@@ -164,7 +188,9 @@ struct TextFormatOptions: View {
         }
         Spacer()
         HStack(spacing: 16) {
-          let alignmentY: Binding<VerticalAlignment?> = interactor.bind(id, property: .key(.textVerticalAlignment))
+          let alignmentY: Binding<VerticalAlignment?> = interactor.bind(
+            id, property: namespacedProperty("verticalAlignment"),
+          )
           PropertyButton(property: .top, selection: alignmentY)
           PropertyButton(property: .center, selection: alignmentY)
           PropertyButton(property: .bottom, selection: alignmentY)
@@ -245,7 +271,9 @@ struct TextFormatOptions: View {
       false
     }
     if showClippingBinding.wrappedValue {
-      let clipping: Binding<Bool> = interactor.bind(id, property: .key(.textClipLinesOutsideOfFrame), default: true)
+      let clipping: Binding<Bool> = interactor.bind(
+        id, property: namespacedProperty("clipLinesOutsideOfFrame"), default: true,
+      )
       Toggle(isOn: clipping) {
         Text(.imgly.localized("ly_img_editor_sheet_format_text_label_frame_clipping"))
       }
@@ -275,18 +303,22 @@ struct TextFormatOptions: View {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"),
         in: -0.15 ... 1.4,
-        property: .key(.textLetterSpacing),
+        property: namespacedProperty("letterSpacing"),
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"))
     }
-    listStyleSelection
-      .disabled(isTextOnPath)
+    // List style is hidden for captions: the engine has no cross-caption sync for it, so it would apply to
+    // the selected caption only — out of step with the rest of the sheet, which fans out to the whole track.
+    if !isCaption {
+      listStyleSelection
+        .disabled(isTextOnPath)
+    }
     Section {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_line_height"),
         in: 0.5 ... 2.5,
-        property: .key(.textLineHeight),
+        property: namespacedProperty("lineHeight"),
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_line_height"))
@@ -296,7 +328,7 @@ struct TextFormatOptions: View {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"),
         in: 0 ... 2.5,
-        property: .key(.textParagraphSpacing),
+        property: namespacedProperty("paragraphSpacing"),
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"))

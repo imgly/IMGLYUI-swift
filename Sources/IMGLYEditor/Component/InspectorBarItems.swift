@@ -143,6 +143,16 @@ public extension InspectorBar.Buttons.ID {
   static var textOnPath: EditorComponentID {
     "ly.img.component.inspectorBar.button.textOnPath"
   }
+
+  /// The id of the ``InspectorBar/Buttons/editCaptions(action:title:icon:isEnabled:isVisible:)`` button.
+  static var editCaptions: EditorComponentID {
+    "ly.img.component.inspectorBar.button.editCaptions"
+  }
+
+  /// The id of the ``InspectorBar/Buttons/captionStyle(action:title:icon:isEnabled:isVisible:)`` button.
+  static var captionStyle: EditorComponentID {
+    "ly.img.component.inspectorBar.button.captionStyle"
+  }
 }
 
 @MainActor
@@ -507,7 +517,7 @@ public extension InspectorBar.Buttons {
   /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// not `DesignBlockType.page` and its engine scope `"lifecycle/duplicate"` is allowed.
+  /// neither `DesignBlockType.page` nor `.caption`, and its engine scope `"lifecycle/duplicate"` is allowed.
   /// - Returns: The created button.
   static func duplicate(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.duplicateSelection) },
@@ -517,7 +527,9 @@ public extension InspectorBar.Buttons {
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.duplicate },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
+      // Captions omit Duplicate: a duplicated caption would fall outside the caption track.
       try context.selection.type != .page &&
+        context.selection.type != .caption &&
         context.engine.block.isAllowedByScope(context.selection.block, key: "lifecycle/duplicate")
     },
   ) -> some InspectorBar.Item {
@@ -561,7 +573,7 @@ public extension InspectorBar.Buttons {
         try context.engine.block.isAllowedByScope(context.selection.block, key: "layer/move") &&
           !isBackgroundTrack(context.selection.parentBlock)
       }
-      return try ![.page, .audio].contains(context.selection.type) &&
+      return try ![.page, .audio, .caption].contains(context.selection.type) &&
         context.selection.kind != "voiceover" && (
           context.engine.block.isAllowedByScope(context.selection.block, key: "layer/blendMode") ||
             context.engine.block.isAllowedByScope(context.selection.block, key: "layer/opacity") ||
@@ -587,8 +599,8 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/split``  is
   /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
-  ///   - isVisible: Whether the button is visible. By default, it is only `true` if its engine scope
-  /// `"lifecycle/duplicate"` is allowed.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block's
+  /// engine scope `"lifecycle/duplicate"` is allowed.
   /// - Returns: The created button.
   static func split(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.splitSelection) },
@@ -596,7 +608,19 @@ public extension InspectorBar.Buttons {
       Text(.imgly.localized("ly_img_editor_inspector_bar_button_split"))
     },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.split },
-    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { context in
+      // A caption divides only where the playhead sits inside it, and creating one parks the playhead on
+      // its start — so left always-enabled the button invites a tap that can only do nothing. Web greys
+      // it out on this same rule, with this same margin. The margin is far below the timeline's own
+      // `minClipDuration`, which captions routinely fall under.
+      guard context.selection.type == .caption else { return true }
+      let margin = 0.1
+      guard let page = try context.engine.scene.getCurrentPage() else { return false }
+      let playhead = try context.engine.block.getPlaybackTime(page)
+      let start = try context.engine.block.getTimeOffset(context.selection.block)
+      let duration = try context.engine.block.getDuration(context.selection.block)
+      return playhead > start + margin && playhead < start + duration - margin
+    },
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/duplicate")
     },
@@ -675,7 +699,7 @@ public extension InspectorBar.Buttons {
   /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// not `DesignBlockType.audio` and its parent is not the background track.
+  /// neither `DesignBlockType.audio` nor `.caption`, and its parent is not the background track.
   /// - Returns: The created button.
   static func moveAsClip(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.moveSelectionAsClip) },
@@ -693,7 +717,9 @@ public extension InspectorBar.Buttons {
           false
         }
       }
+      // Captions omit Move-as-clip: they live only on the caption track.
       return try context.selection.type != .audio &&
+        context.selection.type != .caption &&
         !isBackgroundTrack(context.selection.parentBlock)
     },
   ) -> some InspectorBar.Item {
@@ -961,7 +987,7 @@ public extension InspectorBar.Buttons {
   /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// `DesignBlockType.text` and its engine scope `"text/character"` is allowed.
+  /// `DesignBlockType.text` or `.caption` and its engine scope `"text/character"` is allowed.
   /// - Returns: The created button.
   static func formatText(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .formatText())) },
@@ -971,7 +997,7 @@ public extension InspectorBar.Buttons {
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.formatText },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
-      try $0.selection.type == .text &&
+      try ($0.selection.type == .text || $0.selection.type == .caption) &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "text/character")
     },
   ) -> some InspectorBar.Item {
@@ -1115,7 +1141,7 @@ public extension InspectorBar.Buttons {
   ///   - icon: The icon view which is used to label the button. By default, the ``BackgroundColorIcon`` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// `DesignBlockType.text` and its engine scope `"text/character"` is allowed.
+  /// `DesignBlockType.text` or `.caption` and its engine scope `"text/character"` is allowed.
   /// - Returns: The created button.
   static func textBackground(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .textBackground())) },
@@ -1125,7 +1151,7 @@ public extension InspectorBar.Buttons {
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { BackgroundColorIcon(id: $0.selection.block) },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
-      try context.selection.type == .text &&
+      try (context.selection.type == .text || context.selection.type == .caption) &&
         context.engine.block.isAllowedByScope(context.selection.block, key: "text/character")
     },
   ) -> some InspectorBar.Item {
@@ -1146,7 +1172,7 @@ public extension InspectorBar.Buttons {
   /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type
-  /// is not `DesignBlockType.page` or `.audio`, and the block supports animation.
+  /// is none of `DesignBlockType.page`, `.audio` or `.caption`, and the block supports animation.
   /// - Returns: The created button.
   static func animation(
     action: @escaping InspectorBar.Context.To<Void> = {
@@ -1160,10 +1186,78 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
       try context.selection.type != .page &&
         context.selection.type != .audio &&
+        context.selection.type != .caption &&
         context.engine.block.supportsAnimation(context.selection.block)
     },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.animation, action: action, label: { context in
+      let title = try title(context)
+      let icon = try icon(context)
+      Label { title } icon: { icon }
+    }, isEnabled: isEnabled, isVisible: isVisible)
+  }
+
+  /// Creates a ``InspectorBar/Button`` that opens the captions sheet to edit the caption list.
+  /// - Parameters:
+  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  /// event is invoked with sheet type ``SheetType/captions(style:)``.
+  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
+  /// `ly_img_editor_inspector_bar_button_edit_captions` is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/captions``
+  /// is used.
+  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
+  /// `DesignBlockType.caption` and the `text/edit` scope allows editing it.
+  /// - Returns: The created button.
+  static func editCaptions(
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .captions())) },
+    @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
+      Text(.imgly.localized("ly_img_editor_inspector_bar_button_edit_captions"))
+    },
+    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.captions },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isVisible: @escaping InspectorBar.Context.To<Bool> = {
+      // A caption *is* a text block, so editing its text is governed by `text/edit` — there is no caption
+      // scope. Gated from the outset: once captions ship ungated, adding this would take the feature away
+      // from integrators who had denied the scope and kept caption editing regardless.
+      try $0.selection.type == .caption
+        && $0.engine.block.isAllowedByScope($0.selection.block, key: "text/edit")
+    },
+  ) -> some InspectorBar.Item {
+    InspectorBar.Button(id: ID.editCaptions, action: action, label: { context in
+      let title = try title(context)
+      let icon = try icon(context)
+      Label { title } icon: { icon }
+    }, isEnabled: isEnabled, isVisible: isVisible)
+  }
+
+  /// Creates a ``InspectorBar/Button`` that opens the caption style preset grid.
+  /// - Parameters:
+  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  /// event is invoked with sheet type ``SheetType/captionStyle(style:id:)`` for the selected caption.
+  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
+  /// `ly_img_editor_inspector_bar_button_caption_style` is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image`
+  /// ``IMGLYCore/IMGLY/textStyles`` is used.
+  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
+  /// `DesignBlockType.caption` and the caption presets asset source is registered.
+  /// - Returns: The created button.
+  static func captionStyle(
+    action: @escaping InspectorBar.Context.To<Void> = {
+      $0.eventHandler.send(.openSheet(type: .captionStyle(id: $0.selection.block)))
+    },
+    @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
+      Text(.imgly.localized("ly_img_editor_inspector_bar_button_caption_style"))
+    },
+    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.textStyles },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isVisible: @escaping InspectorBar.Context.To<Bool> = {
+      try $0.selection.type == .caption &&
+        $0.engine.asset.findAllSources().contains("ly.img.caption.presets")
+    },
+  ) -> some InspectorBar.Item {
+    InspectorBar.Button(id: ID.captionStyle, action: action, label: { context in
       let title = try title(context)
       let icon = try icon(context)
       Label { title } icon: { icon }

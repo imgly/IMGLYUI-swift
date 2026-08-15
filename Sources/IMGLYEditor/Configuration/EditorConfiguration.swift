@@ -124,6 +124,7 @@ public extension EditorConfiguration {
     private(set) var onError: OnError.Handler?
     private(set) var onLoaded: OnLoaded.Handler?
     private(set) var onChanged: OnChanged.Handler?
+    private(set) var captionsGeneration: CaptionsGeneration.Callback?
 
     // MARK: - Components
 
@@ -188,6 +189,12 @@ public extension EditorConfiguration {
     /// Sets the `onChanged` handler.
     public func onChanged(_ handler: @escaping OnChanged.Handler) {
       onChanged = handler
+    }
+
+    /// Sets the caption generation callback that backs the Add Captions sheet's "Generate
+    /// Automatically" action. Unlike the chained handlers, the last configured callback wins.
+    public func captionsGeneration(_ callback: @escaping CaptionsGeneration.Callback) {
+      captionsGeneration = callback
     }
 
     // MARK: - Component Methods
@@ -314,6 +321,9 @@ extension EditorConfiguration {
     }
     if let handler = builder.onChanged ?? onChanged {
       composer.onChanged(handler)
+    }
+    if let callback = builder.captionsGeneration {
+      composer.captionsGeneration = callback
     }
 
     if let dock = builder.dock ?? dock {

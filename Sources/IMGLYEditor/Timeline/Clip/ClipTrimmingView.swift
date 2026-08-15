@@ -40,6 +40,10 @@ struct ClipTrimmingView: View {
 
   let icon: Image?
 
+  /// True while the clip is in a long-press move drag — drives the selection outline
+  /// active, the only drag cue for captions (they slide in-lane, not as a floating overlay).
+  var isMoveDragging: Bool = false
+
   /// Tracks whether a trim or move drag is in progess. Pauses playback while dragging.
   @State private var isDragging: Bool = false {
     didSet {
@@ -253,7 +257,7 @@ struct ClipTrimmingView: View {
 
   var body: some View {
     ClipSelectionShape(cornerRadius: cornerRadius, trimHandleWidth: trimHandleWidth)
-      .fill(isDragging || timeline.snapIndicatorLinePositions.contains(player.playheadPosition)
+      .fill(isDragging || isMoveDragging || timeline.snapIndicatorLinePositions.contains(player.playheadPosition)
         ? configuration.clipSelectionActiveColor
         : configuration.clipSelectionColor)
       .padding(.horizontal, -trimHandleWidth)
@@ -268,7 +272,9 @@ struct ClipTrimmingView: View {
             labelWidth: labelWidth,
           )
           .padding(.leading, timeline.convertToPoints(time: startTrimOvershoot))
-          // Dimming overlay where clip exceeds total duration
+          // Dimming overlay where clip exceeds total duration. The outer frame plus `clipped()` holds it
+          // inside the clip: one starting past the end overflows by more than its own length, and the
+          // surplus would spill over the neighbour to its left.
           .overlay(alignment: .trailing) {
             let overlayDuration = player.maxPlaybackDuration ?? timeline.totalDuration
             let timeOffset = clip.isInBackgroundTrack ? .zero : clip.timeOffset
@@ -283,6 +289,8 @@ struct ClipTrimmingView: View {
                 : Color(uiColor: .secondarySystemBackground).opacity(0.7))
               .opacity(0.8)
               .frame(width: max(0, -overflow))
+              .frame(maxWidth: .infinity, alignment: .trailing)
+              .clipped()
           }
         }
       }
@@ -414,9 +422,9 @@ struct ClipTrimmingView: View {
 
     previousTranslationWidth = 0
 
-    // Trim-start and trim-end preview-push siblings. Snapshot their authored offsets
-    // so we can restore them on cancel.
-    if draggingType == .trimStart || draggingType == .trimEnd {
+    // Snapshot siblings' authored offsets so a preview-push can be restored on cancel.
+    // Captions never push siblings, so they skip this.
+    if draggingType == .trimStart || draggingType == .trimEnd, clip.clipType != .caption {
       snapshotSiblingsForPreview()
     }
   }
@@ -435,6 +443,12 @@ struct ClipTrimmingView: View {
 
     let clipStartTime = clip.timeOffset
 
+    // Clamping the floor to the clip's own duration keeps the trim bounds from inverting for a
+    // clip that's already shorter than it. A negative bound flips sign, lands in the branch for
+    // the opposite drag direction — which never re-applies the bound it skipped — and the drag
+    // then overruns both the neighbour and the footage clamp into an overlap.
+    let minDuration = min(duration, configuration.minDuration(for: clip.clipType))
+
     switch draggingType {
     case .none:
       break
@@ -452,12 +466,18 @@ struct ClipTrimmingView: View {
       // In multi-clip tracks, the left edge can be pushed past the previous clip's end
       // if that clip is unlocked and has room to shift left. The clamp matches the
       // minimum achievable start once the predecessor is pushed as far as it can go.
-      if let minStart = minStartFromPreviousPushRoom {
+      // Captions hard-clamp at the previous caption's end (never pushing it).
+      if clip.clipType == .caption {
+        if let previousEnd = neighborBounds.previousEnd {
+          let neighborLimit = min(.zero, previousEnd - clipStartTime)
+          maxNegativeDelta = max(maxNegativeDelta, neighborLimit)
+        }
+      } else if let minStart = minStartFromPreviousPushRoom {
         let neighborLimit = minStart - clipStartTime
         maxNegativeDelta = max(maxNegativeDelta, neighborLimit)
       }
 
-      maxPositiveDelta = duration - configuration.minClipDuration
+      maxPositiveDelta = duration - minDuration
 
       var constrainedDelta: CMTime
 
@@ -506,6 +526,7 @@ struct ClipTrimmingView: View {
 
       // Preview: foreground tracks push the previous sibling leftward; background track
       // grows the duration and shifts all right siblings (no leftward push possible).
+      // Caption siblings never move.
       if clip.isInBackgroundTrack {
         let newEnd = clipStartTime + duration - startTrimDurationDelta
         previewPackRightSiblings(currentEnd: newEnd)
@@ -514,7 +535,7 @@ struct ClipTrimmingView: View {
         // gives the total shift of the track's end.
         interactor.timelineProperties.backgroundTrackTrimDelta =
           endTrimDurationDelta - startTrimDurationDelta
-      } else {
+      } else if clip.clipType != .caption {
         previewPushPreviousSibling(currentStart: clipStartTime + startTrimDurationDelta)
       }
 
@@ -523,17 +544,23 @@ struct ClipTrimmingView: View {
       var maxPositiveDelta: CMTime
 
       if let footageDuration = clip.effectiveFootageDuration, !clip.isLooping {
-        maxNegativeDelta = (duration - configuration.minClipDuration).imgly.makeNegative()
+        maxNegativeDelta = (duration - minDuration).imgly.makeNegative()
         maxPositiveDelta = footageDuration - clip.trimOffset - duration
       } else {
-        maxNegativeDelta = duration.imgly.makeNegative() + configuration.minClipDuration
+        maxNegativeDelta = duration.imgly.makeNegative() + minDuration
         maxPositiveDelta = .positiveInfinity
       }
 
       // No constraint from unlocked neighbors — growing pushes them (handled by
       // packAndPersistTrackClips in setTrim). But we cap at the nearest LOCKED clip's
       // start (accounting for intermediate unlocked clips that pack will push too).
-      if let maxEnd = maxEndForLockedClipCap {
+      // Captions hard-clamp at the next caption's start (never pushing it).
+      if clip.clipType == .caption {
+        if let nextStart = neighborBounds.nextStart {
+          let neighborLimit = max(.zero, nextStart - clipStartTime - duration)
+          maxPositiveDelta = min(maxPositiveDelta, neighborLimit)
+        }
+      } else if let maxEnd = maxEndForLockedClipCap {
         let lockedLimit = maxEnd - clipStartTime - duration
         maxPositiveDelta = min(maxPositiveDelta, lockedLimit)
       }
@@ -575,8 +602,11 @@ struct ClipTrimmingView: View {
         timeline.snapIndicatorLinePositions.removeAll()
       }
 
-      // Preview-push right-side siblings live to match what pack will produce on submit.
-      previewPackRightSiblings(currentEnd: clipStartTime + duration + endTrimDurationDelta)
+      // Preview-push right-side siblings live to match what pack will produce on
+      // submit. Caption siblings never move.
+      if clip.clipType != .caption {
+        previewPackRightSiblings(currentEnd: clipStartTime + duration + endTrimDurationDelta)
+      }
       if clip.isInBackgroundTrack {
         interactor.timelineProperties.backgroundTrackTrimDelta =
           endTrimDurationDelta - startTrimDurationDelta

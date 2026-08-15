@@ -4,55 +4,85 @@ import IMGLYEngine
 import SwiftUI
 
 /// The data model for the Timeline visualization.
+@MainActor
 final class TimelineDataSource: ObservableObject {
   /// The `Track`s that contain `Clip`s
   @Published var tracks = [Track]()
   @Published var backgroundTrack = Track()
 
+  /// The topmost caption lane — a stable instance (mirrors `backgroundTrack`);
+  /// refreshes only mutate its `clips`/`engineTrackID`.
+  @Published var captionTrack = Track()
+
+  /// Whether the caption lane has clips. Republished because `Track.clips` is nested
+  /// `@Published` and won't tick this object's `objectWillChange` on its own.
+  @Published var hasCaptionClips = false
+
   /// Timecodes in the video track that clips in other tracks should snap to when moved or trimmed.
   @Published var snapDetents = [CMTime]()
 
-  /// Find clip by `id`.
-  func findClip(id: DesignBlockID) -> Clip? {
+  /// Lazily built lookup maps so `findClip` stays O(1) during engine event
+  /// bursts (e.g. styling hundreds of captions); `nil` means stale.
+  /// `byID` matches `Clip.id` only — callers rely on `nil` for fill/shape/blur/
+  /// effect IDs — while `byContained` also maps those owned block IDs.
+  private var clipLookup: (byID: [DesignBlockID: Clip], byContained: [DesignBlockID: Clip])?
+
+  init() {
+    captionTrack.$clips
+      .map { !$0.isEmpty }
+      .removeDuplicates()
+      .assign(to: &$hasCaptionClips)
+  }
+
+  /// Drops the lookup maps; they are rebuilt on the next `findClip` call. Must
+  /// be called after any change to track membership or to a clip's
+  /// fill/shape/blur/effect IDs.
+  func invalidateClipLookup() {
+    clipLookup = nil
+  }
+
+  private func buildClipLookupIfNeeded() -> (byID: [DesignBlockID: Clip], byContained: [DesignBlockID: Clip]) {
+    if let clipLookup {
+      return clipLookup
+    }
+
     var allTracks = tracks
     allTracks.append(backgroundTrack)
+    allTracks.append(captionTrack)
 
+    var byID = [DesignBlockID: Clip]()
+    var byContained = [DesignBlockID: Clip]()
     for track in allTracks {
-      for clip in track.clips where clip.id == id {
-        return clip
+      for clip in track.clips {
+        byID[clip.id] = clip
+        var containedIDs = [clip.id]
+        containedIDs.append(contentsOf: [clip.fillID, clip.shapeID, clip.blurID].compactMap(\.self))
+        containedIDs.append(contentsOf: clip.effectIDs)
+        for id in containedIDs where byContained[id] == nil {
+          byContained[id] = clip
+        }
       }
     }
-    return nil
+
+    let lookup = (byID: byID, byContained: byContained)
+    clipLookup = lookup
+    return lookup
+  }
+
+  /// Find clip by `id`.
+  func findClip(id: DesignBlockID) -> Clip? {
+    buildClipLookupIfNeeded().byID[id]
   }
 
   /// Find the clip by `id`, including fills, shapes, blurs, and applied effect `id`s.
   func findClip(containing id: DesignBlockID) -> Clip? {
-    var allTracks = tracks
-    allTracks.append(backgroundTrack)
-
-    for track in allTracks {
-      for clip in track.clips where clip.id == id {
-        return clip
-      }
-      for clip in track.clips where clip.fillID == id {
-        return clip
-      }
-      for clip in track.clips where clip.shapeID == id {
-        return clip
-      }
-      for clip in track.clips where clip.blurID == id {
-        return clip
-      }
-      for clip in track.clips where clip.effectIDs.contains(id) {
-        return clip
-      }
-    }
-    return nil
+    buildClipLookupIfNeeded().byContained[id]
   }
 
   func allClips() -> [Clip] {
     var clips = foregroundClips()
     clips.append(contentsOf: backgroundTrack.clips)
+    clips.append(contentsOf: captionTrack.clips)
     return clips
   }
 
@@ -68,56 +98,91 @@ final class TimelineDataSource: ObservableObject {
     if backgroundTrack.clips.contains(where: { $0.id == clip.id }) {
       return backgroundTrack
     }
+    if captionTrack.clips.contains(where: { $0.id == clip.id }) {
+      return captionTrack
+    }
     return tracks.first { track in
       track.clips.contains { $0.id == clip.id }
     }
   }
 
-  /// Returns the previous and next clips adjacent to the given clip within the same track, sorted by timeOffset.
+  /// Returns the previous and next clips adjacent to the given clip within the same track, ordered by `timeOffset`.
   func neighborClips(of clip: Clip, in track: Track) -> (previous: Clip?, next: Clip?) {
-    let sorted = track.clips.sorted { $0.timeOffset < $1.timeOffset }
-    guard let index = sorted.firstIndex(where: { $0.id == clip.id }) else {
+    let clips = track.clips
+    guard let clipIndex = clips.firstIndex(where: { $0.id == clip.id }) else {
       return (nil, nil)
     }
-    let previous = index > 0 ? sorted[index - 1] : nil
-    let next = index < sorted.count - 1 ? sorted[index + 1] : nil
-    return (previous, next)
+    // Single pass instead of sorting the whole track on every drag/trim frame — caption
+    // lanes can hold hundreds of clips. Ordering by `(timeOffset, index)` breaks ties by
+    // array position, exactly like the stable sort this replaces.
+    let anchorOffset = clips[clipIndex].timeOffset
+    var previousIndex: Int?
+    var nextIndex: Int?
+    for index in clips.indices where index != clipIndex {
+      let offset = clips[index].timeOffset
+      if (offset, index) < (anchorOffset, clipIndex) {
+        if let previousIndex, (clips[previousIndex].timeOffset, previousIndex) >= (offset, index) {
+          continue
+        }
+        previousIndex = index
+      } else {
+        if let nextIndex, (clips[nextIndex].timeOffset, nextIndex) <= (offset, index) {
+          continue
+        }
+        nextIndex = index
+      }
+    }
+    return (previousIndex.map { clips[$0] }, nextIndex.map { clips[$0] })
   }
 
   func reset() {
     tracks.removeAll()
     backgroundTrack.clips.removeAll()
+    captionTrack.clips.removeAll()
+    captionTrack.engineTrackID = nil
+    invalidateClipLookup()
   }
 
   func updateSnapDetents() {
     // Update snapping detents
     var absoluteTimeOffset = CMTime.zero
     var snapDetents = [CMTime]()
+    // Detent order is semantic (they are processed sequentially and background
+    // edges take precedence), so dedupe with a seen-set while appending in
+    // order. Keyed by seconds because equal `CMTime`s with different
+    // timescales may hash differently.
+    var seenSeconds = Set<Double>()
 
     // Snap to the timeline start
     snapDetents.append(.zero)
+    seenSeconds.insert(CMTime.zero.seconds)
 
     for clip in backgroundTrack.clips {
       guard let duration = clip.duration else { continue }
-      snapDetents.append(duration + absoluteTimeOffset)
+      let end = duration + absoluteTimeOffset
+      snapDetents.append(end)
+      seenSeconds.insert(end.seconds)
       // swiftlint:disable:next shorthand_operator
       absoluteTimeOffset = absoluteTimeOffset + duration
     }
 
-    // Include foreground clip edges as snap points
-    for clip in foregroundClips() {
+    // Include foreground and caption clip edges as snap points
+    for clip in foregroundClips() + captionTrack.clips {
       let start = clip.timeOffset
-      if !snapDetents.contains(start) {
+      if seenSeconds.insert(start.seconds).inserted {
         snapDetents.append(start)
       }
       if let duration = clip.duration {
         let end = start + duration
-        if !snapDetents.contains(end) {
+        if seenSeconds.insert(end.seconds).inserted {
           snapDetents.append(end)
         }
       }
     }
 
-    self.snapDetents = snapDetents
+    // Assigning an equal array would still tick `objectWillChange`.
+    if self.snapDetents != snapDetents {
+      self.snapDetents = snapDetents
+    }
   }
 }

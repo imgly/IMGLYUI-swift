@@ -67,7 +67,7 @@ public extension CanvasMenu.Buttons {
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the selected design block is not
   /// the last reorderable child in the parent design block.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block can be
-  /// moved forward or backward.
+  /// moved forward or backward. Audio and captions have no z-order, so they never show it.
   /// - Returns: The created button.
   static func bringForward(
     action: @escaping CanvasMenu.Context.To<Void> = { $0.eventHandler.send(.bringSelectionForward) },
@@ -93,7 +93,7 @@ public extension CanvasMenu.Buttons {
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the selected design block is not
   /// the first reorderable child in the parent design block.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block can be
-  /// moved forward or backward.
+  /// moved forward or backward. Audio and captions have no z-order, so they never show it.
   /// - Returns: The created button.
   static func sendBackward(
     action: @escaping CanvasMenu.Context.To<Void> = { $0.eventHandler.send(.sendSelectionBackward) },
@@ -131,7 +131,9 @@ public extension CanvasMenu.Buttons {
     },
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { _ in true },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = {
-      try $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/duplicate")
+      // Captions omit Duplicate (matches the inspector bar): it would fall outside the caption track.
+      try $0.selection.type != .caption &&
+        $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/duplicate")
     },
   ) -> some CanvasMenu.Item {
     CanvasMenu.Button(id: ID.duplicate, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)

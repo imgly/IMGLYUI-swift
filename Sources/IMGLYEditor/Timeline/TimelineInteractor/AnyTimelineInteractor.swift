@@ -58,6 +58,10 @@ class AnyTimelineInteractor: TimelineInteractor {
     interactor.refreshThumbnails()
   }
 
+  func refreshZoomDependentThumbnails() {
+    interactor.refreshZoomDependentThumbnails()
+  }
+
   func refreshThumbnail(id: DesignBlockID) {
     interactor.refreshThumbnail(id: id)
   }

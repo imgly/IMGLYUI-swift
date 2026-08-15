@@ -90,6 +90,11 @@ public extension Dock.Buttons.ID {
     "ly.img.component.dock.button.voiceover"
   }
 
+  /// The id of the ``Dock/Buttons/captions(action:title:icon:isEnabled:isVisible:)`` button.
+  static var captions: EditorComponentID {
+    "ly.img.component.dock.button.captions"
+  }
+
   /// The id of the ``Dock/Buttons/reorder(action:title:icon:isEnabled:isVisible:)`` button.
   static var reorder: EditorComponentID {
     "ly.img.component.dock.button.reorder"
@@ -556,6 +561,36 @@ public extension Dock.Buttons {
     isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
   ) -> some Dock.Item {
     Dock.Button(id: ID.voiceover, action: action, label: { context in
+      let title = try title(context)
+      let icon = try icon(context)
+      Label { title } icon: { icon }
+    }, isEnabled: isEnabled, isVisible: isVisible)
+  }
+
+  /// Creates a ``Dock/Button`` that opens the captions sheet.
+  ///
+  /// - Attention: The captions surface is intended for video scenes. Register this button in the dock of
+  /// an editor that supports captions.
+  /// - Parameters:
+  ///   - action: The action to perform when the user triggers the button. By default, ``EditorEvent/openSheet(type:)``
+  /// event is invoked with sheet type ``SheetType/captions(style:)``.
+  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
+  /// `ly_img_editor_dock_button_captions` is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image` ``IMGLYCore/IMGLY/captions`` is
+  /// used.
+  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isVisible: Whether the button is visible. By default, it is always `true`.
+  /// - Returns: The created button.
+  static func captions(
+    action: @escaping Dock.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .captions())) },
+    @ViewBuilder title: @escaping Dock.Context.To<some View> = { _ in
+      Text(.imgly.localized("ly_img_editor_dock_button_captions"))
+    },
+    @ViewBuilder icon: @escaping Dock.Context.To<some View> = { _ in Image.imgly.captions },
+    isEnabled: @escaping Dock.Context.To<Bool> = { _ in true },
+    isVisible: @escaping Dock.Context.To<Bool> = { _ in true },
+  ) -> some Dock.Item {
+    Dock.Button(id: ID.captions, action: action, label: { context in
       let title = try title(context)
       let icon = try icon(context)
       Label { title } icon: { icon }

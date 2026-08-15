@@ -15,6 +15,7 @@ struct FloatingClipOverlayView: View {
   var body: some View {
     if case let .dragging(context) = timelineProperties.dragDropState,
        let clip = timelineProperties.dataSource.findClip(id: context.clipID),
+       clip.clipType != .caption, // Captions slide in-lane; they never float.
        let duration = clip.duration {
       let width = timeline.convertToPoints(time: duration)
       let height = configuration.trackHeight
@@ -63,20 +64,25 @@ struct FloatingClipOverlayView: View {
       .shadow(color: Color.black.opacity(0.2), radius: 6, x: 0, y: 4)
   }
 
-  /// True when the pointer is over the background row while dragging a foreground
-  /// clip whose type can't live in the background (audio / voiceover). Pure
-  /// visual hint — the resolver still falls back to a foreground target so the
-  /// release isn't lost.
+  /// True when the pointer is over a lane the dragged clip can't enter: the caption
+  /// lane (any non-caption clip) or the background row (audio / voiceover).
   private func isInvalidDropZone(context: DragContext, clip: Clip) -> Bool {
+    let dataSource = timelineProperties.dataSource
+    let pointerY = context.currentTouchLocation.y
+
+    if dataSource.hasCaptionClips,
+       let captionFrame = timelineProperties.trackFrames[dataSource.captionTrack.id],
+       pointerY <= captionFrame.maxY {
+      return true
+    }
+
     guard !clip.isInBackgroundTrack,
           !clip.clipType.allowedInBackgroundTrack else {
       return false
     }
-    let dataSource = timelineProperties.dataSource
     guard let bgFrame = timelineProperties.trackFrames[dataSource.backgroundTrack.id] else {
       return false
     }
-    let pointerY = context.currentTouchLocation.y
     return bgFrame.minY <= pointerY && pointerY <= bgFrame.maxY
   }
 }
