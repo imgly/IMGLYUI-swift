@@ -124,7 +124,7 @@ public extension EditorConfiguration {
     private(set) var onError: OnError.Handler?
     private(set) var onLoaded: OnLoaded.Handler?
     private(set) var onChanged: OnChanged.Handler?
-    private(set) var captionsGeneration: CaptionsGeneration.Callback?
+    private(set) var captionsGeneration: (@MainActor (_ engine: Engine) async throws -> URL?)?
 
     // MARK: - Components
 
@@ -192,8 +192,21 @@ public extension EditorConfiguration {
     }
 
     /// Sets the caption generation callback that backs the Add Captions sheet's "Generate
-    /// Automatically" action. Unlike the chained handlers, the last configured callback wins.
-    public func captionsGeneration(_ callback: @escaping CaptionsGeneration.Callback) {
+    /// Automatically" action. The sheet leaves the action out while no callback is configured, so the
+    /// editor offers automatic captions only when something can produce them. Unlike the chained
+    /// handlers, the last configured callback wins.
+    ///
+    /// The callback transcribes the scene's audible content — `engine` reads it — into a temporary SRT
+    /// or VTT file with cue timings relative to the page timeline. Return `nil` when the audio holds no
+    /// speech, so the editor can say so specifically; any error thrown surfaces as a generic failure
+    /// alert. The editor imports the file as a single undo step and
+    /// deletes it afterwards, and cancels the surrounding task when the user taps Cancel — so stay
+    /// cooperatively cancellable (`URLSession`'s async APIs already are). Nothing reaches the scene
+    /// until the callback returns, which is what leaves a cancel side-effect free.
+    ///
+    /// The IMG.LY auto-captions plugin (`IMGLYPluginAutoCaptions`) sets this for you; pass a callback
+    /// directly to use a different speech-to-text backend.
+    public func captionsGeneration(_ callback: @escaping @MainActor (_ engine: Engine) async throws -> URL?) {
       captionsGeneration = callback
     }
 

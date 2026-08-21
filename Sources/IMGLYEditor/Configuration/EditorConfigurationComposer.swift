@@ -1,4 +1,5 @@
 @_spi(Internal) import IMGLYCoreUI
+import IMGLYEngine
 import SwiftUI
 
 // MARK: - EditorConfigurationComposer
@@ -30,7 +31,7 @@ final class EditorConfigurationComposer {
   // MARK: - Simple Value Properties
 
   /// The caption generation callback to use.
-  var captionsGeneration: CaptionsGeneration.Callback?
+  var captionsGeneration: (@MainActor (_ engine: Engine) async throws -> URL?)?
 
   /// The color palette to use.
   var colorPalette: [NamedColor]?

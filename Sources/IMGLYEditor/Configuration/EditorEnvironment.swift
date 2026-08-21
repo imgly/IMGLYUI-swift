@@ -1,4 +1,5 @@
 @_spi(Internal) import IMGLYCoreUI
+import IMGLYEngine
 import SwiftUI
 
 // MARK: - EditorEnvironment
@@ -17,7 +18,7 @@ import SwiftUI
   @_spi(Internal) public var onError: OnError.Callback?
   @_spi(Internal) public var onLoaded: OnLoaded.Callback?
   @_spi(Internal) public var onChanged: OnChanged.Callback?
-  @_spi(Internal) public var captionsGeneration: CaptionsGeneration.Callback?
+  @_spi(Internal) public var captionsGeneration: (@MainActor (_ engine: Engine) async throws -> URL?)?
 
   // MARK: - Dock
 

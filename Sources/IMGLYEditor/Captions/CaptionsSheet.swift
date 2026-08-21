@@ -78,8 +78,8 @@ struct CaptionsSheet: View {
   }
 
   /// Two-variant Add-sheet seam: the plugin variant surfaces a primary "Generate Automatically" action.
-  /// A ``CaptionsGeneration/Callback`` set via ``EditorConfiguration/Builder/captionsGeneration(_:)`` (e.g.
-  /// by the auto-captions plugin) enables it; the default variant is shown otherwise.
+  /// A callback set via ``EditorConfiguration/Builder/captionsGeneration(_:)`` (e.g. by the auto-captions
+  /// plugin) enables it; the default variant is shown otherwise.
   private var showsAutoGenerate: Bool {
     editorEnvironment.captionsGeneration != nil
   }
@@ -558,9 +558,10 @@ struct CaptionsSheet: View {
 
   // MARK: - Generate (auto-captions)
 
-  /// Runs the configured ``CaptionsGeneration/Callback`` and imports its result through the same
-  /// pipeline as a file import — so styling, track replacement, and the single undo step behave
-  /// identically. Nothing is created until the callback returns, which makes Cancel side-effect free.
+  /// Runs the callback configured via ``EditorConfiguration/Builder/captionsGeneration(_:)`` and imports
+  /// its result through the same pipeline as a file import — so styling, track replacement, and the
+  /// single undo step behave identically. Nothing is created until the callback returns, which makes
+  /// Cancel side-effect free. A `nil` result means the audio held no speech.
   private func generateCaptions() {
     guard !isMutating, generationTask == nil,
           let generate = editorEnvironment.captionsGeneration,
@@ -572,7 +573,13 @@ struct CaptionsSheet: View {
         isMutating = false
       }
       do {
-        let url = try await generate(engine)
+        guard let url = try await generate(engine) else {
+          // A callback is free to read "return `nil` when there is nothing to transcribe" as covering
+          // cancellation, so stay silent whenever the user cancelled — as the generic catch below does.
+          guard !Task.isCancelled else { return }
+          reportGenerationFailure("ly_img_editor_sheet_captions_generate_error_no_speech")
+          return
+        }
         defer { try? FileManager.default.removeItem(at: url) }
         try Task.checkCancellation()
         try await captionsInteractor.importCaptions(from: url)
@@ -584,8 +591,6 @@ struct CaptionsSheet: View {
         refresh()
       } catch is CancellationError {
         // Cancelled — fall back to the Add state silently.
-      } catch CaptionsGeneration.Error.noSpeech {
-        reportGenerationFailure("ly_img_editor_sheet_captions_generate_error_no_speech")
       } catch {
         // A cancelled network request surfaces as the transport's own error (e.g. `URLError.cancelled`)
         // rather than `CancellationError` — stay silent whenever the user cancelled.
