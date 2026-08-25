@@ -33,5 +33,5 @@ public struct EngineSettings: Sendable {
 
   /// The default base URL used when no `baseURL` is provided: the public CE.SDK CDN.
   private static let defaultBaseURL =
-    URL(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.81.0/assets")!
+    URL(string: "https://cdn.img.ly/packages/imgly/cesdk-swift/1.81.1-rc.0/assets")!
 }
