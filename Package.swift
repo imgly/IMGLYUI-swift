@@ -8,6 +8,7 @@ let package = Package(
   products: [
     // Comment out these products for development to fix SwiftUI previews inside this package
     .library(name: "IMGLYCamera", targets: ["IMGLYCamera"]),
+    .library(name: "IMGLYEditor", targets: ["IMGLYEditor"]),
     .library(name: "IMGLYDesignEditor", targets: ["IMGLYDesignEditor"]),
     .library(name: "IMGLYVideoEditor", targets: ["IMGLYVideoEditor"]),
     .library(name: "IMGLYPhotoEditor", targets: ["IMGLYPhotoEditor"]),
@@ -29,7 +30,7 @@ let package = Package(
              ]),
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.81.1"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.82.0-rc.0"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", "1.1.2" ..< "27.0.0"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", "7.10.0" ..< "9.0.0"),
   ],

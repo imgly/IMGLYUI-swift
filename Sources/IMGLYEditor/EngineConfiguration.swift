@@ -172,6 +172,36 @@ public enum OnExport {
     return (data, mimeType.uniformType)
   }
 
+  /// A utility that calls the streamed `BlockAPI.export` overload.
+  /// This fuses `export` and writing the result to a file into a single streamed pass: the document is
+  /// written out chunk by chunk while it is being encoded, so it is never held in memory as a whole.
+  /// Prefer it over `export` followed by `Data.write(to:)` for large multi-page
+  /// documents such as photo books and magazines, where the intermediate `Data` is the peak allocation.
+  /// - Parameters:
+  ///   - engine: The used engine.
+  ///   - mimeType: Optional mime type of the export. If `nil` `MIMEType.pdf` is used. Streamed export
+  /// only supports `MIMEType.pdf`. It is also used to derive the extension of the written file.
+  ///   - url: Optional destination. If `nil` a file named `Export` in the temporary directory is used.
+  /// - Returns: The file the exported document was written to and its type.
+  @MainActor
+  public static func exportToFile(_ engine: Engine, mimeType: MIMEType? = nil,
+                                  to url: URL? = nil) async throws -> (URL, UTType) {
+    guard let scene = try engine.scene.get() else {
+      throw EditorError("No scene was found.")
+    }
+    let mimeType = mimeType ?? .pdf
+    let contentType = mimeType.uniformType
+    let url = url ?? FileManager.default.temporaryDirectory
+      .appendingPathComponent("Export", conformingTo: contentType)
+    try await engine.block.export(scene, to: url, mimeType: mimeType, onPreExport: { engine in
+      try engine.scene.getPages().forEach {
+        try engine.block.setScopeEnabled($0, key: "layer/visibility", enabled: true)
+        try engine.block.setVisible($0, visible: true)
+      }
+    })
+    return (url, contentType)
+  }
+
   /// A utility that calls `BlockAPI.exportVideo` and displays a progress indicator.
   /// - Parameters:
   ///   - engine: The used engine.

@@ -813,8 +813,10 @@ extension ClipView {
   /// from the dragged clip's leading edge (`pointer - grabOffsetX`) so the floating
   /// overlay stays glued to the finger. `snapPosition` feeds `snapIndicatorLinePositions`.
   /// Returns `nil` when locked walls leave a gap below `minTrimmedDuration`, or when
-  /// the gap is smaller than `draggedDuration` and the clip isn't trimmable — caller
-  /// treats `nil` as "reject the drop" so the clip snaps back to its origin.
+  /// they leave less room than `draggedDuration` and the clip isn't trimmable — caller
+  /// treats `nil` as "reject the drop" so the clip snaps back to its origin. A gap
+  /// between *unlocked* siblings never rejects: the clip pins to the predecessor's end
+  /// and `applyCascade` pushes the successors right.
   private func computeDropSlot(
     in track: Track,
     trackFrame: CGRect,
@@ -841,19 +843,14 @@ extension ClipView {
       : nil
 
     let prevEnd = prev.map { $0.originalStart + ($0.clip.duration ?? .zero) } ?? .zero
-    let slotHasEnoughRoom: Bool = if let next {
-      next.originalStart - prevEnd >= draggedDuration
-    } else {
-      true
-    }
 
     let walls = resolveLockedWalls(others: othersByOriginalStart, insertIndex: insertIndex)
 
-    // Decide the slot kind: free placement when there's enough room *and* no locked
-    // successor squeezes the cascade; otherwise try pull + trim.
+    // Only a locked successor blocks free placement. `nextCap` is a soft cap that keeps
+    // the clip off an unlocked successor, then collapses to `prevEnd` in a narrow gap.
     let nextCap = next.map { $0.originalStart - draggedDuration } ?? .positiveInfinity
-    let cap = min(nextCap, walls.lockedSuccessorWall - draggedDuration)
-    let canPlaceFreely = slotHasEnoughRoom && cap >= prevEnd
+    let lockedCap = walls.lockedSuccessorWall - draggedDuration
+    let canPlaceFreely = lockedCap >= prevEnd
 
     let lowerBound: CMTime
     let upperBound: CMTime
@@ -861,7 +858,7 @@ extension ClipView {
     let unsnappedDropStart: CMTime
     if canPlaceFreely {
       lowerBound = prevEnd
-      upperBound = cap
+      upperBound = max(prevEnd, min(nextCap, lockedCap))
       effectiveDuration = draggedDuration
       unsnappedDropStart = max(lowerBound, min(upperBound, max(.zero, desiredDropStart)))
     } else {
