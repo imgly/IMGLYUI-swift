@@ -943,17 +943,17 @@ extension ClipView {
     // Dedupe with a seen-set while appending in order, keyed by seconds because
     // equal `CMTime`s with different timescales may hash differently.
     var seenSeconds: Set<Double> = [CMTime.zero.seconds]
-    var bgCursor = CMTime.zero
     for bgClip in dataSource.backgroundTrack.clips {
       guard let duration = bgClip.duration else { continue }
-      // swiftlint:disable:next shorthand_operator
-      bgCursor = bgCursor + duration
-      if bgClip.id != clip.id, seenSeconds.insert(bgCursor.seconds).inserted {
-        detents.append(bgCursor)
+      // These are rendered, transition-projected bounds. Do not accumulate
+      // durations: a transition has already inset each clip edge around its seam.
+      let end = bgClip.displayTimeOffset + duration
+      if bgClip.id != clip.id, seenSeconds.insert(end.seconds).inserted {
+        detents.append(end)
       }
     }
     for fgClip in dataSource.foregroundClips() + dataSource.captionTrack.clips where fgClip.id != clip.id {
-      let start = fgClip.timeOffset
+      let start = fgClip.displayTimeOffset
       if seenSeconds.insert(start.seconds).inserted {
         detents.append(start)
       }
@@ -1021,6 +1021,13 @@ extension ClipView {
     dropStart: CMTime,
     draggedDuration: CMTime,
   ) {
+    // Each drag tick must start from the authored positions. Otherwise, offsets
+    // previewed while the pointer was in a tighter slot leak into the next slot
+    // and are committed even after the cascade no longer needs to move them.
+    for sibling in track.clips where sibling.id != clip.id && sibling.previewTimeOffset != nil {
+      sibling.clearPreviewTimeOffset()
+    }
+
     let snapshot = previewTrackSnapshots[track.id] ?? [:]
     let othersByOriginalStart: [(clip: Clip, originalStart: CMTime)] = track.clips
       .filter { $0.id != clip.id }
@@ -1061,19 +1068,14 @@ extension ClipView {
     var cursor = dropStart + draggedDuration
     for i in insertIndex ..< othersByOriginalStart.count {
       let entry = othersByOriginalStart[i]
-      if entry.clip.isLocked {
-        // Locked wall.
-        if entry.clip.displayTimeOffset != entry.originalStart {
-          entry.clip.applyPreview(timeOffset: entry.originalStart)
-        }
-        cursor = entry.originalStart + (entry.clip.duration ?? .zero)
-        continue
+      // A forward cascade affects only the contiguous overlap. Once a sibling
+      // already starts at or after the cursor, later siblings cannot need moving.
+      guard !entry.clip.isLocked, entry.originalStart < cursor else { break }
+      if entry.clip.timeOffset != cursor {
+        entry.clip.applyPreview(timeOffset: cursor)
       }
-      let newStart = max(entry.originalStart, cursor)
-      if entry.clip.displayTimeOffset != newStart {
-        entry.clip.applyPreview(timeOffset: newStart)
-      }
-      cursor = newStart + (entry.clip.duration ?? .zero)
+      // swiftlint:disable:next shorthand_operator
+      cursor = cursor + (entry.clip.duration ?? .zero)
     }
   }
 }

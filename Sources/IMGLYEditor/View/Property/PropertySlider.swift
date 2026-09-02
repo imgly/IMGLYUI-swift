@@ -14,6 +14,7 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
   let selection: Interactor.BlockID?
   let defaultValue: T?
   let assetContext: EffectProperty.AssetContext?
+  let disableAutoPercentage: Bool
 
   private let extractValue: ((AssetProperty) -> T?)?
   private let buildUpdatedProperty: ((AssetProperty, T) -> AssetProperty?)?
@@ -35,7 +36,8 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
        propertyBlock: PropertyBlock? = nil,
        selection: Interactor.BlockID? = nil,
        defaultValue: T? = nil,
-       assetContext: EffectProperty.AssetContext? = nil) {
+       assetContext: EffectProperty.AssetContext? = nil,
+       disableAutoPercentage: Bool = false) {
     self.title = title
     self.bounds = bounds
     self.property = property
@@ -46,6 +48,7 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
     self.selection = selection
     self.defaultValue = defaultValue
     self.assetContext = assetContext
+    self.disableAutoPercentage = disableAutoPercentage
 
     if let assetContext {
       let closures = Self.assetClosures(for: assetContext.assetProperty)
@@ -91,7 +94,7 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
   // MARK: - Value Formatting
 
   private var showPercentage: Bool {
-    PercentageSliderHelper.isPercentageSlider(min: bounds.lowerBound, max: bounds.upperBound)
+    !disableAutoPercentage && PercentageSliderHelper.isPercentageSlider(min: bounds.lowerBound, max: bounds.upperBound)
   }
 
   private func percentageText(for value: T) -> String {

@@ -144,6 +144,12 @@ public extension SheetTypes {
   struct Animation: SheetType {
     public let style: SheetStyle
   }
+
+  /// A sheet that is used to configure a transition owned by an outgoing clip.
+  struct Transition: SheetTypeForDesignBlock {
+    public let style: SheetStyle
+    let id: DesignBlockID
+  }
 }
 
 public extension SheetType where Self == SheetTypes.LibraryAdd {
@@ -407,6 +413,13 @@ public extension SheetType where Self == SheetTypes.Animation {
   /// - Returns: The created ``SheetTypes/Animation`` sheet type.
   static func animation(style: SheetStyle = .only(detent: .imgly.small)) -> Self {
     Self(style: style)
+  }
+}
+
+public extension SheetType where Self == SheetTypes.Transition {
+  /// Creates a sheet for configuring the outgoing transition of `id`.
+  static func transition(style: SheetStyle = .only(detent: .imgly.small), id: DesignBlockID) -> Self {
+    Self(style: style, id: id)
   }
 }
 

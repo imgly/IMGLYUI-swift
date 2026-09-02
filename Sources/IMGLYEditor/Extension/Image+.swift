@@ -50,6 +50,8 @@ public extension IMGLY where Wrapped == Image {
   static let clipSpeed = Wrapped(systemName: "hare")
   /// An icon image for animation.
   static let animation = Wrapped("custom.circle.dotted.and.circle", bundle: .module)
+  /// An icon image for transitions.
+  static let transition = Wrapped("custom.transition.is.set", bundle: .module)
   /// An icon image for crop.
   static let crop = Wrapped(systemName: "crop.rotate")
   /// An icon image for resize.

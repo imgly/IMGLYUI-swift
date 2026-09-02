@@ -134,6 +134,11 @@ public extension InspectorBar.Buttons.ID {
     "ly.img.component.inspectorBar.button.animation"
   }
 
+  /// The id of the transition button.
+  static var transition: EditorComponentID {
+    "ly.img.component.inspectorBar.button.transition"
+  }
+
   /// The id of the ``InspectorBar/Buttons/textPresets(action:title:icon:isEnabled:isVisible:)`` button.
   static var textPresets: EditorComponentID {
     "ly.img.component.inspectorBar.button.textPresets"
@@ -1191,6 +1196,27 @@ public extension InspectorBar.Buttons {
     },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.animation, action: action, label: { context in
+      let title = try title(context)
+      let icon = try icon(context)
+      Label { title } icon: { icon }
+    }, isEnabled: isEnabled, isVisible: isVisible)
+  }
+
+  /// Creates an inspector-bar button that opens the transition sheet for an eligible outgoing clip.
+  static func transition(
+    action: @escaping InspectorBar.Context.To<Void> = {
+      $0.eventHandler.send(.openSheet(type: .transition(id: $0.selection.block)))
+    },
+    @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
+      Text(.imgly.localized("ly_img_editor_inspector_bar_button_transition"))
+    },
+    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.transition },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
+      transitionIncomingClip(engine: context.engine, outgoing: context.selection.block) != nil
+    },
+  ) -> some InspectorBar.Item {
+    InspectorBar.Button(id: ID.transition, action: action, label: { context in
       let title = try title(context)
       let icon = try icon(context)
       Label { title } icon: { icon }

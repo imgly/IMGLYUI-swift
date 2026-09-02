@@ -33,6 +33,8 @@ protocol TimelineInteractor: ObservableObject {
   func deselect()
   func delete(id: DesignBlockID?)
   func addUndoStep()
+  func openTransition(for id: DesignBlockID)
+  func refreshTransitionSeams()
   func getAspectRatio(clip: Clip) throws -> Double
   func getTextContent(id: DesignBlockID) throws -> String
   func generateImagesThumbnails(

@@ -6,6 +6,21 @@ import IMGLYEngine
 import SwiftUI
 
 extension Interactor: TimelineInteractor {
+  /// Rebuilds transition-derived clip geometry after a committed history change.
+  /// Transition blocks do not emit an owning-clip update event.
+  func refreshTimelineAfterHistoryChange() {
+    refreshTimeline()
+    updateDurations()
+  }
+
+  /// Recomputes the transition seams from the current clip state and zoom level.
+  /// Seam compactness depends on rendered clip widths, so a zoom change must
+  /// re-evaluate it even though no engine event fires. Matches Android's `setZoom`.
+  func refreshTransitionSeams() {
+    guard let engine else { return }
+    updateTransitionSeams(engine: engine)
+  }
+
   /// Configure the timeline.
   func configureTimeline() throws {
     guard let engine else { return }
@@ -402,7 +417,10 @@ extension Interactor: TimelineInteractor {
   ) throws {
     try engine.block.insertChild(into: engineTrackID, child: clip.id, at: insertIndex)
     for sibling in targetTrack.clips where sibling.id != clip.id {
-      let offset = siblingOffsets[sibling.id] ?? sibling.timeOffset
+      // Match Android: only commit siblings that were shifted by the cascade.
+      // Reapplying unchanged offsets invokes Track::layout() and can mutate
+      // unrelated clips when the drag is released.
+      guard let offset = siblingOffsets[sibling.id], offset != sibling.timeOffset else { continue }
       try engine.block.setTimeOffset(sibling.id, offset: offset.seconds)
     }
     try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
@@ -456,11 +474,17 @@ extension Interactor: TimelineInteractor {
         refresh(clip: sibling, updatingSnapDetents: false)
       }
       timelineProperties.dataSource.updateSnapDetents()
+      // A same-track drop does not require a full rebuild, but it still changes
+      // which adjacent clips form a transition pair. Recompute the projected
+      // bounds and seams in this stack frame instead of waiting for the engine
+      // event batch.
+      updateDurations()
       return
     }
     // Cross-track or BG reorder — refreshTimeline rebuilds with reused instances and
     // recomputes the BG packed offsets deterministically.
     refreshTimeline()
+    updateDurations()
     timelineProperties.suppressNextDirtyRefresh = true
   }
 
@@ -530,6 +554,7 @@ extension Interactor: TimelineInteractor {
         packBackgroundChildren(engine: engine)
       }
       refreshTimeline()
+      updateDurations()
       timelineProperties.suppressNextDirtyRefresh = true
     } catch {
       handleError(error)
@@ -562,24 +587,24 @@ extension Interactor: TimelineInteractor {
   /// Sets a new trim to the passed `Clip` and its corresponding `DesignBlock`.
   /// - Parameters:
   ///   - clip: The `Clip` that will get the new trim.
-  ///   - timeOffset: The offset relative to the containing `Page`.
+  ///   - timeOffset: The transition-projected offset relative to the containing `Page`.
   ///   - trimOffset: The offset in the `Clip`’s footage.
-  ///   - duration: The duration for how long the `Clip` will be visible during playback.
+  ///   - duration: The transition-projected duration visible in the timeline.
   func setTrim(clip: Clip, timeOffset: CMTime, trimOffset: CMTime, duration: CMTime) {
-    setTimeOffset(clip: clip, timeOffset: timeOffset)
+    guard let engine else { return }
+    let timing = transitionTiming(engine: engine, clip: clip.id, renderedDuration: duration)
+    setTimeOffset(clip: clip, timeOffset: max(.zero, timeOffset - timing.trim.lead))
     setTrimOffset(clip: clip, trimOffset: trimOffset)
-    setDuration(clip: clip, duration: duration)
+    setDuration(clip: clip, duration: timing.rawDuration)
 
     // Call refresh manually to apply the change immediately (without a glitch):
     refresh(clip: clip)
 
-    // Work around the engine's `Track::layout()` gap-handling bug by packing clips
-    // ourselves on submit. The caption lane is exempt — its gaps are intentional.
-    if !clip.isInBackgroundTrack,
-       clip.clipType != .caption,
-       let track = timelineProperties.dataSource.findTrack(containing: clip),
-       track.engineTrackID != nil {
-      packAndPersistTrackClips(track: track)
+    // Keep raw sibling bounds valid after an engine trim. This applies to the
+    // background track as well; transition-projected cells must never be written
+    // back as engine timing.
+    if let track = timelineProperties.dataSource.findTrack(containing: clip) {
+      packAndPersistTrackClips(track: track, selectedClipID: clip.id)
     }
 
     // Sync now so anchored UI (e.g. "+ Add Clip") doesn't flicker before the async
@@ -589,57 +614,100 @@ extension Interactor: TimelineInteractor {
     addUndoStep()
   }
 
-  /// Mirrors web's `packElements`: walk the track left-to-right, resolve overlaps,
-  /// persist positions, refresh.
-  private func packAndPersistTrackClips(track: Track) {
+  /// Mirrors Android's `packAndPersistSiblings`. The timeline cells are transition-
+  /// projected, so layout decisions and writes must use the raw engine extents.
+  private func packAndPersistTrackClips(track: Track, selectedClipID: DesignBlockID) {
     guard let engine else { return }
-    let sorted = track.clips.sorted { $0.timeOffset < $1.timeOffset }
-    var cursor: CMTime = .zero
 
-    for (index, clip) in sorted.enumerated() {
-      let duration = clip.duration ?? .zero
+    let sorted = rawTrackClips(track: track, engine: engine)
 
-      if clip.isLocked {
-        // Locked clips stay at their authored position. Re-write it explicitly so the
-        // engine's `Track::layout()` (triggered by `setDuration` / `insertChild`) can't
-        // leave a locked clip drifted to a position we never asked for. Advance the
-        // cursor monotonically past it so trailing unlocked clips pack behind.
-        do {
-          try engine.block.setTimeOffset(clip.id, offset: clip.timeOffset.seconds)
-        } catch {
-          handleError(error)
-        }
-        cursor = max(cursor, clip.timeOffset + duration)
-        continue
-      }
+    guard let pivotIndex = sorted.firstIndex(where: { $0.clip.id == selectedClipID }) else { return }
 
-      let nextLockedStart = sorted[(index + 1)...]
-        .first(where: { $0.isLocked })?.timeOffset
-
-      var resolvedOffset = max(clip.timeOffset, cursor)
-      if let nextLockedStart {
-        // Cap at the next locked clip so an unlocked one can't overlap it.
-        let cap = nextLockedStart - duration
-        if cap >= cursor {
-          resolvedOffset = min(resolvedOffset, cap)
-        }
-        // If cap < cursor, the clip can't fit — accept overlap (the trim cap should
-        // prevent reaching this state).
-      }
-
-      clip.timeOffset = resolvedOffset
-      do {
-        try engine.block.setTimeOffset(clip.id, offset: resolvedOffset.seconds)
-      } catch {
-        handleError(error)
-      }
-      cursor = resolvedOffset + duration
-    }
+    var overrides: [DesignBlockID: CMTime] = [:]
+    packPrecedingTrackClips(sorted: sorted, pivotIndex: pivotIndex, engine: engine, overrides: &overrides)
+    packSucceedingTrackClips(sorted: sorted, pivotIndex: pivotIndex, engine: engine, overrides: &overrides)
+    persistTrackClipOffsets(overrides, engine: engine)
 
     for clip in track.clips {
       refresh(clip: clip, updatingSnapDetents: false)
     }
     timelineProperties.dataSource.updateSnapDetents()
+  }
+
+  private struct RawTrackClip {
+    let clip: Clip
+    let timeOffset: CMTime
+    let duration: CMTime
+  }
+
+  private func rawTrackClips(track: Track, engine: Engine) -> [RawTrackClip] {
+    track.clips.compactMap { clip in
+      guard let timeOffset = try? engine.block.getTimeOffset(clip.id),
+            let duration = try? engine.block.getDuration(clip.id) else { return nil }
+      return .init(
+        clip: clip,
+        timeOffset: CMTime(seconds: timeOffset),
+        duration: CMTime(seconds: duration),
+      )
+    }.sorted { $0.timeOffset < $1.timeOffset }
+  }
+
+  // Push preceding clips left only if the trim now overlaps them. Preserve a
+  // real transition's raw overlap instead of treating projected cells as gaps.
+  private func packPrecedingTrackClips(
+    sorted: [RawTrackClip], pivotIndex: Int, engine: Engine, overrides: inout [DesignBlockID: CMTime],
+  ) {
+    var next = sorted[pivotIndex]
+    var nextStart = next.timeOffset
+    for index in stride(from: pivotIndex - 1, through: 0, by: -1) {
+      let neighbor = sorted[index]
+      if neighbor.clip.isLocked {
+        break
+      }
+      let overlap = transitionOverlap(engine: engine, outgoing: neighbor.clip.id, incoming: next.clip.id)
+      let desiredEnd = nextStart + overlap
+      guard neighbor.timeOffset + neighbor.duration > desiredEnd else { break }
+      let newOffset = max(.zero, desiredEnd - neighbor.duration)
+      overrides[neighbor.clip.id] = newOffset
+      next = neighbor
+      nextStart = newOffset
+    }
+  }
+
+  // The background lane packs successors; other tracks move only the clips that
+  // would overlap the committed raw bounds. This is the same rule Android uses.
+  private func packSucceedingTrackClips(
+    sorted: [RawTrackClip], pivotIndex: Int, engine: Engine, overrides: inout [DesignBlockID: CMTime],
+  ) {
+    let pivot = sorted[pivotIndex]
+    var previous = pivot
+    var previousEnd = pivot.timeOffset + pivot.duration
+    for index in (pivotIndex + 1) ..< sorted.count {
+      let neighbor = sorted[index]
+      if neighbor.clip.isLocked {
+        break
+      }
+      let overlap = transitionOverlap(engine: engine, outgoing: previous.clip.id, incoming: neighbor.clip.id)
+      let desiredStart = previousEnd - overlap
+      if !pivot.clip.isInBackgroundTrack, neighbor.timeOffset >= desiredStart {
+        break
+      }
+      if neighbor.timeOffset != desiredStart {
+        overrides[neighbor.clip.id] = desiredStart
+      }
+      previous = neighbor
+      previousEnd = desiredStart + neighbor.duration
+    }
+  }
+
+  private func persistTrackClipOffsets(_ overrides: [DesignBlockID: CMTime], engine: Engine) {
+    for (id, offset) in overrides {
+      do {
+        try engine.block.setTimeOffset(id, offset: offset.seconds)
+      } catch {
+        handleError(error)
+      }
+    }
   }
 
   /// Sets the time offset.
@@ -1016,13 +1084,18 @@ extension Interactor: TimelineInteractor {
 
     let durationSeconds = try engine.block.getDuration(clip.id)
     if durationSeconds > Double(Int.max) {
+      clip.rawDuration = nil
       clip.duration = nil
     } else {
-      clip.duration = CMTime(seconds: durationSeconds)
+      let duration = CMTime(seconds: durationSeconds)
+      clip.rawDuration = duration
+      clip.duration = duration
     }
 
     let timeOffsetSeconds = try engine.block.getTimeOffset(clip.id)
-    clip.timeOffset = CMTime(seconds: timeOffsetSeconds)
+    let timeOffset = CMTime(seconds: timeOffsetSeconds)
+    clip.rawTimeOffset = timeOffset
+    clip.timeOffset = timeOffset
 
     if let fill = clip.fillID,
        let type = try? engine.block.getType(fill),
@@ -1164,6 +1237,92 @@ extension Interactor: TimelineInteractor {
     }
   }
 
+  private func updateTransitionSeams(engine: Engine) {
+    var tracks = timelineProperties.dataSource.tracks
+    tracks.append(timelineProperties.dataSource.backgroundTrack)
+    tracks.append(timelineProperties.dataSource.captionTrack)
+    let selectedID = timelineProperties.selectedClip?.id
+    let totalDuration = timelineProperties.timeline?.totalDuration ?? .zero
+
+    for track in tracks {
+      applyTransitionGeometry(engine: engine, to: track)
+      let sorted = track.clips.sorted { $0.timeOffset < $1.timeOffset }
+      var availableWidths = Dictionary(uniqueKeysWithValues: sorted.map { clip in
+        (clip.id, timelineProperties.timeline?.convertToPoints(time: clip.duration ?? .zero) ?? 0)
+      })
+      let seams: [TransitionSeam] = zip(sorted, sorted.dropFirst()).compactMap { outgoing, incoming in
+        guard selectedID != outgoing.id, selectedID != incoming.id,
+              let outgoingDuration = outgoing.duration,
+              canShowTransition(
+                engine: engine,
+                outgoing: outgoing.id,
+                incoming: incoming.id,
+                outgoingEnd: outgoing.rawTimeOffset + (outgoing.rawDuration ?? outgoingDuration),
+                incomingStart: incoming.rawTimeOffset,
+              ) else { return nil }
+        let renderedSeamTime = CMTime(
+          seconds: (outgoing.timeOffset + outgoingDuration + incoming.timeOffset).seconds / 2,
+        )
+        guard renderedSeamTime < totalDuration else { return nil }
+        let assigned = hasRealTransition(engine: engine, outgoing: outgoing.id)
+        let hasSpace = [outgoing, incoming].allSatisfy { (availableWidths[$0.id] ?? 0) - 12 >= 30 }
+        let compact = !hasSpace
+        guard assigned || !compact else { return nil }
+        let radius: CGFloat = compact ? 5 : 12
+        availableWidths[outgoing.id, default: 0] -= radius
+        availableWidths[incoming.id, default: 0] -= radius
+        return TransitionSeam(
+          outgoingID: outgoing.id,
+          incomingID: incoming.id,
+          hasTransition: assigned,
+          isCompact: compact,
+        )
+      }
+      // Match Android: publish only on change so per-frame zoom updates do not
+      // re-render unchanged tracks.
+      if track.transitionSeams != seams {
+        track.transitionSeams = seams
+      }
+
+      // Reserve the seam's leading half inside the incoming clip label, matching
+      // Android. This keeps the clip type icon clear of both compact and regular
+      // seams without changing a clip's timeline geometry.
+      let leadingSeamSizes = Dictionary(uniqueKeysWithValues: seams.map { seam in
+        (seam.incomingID, seam.isCompact ? CGFloat(10) : CGFloat(24))
+      })
+      for clip in track.clips {
+        let leadingSeamSize = leadingSeamSizes[clip.id]
+        if clip.leadingTransitionSeamSize != leadingSeamSize {
+          clip.leadingTransitionSeamSize = leadingSeamSize
+        }
+      }
+    }
+  }
+
+  /// Mirrors Android's transition trims: the timeline leaves half of the effective
+  /// transition duration at each clip edge for the seam to occupy, while raw timing
+  /// remains available to trimming and engine mutations.
+  private func applyTransitionGeometry(engine: Engine, to track: Track) {
+    for clip in track.clips {
+      guard let rawDuration = clip.rawDuration else { continue }
+      let trim = transitionTrim(engine: engine, clip: clip.id)
+      let renderedDuration = max(.zero, rawDuration - trim.lead - trim.tail)
+      let renderedTimeOffset = clip.rawTimeOffset + trim.lead
+      if clip.duration != renderedDuration {
+        clip.duration = renderedDuration
+      }
+      if clip.timeOffset != renderedTimeOffset {
+        clip.timeOffset = renderedTimeOffset
+      }
+      if clip.transitionTrimLead != trim.lead {
+        clip.transitionTrimLead = trim.lead
+      }
+      if clip.transitionTrimTail != trim.tail {
+        clip.transitionTrimTail = trim.tail
+      }
+    }
+  }
+
   /// Page children with audio-like blocks moved to the front (matches engine ordering).
   private func audioFirstOrderedPageChildren(engine: Engine, pageID: DesignBlockID) throws -> [DesignBlockID] {
     var blocks = try engine.block.getChildren(pageID)
@@ -1279,14 +1438,12 @@ extension Interactor: TimelineInteractor {
           return clip.timeOffset.seconds + max(0, clipDuration)
         }
         .max() ?? 0
-      // Sum local BG clip durations rather than reading `engine.block.getDuration(pageID)`.
-      // Right after a BG trim commit, `refresh(clip:)` has already pushed the new
-      // duration into the local `Clip`, but the engine's page duration can lag a frame
-      // — reading it here would briefly snap the "+ Add Clip" anchor back to the
-      // pre-trim position before the engine event lands.
+      // A background track is the page duration source. Its clips may overlap for
+      // transitions, so summing their raw durations counts each overlap twice and
+      // lets the playhead travel beyond the rendered background timeline. Android
+      // uses the page duration for this same case.
       let resolvedDuration: Double = if timelineProperties.backgroundTrack != nil {
-        timelineProperties.dataSource.backgroundTrack.clips
-          .reduce(0.0) { $0 + ($1.duration?.seconds ?? 0) }
+        pageDuration
       } else {
         max(pageDuration, clipsDuration)
       }
@@ -1295,6 +1452,11 @@ extension Interactor: TimelineInteractor {
       if totalDuration != CMTime(seconds: timeline.totalDuration.seconds) {
         timelineProperties.timeline?.setTotalDuration(totalDuration)
       }
+      // A seam at the new end of an auto-packed background track becomes eligible
+      // only after the timeline has published that end. Running this from the
+      // duration path keeps the seam state in sync for both created and updated
+      // engine events.
+      updateTransitionSeams(engine: engine)
     } catch {
       handleError(error)
     }
@@ -1601,6 +1763,7 @@ extension Interactor: TimelineInteractor {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }
     do {
+      timelineProperties.timeline?.animationPreview.stop(engine: engine, pageID: pageID)
       if seekToStartIfNeeded {
         let playbackTime = try engine.block.getPlaybackTime(pageID)
         let pageDuration = try engine.block.getDuration(pageID)
@@ -1632,6 +1795,7 @@ extension Interactor: TimelineInteractor {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }
     do {
+      timelineProperties.timeline?.animationPreview.stop(engine: engine, pageID: pageID)
       try engine.block.setPlaying(pageID, enabled: false)
     } catch {
       handleError(error)
@@ -1658,6 +1822,7 @@ extension Interactor: TimelineInteractor {
           let timeline = timelineProperties.timeline,
           let pageID = timelineProperties.currentPage else { return }
     do {
+      timeline.animationPreview.stop(engine: engine, pageID: pageID)
       let maxTimelineSeconds = timeline.totalDuration.seconds
       var clampedSeconds = min(time.seconds, maxTimelineSeconds)
       if let maxPlaybackSeconds = timelineProperties.player.maxPlaybackDuration?.seconds {
@@ -1722,6 +1887,7 @@ extension Interactor: TimelineInteractor {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }
     do {
+      timelineProperties.timeline?.animationPreview.stop(engine: engine, pageID: pageID)
       try engine.block.setLooping(pageID, looping: !isLoopingPlaybackEnabled)
     } catch {
       handleError(error)
@@ -1763,6 +1929,19 @@ extension Interactor: TimelineInteractor {
     Task { [weak self] in
       await self?.presentVoiceOverRecordMode(style: style, entry: .create)
     }
+  }
+
+  func openTransition(for id: DesignBlockID) {
+    select(id: id)
+    guard timelineProperties.selectedClip?.id == id else { return }
+    pauseIfNeeded()
+    clampPlayheadPositionToSelectedClip()
+    let detent: PresentationDetent = if let engine, trackHasRealTransition(engine: engine, outgoing: id) {
+      .imgly.small
+    } else {
+      .imgly.tiny
+    }
+    sheet = .init(.transition(style: .only(detent: detent), id: id))
   }
 
   func openCamera(_ assetSourceIDs: [MediaType: String]) {

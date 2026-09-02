@@ -43,6 +43,7 @@ struct EffectPropertyOptions: View {
               selection: property.id,
               defaultValue: defaultValue,
               assetContext: property.assetContext,
+              disableAutoPercentage: true,
             )
             .id(controlID(for: property))
           } header: {

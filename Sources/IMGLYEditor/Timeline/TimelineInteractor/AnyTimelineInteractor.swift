@@ -94,6 +94,14 @@ class AnyTimelineInteractor: TimelineInteractor {
     interactor.addUndoStep()
   }
 
+  func openTransition(for id: DesignBlockID) {
+    interactor.openTransition(for: id)
+  }
+
+  func refreshTransitionSeams() {
+    interactor.refreshTransitionSeams()
+  }
+
   func getAspectRatio(clip: Clip) throws -> Double {
     try interactor.getAspectRatio(clip: clip)
   }

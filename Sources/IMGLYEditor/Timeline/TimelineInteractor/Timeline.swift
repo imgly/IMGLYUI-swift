@@ -40,6 +40,8 @@ final class Timeline: ObservableObject {
   /// This is updated by the `ClipTrimmingView`.
   @Published var snapIndicatorLinePositions = [CMTime]()
 
+  let animationPreview = AnimationPreview()
+
   init(
     interactor: any TimelineInteractor,
     configuration: TimelineConfiguration,
@@ -55,12 +57,14 @@ final class Timeline: ObservableObject {
   // MARK: - Timeline View Settings
 
   /// Sets the timeline zoom level.
+  @MainActor
   func setZoomLevel(_ zoomLevel: CGFloat) {
     let zoomLevel = min(maxZoomLevel, max(minZoomLevel, zoomLevel))
     guard zoomLevel != self.zoomLevel else { return }
     self.zoomLevel = zoomLevel
     updateTotalWidth()
     updateScaleInterval()
+    interactor?.refreshTransitionSeams()
   }
 
   func setTotalDuration(_ duration: CMTime) {

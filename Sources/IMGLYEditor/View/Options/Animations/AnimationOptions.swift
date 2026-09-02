@@ -34,8 +34,35 @@ struct AnimationOptions: View {
         if let identifier = value.identifier,
            let animationType = AnimationType(rawValue: "//ly.img.ubq/animation/\(identifier)") {
           didChange = try Self.applyAnimation(animationType, to: block, tab: tab, engine: engine) || didChange
+          if tab != .loop {
+            let type = try engine.block.getType(try Self.getAnimation(on: block, tab: tab, engine: engine))
+            if !type.hasSuffix("/none") {
+              let outgoing = tab == .out ? block : previousTransitionSibling(engine: engine, clip: block)
+              if let outgoing, hasRealTransition(engine: engine, outgoing: outgoing) {
+                let transition = try engine.block.getTransition(outgoing)
+                try engine.block.destroy(transition)
+              }
+            }
+          }
         } else {
           didChange = try Self.clearAnimation(on: block, tab: tab, engine: engine) || didChange
+        }
+      }
+      if didChange,
+         value.identifier != nil,
+         let pageID = interactor.timelineProperties.currentPage {
+        let mode: AnimationPreview.Mode = switch tab {
+        case .in: .in
+        case .out: .out
+        case .loop: .loop
+        }
+        for block in blocks {
+          interactor.timelineProperties.timeline?.animationPreview.playAnimation(
+            engine: engine,
+            pageID: pageID,
+            clip: block,
+            mode: mode,
+          )
         }
       }
       return try (completion?(engine, blocks, didChange) ?? false) || didChange
@@ -113,6 +140,24 @@ struct AnimationOptions: View {
     return base.appendingPathComponent(sourceName).appendingPathComponent("thumbnails")
   }
 
+  private func previewAnimationAfterPropertyChange() {
+    guard sheetState.isProperties,
+          let engine = interactor.engine,
+          let id,
+          let pageID = interactor.timelineProperties.currentPage else { return }
+    let mode: AnimationPreview.Mode = switch selectedTab {
+    case .in: .in
+    case .out: .out
+    case .loop: .loop
+    }
+    interactor.timelineProperties.timeline?.animationPreview.playAnimation(
+      engine: engine,
+      pageID: pageID,
+      clip: id,
+      mode: mode,
+    )
+  }
+
   var body: some View {
     VStack(spacing: 0) {
       let selection = interactor.bind(
@@ -160,5 +205,17 @@ struct AnimationOptions: View {
         )
       }
     }
+    // Android emits an animation preview after a properties-sheet change finishes. Asset-backed
+    // controls publish their commit through the engine history signal, so replay once that step lands.
+    .onChange(of: interactor.historyVersion) { _ in
+      previewAnimationAfterPropertyChange()
+    }
   }
+}
+
+@MainActor
+private func previousTransitionSibling(engine: Engine, clip: DesignBlockID) -> DesignBlockID? {
+  let children = transitionTrackChildren(engine: engine, clip: clip)
+  guard let index = children.firstIndex(of: clip), index > 0 else { return nil }
+  return children[index - 1]
 }

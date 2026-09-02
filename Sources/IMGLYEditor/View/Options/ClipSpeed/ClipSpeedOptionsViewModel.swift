@@ -255,6 +255,8 @@ extension ClipSpeedOptions {
       guard let trackChildren = try? engine.block.getChildren(track), trackChildren.count > 1 else { return false }
 
       guard let currentStartTime = try? engine.block.getTimeOffset(block) else { return false }
+      guard let currentDuration = try? engine.block.getDuration(block) else { return false }
+      let currentEndTime = currentStartTime + currentDuration
       let newEndTime = currentStartTime + newDuration
 
       let nextClipStartTime = trackChildren
@@ -264,7 +266,11 @@ extension ClipSpeedOptions {
         .min()
 
       guard let nextClipStartTime else { return false }
-      return newEndTime > nextClipStartTime
+
+      // A transition intentionally overlaps the outgoing and incoming clips. Keep
+      // that pair in its track; only separate the clip when changing its speed
+      // introduces an overlap that did not exist before.
+      return currentEndTime <= nextClipStartTime && newEndTime > nextClipStartTime
     }
 
     private func moveClipToNewTrack(engine: Engine, block: DesignBlockID) throws {

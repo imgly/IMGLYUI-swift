@@ -37,6 +37,19 @@ struct TrackView: View {
           }
         }
 
+        ForEach(track.transitionSeams) { seam in
+          if let outgoing = track.clips.first(where: { $0.id == seam.outgoingID }),
+             let incoming = track.clips.first(where: { $0.id == seam.incomingID }) {
+            TransitionSeamPlacement(
+              track: track,
+              seam: seam,
+              outgoing: outgoing,
+              incoming: incoming,
+              yPosition: geometry.size.height / 2,
+            )
+          }
+        }
+
         DropSlotIndicatorView(trackID: track.id)
       }
       .frame(width: geometry.size.width, height: geometry.size.height, alignment: .leading)
@@ -92,6 +105,69 @@ struct TrackView: View {
       cornerRadius: configuration.cornerRadius,
       fillColor: clip.configuration.color,
     )
+  }
+}
+
+/// Positions a seam from the live clip-preview offsets. The track itself does not
+/// publish changes made to an individual clip during a drag, so this view observes
+/// both clips directly instead of leaving seam placement at its pre-drag location.
+/// Only the source and current destination tracks consume the preview, matching
+/// Android's affected-track scope.
+private struct TransitionSeamPlacement: View {
+  @EnvironmentObject private var timeline: Timeline
+  @EnvironmentObject private var timelineProperties: TimelineProperties
+
+  @ObservedObject var track: Track
+  let seam: TransitionSeam
+  @ObservedObject var outgoing: Clip
+  @ObservedObject var incoming: Clip
+  let yPosition: CGFloat
+
+  var body: some View {
+    if outgoing.id != timelineProperties.selectedClip?.id,
+       incoming.id != timelineProperties.selectedClip?.id,
+       !isOccupiedByDraggedClip,
+       let duration = outgoing.duration {
+      let outgoingOffset = isAffectedByCurrentDrag ? outgoing.displayTimeOffset : outgoing.timeOffset
+      let incomingOffset = isAffectedByCurrentDrag ? incoming.displayTimeOffset : incoming.timeOffset
+      let renderedSeamTime = CMTime(seconds: (outgoingOffset + duration + incomingOffset).seconds / 2)
+      let outgoingEnd = timeline.convertToPoints(time: outgoingOffset + duration)
+      let incomingStart = timeline.convertToPoints(time: incomingOffset)
+      if renderedSeamTime < timeline.totalDuration {
+        TransitionSeamView(hasTransition: seam.hasTransition, isCompact: seam.isCompact) {
+          timeline.interactor?.openTransition(for: outgoing.id)
+        }
+        .position(x: (outgoingEnd + incomingStart) / 2, y: yPosition)
+        .zIndex(3)
+      }
+    }
+  }
+
+  private var isAffectedByCurrentDrag: Bool {
+    guard case let .dragging(context) = timelineProperties.dragDropState else { return false }
+    if context.sourceTrackID == track.id {
+      return true
+    }
+    if case let .existingTrack(trackID, _, _, _) = context.dropTarget {
+      return trackID == track.id
+    }
+    return false
+  }
+
+  /// The drop index is calculated from the target track with the dragged clip
+  /// excluded. Its immediate neighbours are the seam the floating clip occupies,
+  /// which must be hidden until the drop is committed.
+  private var isOccupiedByDraggedClip: Bool {
+    guard case let .dragging(context) = timelineProperties.dragDropState,
+          case let .existingTrack(trackID, insertIndex, _, _) = context.dropTarget,
+          trackID == track.id else {
+      return false
+    }
+    let siblings = track.clips
+      .filter { $0.id != context.clipID }
+      .sorted { $0.timeOffset < $1.timeOffset }
+    guard insertIndex > 0, insertIndex < siblings.count else { return false }
+    return outgoing.id == siblings[insertIndex - 1].id && incoming.id == siblings[insertIndex].id
   }
 }
 

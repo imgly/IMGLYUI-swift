@@ -85,6 +85,7 @@ struct ClipView: View {
             cornerRadius: cornerRadius - 2,
             isLooping: clip.isLooping,
             hasAnimation: clip.hasAnimation,
+            basePadding: clip.leadingTransitionSeamSize.map { $0 / 2 + 2 } ?? 0,
           )
         }
       }

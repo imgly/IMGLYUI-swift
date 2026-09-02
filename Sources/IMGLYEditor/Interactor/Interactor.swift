@@ -2171,6 +2171,10 @@ extension Interactor {
       for await _ in engine.editor.onHistoryUpdatedWithKind {
         historyChanged()
         DispatchQueue.main.async { [weak self] in
+          // Transition blocks update independently of their owning clips. Rebuild
+          // the timeline from the committed history state so transition-derived
+          // clip trims and seams do not wait for a later clip interaction.
+          self?.refreshTimelineAfterHistoryChange()
           self?.refreshThumbnails()
         }
       }
@@ -2323,6 +2327,12 @@ extension Interactor {
     }
     if selection?.blocks.isEmpty ?? true, !isPreviewMode {
       updateZoom(clampOnly: true)
+    }
+
+    if let sheetForBlock = sheet.type as? SheetTypeForDesignBlock,
+       selection?.blocks == [sheetForBlock.id] {
+      updateTimelineSelectionFromCanvas()
+      return
     }
 
     if sheet.isPresented {

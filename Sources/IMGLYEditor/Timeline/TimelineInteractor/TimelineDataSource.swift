@@ -145,7 +145,6 @@ final class TimelineDataSource: ObservableObject {
 
   func updateSnapDetents() {
     // Update snapping detents
-    var absoluteTimeOffset = CMTime.zero
     var snapDetents = [CMTime]()
     // Detent order is semantic (they are processed sequentially and background
     // edges take precedence), so dedupe with a seen-set while appending in
@@ -159,16 +158,19 @@ final class TimelineDataSource: ObservableObject {
 
     for clip in backgroundTrack.clips {
       guard let duration = clip.duration else { continue }
-      let end = duration + absoluteTimeOffset
-      snapDetents.append(end)
-      seenSeconds.insert(end.seconds)
-      // swiftlint:disable:next shorthand_operator
-      absoluteTimeOffset = absoluteTimeOffset + duration
+      // `Clip` bounds are transition-projected for rendering. Background clips
+      // are normally contiguous, but a transition pulls each visual edge inward;
+      // accumulating durations from zero would therefore move the detent away
+      // from the rendered seam.
+      let end = clip.displayTimeOffset + duration
+      if seenSeconds.insert(end.seconds).inserted {
+        snapDetents.append(end)
+      }
     }
 
     // Include foreground and caption clip edges as snap points
     for clip in foregroundClips() + captionTrack.clips {
-      let start = clip.timeOffset
+      let start = clip.displayTimeOffset
       if seenSeconds.insert(start.seconds).inserted {
         snapDetents.append(start)
       }
