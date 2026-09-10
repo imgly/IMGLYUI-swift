@@ -22,11 +22,7 @@ import IMGLYEngine
     }
   }
 
-  @_spi(Internal) public var isSystemImage: Bool {
-    false
-  }
+  @_spi(Internal) public var isSystemImage: Bool { false }
 
-  @_spi(Internal) public var isIconEmbeddedInText: Bool {
-    true
-  }
+  @_spi(Internal) public var isIconEmbeddedInText: Bool { true }
 }

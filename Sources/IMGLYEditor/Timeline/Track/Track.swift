@@ -20,20 +20,8 @@ final class Track: ObservableObject, Hashable {
   var engineTrackID: DesignBlockID?
 
   @Published var clips = [Clip]()
-  @Published var transitionSeams = [TransitionSeam]()
 
   init(engineTrackID: DesignBlockID? = nil) {
     self.engineTrackID = engineTrackID
-  }
-}
-
-struct TransitionSeam: Identifiable, Equatable {
-  let outgoingID: DesignBlockID
-  let incomingID: DesignBlockID
-  let hasTransition: Bool
-  let isCompact: Bool
-
-  var id: String {
-    "\(outgoingID)-\(incomingID)"
   }
 }

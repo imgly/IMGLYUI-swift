@@ -16,13 +16,8 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
     return hasher.finalize()
   }
 
-  public var sources: [AssetLoader.SourceData] {
-    [source]
-  }
-
-  public var view: AnyView {
-    AnyView(erasing: body)
-  }
+  public var sources: [AssetLoader.SourceData] { [source] }
+  public var view: AnyView { AnyView(erasing: body) }
 
   /// The `Destination` content view of the asset source without section(s).
   public var content: some View {
@@ -46,13 +41,7 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
     /// resulting behavior is identical to the single `.title` mode and the `.titleForGroup` closure should return a
     /// valid title.
     case titleForGroup((_ group: String?)
-      -> LocalizedStringResource = {
-        if let group = $0 {
-          "\(group)"
-        } else {
-          "Assets"
-        }
-      })
+      -> LocalizedStringResource = { if let group = $0 { "\(group)" } else { "Assets" } })
   }
 
   /// Creates one or more sections for an asset `source` depending on the used display `mode`. Each section is displayed
@@ -82,7 +71,7 @@ public struct AssetLibrarySource<Destination: View, Preview: View, Accessory: Vi
     self.accessory = accessory
   }
 
-  private func sections(_ groups: [String]) -> some View {
+  @ViewBuilder private func sections(_ groups: [String]) -> some View {
     ForEach(groups, id: \.self) { group in
       let sources = [source.narrowed(to: group)]
       AssetLibrarySectionView(title(group)) {
@@ -137,23 +126,13 @@ private struct ExpandGroups<Content: View>: View {
   let sourceID: String
   @ViewBuilder let content: (_ groups: [String]?) -> Content
   @State private var groups: [String]?
-  @State private var isSourceAvailable = true
   @EnvironmentObject private var interactor: AnyAssetLibraryInteractor
 
   var body: some View {
-    if isSourceAvailable {
-      content(groups)
-        .task {
-          do {
-            groups = try await interactor.getGroups(sourceID: sourceID)
-          } catch {
-            // `getGroups` throws for an unregistered source — hide the section(s) entirely
-            // instead of rendering a dead fallback section. An empty group list keeps the
-            // single-section fallback.
-            isSourceAvailable = false
-          }
-        }
-    }
+    content(groups)
+      .task {
+        groups = try? await interactor.getGroups(sourceID: sourceID)
+      }
   }
 }
 

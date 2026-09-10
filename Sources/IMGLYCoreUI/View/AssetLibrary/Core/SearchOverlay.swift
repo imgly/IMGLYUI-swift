@@ -6,7 +6,7 @@ struct SearchOverlay: View {
   @EnvironmentObject private var searchQuery: AssetLibrarySearchQuery
   @FocusState private var isFocused: Bool
 
-  var searchBar: some View {
+  @ViewBuilder var searchBar: some View {
     HStack(spacing: 14) {
       SearchField(searchText: .init {
         searchQuery.value.query ?? ""

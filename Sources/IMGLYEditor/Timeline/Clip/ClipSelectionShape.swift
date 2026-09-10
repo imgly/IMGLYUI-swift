@@ -47,7 +47,8 @@ struct ClipSelectionShape: Shape {
     }
     triangle.close()
 
-    return triangle.cgPath
+    let path = triangle.cgPath
+    return path
   }
 }
 

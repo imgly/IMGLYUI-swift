@@ -4,9 +4,6 @@ import SwiftUI
 
 struct TimelineScrollTargetRequest: Equatable {
   let id: DesignBlockID
-  /// Reveal the clip's *row* only, leaving the horizontal (time) axis where the user left it.
-  let isVerticalOnly: Bool
-  /// Makes each request distinct so re-requesting the same clip still fires `onChange`.
   private let token = UUID()
 }
 
@@ -83,10 +80,8 @@ class TimelineProperties: ObservableObject {
     selectedClip = nil
   }
 
-  /// - Parameter verticalOnly: Pass `true` to reveal the clip's row without also scrubbing the timeline
-  ///   to its start time.
-  func requestScroll(to clipID: DesignBlockID, verticalOnly: Bool = false) {
-    scrollTargetRequest = .init(id: clipID, isVerticalOnly: verticalOnly)
+  func requestScroll(to clipID: DesignBlockID) {
+    scrollTargetRequest = .init(id: clipID)
   }
 
   func consumeScrollRequest(_ request: TimelineScrollTargetRequest) {

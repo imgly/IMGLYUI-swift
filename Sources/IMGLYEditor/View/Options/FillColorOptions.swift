@@ -13,26 +13,25 @@ struct FillColorOptions: View {
       MenuPicker<ColorFillType.AllCases>(
         title: .imgly.localized("ly_img_editor_sheet_fill_stroke_label_type"),
         data: ColorFillType.allCases,
-        selection: $fillType,
+        selection: $fillType
       )
-      // Text and captions support only a solid fill — no gradient (captions also sync only the solid color).
-      .disabled(interactor.sheet.content == .text || interactor.sheet.content == .caption)
+      .disabled(interactor.sheet.content == .text)
       .accessibilityLabel("Fill Type")
 
       if interactor.isGradientFill(id), fillType == .gradient {
         GradientOptions()
       } else if interactor.isSolidFill(id) {
-        let colorsBinding = interactor.bind(
+        let colorBinding = interactor.bind(
           id,
           property: .key(.fillSolidColor),
-          default: [CGColor.imgly.black],
-          getter: colorsGetter,
-          setter: colorsSetter,
+          default: .imgly.black,
+          getter: temporaryColorGetter,
+          setter: colorSetter,
           completion: Interactor.Completion.set(property: .key(.fillEnabled), value: true),
         )
         ColorOptions(title: .imgly.localized("ly_img_editor_sheet_fill_stroke_color_picker_title_fill"),
                      isEnabled: interactor.bind(id, property: .key(.fillEnabled), default: false),
-                     colors: colorsBinding,
+                     color: colorBinding,
                      addUndoStep: interactor.addUndoStep)
           .accessibilityElement(children: .contain)
           .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_fill_stroke_color_picker_title_fill")))
@@ -40,61 +39,38 @@ struct FillColorOptions: View {
     }
   }
 
-  /// The distinct colours across the effective text range (or the solid fill colour for non-text
-  /// blocks). A single colour marks the matching preset as selected; several mark none.
-  /// - Note: Reading the text colours instead of the fill property is also a workaround for an
-  ///         engine issue where the state is not consistent when switching between solid and
-  ///         gradient color fill mode.
-  let colorsGetter: Interactor.PropertyGetter<[CGColor]> = { engine, id, _, property in
+  /// - Note: This is a workaround for an engine issue where the state is not consistent
+  ///         when switching between solid and gradient color fill mode.
+  let temporaryColorGetter: Interactor.PropertyGetter<CGColor> = { engine, id, _, property in
     do {
-      // A caption's visible colour is a run colour (like text), not `fill/solid/color`, so read it via the
-      // text-colour API. Captions use the whole-block range: the engine only registers the caption-track
-      // colour sync for a whole-block `setTextColor` (from<0 && to<0). Text uses its selected range.
-      let type = try engine.block.getType(id)
-      let isCaption = type == Interactor.BlockType.caption.rawValue
-      if type == Interactor.BlockType.text.rawValue || isCaption {
-        let range = isCaption ? nil : try engine.block.effectiveTextRange(id)
-        var distinct: [Interactor.Color] = []
-        for color in try engine.block.getTextColors(id, in: range) where !distinct.contains(color) {
-          distinct.append(color)
-        }
-        let cgColors = distinct.compactMap(\.cgColor)
-        if !cgColors.isEmpty {
-          return cgColors
-        }
+      let blockType = try engine.block.getType(id)
+      if blockType == Interactor.BlockType.text.rawValue,
+         let textColor = try engine.block.getTextColors(id).first?.cgColor {
+        return textColor
       }
-      return [try engine.block.get(id, property: property)]
+      return try engine.block.get(id, property: property)
     } catch {
-      return [.imgly.black]
+      return .imgly.black
     }
   }
 
-  /// Applies the first colour uniformly — to the effective text range for text blocks, or to the
-  /// fill property otherwise.
-  let colorsSetter: Interactor.PropertySetter<[CGColor]> = { engine, blocks, _, property, value, completion in
+  let colorSetter: Interactor.PropertySetter<CGColor> = { engine, blocks, _, property, value, completion in
     var didChange = false
 
-    if let newColor = value.first, let color = Interactor.Color(cgColor: newColor) {
-      try blocks.forEach {
-        let blockType = try engine.block.getType($0)
+    try blocks.forEach {
+      guard let color = Interactor.Color(cgColor: value) else { return }
+      let blockType = try engine.block.getType($0)
 
-        let isCaption = blockType == Interactor.BlockType.caption.rawValue
-        if blockType == Interactor.BlockType.text.rawValue || isCaption {
-          // Whole-block range for captions: the engine only registers the caption-track colour sync for a
-          // whole-block `setTextColor` (from<0 && to<0). Text uses its selected range.
-          let range = isCaption ? nil : try engine.block.effectiveTextRange($0)
-          let originalColors = try engine.block.getTextColors($0, in: range)
-          let isUnchanged = !originalColors.isEmpty && originalColors.allSatisfy { $0 == color }
-          if !isUnchanged {
-            didChange = true
-            try engine.block.setTextColor($0, color: color, in: range)
-          }
-        } else {
-          let originalColor: Interactor.Color = try engine.block.get($0, property: property)
-          if originalColor != color {
-            didChange = true
-            try engine.block.set($0, property: property, value: newColor)
-          }
+      if blockType == Interactor.BlockType.text.rawValue {
+        if let originalTextColor = try engine.block.getTextColors($0).first, originalTextColor != color {
+          didChange = true
+          try engine.block.setTextColor($0, color: color)
+        }
+      } else {
+        let originalColor: Interactor.Color = try engine.block.get($0, property: property)
+        if originalColor != color {
+          didChange = true
+          try engine.block.set($0, property: property, value: value)
         }
       }
     }
@@ -202,10 +178,11 @@ extension GradientOptions {
       let points = [start.x, start.y, end.x, end.y]
 
       let changed = try blocks.filter { id in
-        try points.enumerated().contains { index, value in
+        let hasChanged = try points.enumerated().contains { index, value in
           let currentValue: Float = try engine.block.get(id, .fill, property: properties[index])
           return currentValue != Float(value)
         }
+        return hasChanged
       }
 
       try changed.forEach { id in
@@ -218,13 +195,14 @@ extension GradientOptions {
       return try (completion?(engine, blocks, didChange) ?? false) || didChange
     }
 
-    return interactor.bind(
+    let gradientAngleBinding: Binding<Double> = interactor.bind(
       id,
       property: .key(.fillGradientColors),
       default: 0,
       getter: gradientAngleGetter,
       setter: gradientAngleSetter,
     )
+    return gradientAngleBinding
   }
 
   private func angleToControlPoints(angle: Double) -> (CGPoint, CGPoint) {
@@ -267,6 +245,7 @@ extension GradientOptions {
   private func controlPointsToAngle(points: (CGPoint, CGPoint)) -> Double {
     let x = points.1.x - points.0.x
     let y = points.1.y - points.0.y
-    return (atan2(y, x) * 180) / Double.pi
+    let angle = (atan2(y, x) * 180) / Double.pi
+    return angle
   }
 }

@@ -8,7 +8,7 @@ public struct AudioUploadGrid: View {
 
   @State private var showFileImporter = false
 
-  var firstAddButton: some View {
+  @ViewBuilder var firstAddButton: some View {
     Button {
       showFileImporter.toggle()
     } label: {

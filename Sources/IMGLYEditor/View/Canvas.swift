@@ -71,7 +71,7 @@ struct Canvas: View {
     return height
   }
 
-  func bottomBar(content: SheetContent?) -> some View {
+  @ViewBuilder func bottomBar(content: SheetContent?) -> some View {
     BottomBar(content: content, id: id, height: bottomBarHeight, bottomSafeAreaInset: bottomSafeAreaInset)
   }
 
@@ -130,7 +130,7 @@ struct Canvas: View {
     )
   }
 
-  var canvas: some View {
+  @ViewBuilder var canvas: some View {
     ZStack {
       if viewDebugging {
         Color.red.opacity(0.2).border(.red).padding(5)
@@ -147,7 +147,7 @@ struct Canvas: View {
     }
   }
 
-  var measureGeometry: some View {
+  @ViewBuilder var measureGeometry: some View {
     ZStack {
       if viewDebugging {
         Color.blue.opacity(0.2).border(.blue).allowsHitTesting(false)
@@ -355,19 +355,14 @@ struct Canvas: View {
       }
     }
     .fullScreenCover(isPresented: $interactor.isCameraSheetShown) {
-      Camera(
-        interactor.config.settings,
-        config: editorEnvironment.acceptsVideoCapture
-          ? .init(captureType: .mixed, captureCount: .multi)
-          : .init(captureType: .photo, captureCount: .single),
-      ) { result in
+      Camera(interactor.config.settings) { result in
         interactor.isCameraSheetShown = false
         switch result {
+        case let .success(.recording(recordings)):
+          interactor.addCameraRecordings(recordings)
         case .success(.reaction):
           // Reaction case not handled here.
           break
-        case let .success(.capture(captures)):
-          interactor.addCameraCaptures(captures, addToBackgroundTrack: editorEnvironment.acceptsVideoCapture)
         case let .failure(error):
           print(error)
         }
@@ -380,7 +375,7 @@ struct Canvas: View {
   }
 
   private var media: [MediaType] {
-    let media: [MediaType] = editorEnvironment.acceptsVideoCapture ? [.image, .movie] : [.image]
+    let media: [MediaType] = editorEnvironment.includeAVResources ? [.image, .movie] : [.image]
     return media.filter {
       interactor.uploadAssetSourceIDs[$0] != nil
     }

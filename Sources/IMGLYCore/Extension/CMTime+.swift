@@ -39,10 +39,11 @@ extension CMTime: IMGLYCompatible {}
       ? wrapped.seconds.rounded(.towardZero)
       : (wrapped.seconds * 10).rounded(.towardZero) / 10
 
-    return Duration.seconds(seconds)
+    let formatted = Duration.seconds(seconds)
       .formatted(.units(allowed: [.minutes, .seconds],
                         width: .narrow,
                         fractionalPart: showFractionalPart && seconds < 10 ? .show(length: 1) : .hide))
+    return formatted
   }
 
   /// Returns a string with a localized representation of the timecode.
@@ -54,7 +55,8 @@ extension CMTime: IMGLYCompatible {}
   func formattedDurationStringForPlayer(roundDownSeconds: Bool = true) -> String {
     guard !wrapped.seconds.isNaN else { return "NaN" }
     let seconds = roundDownSeconds ? wrapped.seconds.rounded(.down) : wrapped.seconds
-    return Duration.seconds(seconds).formatted(.time(pattern: .minuteSecond))
+    let formatted = Duration.seconds(seconds).formatted(.time(pattern: .minuteSecond))
+    return formatted
   }
 
   /// Workaround because multiplying `CMTime` with `-1` directly doesn’t work.

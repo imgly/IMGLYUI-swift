@@ -11,8 +11,8 @@ struct CustomizableTitledSheet<Content: View, Leading: View, Trailing: View>: Vi
     @ViewBuilder content: @escaping () -> Content,
     @ViewBuilder leading: @escaping () -> Leading,
     @ViewBuilder trailing: @escaping () -> Trailing = { SheetDismissButton()
-      .sheetDismissButtonStyle()
-    },
+      .buttonStyle(.borderless)
+    }
   ) {
     self.title = title
     self.content = content

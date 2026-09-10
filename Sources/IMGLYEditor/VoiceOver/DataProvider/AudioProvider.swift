@@ -76,9 +76,7 @@ final class AudioProvider {
   private var fileURL: URL?
   private var audioBlockWasUpdated: Bool = false
 
-  var currentBufferURL: URL? {
-    buffer
-  }
+  var currentBufferURL: URL? { buffer }
 
   // MARK: - Initializers
 

@@ -22,6 +22,7 @@ struct StrokeOptions: View {
         PropertyPicker<StrokeStyle>(
           .imgly.localized("ly_img_editor_sheet_fill_stroke_label_style"),
           property: .key(.strokeStyle),
+          setter: Interactor.Setter.strokeStyleWithPresetCaps(),
         )
         // Position and Join pickers don't apply to a 1-D primitive.
         if !interactor.isLineOrigin(id) {
@@ -29,8 +30,7 @@ struct StrokeOptions: View {
             .imgly.localized("ly_img_editor_sheet_fill_stroke_label_position"),
             property: .key(.strokePosition),
           )
-          // Stroke position is fixed for text and captions (text-family blocks), as on text.
-          .disabled(interactor.sheet.content == .text || interactor.sheet.content == .caption)
+          .disabled(interactor.sheet.content == .text)
           PropertyPicker<StrokeJoin>(
             .imgly.localized("ly_img_editor_sheet_fill_stroke_label_join"),
             property: .key(.strokeCornerGeometry),

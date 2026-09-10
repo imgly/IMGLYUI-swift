@@ -13,29 +13,15 @@ public extension CanvasMenu.Buttons {
 
 public extension CanvasMenu.Buttons.ID {
   /// The id of the ``CanvasMenu/Buttons/bringForward(action:label:isEnabled:isVisible:)`` button.
-  static var bringForward: EditorComponentID {
-    "ly.img.component.canvasMenu.button.bringForward"
-  }
-
+  static var bringForward: EditorComponentID { "ly.img.component.canvasMenu.button.bringForward" }
   /// The id of the ``CanvasMenu/Buttons/sendBackward(action:label:isEnabled:isVisible:)`` button.
-  static var sendBackward: EditorComponentID {
-    "ly.img.component.canvasMenu.button.sendBackward"
-  }
-
+  static var sendBackward: EditorComponentID { "ly.img.component.canvasMenu.button.sendBackward" }
   /// The id of the ``CanvasMenu/Buttons/duplicate(action:label:isEnabled:isVisible:)`` button.
-  static var duplicate: EditorComponentID {
-    "ly.img.component.canvasMenu.button.duplicate"
-  }
-
+  static var duplicate: EditorComponentID { "ly.img.component.canvasMenu.button.duplicate" }
   /// The id of the ``CanvasMenu/Buttons/delete(action:label:isEnabled:isVisible:)`` button.
-  static var delete: EditorComponentID {
-    "ly.img.component.canvasMenu.button.delete"
-  }
-
+  static var delete: EditorComponentID { "ly.img.component.canvasMenu.button.delete" }
   /// The id of the ``CanvasMenu/Buttons/selectGroup(action:label:isEnabled:isVisible:)`` button.
-  static var selectGroup: EditorComponentID {
-    "ly.img.component.canvasMenu.button.selectGroup"
-  }
+  static var selectGroup: EditorComponentID { "ly.img.component.canvasMenu.button.selectGroup" }
 }
 
 public extension CanvasMenu {
@@ -67,7 +53,7 @@ public extension CanvasMenu.Buttons {
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the selected design block is not
   /// the last reorderable child in the parent design block.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block can be
-  /// moved forward or backward. Audio and captions have no z-order, so they never show it.
+  /// moved forward or backward.
   /// - Returns: The created button.
   static func bringForward(
     action: @escaping CanvasMenu.Context.To<Void> = { $0.eventHandler.send(.bringSelectionForward) },
@@ -93,7 +79,7 @@ public extension CanvasMenu.Buttons {
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the selected design block is not
   /// the first reorderable child in the parent design block.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block can be
-  /// moved forward or backward. Audio and captions have no z-order, so they never show it.
+  /// moved forward or backward.
   /// - Returns: The created button.
   static func sendBackward(
     action: @escaping CanvasMenu.Context.To<Void> = { $0.eventHandler.send(.sendSelectionBackward) },
@@ -131,9 +117,7 @@ public extension CanvasMenu.Buttons {
     },
     isEnabled: @escaping CanvasMenu.Context.To<Bool> = { _ in true },
     isVisible: @escaping CanvasMenu.Context.To<Bool> = {
-      // Captions omit Duplicate (matches the inspector bar): it would fall outside the caption track.
-      try $0.selection.type != .caption &&
-        $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/duplicate")
+      try $0.engine.block.isAllowedByScope($0.selection.block, key: "lifecycle/duplicate")
     },
   ) -> some CanvasMenu.Item {
     CanvasMenu.Button(id: ID.duplicate, action: action, label: label, isEnabled: isEnabled, isVisible: isVisible)

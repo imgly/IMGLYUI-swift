@@ -28,7 +28,7 @@ import SwiftUI
 
   @State private var state = LoadingState.loading
 
-  private var background: some View {
+  @ViewBuilder private var background: some View {
     GridItemBackground()
       .aspectRatio(1, contentMode: .fit)
   }

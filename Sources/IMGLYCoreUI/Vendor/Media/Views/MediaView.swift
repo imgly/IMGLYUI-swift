@@ -33,9 +33,7 @@
       }
     }
 
-    var identifier: String {
-      contentType.identifier
-    }
+    var identifier: String { contentType.identifier }
   }
 
   struct MediaView: UIViewControllerRepresentable {
@@ -79,7 +77,7 @@
       source: UIImagePickerController.SourceType,
       media: [MediaType],
       colorScheme: ColorScheme,
-      completion: @escaping MediaCompletion,
+      completion: @escaping MediaCompletion
     ) {
       self.isPresented = isPresented
       self.source = source
@@ -149,9 +147,7 @@
     private enum MediaPermission {
       case camera, microphone
 
-      var type: AVMediaType {
-        self == .camera ? .video : .audio
-      }
+      var type: AVMediaType { self == .camera ? .video : .audio }
     }
 
     private func ensurePermission(_ permission: MediaPermission) async -> Bool {

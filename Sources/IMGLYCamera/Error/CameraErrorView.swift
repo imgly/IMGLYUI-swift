@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Shown in place of the canvas when an error has occurred.
+/// Shown in place of the canvas when an error has occured.
 struct CameraErrorView: View {
   let error: Error
   let retryCallback: () -> Void

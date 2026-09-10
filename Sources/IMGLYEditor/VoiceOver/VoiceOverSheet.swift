@@ -86,12 +86,13 @@ struct VoiceOverSheet: View {
       }
     }
     .padding(.top, VoiceOverSheetLayout.topPadding)
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-    .ignoresSafeArea(.container, edges: .bottom)
+    .frame(height: VoiceOverSheetLayout.controlsHeight, alignment: .top)
+    .frame(maxWidth: .infinity, alignment: .center)
     .preference(key: PresentationDragIndicatorHiddenKey.self, value: true)
     .interactiveDismissDisabled()
   }
 
+  @ViewBuilder
   private func sideButton(
     title: LocalizedStringResource,
     systemImage: String,

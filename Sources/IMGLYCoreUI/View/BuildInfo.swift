@@ -20,18 +20,9 @@ struct BuildInfo: View {
     return "\(name) \(version)\(shortHash) (\(build))\n\(branch)"
   }
 
-  static var name: String? {
-    Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String
-  }
-
-  static var version: String? {
-    Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-  }
-
-  static var build: String? {
-    Bundle.main.infoDictionary?[kCFBundleVersionKey as String] as? String
-  }
-
+  static var name: String? { Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String }
+  static var version: String? { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String }
+  static var build: String? { Bundle.main.infoDictionary?[kCFBundleVersionKey as String] as? String }
   static var target: String? {
     ProcessInfo.isSwiftUIPreview ? "smoketests-app" : Bundle.main.infoDictionary?[kCFBundleNameKey as String] as? String
   }
@@ -77,7 +68,7 @@ struct BuildInfo: View {
     }
   }
 
-  func buildInfo(_ info: String) -> some View {
+  @ViewBuilder func buildInfo(_ info: String) -> some View {
     Menu {
       menu
     } label: {
@@ -108,7 +99,7 @@ struct BuildInfo: View {
     }
   }
 
-  var updateButton: some View {
+  @ViewBuilder var updateButton: some View {
     Group {
       if case let .loaded(update) = update {
         Button {
@@ -169,9 +160,15 @@ private struct DevSheet<Content: View>: View {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
-          SheetCloseButton(title: "Cancel") {
+          Button {
             dismiss()
+          } label: {
+            Label("Cancel", systemImage: "xmark.circle.fill")
+              .symbolRenderingMode(.hierarchical)
+              .foregroundColor(.secondary)
+              .font(.title2)
           }
+          .buttonStyle(.borderless)
         }
       }
     }
@@ -196,7 +193,7 @@ private struct SwitchBranchSheet: View {
     }
   }
 
-  var switchButton: some View {
+  @ViewBuilder var switchButton: some View {
     Button(role: .destructive) {
       if case let .loaded(update) = state {
         UIApplication.shared.open(update.url)

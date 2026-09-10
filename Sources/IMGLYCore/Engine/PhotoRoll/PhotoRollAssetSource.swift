@@ -121,10 +121,6 @@ extension PhotoRollAssetSource: AssetSource {
 
   public func add(asset: AssetDefinition) throws {
     assetService.addUploadedAsset(asset)
-    // No manual `refreshAssets()` here: `add(asset:)` runs only via the engine's
-    // `addAssetToSource`, which fires `onAssetSourceUpdated` — the editor's
-    // Interactor bridges that to `.AssetSourceDidChange`. The other
-    // `refreshAssets()` callers (photo-library observer, permissions) still need
-    // the manual post because they don't go through the engine.
+    Self.refreshAssets()
   }
 }

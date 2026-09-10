@@ -37,7 +37,7 @@ import IMGLYEngine
     from: Self,
     to: Self,
     dpi: T,
-    pixelScale: T,
+    pixelScale: T
   ) -> T {
     let mmPerInch: T = 25.4
 
@@ -50,11 +50,13 @@ import IMGLYEngine
     }
 
     // Convert from inches to target unit
-    return switch to {
+    let convertedValue: T = switch to {
     case .in: valueInInches
     case .mm: valueInInches * mmPerInch
     case .px: valueInInches * dpi * pixelScale
     default: value
     }
+
+    return convertedValue
   }
 }

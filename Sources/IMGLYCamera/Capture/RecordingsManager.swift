@@ -7,21 +7,21 @@ class RecordingsManager: ObservableObject {
 
   @Published var currentlyRecordedClipDuration: CMTime?
 
-  /// The captures collected so far. Holds photos and recorded video clips side-by-side.
-  @Published private(set) var captures: [Capture] = []
+  /// The recorded clips, containing one (single camera) or two (dual camera) `URL`s.
+  @Published private(set) var clips: [Recording] = []
 
   var recordedClipsTotalDuration: CMTime {
-    captures.reduce(CMTime.zero) { partialResult, capture in
-      partialResult + capture.duration
+    clips.reduce(CMTime.zero) { partialResult, video in
+      partialResult + video.duration
     }
   }
 
   var recordedClipsDurations: [CMTime] {
-    captures.map(\.duration)
+    clips.map(\.duration)
   }
 
   var hasRecordings: Bool {
-    !captures.isEmpty
+    !clips.isEmpty
   }
 
   var hasReachedMaxDuration: Bool {
@@ -38,7 +38,7 @@ class RecordingsManager: ObservableObject {
 
   init(
     maxTotalDuration: CMTime,
-    allowExceedingMaxDuration: Bool,
+    allowExceedingMaxDuration: Bool
   ) {
     self.maxTotalDuration = maxTotalDuration
     self.allowExceedingMaxDuration = allowExceedingMaxDuration
@@ -46,25 +46,25 @@ class RecordingsManager: ObservableObject {
 
   // MARK: - File management
 
-  func add(_ capture: Capture) {
-    captures.append(capture)
+  func add(_ clip: Recording) {
+    clips.append(clip)
   }
 
   func deleteAll() throws {
-    try delete(captures)
+    try delete(recordings: clips)
   }
 
-  func deleteLastCapture() throws {
-    guard let lastCapture = captures.last else {
-      throw InternalCameraError(errorDescription: "Can’t delete because there are no captures.")
+  func deleteLastRecording() throws {
+    guard let lastRecording = clips.last else {
+      throw InternalCameraError(errorDescription: "Can’t delete because there are no clips.")
     }
 
-    try delete([lastCapture])
-    captures.removeLast()
+    try delete(recordings: [lastRecording])
+    clips.removeLast()
   }
 
-  func delete(_ captures: [Capture]) throws {
-    let urls = captures.flatMap(\.fileURLs)
+  func delete(recordings: [Recording]) throws {
+    let urls = recordings.flatMap { $0.videos.map(\.url) }
     for url in urls {
       try FileManager.default.removeItem(at: url)
     }

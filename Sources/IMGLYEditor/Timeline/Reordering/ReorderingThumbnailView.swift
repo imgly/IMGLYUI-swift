@@ -218,7 +218,8 @@ struct ReorderingThumbnailView: View {
   private func rubberband(_ points: CGFloat) -> CGFloat {
     guard points > 0 else { return 0 }
     let divisor = (points * 0.05) + 1.0
-    return (1.0 - (1.0 / divisor)) * 40
+    let result = (1.0 - (1.0 / divisor)) * 40
+    return result
   }
 }
 

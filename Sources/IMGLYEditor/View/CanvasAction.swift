@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct CanvasAction<Action: View>: ViewModifier {
+struct CanvasAction<Action>: ViewModifier where Action: View {
   @EnvironmentObject private var interactor: Interactor
 
   let anchor: UnitPoint
@@ -87,7 +87,7 @@ struct CanvasAction<Action: View>: ViewModifier {
 
   private let viewDebugging = false
 
-  func box(_ rect: CGRect, _ color: Color) -> some View {
+  @ViewBuilder func box(_ rect: CGRect, _ color: Color) -> some View {
     Color.clear
       .frame(width: rect.width, height: rect.height)
       .border(color)

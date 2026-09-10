@@ -18,9 +18,6 @@ struct SelectableItem<Content: View>: View {
         }
       Text(title)
         .font(.caption2)
-        .lineLimit(1)
-        // Keep a long title from widening the item beyond its thumbnail (matches the 80pt thumbnail).
-        .frame(maxWidth: 80)
     }
     .accessibilityLabel(title)
   }

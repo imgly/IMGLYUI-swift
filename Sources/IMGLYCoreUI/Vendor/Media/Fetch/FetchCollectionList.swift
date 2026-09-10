@@ -2,7 +2,7 @@ import Photos
 import SwiftUI
 
 @MainActor @propertyWrapper
-@_spi(Internal) public struct FetchCollectionList<Result: PHCollectionList>: DynamicProperty {
+@_spi(Internal) public struct FetchCollectionList<Result>: DynamicProperty where Result: PHCollectionList {
   @ObservedObject
   private(set) var observer: ResultsObserver<Result>
 

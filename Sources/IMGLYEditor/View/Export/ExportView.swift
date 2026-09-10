@@ -48,17 +48,18 @@ struct ExportView: View {
       switch state {
       case let .exporting(progress, cancelAction):
         Header {
-          Image(systemName: "circle")
-            .hidden() // Reserve space to match other states
-            .overlay {
-              switch progress {
-              case .spinner:
-                ProgressView()
-              case let .relative(percentage):
-                CircularProgressIndicator(current: Double(percentage), total: 1)
-                  .padding(8)
-              }
+          ZStack {
+            Image(systemName: "circle")
+              .hidden() // Reserve space to match other states
+            switch progress {
+            case .spinner:
+              ProgressView()
+            case let .relative(percentage):
+              CircularProgressIndicator(current: Double(percentage), total: 1)
+                .padding()
+                .padding(.top, 20)
             }
+          }
         }
         Message(title: .imgly.localized("ly_img_editor_dialog_export_progress_title"),
                 text: .imgly.localized("ly_img_editor_dialog_export_progress_text")) {
@@ -67,26 +68,26 @@ struct ExportView: View {
           } label: {
             Text(.imgly.localized("ly_img_editor_dialog_export_progress_button_dismiss"))
           }
-          .confirmationDialog(
-            Text(.imgly.localized("ly_img_editor_dialog_export_cancel_title")),
-            isPresented: $isShowingCancelExportDialog,
-            titleVisibility: .visible,
-          ) {
-            Button(role: .destructive) {
-              cancelAction()
-            } label: {
-              Text(.imgly.localized("ly_img_editor_dialog_export_cancel_button_confirm"))
-            }
-            Button(role: .cancel) {
-              isShowingCancelExportDialog = false
-            } label: {
-              Text(.imgly.localized("ly_img_editor_dialog_export_cancel_button_dismiss"))
-            }
-          } message: {
-            Text(.imgly.localized("ly_img_editor_dialog_export_cancel_text"))
-          }
         }
         .interactiveDismissDisabled()
+        .confirmationDialog(
+          Text(.imgly.localized("ly_img_editor_dialog_export_cancel_title")),
+          isPresented: $isShowingCancelExportDialog,
+          titleVisibility: .visible,
+        ) {
+          Button(role: .destructive) {
+            cancelAction()
+          } label: {
+            Text(.imgly.localized("ly_img_editor_dialog_export_cancel_button_confirm"))
+          }
+          Button(role: .cancel) {
+            isShowingCancelExportDialog = false
+          } label: {
+            Text(.imgly.localized("ly_img_editor_dialog_export_cancel_button_dismiss"))
+          }
+        } message: {
+          Text(.imgly.localized("ly_img_editor_dialog_export_cancel_text"))
+        }
       case let .completed(title, completedAction):
         Header {
           Image(systemName: "checkmark.circle")

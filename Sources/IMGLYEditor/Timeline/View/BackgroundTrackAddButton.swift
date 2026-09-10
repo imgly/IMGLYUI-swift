@@ -51,6 +51,7 @@ struct BackgroundTrackAddButton: View {
     .menuOrder(.fixed)
   }
 
+  @ViewBuilder
   private var buttonLabel: some View {
     HStack {
       Label {
@@ -87,6 +88,7 @@ struct BackgroundTrackAddButton: View {
     }
   }
 
+  @ViewBuilder
   private func menuItem(for option: AddClipOption) -> some View {
     Button { perform(option) } label: {
       Label {

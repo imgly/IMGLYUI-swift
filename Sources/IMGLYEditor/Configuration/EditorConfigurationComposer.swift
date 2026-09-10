@@ -1,5 +1,4 @@
 @_spi(Internal) import IMGLYCoreUI
-import IMGLYEngine
 import SwiftUI
 
 // MARK: - EditorConfigurationComposer
@@ -29,9 +28,6 @@ final class EditorConfigurationComposer {
   private var bottomPanel = BottomPanel.Configuration.Builder()
 
   // MARK: - Simple Value Properties
-
-  /// The caption generation callback to use.
-  var captionsGeneration: (@MainActor (_ engine: Engine) async throws -> URL?)?
 
   /// The color palette to use.
   var colorPalette: [NamedColor]?
@@ -219,7 +215,6 @@ final class EditorConfigurationComposer {
     env.onError = onError
     env.onLoaded = onLoaded
     env.onChanged = onChanged
-    env.captionsGeneration = captionsGeneration
 
     // Dock
     env.dockItems = dock.items

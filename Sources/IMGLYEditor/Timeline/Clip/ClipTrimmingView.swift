@@ -40,10 +40,6 @@ struct ClipTrimmingView: View {
 
   let icon: Image?
 
-  /// True while the clip is in a long-press move drag — drives the selection outline
-  /// active, the only drag cue for captions (they slide in-lane, not as a floating overlay).
-  var isMoveDragging: Bool = false
-
   /// Tracks whether a trim or move drag is in progess. Pauses playback while dragging.
   @State private var isDragging: Bool = false {
     didSet {
@@ -82,7 +78,8 @@ struct ClipTrimmingView: View {
   @State private var previewSiblingOriginals: [DesignBlockID: CMTime] = [:]
 
   var duration: CMTime {
-    clip.duration ?? timeline.totalDuration - clip.timeOffset
+    let duration = clip.duration ?? timeline.totalDuration - clip.timeOffset
+    return duration
   }
 
   /// Adjacent neighbours in the same track for collision detection in multi-clip tracks.
@@ -257,7 +254,7 @@ struct ClipTrimmingView: View {
 
   var body: some View {
     ClipSelectionShape(cornerRadius: cornerRadius, trimHandleWidth: trimHandleWidth)
-      .fill(isDragging || isMoveDragging || timeline.snapIndicatorLinePositions.contains(player.playheadPosition)
+      .fill(isDragging || timeline.snapIndicatorLinePositions.contains(player.playheadPosition)
         ? configuration.clipSelectionActiveColor
         : configuration.clipSelectionColor)
       .padding(.horizontal, -trimHandleWidth)
@@ -272,9 +269,7 @@ struct ClipTrimmingView: View {
             labelWidth: labelWidth,
           )
           .padding(.leading, timeline.convertToPoints(time: startTrimOvershoot))
-          // Dimming overlay where clip exceeds total duration. The outer frame plus `clipped()` holds it
-          // inside the clip: one starting past the end overflows by more than its own length, and the
-          // surplus would spill over the neighbour to its left.
+          // Dimming overlay where clip exceeds total duration
           .overlay(alignment: .trailing) {
             let overlayDuration = player.maxPlaybackDuration ?? timeline.totalDuration
             let timeOffset = clip.isInBackgroundTrack ? .zero : clip.timeOffset
@@ -289,8 +284,6 @@ struct ClipTrimmingView: View {
                 : Color(uiColor: .secondarySystemBackground).opacity(0.7))
               .opacity(0.8)
               .frame(width: max(0, -overflow))
-              .frame(maxWidth: .infinity, alignment: .trailing)
-              .clipped()
           }
         }
       }
@@ -422,9 +415,9 @@ struct ClipTrimmingView: View {
 
     previousTranslationWidth = 0
 
-    // Snapshot siblings' authored offsets so a preview-push can be restored on cancel.
-    // Captions never push siblings, so they skip this.
-    if draggingType == .trimStart || draggingType == .trimEnd, clip.clipType != .caption {
+    // Trim-start and trim-end preview-push siblings. Snapshot their authored offsets
+    // so we can restore them on cancel.
+    if draggingType == .trimStart || draggingType == .trimEnd {
       snapshotSiblingsForPreview()
     }
   }
@@ -443,12 +436,6 @@ struct ClipTrimmingView: View {
 
     let clipStartTime = clip.timeOffset
 
-    // Clamping the floor to the clip's own duration keeps the trim bounds from inverting for a
-    // clip that's already shorter than it. A negative bound flips sign, lands in the branch for
-    // the opposite drag direction — which never re-applies the bound it skipped — and the drag
-    // then overruns both the neighbour and the footage clamp into an overlap.
-    let minDuration = min(duration, configuration.minDuration(for: clip.clipType))
-
     switch draggingType {
     case .none:
       break
@@ -466,18 +453,12 @@ struct ClipTrimmingView: View {
       // In multi-clip tracks, the left edge can be pushed past the previous clip's end
       // if that clip is unlocked and has room to shift left. The clamp matches the
       // minimum achievable start once the predecessor is pushed as far as it can go.
-      // Captions hard-clamp at the previous caption's end (never pushing it).
-      if clip.clipType == .caption {
-        if let previousEnd = neighborBounds.previousEnd {
-          let neighborLimit = min(.zero, previousEnd - clipStartTime)
-          maxNegativeDelta = max(maxNegativeDelta, neighborLimit)
-        }
-      } else if let minStart = minStartFromPreviousPushRoom {
+      if let minStart = minStartFromPreviousPushRoom {
         let neighborLimit = minStart - clipStartTime
         maxNegativeDelta = max(maxNegativeDelta, neighborLimit)
       }
 
-      maxPositiveDelta = duration - minDuration
+      maxPositiveDelta = duration - configuration.minClipDuration
 
       var constrainedDelta: CMTime
 
@@ -509,14 +490,14 @@ struct ClipTrimmingView: View {
           resolvedDelta = min(maxPositiveDelta, snappedDelta)
         }
 
-        // Follow the current resolved edge. The target can change while the
-        // handle stays in a snap zone, and clamping may keep the handle from
-        // reaching the requested detent exactly.
+        // Always track the latest resolved delta so the drag follows the
+        // snap target as it changes between zones; only the haptic + indicator
+        // flip on first entry into a snap zone.
         startTrimDurationDelta = resolvedDelta
         if !hasSnapped {
           hasSnapped = true
+          timeline.snapIndicatorLinePositions.append(clipStartTime + snappedDelta)
         }
-        timeline.snapIndicatorLinePositions = [clipStartTime + resolvedDelta]
       } else {
         hasSnapped = false
 
@@ -526,7 +507,6 @@ struct ClipTrimmingView: View {
 
       // Preview: foreground tracks push the previous sibling leftward; background track
       // grows the duration and shifts all right siblings (no leftward push possible).
-      // Caption siblings never move.
       if clip.isInBackgroundTrack {
         let newEnd = clipStartTime + duration - startTrimDurationDelta
         previewPackRightSiblings(currentEnd: newEnd)
@@ -535,7 +515,7 @@ struct ClipTrimmingView: View {
         // gives the total shift of the track's end.
         interactor.timelineProperties.backgroundTrackTrimDelta =
           endTrimDurationDelta - startTrimDurationDelta
-      } else if clip.clipType != .caption {
+      } else {
         previewPushPreviousSibling(currentStart: clipStartTime + startTrimDurationDelta)
       }
 
@@ -544,27 +524,17 @@ struct ClipTrimmingView: View {
       var maxPositiveDelta: CMTime
 
       if let footageDuration = clip.effectiveFootageDuration, !clip.isLooping {
-        maxNegativeDelta = (duration - minDuration).imgly.makeNegative()
-        // `duration` is transition-projected. Reserve the hidden transition
-        // halves as Android does so the drag handle never promises source
-        // footage that `setTrimLength` will clamp after release.
-        maxPositiveDelta = footageDuration - clip.trimOffset -
-          clip.transitionTrimLead - clip.transitionTrimTail - duration
+        maxNegativeDelta = (duration - configuration.minClipDuration).imgly.makeNegative()
+        maxPositiveDelta = footageDuration - clip.trimOffset - duration
       } else {
-        maxNegativeDelta = duration.imgly.makeNegative() + minDuration
+        maxNegativeDelta = duration.imgly.makeNegative() + configuration.minClipDuration
         maxPositiveDelta = .positiveInfinity
       }
 
       // No constraint from unlocked neighbors — growing pushes them (handled by
       // packAndPersistTrackClips in setTrim). But we cap at the nearest LOCKED clip's
       // start (accounting for intermediate unlocked clips that pack will push too).
-      // Captions hard-clamp at the next caption's start (never pushing it).
-      if clip.clipType == .caption {
-        if let nextStart = neighborBounds.nextStart {
-          let neighborLimit = max(.zero, nextStart - clipStartTime - duration)
-          maxPositiveDelta = min(maxPositiveDelta, neighborLimit)
-        }
-      } else if let maxEnd = maxEndForLockedClipCap {
+      if let maxEnd = maxEndForLockedClipCap {
         let lockedLimit = maxEnd - clipStartTime - duration
         maxPositiveDelta = min(maxPositiveDelta, lockedLimit)
       }
@@ -591,14 +561,14 @@ struct ClipTrimmingView: View {
           resolvedDelta = min(maxPositiveDelta, snappedDelta - duration)
         }
 
-        // Follow the current resolved edge. The target can change while the
-        // handle stays in a snap zone, and clamping may keep the handle from
-        // reaching the requested detent exactly.
+        // Always track the latest resolved delta so the drag follows the
+        // snap target as it changes between zones; only the haptic + indicator
+        // flip on first entry into a snap zone.
         endTrimDurationDelta = resolvedDelta
         if !hasSnapped {
           hasSnapped = true
+          timeline.snapIndicatorLinePositions.append(clipStartTime + duration + resolvedDelta)
         }
-        timeline.snapIndicatorLinePositions = [clipStartTime + duration + resolvedDelta]
       } else {
         hasSnapped = false
 
@@ -606,11 +576,8 @@ struct ClipTrimmingView: View {
         timeline.snapIndicatorLinePositions.removeAll()
       }
 
-      // Preview-push right-side siblings live to match what pack will produce on
-      // submit. Caption siblings never move.
-      if clip.clipType != .caption {
-        previewPackRightSiblings(currentEnd: clipStartTime + duration + endTrimDurationDelta)
-      }
+      // Preview-push right-side siblings live to match what pack will produce on submit.
+      previewPackRightSiblings(currentEnd: clipStartTime + duration + endTrimDurationDelta)
       if clip.isInBackgroundTrack {
         interactor.timelineProperties.backgroundTrackTrimDelta =
           endTrimDurationDelta - startTrimDurationDelta
@@ -645,15 +612,29 @@ struct ClipTrimmingView: View {
       return
     }
 
-    // `Clip` timing is transition-projected for rendering. The interactor resolves
-    // these rendered bounds against the post-edit transition inset before writing.
-    let renderedTimeOffset = max(.zero, clip.timeOffset + startTrimDurationDelta)
-    let trimOffset = clip.trimOffset + startTrimDurationDelta
-    let renderedDuration = duration + endTrimDurationDelta - startTrimDurationDelta
+    // If clip was trimmed:
+    let timeOffset = max(.zero, clip.timeOffset + startTrimDurationDelta)
 
-    // Preview offsets are rendered, transition-projected values. Do not persist
-    // them: `setTrim` performs the Android-equivalent sibling pack from raw engine
-    // bounds, preserving the transition overlap without applying its halves twice.
+    let trimOffset = clip.trimOffset + startTrimDurationDelta
+    let duration = duration + endTrimDurationDelta - startTrimDurationDelta
+
+    // Commit any preview-pushed siblings to the engine first — otherwise
+    // `Track::layout()` would see stale positions when `setTrim` runs and push the
+    // dragged clip away from the just-trimmed edge. Build an explicit
+    // `[blockID: newOffset]` map from each sibling whose preview moved it off its
+    // authored position.
+    var commitOffsets: [DesignBlockID: CMTime] = [:]
+    if let track = interactor.timelineProperties.dataSource.findTrack(containing: clip) {
+      for (siblingID, original) in previewSiblingOriginals {
+        guard let sibling = track.clips.first(where: { $0.id == siblingID }),
+              let preview = sibling.previewTimeOffset,
+              preview != original else { continue }
+        commitOffsets[siblingID] = preview
+      }
+    }
+    if !commitOffsets.isEmpty {
+      interactor.commitPreviewedOffsets(commitOffsets)
+    }
     clearPreviewShadowAndSnapshots()
 
     // Reset the live BG trim delta before `setTrim` so the "+ Add Clip" anchor (which
@@ -664,12 +645,7 @@ struct ClipTrimmingView: View {
       interactor.timelineProperties.backgroundTrackTrimDelta = .zero
     }
 
-    interactor.setTrim(
-      clip: clip,
-      timeOffset: renderedTimeOffset,
-      trimOffset: trimOffset,
-      duration: renderedDuration,
-    )
+    interactor.setTrim(clip: clip, timeOffset: timeOffset, trimOffset: trimOffset, duration: duration)
 
     startTrimDurationDelta = .zero
     endTrimDurationDelta = .zero
@@ -690,30 +666,11 @@ struct ClipTrimmingView: View {
   // MARK: - Snapping Helpers
 
   private func updateSnapDetents() {
-    let dataSource = interactor.timelineProperties.dataSource
-    // Do not use the cached detents here. Trim gestures can move sibling clips in
-    // their preview state, while transitions inset both edges of a clip. The snap
-    // coordinates must therefore be the same displayed bounds that `TrackView`
-    // and `ClipView` render: `displayTimeOffset ... + duration`.
-    var snapDetents = clip.isInBackgroundTrack ? [] : [CMTime.zero]
-    var seenSeconds: Set<Double> = clip.isInBackgroundTrack ? [] : [CMTime.zero.seconds]
-
-    func append(_ detent: CMTime) {
-      if seenSeconds.insert(detent.seconds).inserted {
-        snapDetents.append(detent)
-      }
-    }
+    var snapDetents = interactor.timelineProperties.dataSource.snapDetents
 
     if clip.isInBackgroundTrack {
-      // Background track only snaps to the playhead.
-    } else {
-      for candidate in dataSource.allClips() {
-        let start = candidate.displayTimeOffset
-        append(start)
-        if let duration = candidate.duration {
-          append(start + duration)
-        }
-      }
+      // Background track only snaps to the playhead
+      snapDetents.removeAll()
     }
 
     // Inset the visible range so that snapping doesn’t happen right on the screen edge.
@@ -730,11 +687,11 @@ struct ClipTrimmingView: View {
     // the background track clip times are more important as snap points than the playhead.
     // They should especially have precedence as long as the playhead shifting while
     // zooming due to rounding errors is resolved.
-    append(player.playheadPosition)
+    snapDetents.append(player.playheadPosition)
 
     let snapTolerance = timeline.convertToTime(points: 5)
 
-    let absoluteStartPosition = clip.displayTimeOffset
+    let absoluteStartPosition = clip.timeOffset
 
     relativeSnapDetents = snapDetents.map { detent in
       let snap = detent - absoluteStartPosition
@@ -751,6 +708,7 @@ struct ClipTrimmingView: View {
 
   private func rubberband(_ seconds: CGFloat) -> CGFloat {
     let divisor = (seconds * 0.05) + 1.0
-    return (1.0 - (1.0 / divisor)) * 10
+    let result = (1.0 - (1.0 / divisor)) * 10
+    return result
   }
 }

@@ -9,7 +9,6 @@ public struct DefaultTimelineComponent: View {
 
   @State private var isMinimized = false
   @State private var observedTrackCount = 0
-  @State private var hasCaptionClips = false
   @EnvironmentObject private var interactor: Interactor
 
   /// Creates a timeline component.
@@ -41,12 +40,7 @@ public struct DefaultTimelineComponent: View {
     let tracksCount = CGFloat(observedTrackCount)
     let rulerHeight = configuration.timelineRulerHeight
 
-    // Contributes by clip count, not track count: the first caption must grow the
-    // timeline even though its (empty) track already exists. One ordinary row's worth, since it now
-    // sits inside the foreground stack rather than in a docked band of its own.
-    let captionLane = hasCaptionClips ? trackHeight + trackSpacing : 0
     let tracksHeight = max(1, tracksCount + 1) * (trackHeight + trackSpacing) + backgroundTrackHeight
-      + captionLane
     let totalHeight = playerBarHeight + tracksHeight + rulerHeight + trackSpacing * 3
 
     // Limit to max height of 260 (matching current iOS)
@@ -111,13 +105,9 @@ public struct DefaultTimelineComponent: View {
       .preference(key: BottomPanelIsMinimizedKey.self, value: isMinimized)
       .onAppear {
         observedTrackCount = interactor.timelineProperties.dataSource.tracks.count
-        hasCaptionClips = interactor.timelineProperties.dataSource.hasCaptionClips
       }
       .onReceive(interactor.timelineProperties.dataSource.$tracks.map(\.count).removeDuplicates()) { tracksCount in
         observedTrackCount = tracksCount
-      }
-      .onReceive(interactor.timelineProperties.dataSource.$hasCaptionClips.removeDuplicates()) { hasClips in
-        hasCaptionClips = hasClips
       }
     }
   }

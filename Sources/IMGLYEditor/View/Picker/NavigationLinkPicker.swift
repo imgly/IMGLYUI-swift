@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Custom view that looks like `.pickerStyle(.navigationLink)` but allows to keep the picker open and explore different
 /// selections.
-struct NavigationLinkPicker<Data: RandomAccessCollection, ElementLabel: View, LinkLabel: View>: View where
+struct NavigationLinkPicker<Data, ElementLabel: View, LinkLabel: View>: View where
+  Data: RandomAccessCollection,
   Data.Element: RandomAccessCollection & Hashable,
   Data.Element.Element: Identifiable {
   let title: LocalizedStringResource
@@ -13,9 +14,7 @@ struct NavigationLinkPicker<Data: RandomAccessCollection, ElementLabel: View, Li
   @ViewBuilder let elementLabel: (_ element: Data.Element.Element, _ isSelected: Bool) -> ElementLabel
   @ViewBuilder let linkLabel: (_ selection: Data.Element.Element?) -> LinkLabel
 
-  private func isSelecetd(_ element: Data.Element.Element) -> Bool {
-    selection == element.id
-  }
+  private func isSelecetd(_ element: Data.Element.Element) -> Bool { selection == element.id }
 
   private var flatData: [Data.Element.Element] {
     data.flatMap(\.self)
@@ -29,7 +28,7 @@ struct NavigationLinkPicker<Data: RandomAccessCollection, ElementLabel: View, Li
         .toolbar {
           ToolbarItem(placement: .navigationBarTrailing) {
             SheetDismissButton()
-              .sheetDismissButtonStyle()
+              .buttonStyle(.borderless)
           }
         }
     } label: {

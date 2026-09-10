@@ -715,9 +715,6 @@ final class VoiceOverRecordCoordinator: AudioRecordDelegate {
 
     let pageDuration = (try? engine.block.getDuration(currentPage)) ?? 0
     let timelineContentEnd = interactor.timelineProperties.dataSource.allClips()
-      // Captions aren't a page-duration source and may extend past the page end,
-      // so they must not grow the page.
-      .filter { $0.clipType != .caption }
       .map { clip in
         let clipDuration = clip.duration?.seconds ?? max(0, pageDuration - clip.timeOffset.seconds)
         return clip.timeOffset.seconds + max(0, clipDuration)

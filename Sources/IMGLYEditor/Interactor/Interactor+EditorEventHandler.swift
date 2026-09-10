@@ -106,13 +106,7 @@ extension Interactor: EditorEventHandler {
       }
     case is EditorEvents.Selection.Delete:
       pause()
-      let captionsInteractor = CaptionsInteractor(self)
-      if let caption = captionsInteractor.selectedCaption() {
-        // Route caption deletes through the domain layer so an emptied caption track is cleaned up too.
-        captionsInteractor.deleteCaption(caption)
-      } else {
-        bottomBarButtonTapped(for: .delete)
-      }
+      bottomBarButtonTapped(for: .delete)
     case is EditorEvents.Selection.BringForward:
       actionButtonTapped(for: .bringForward)
     case is EditorEvents.Selection.SendBackward:
@@ -152,9 +146,7 @@ extension Interactor: EditorEventHandler {
 
   // swiftlint:disable:next cyclomatic_complexity
   private func openSheet(_ event: EditorEvents.Sheet.Open) throws {
-    // Pause only if actually playing: a plain `pause()` unconditionally sets the edit mode to
-    // TRANSFORM, which isn't desirable in TEXT edit mode.
-    pauseIfNeeded()
+    pause()
 
     switch event.type {
     case let sheet as SheetTypes.Custom:
@@ -174,8 +166,6 @@ extension Interactor: EditorEventHandler {
     case let sheet as SheetTypes.Voiceover:
       openVoiceOver(style: sheet.style)
     case let sheet as SheetTypes.Reorder:
-      self.sheet = .init(sheet)
-    case let sheet as SheetTypes.Captions:
       self.sheet = .init(sheet)
     case let sheet as SheetTypes.Adjustments:
       clampPlayheadPositionToSelectedClip()
@@ -197,19 +187,11 @@ extension Interactor: EditorEventHandler {
       if let content = sheetContent(sheet.id) ?? sheetContentForSelection {
         self.sheet = .init(sheet, content)
       }
-    case let sheet as SheetTypes.CaptionStyle:
-      clampPlayheadPositionToSelectedClip()
-      if let content = sheetContent(sheet.id) ?? sheetContentForSelection {
-        self.sheet = .init(sheet, content)
-      }
     case let sheet as SheetTypes.Animation:
       clampPlayheadPositionToSelectedClip()
       if let content = sheetContentForSelection {
         self.sheet = .init(sheet, content)
       }
-    case let sheet as SheetTypes.Transition:
-      clampPlayheadPositionToSelectedClip()
-      self.sheet = .init(sheet)
     case let sheet as SheetTypes.Crop:
       clampPlayheadPositionToSelectedClip()
       if let content = sheetContent(sheet.id) ?? sheetContentForSelection {
@@ -227,11 +209,6 @@ extension Interactor: EditorEventHandler {
         self.sheet = .init(sheet, content)
       }
     case let sheet as SheetTypes.FormatText:
-      clampPlayheadPositionToSelectedClip()
-      if let content = sheetContentForSelection {
-        self.sheet = .init(sheet, content)
-      }
-    case let sheet as SheetTypes.TextOnPath:
       clampPlayheadPositionToSelectedClip()
       if let content = sheetContentForSelection {
         self.sheet = .init(sheet, content)

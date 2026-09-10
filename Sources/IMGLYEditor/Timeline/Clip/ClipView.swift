@@ -85,7 +85,6 @@ struct ClipView: View {
             cornerRadius: cornerRadius - 2,
             isLooping: clip.isLooping,
             hasAnimation: clip.hasAnimation,
-            basePadding: clip.leadingTransitionSeamSize.map { $0 / 2 + 2 } ?? 0,
           )
         }
       }
@@ -101,9 +100,7 @@ struct ClipView: View {
       // We don’t show the gap when the clip is selected.
       .padding(.trailing, isSelected ? 0 : clipSpacing)
       .frame(width: pointsDurationWidth)
-      // Dimming overlay where clip exceeds total duration. Clamped to the clip's own width: one starting
-      // past the end overflows by more than its length, and the surplus would spill over the neighbours to
-      // its left. Input-transparent, as on web — past the end is a cue, not a lock.
+      // Dimming overlay where clip exceeds total duration
       .overlay(alignment: .trailing) {
         let maxDuration = timelineProperties.player.maxPlaybackDuration ?? timeline.totalDuration
         let maxWidth = timeline.convertToPoints(time: maxDuration)
@@ -112,8 +109,7 @@ struct ClipView: View {
           .fill(colorScheme == .dark
             ? Color(uiColor: .systemBackground).opacity(0.6)
             : Color(uiColor: .secondarySystemBackground).opacity(0.8))
-          .frame(width: min(pointsDurationWidth, max(0, -overflow)))
-          .allowsHitTesting(false)
+          .frame(width: max(0, -overflow))
       }
       // Sits below the selection overlay so the trim handles still absorb their own
       // touches; `ClipTrimmingView`'s visual content is hit-test disabled so the clip
@@ -127,8 +123,8 @@ struct ClipView: View {
       .overlay(selectedOverlay)
       // Hide the in-track render while dragging — `FloatingClipOverlayView` at the
       // timeline root takes over so the clip lifts above its track's bounds. Padding
-      // stays applied so siblings don't reflow. Captions are the exception — they slide in-lane.
-      .opacity(isBeingDragged && clip.clipType != .caption ? 0 : 1)
+      // stays applied so siblings don't reflow.
+      .opacity(isBeingDragged ? 0 : 1)
       .padding(.leading, pointsTimeOffsetWidth)
       .zIndex(isSelected ? 2 : 1)
       // Use .task instead of .onAppear to prevent animation glitches
@@ -162,12 +158,8 @@ struct ClipView: View {
   }
 
   private var clipOpacity: Double {
-    if !isSelected {
-      return 1
-    }
-    if clip.clipType == .voiceOver, !clip.allowsTrimming {
-      return 1
-    }
+    if !isSelected { return 1 }
+    if clip.clipType == .voiceOver, !clip.allowsTrimming { return 1 }
     return 0
   }
 
@@ -198,7 +190,6 @@ struct ClipView: View {
       cornerRadius: configuration.cornerRadius,
       trimHandleWidth: configuration.trimHandleWidth,
       icon: clip.configuration.icon,
-      isMoveDragging: isMoveDragging,
     )
     .id(ObjectIdentifier(clip))
   }
@@ -246,7 +237,7 @@ struct ClipView: View {
 
   private var selectedClipLabelTitle: String {
     switch clip.clipType {
-    case .text, .caption:
+    case .text:
       ""
     case .voiceOver:
       isSelected ? (clip.title.isEmpty ? clip.clipType.description : clip.title) : ""

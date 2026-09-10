@@ -25,9 +25,7 @@ struct InspectorBarView: View {
       }
     } catch {
       let error = EditorError(
-        String(localized: .imgly.localized(
-          "ly_img_editor_error_inspector_bar_view_creation \(error.localizedDescription)",
-        )),
+        "Could not create View for Inspector Bar.\nReason:\n\(error.localizedDescription)",
       )
       interactor.handleErrorWithTask(error)
       return []

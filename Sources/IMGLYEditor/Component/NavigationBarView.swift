@@ -26,9 +26,7 @@ struct NavigationBarView: ViewModifier {
       }
     } catch {
       let error = EditorError(
-        String(localized: .imgly.localized(
-          "ly_img_editor_error_navigation_bar_view_creation \(error.localizedDescription)",
-        )),
+        "Could not create View for Navigation Bar.\nReason:\n\(error.localizedDescription)",
       )
       interactor.handleErrorWithTask(error)
       return [:]

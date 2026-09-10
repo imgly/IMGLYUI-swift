@@ -22,7 +22,7 @@ public struct AssetLibraryCategory: Sendable, Equatable {
     id: String,
     title: LocalizedStringResource,
     icon: Image,
-    sections: [AssetLibrarySection],
+    sections: [AssetLibrarySection]
   ) {
     self.id = id
     self.title = title
@@ -103,17 +103,15 @@ public extension AssetLibraryCategory {
     )
   }
 
-  /// Default text category: plain text, text styles, text combinations, and curved text.
+  /// Default text category.
   static var defaultText: Self {
     .init(
       id: ID.text,
       title: .imgly.localized("ly_img_editor_asset_library_title_text"),
       icon: Image(systemName: "textformat.alt"),
       sections: [
-        .defaultTextPlain,
-        .defaultTextStyles,
+        .defaultText,
         .defaultTextComponents,
-        .defaultTextCurves,
       ],
     )
   }

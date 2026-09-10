@@ -20,15 +20,14 @@ The CreativeEditor SDK is a commercial product. You can purchase a license at ht
 ### SwiftUI
 
 ```Swift
-import IMGLYEditor // or IMGLYCamera
+import IMGLYDesignEditor // IMGLYVideoEditor, IMGLYPhotoEditor, IMGLYApparelEditor, IMGLYPostcardEditor, or IMGLYCamera
 import SwiftUI
 
 struct IntegrateWithSwiftUI: View {
   var body: some View {
     NavigationView {
-      Editor(.init(license: secrets.licenseKey, userID: "<your unique user id>"))
+      DesignEditor(.init(license: secrets.licenseKey, userID: "<your unique user id>"))
     }
-    .navigationViewStyle(.stack)
   }
 }
 ```

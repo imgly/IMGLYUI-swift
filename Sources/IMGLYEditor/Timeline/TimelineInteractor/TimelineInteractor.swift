@@ -24,7 +24,6 @@ protocol TimelineInteractor: ObservableObject {
   func reorderBackgroundTrack(clip: Clip, toIndex index: Int)
   func refreshTimeline()
   func refreshThumbnails()
-  func refreshZoomDependentThumbnails()
   func refreshThumbnail(id: DesignBlockID)
   func startScrubbing(clip: Clip)
   func scrub(clip: Clip, time: CMTime)
@@ -33,8 +32,6 @@ protocol TimelineInteractor: ObservableObject {
   func deselect()
   func delete(id: DesignBlockID?)
   func addUndoStep()
-  func openTransition(for id: DesignBlockID)
-  func refreshTransitionSeams()
   func getAspectRatio(clip: Clip) throws -> Double
   func getTextContent(id: DesignBlockID) throws -> String
   func generateImagesThumbnails(

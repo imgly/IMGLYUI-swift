@@ -14,7 +14,6 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
   let selection: Interactor.BlockID?
   let defaultValue: T?
   let assetContext: EffectProperty.AssetContext?
-  let disableAutoPercentage: Bool
 
   private let extractValue: ((AssetProperty) -> T?)?
   private let buildUpdatedProperty: ((AssetProperty, T) -> AssetProperty?)?
@@ -36,8 +35,7 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
        propertyBlock: PropertyBlock? = nil,
        selection: Interactor.BlockID? = nil,
        defaultValue: T? = nil,
-       assetContext: EffectProperty.AssetContext? = nil,
-       disableAutoPercentage: Bool = false) {
+       assetContext: EffectProperty.AssetContext? = nil) {
     self.title = title
     self.bounds = bounds
     self.property = property
@@ -48,7 +46,6 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
     self.selection = selection
     self.defaultValue = defaultValue
     self.assetContext = assetContext
-    self.disableAutoPercentage = disableAutoPercentage
 
     if let assetContext {
       let closures = Self.assetClosures(for: assetContext.assetProperty)
@@ -94,7 +91,7 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
   // MARK: - Value Formatting
 
   private var showPercentage: Bool {
-    !disableAutoPercentage && PercentageSliderHelper.isPercentageSlider(min: bounds.lowerBound, max: bounds.upperBound)
+    PercentageSliderHelper.isPercentageSlider(min: bounds.lowerBound, max: bounds.upperBound)
   }
 
   private func percentageText(for value: T) -> String {
@@ -242,9 +239,7 @@ private extension PropertySlider {
   private static func floatClosures() -> AssetClosures<T> {
     AssetClosures(
       extractValue: { prop in
-        if case let .float(_, value, _, _, _, _) = prop {
-          return value as? T
-        }
+        if case let .float(_, value, _, _, _, _) = prop { return value as? T }
         return nil
       },
       buildUpdatedProperty: { prop, value in
@@ -263,9 +258,7 @@ private extension PropertySlider {
   private static func doubleClosures() -> AssetClosures<T> {
     AssetClosures(
       extractValue: { prop in
-        if case let .double(_, value, _, _, _, _) = prop {
-          return value as? T
-        }
+        if case let .double(_, value, _, _, _, _) = prop { return value as? T }
         return nil
       },
       buildUpdatedProperty: { prop, value in
@@ -284,9 +277,7 @@ private extension PropertySlider {
   private static func intClosures() -> AssetClosures<T> {
     AssetClosures(
       extractValue: { prop in
-        if case let .int(_, value, _, _, _, _) = prop {
-          return T(exactly: value) ?? T(value)
-        }
+        if case let .int(_, value, _, _, _, _) = prop { return T(exactly: value) ?? T(value) }
         return nil
       },
       buildUpdatedProperty: { prop, value in

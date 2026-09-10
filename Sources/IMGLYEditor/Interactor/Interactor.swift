@@ -11,7 +11,7 @@ import SwiftUI
 
   @_spi(Internal) public let config: EngineConfiguration
 
-  var spinner: some View {
+  @ViewBuilder var spinner: some View {
     ProgressView()
       .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
@@ -34,22 +34,13 @@ import SwiftUI
 
   @Published @_spi(Internal) public private(set) var isCreating = true
   @Published private(set) var viewMode = EditorViewMode.edit
-  var isPreviewMode: Bool {
-    viewMode == .preview
-  }
-
-  var isPagesMode: Bool {
-    viewMode == .pages
-  }
-
+  var isPreviewMode: Bool { viewMode == .preview }
+  var isPagesMode: Bool { viewMode == .pages }
   @Published private(set) var isExporting = false
   @Published @_spi(Internal) public private(set) var isAddingAsset = false
 
   @Published var error = AlertState()
-  @Published var sheet = SheetState() {
-    didSet { sheetChanged(oldValue) }
-  }
-
+  @Published var sheet = SheetState() { didSet { sheetChanged(oldValue) } }
   private var nextSheet: SheetState? {
     didSet {
       if nextSheet != nil, sheet.isPresented {
@@ -70,6 +61,7 @@ import SwiftUI
   typealias RGBA = IMGLYEngine.RGBA
   typealias GradientColorStop = IMGLYEngine.GradientColorStop
   typealias Color = IMGLYEngine.Color
+  typealias DefaultAssetSource = Engine.DefaultAssetSource
   typealias BlurType = IMGLYEngine.BlurType
   typealias EffectType = IMGLYEngine.EffectType
   typealias Font = IMGLYEngine.Font
@@ -84,23 +76,11 @@ import SwiftUI
   }
 
   @Published var verticalSizeClass: UserInterfaceSizeClass?
-  @Published @_spi(Internal) public private(set) var page = 0 {
-    didSet { pageChanged(oldValue) }
-  }
-
-  @Published var pageOverview = PageOverviewState() {
-    didSet { pageOverviewChanged(oldValue) }
-  }
-
+  @Published @_spi(Internal) public private(set) var page = 0 { didSet { pageChanged(oldValue) } }
+  @Published var pageOverview = PageOverviewState() { didSet { pageOverviewChanged(oldValue) } }
   @Published @_spi(Internal) public var selectionColors = SelectionColors()
-  @Published private(set) var selection: Selection? {
-    didSet { selectionChanged(oldValue) }
-  }
-
-  @Published private(set) var editMode: EditMode = .transform {
-    didSet { editModeChanged(oldValue) }
-  }
-
+  @Published private(set) var selection: Selection? { didSet { selectionChanged(oldValue) } }
+  @Published private(set) var editMode: EditMode = .transform { didSet { editModeChanged(oldValue) } }
   @Published private(set) var textCursorPosition: CGPoint?
   @Published private(set) var canUndo = false
   @Published private(set) var canRedo = false
@@ -113,21 +93,10 @@ import SwiftUI
 
   @Published var isLoopingPlaybackEnabled = true
   @Published var isSelectionVisible = true
-  /// Whether the playhead sits far enough inside the selected block to divide it.
-  ///
-  /// Nothing reads this value: the split button re-reads the engine itself. It exists so that
-  /// crossing the threshold publishes a change, which is what re-evaluates the button — a detent
-  /// on the playhead alone would republish every frame of playback.
-  @Published var isSelectionSplittable = false
   @Published var isVoiceOverRecordModeActive = false
   @Published var isVoiceOverRecordModeRecording = false
   @Published var hasVoiceOverRecordModeRecordedAudio = false
   @Published var isVoiceOverRecordModeMuteOtherAudio = true
-
-  /// The in-flight caption generation. Owned here rather than by the captions sheet so that dismissing the
-  /// sheet leaves it running — transcription takes long enough that closing the sheet to look at the
-  /// timeline would otherwise throw the work away. Reopening the sheet shows it still in progress.
-  @Published var captionsGenerationTask: Task<Void, Never>?
   @Published var voiceOverRecordModeElapsedDuration: TimeInterval = 0
   @Published var voiceOverRecordModeTarget: BlockID?
 
@@ -141,20 +110,12 @@ import SwiftUI
   var voiceOverRecordCoordinator: VoiceOverRecordCoordinator?
 
   var uploadAssetSourceIDs: [MediaType: String] = EditorEvents.AddFrom.defaultAssetSourceIDs
-  var imageUploadAssetSourceID: String {
-    uploadAssetSourceIDs[.image] ?? "ly.img.image.upload"
-  }
-
-  var videoUploadAssetSourceID: String {
-    uploadAssetSourceIDs[.movie] ?? "ly.img.video.upload"
-  }
+  var imageUploadAssetSourceID: String { uploadAssetSourceIDs[.image] ?? Engine.DemoAssetSource.imageUpload.rawValue }
+  var videoUploadAssetSourceID: String { uploadAssetSourceIDs[.movie] ?? Engine.DemoAssetSource.videoUpload.rawValue }
 
   var isAddingCameraRecording = false
 
-  @_spi(Internal) public var zoomModel = ZoomModel() {
-    didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) }
-  }
-
+  @_spi(Internal) public var zoomModel = ZoomModel() { didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) } }
   var defaultPinchAction: String = ""
 
   var pageCount: Int {
@@ -279,7 +240,6 @@ import SwiftUI
     pageTask?.cancel()
     clickedTask?.cancel()
     onLoadedTask?.cancel()
-    assetSourceUpdatedTask?.cancel()
     blockTasks.forEach { $0.value.cancel() }
     blockTasks.removeAll()
   }
@@ -292,7 +252,6 @@ import SwiftUI
     historyTask = observeHistory()
     pageTask = observePage()
     clickedTask = observeClicked()
-    assetSourceUpdatedTask = observeAssetSourceUpdated()
     onLoadedTask?.cancel()
     keyboardPublisher.assign(to: &$isKeyboardPresented)
   }
@@ -313,7 +272,6 @@ import SwiftUI
     pageTask?.cancel()
     clickedTask?.cancel()
     onLoadedTask?.cancel()
-    assetSourceUpdatedTask?.cancel()
     _engine = nil
     timelineProperties.timeline = nil
     timelineProperties.thumbnailsManager.destroyProviders()
@@ -345,7 +303,6 @@ import SwiftUI
   private var pageTask: Task<Void, Never>?
   private var clickedTask: Task<Void, Never>?
   private var onLoadedTask: Task<Void, Never>?
-  private var assetSourceUpdatedTask: Task<Void, Never>?
   var blockTasks = [BlockID: Task<Void, Never>]()
 }
 
@@ -374,72 +331,20 @@ extension Interactor {
     }
   }
 
-  func canBringForward(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.canBringForward) ?? false
-  }
-
-  func canBringBackward(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.canBringBackward) ?? false
-  }
-
-  func supportsFill(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.supportsFill) ?? false
-  }
-
-  func supportsStroke(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.supportsStroke) ?? false
-  }
-
-  func supportsBackground(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.supportsBackgroundColor) ?? false
-  }
-
-  func supportsOpacity(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.supportsOpacity) ?? false
-  }
-
-  func supportsBlendMode(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.supportsBlendMode) ?? false
-  }
-
-  func supportsBlur(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.supportsBlur) ?? false
-  }
-
-  func supportsCrop(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.supportsCrop) ?? false
-  }
-
-  func canRevertToOriginalRatio(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.canRevertToOriginalRatio) ?? false
-  }
-
-  func canResetCrop(_ id: BlockID?, initialCropTranslationX: Float, initialCropTranslationY: Float) -> Bool {
-    block(id) { [self] in
-      try engine?.block.canResetCrop(
-        $0,
-        initialCropTranslationX: initialCropTranslationX,
-        initialCropTranslationY: initialCropTranslationY,
-      ) ?? false
-    } ?? false
-  }
-
-  func isSolidFill(_ id: DesignBlockID?) -> Bool {
-    isColorFillType(id, type: .solid)
-  }
-
-  func isGradientFill(_ id: DesignBlockID?) -> Bool {
-    isColorFillType(id, type: .gradient)
-  }
-
-  func isColorFill(_ id: DesignBlockID?) -> Bool {
-    isSolidFill(id) || isGradientFill(id)
-  }
-
-  func isLineOrigin(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.isLineOrigin) ?? false
-  }
-
+  func canBringForward(_ id: BlockID?) -> Bool { block(id, engine?.block.canBringForward) ?? false }
+  func canBringBackward(_ id: BlockID?) -> Bool { block(id, engine?.block.canBringBackward) ?? false }
+  func supportsFill(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsFill) ?? false }
+  func supportsStroke(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsStroke) ?? false }
+  func supportsBackground(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBackgroundColor) ?? false }
+  func supportsOpacity(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsOpacity) ?? false }
+  func supportsBlendMode(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlendMode) ?? false }
+  func supportsBlur(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsBlur) ?? false }
+  func supportsCrop(_ id: BlockID?) -> Bool { block(id, engine?.block.supportsCrop) ?? false }
+  func canResetCrop(_ id: BlockID?) -> Bool { block(id, engine?.block.canResetCrop) ?? false }
+  func isSolidFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .solid) }
+  func isGradientFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .gradient) }
+  func isColorFill(_ id: DesignBlockID?) -> Bool { isSolidFill(id) || isGradientFill(id) }
+  func isLineOrigin(_ id: BlockID?) -> Bool { block(id, engine?.block.isLineOrigin) ?? false }
   func isVisibleAtCurrentPlaybackTime(_ id: BlockID?) -> Bool {
     block(id, engine?.block.isVisibleAtCurrentPlaybackTime) ?? false
   }
@@ -448,165 +353,47 @@ extension Interactor {
 // MARK: - Property bindings
 
 extension Interactor {
-  /// Binding for the selected font's asset id; applies the matching typeface to the blocks on set.
-  /// - Parameter fontFileURIProperty: The property holding the block's font file URI. Defaults to
-  /// `text/fontFileUri`; pass `caption/fontFileUri` for caption blocks.
-  func bindFontAssetID(
-    _ id: BlockID?,
-    overrideScopes: Set<Scope> = [],
-    fontFileURIProperty: Property = .key(.textFontFileURI),
-  ) -> Binding<String?> {
-    bind(id, default: nil as String?) { engine, block in
-      // No resolvable typeface (e.g. curved text) means no selection, not an error.
-      guard let name = (try? engine.block.getTypeface(block))?.name else { return nil }
-      return self.fontLibrary.assetFor(typefaceName: name)?.id
-    } setter: { engine, blocks, assetID, completion in
-      guard let assetID,
-            let typeface = self.fontLibrary.typefaceFor(id: assetID),
-            let font = typeface.previewFont else {
+  /// Create a `TextState` binding for a block `id`.
+  /// If `resetFontProperties` is enabled bold and italic states would not be preserved on set.
+  func bindTextState(_ id: BlockID?, resetFontProperties: Bool, overrideScopes: Set<Scope> = []) -> Binding<TextState> {
+    bind(id, default: TextState()) { engine, block in
+      var text = TextState()
+      text.assetID = self.fontLibrary.assetFor(typefaceName: try engine.block.getTypeface(block).name)?.id
+      text.setFontProperties(try engine.block.getFontProperties(block))
+      return text
+    } setter: { engine, blocks, text, completion in
+      guard let assetID = text.assetID,
+            let typeface = self.fontLibrary.typefaceFor(id: assetID) else {
         return false
       }
-      let changed = try blocks.filter { block in
-        // Read as String: a typeface-less block (e.g. curved text) has an empty
-        // fontFileUri, and reading it as URL would crash on URL("") == nil.
-        let currentURI: String = try engine.block.get(block, property: fontFileURIProperty)
-        return URL(string: currentURI) != font.uri
-      }
-      try changed.forEach {
-        try engine.block.overrideAndRestore($0, scopes: overrideScopes) {
-          try engine.block.setTypeface($0, typeface: typeface)
+
+      func font(typeface: Typeface) -> IMGLYEngine.Font? {
+        if resetFontProperties {
+          typeface.previewFont
+        } else {
+          typeface.font(for: .init(bold: text.isBold, italic: text.isItalic)) ?? typeface.previewFont
         }
       }
-      let didChange = !changed.isEmpty
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-  }
 
-  /// The text range these run-level APIs should target: the whole block (`nil`) for captions — so the engine
-  /// registers the caption-track sync and the change fans out to every caption — or the effective (cursor)
-  /// range for regular text.
-  private static func textPropertyRange(_ engine: Engine, _ block: DesignBlockID) throws -> Range<String.Index>? {
-    if try engine.block.getType(block) == BlockType.caption.rawValue {
-      return nil
-    }
-    return try engine.block.effectiveTextRange(block)
-  }
-
-  func bindBoldToggle(_ id: BlockID?) -> Binding<TextProperty?> {
-    let raw: Binding<TextProperty?> = bind(id, default: nil as TextProperty?) { engine, block -> TextProperty? in
-      let range = try Self.textPropertyRange(engine, block)
-      guard try engine.block.canToggleBoldFont(block, in: range) else { return nil }
-      return try engine.block.isBoldFont(block, in: range) ? .bold : .inactive
-    } setter: { engine, blocks, _, completion in
-      try blocks.forEach {
-        let range = try Self.textPropertyRange(engine, $0)
-        try engine.block.toggleBoldFont($0, in: range)
-      }
-      let didChange = !blocks.isEmpty
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-    return inactiveWrapped(raw)
-  }
-
-  func bindItalicToggle(_ id: BlockID?) -> Binding<TextProperty?> {
-    let raw: Binding<TextProperty?> = bind(id, default: nil as TextProperty?) { engine, block -> TextProperty? in
-      let range = try Self.textPropertyRange(engine, block)
-      guard try engine.block.canToggleItalicFont(block, in: range) else { return nil }
-      return try engine.block.isItalicFont(block, in: range) ? .italic : .inactive
-    } setter: { engine, blocks, _, completion in
-      try blocks.forEach {
-        let range = try Self.textPropertyRange(engine, $0)
-        try engine.block.toggleItalicFont($0, in: range)
-      }
-      let didChange = !blocks.isEmpty
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-    return inactiveWrapped(raw)
-  }
-
-  func bindUnderlineToggle(_ id: BlockID?) -> Binding<TextProperty?> {
-    bindDecorationToggle(id, property: .underline, line: .underline) { engine, block, range in
-      try engine.block.toggleTextDecorationUnderline(block, in: range)
-    }
-  }
-
-  func bindStrikethroughToggle(_ id: BlockID?) -> Binding<TextProperty?> {
-    bindDecorationToggle(id, property: .strikethrough, line: .strikethrough) { engine, block, range in
-      try engine.block.toggleTextDecorationStrikethrough(block, in: range)
-    }
-  }
-
-  func bindLetterCase(_ id: BlockID?) -> Binding<TextCase?> {
-    bind(id, default: nil as TextCase?) { engine, block -> TextCase? in
-      let range = try Self.textPropertyRange(engine, block)
-      return try engine.block.getTextCases(block, in: range).first ?? .normal
-    } setter: { engine, blocks, value, completion in
-      guard let value else { return false }
-      var didChange = false
-      for block in blocks {
-        let range = try Self.textPropertyRange(engine, block)
-        let isUniform = try engine.block.getTextCases(block, in: range).allSatisfy { $0 == value }
-        guard !isUniform else { continue }
-        try engine.block.setTextCase(block, textCase: value, in: range)
-        didChange = true
-      }
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-  }
-
-  func bindListStyle(_ id: BlockID?) -> Binding<IMGLYEngine.ListStyle?> {
-    bind(id, default: nil as IMGLYEngine.ListStyle?) { engine, block -> IMGLYEngine.ListStyle? in
-      try engine.block.resolveTextListStyle(block)
-    } setter: { engine, blocks, value, completion in
-      guard let value else { return false }
-      let cursorRange = try engine.block.getTextCursorRange()
-      let changed = try blocks.filter { block in
-        let indices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
-        guard !indices.isEmpty else { return false }
-        return try indices.contains {
-          try engine.block.getTextListStyle(block, paragraphIndex: $0) != value
+      if let font = font(typeface: typeface) {
+        let changed = try blocks.filter {
+          try engine.block.get($0, property: .key(.textFontFileURI)) != font.uri
         }
-      }
-      try changed.forEach { block in
-        let indices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
-        try indices.forEach { index in
-          try engine.block.setTextListStyle(block, listStyle: value, paragraphIndex: index)
+        try changed.forEach {
+          try engine.block.overrideAndRestore($0, scopes: overrideScopes) {
+            if resetFontProperties {
+              try engine.block.setTypeface($0, typeface: typeface)
+            } else {
+              try engine.block.setFont($0, fontFileURL: font.uri, typeface: typeface)
+            }
+          }
         }
+        let didChange = !changed.isEmpty
+        return try (completion?(engine, blocks, didChange) ?? false) || didChange
+      } else {
+        return false
       }
-      let didChange = !changed.isEmpty
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
     }
-  }
-
-  private func bindDecorationToggle(
-    _ id: BlockID?,
-    property: TextProperty,
-    line: TextDecorationLine,
-    toggle: @escaping @MainActor (Engine, DesignBlockID, Range<String.Index>?) throws -> Void,
-  ) -> Binding<TextProperty?> {
-    let raw: Binding<TextProperty?> = bind(id, default: nil as TextProperty?) { engine, block -> TextProperty? in
-      let range = try Self.textPropertyRange(engine, block)
-      let decorations = try engine.block.getTextDecorations(block, in: range)
-      let allDecorated = !decorations.isEmpty && decorations.allSatisfy { $0.line.contains(line) }
-      return allDecorated ? property : .inactive
-    } setter: { engine, blocks, _, completion in
-      try blocks.forEach {
-        let range = try Self.textPropertyRange(engine, $0)
-        try toggle(engine, $0, range)
-      }
-      let didChange = !blocks.isEmpty
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-    return inactiveWrapped(raw)
-  }
-
-  /// Wraps a toggle binding so ``GenericPropertyButton`` deselecting to `nil` re-applies `.inactive`,
-  /// which fires the setter (a plain `nil` would otherwise be a no-op).
-  private func inactiveWrapped(_ raw: Binding<TextProperty?>) -> Binding<TextProperty?> {
-    Binding<TextProperty?>(
-      get: { raw.wrappedValue },
-      set: { raw.wrappedValue = $0 ?? .inactive },
-    )
   }
 
   // swiftlint:disable cyclomatic_complexity
@@ -772,28 +559,18 @@ extension Interactor {
     _ engine: Engine,
     _ block: DesignBlockID,
     _ propertyBlock: PropertyBlock?,
-    _ property: Property,
+    _ property: Property
   ) throws -> T
 
   typealias RawGetter<T> = @MainActor (
     _ engine: Engine,
-    _ block: DesignBlockID,
+    _ block: DesignBlockID
   ) throws -> T
 
   enum Getter {
     static func get<T: MappedType>() -> Interactor.PropertyGetter<T> {
       { engine, block, propertyBlock, property in
         try engine.block.get(block, propertyBlock, property: property)
-      }
-    }
-
-    /// Reads the size the text is laid out at. A caption keeps its size in its text runs, and the engine
-    /// reads a run's size in preference to the block property, so the property on its own reports a stale
-    /// value. Empty text has no runs to read, so it falls back to the property.
-    static func textFontSize() -> Interactor.PropertyGetter<Float> {
-      { engine, block, propertyBlock, property in
-        try engine.block.getTextFontSizes(block).first
-          ?? engine.block.get(block, propertyBlock, property: property)
       }
     }
   }
@@ -804,14 +581,14 @@ extension Interactor {
     _ propertyBlock: PropertyBlock?,
     _ property: Property,
     _ value: T,
-    _ completion: PropertyCompletion?,
+    _ completion: PropertyCompletion?
   ) throws -> Bool
 
   typealias RawSetter<T> = @MainActor (
     _ engine: Engine,
     _ blocks: [DesignBlockID],
     _ value: T,
-    _ completion: PropertyCompletion?,
+    _ completion: PropertyCompletion?
   ) throws -> Bool
 
   @MainActor
@@ -836,17 +613,23 @@ extension Interactor {
       }
     }
 
-    /// Writes the size through the text API instead of the block property. A caption's size lives in its
-    /// text runs, which the engine reads in preference to `text/fontSize`, so a property write leaves the
-    /// caption looking unchanged. Passing no subrange updates the runs, the block property and the
-    /// caption's sibling sync in a single call — matching what the style presets and web both do.
-    static func textFontSize() -> Interactor.PropertySetter<Float> {
-      { engine, blocks, _, _, value, completion in
-        var didChange = false
-        for block in blocks {
-          guard try engine.block.getTextFontSizes(block).first != value else { continue }
-          try engine.block.setTextFontSize(block, fontSize: value)
-          didChange = true
+    /// Sets the stroke style and the cap its preset implies, like the web editor. Dotted/*Round
+    /// presets need a Round cap, else a Dotted stroke is invisible (ANDROID-814). All four caps
+    /// are set equal to keep the renderer on its fast path.
+    static func strokeStyleWithPresetCaps() -> Interactor.PropertySetter<IMGLYCoreUI.StrokeStyle> {
+      { engine, blocks, propertyBlock, property, value, completion in
+        let didChange = try engine.block.set(blocks, propertyBlock, property: property, value: value)
+        if didChange {
+          let cap: StrokeCap = switch value {
+          case .dotted, .dashedRound, .longDashedRound: .round
+          case .solid, .dashed, .longDashed: .butt
+          }
+          for block in blocks {
+            try engine.block.setStrokeStartCap(block, cap: cap)
+            try engine.block.setStrokeEndCap(block, cap: cap)
+            try engine.block.setStrokeDashStartCap(block, cap: cap)
+            try engine.block.setStrokeDashEndCap(block, cap: cap)
+          }
         }
         return try (completion?(engine, blocks, didChange) ?? false) || didChange
       }
@@ -856,7 +639,7 @@ extension Interactor {
   typealias PropertyCompletion = @MainActor (
     _ engine: Engine,
     _ blocks: [DesignBlockID],
-    _ didChange: Bool,
+    _ didChange: Bool
   ) throws -> Bool
 
   @MainActor
@@ -883,8 +666,8 @@ extension Interactor {
     }
   }
 
-  func enumValues<T: CaseIterable & RawRepresentable>(property: Property) -> [T]
-    where T.RawValue == String {
+  func enumValues<T>(property: Property) -> [T]
+    where T: CaseIterable & RawRepresentable, T.RawValue == String {
     guard let engine else {
       return []
     }
@@ -910,16 +693,6 @@ extension Interactor {
       handleErrorWithTask(error)
       return false
     }
-  }
-
-  /// Whether the block's text is laid out on a path. The engine lays out text on a path as a
-  /// single line, so multi-line options (list style, line height, paragraph spacing, frame
-  /// behavior and clipping) have no effect and are disabled.
-  func isTextOnPath(_ id: BlockID?) -> Bool {
-    guard let id else { return false }
-    return get(id) { engine, block in
-      try engine.block.getTextOnPath(block) != nil
-    } ?? false
   }
 
   func isAllowed(_ id: BlockID?, _ mode: SheetMode) -> Bool {
@@ -1215,9 +988,6 @@ extension Interactor: AssetLibraryInteractor {
 
 extension Interactor {
   func applyResizeAsset(sourceID: String, asset: AssetResult, to id: DesignBlockID?) {
-    if asset.payload?.transformPreset == .contentAspectRatio, !canRevertToOriginalRatio(id) {
-      return
-    }
     func resizePages() async throws {
       let pages = try engine?.getSortedPages()
       let scene = try engine?.scene.get()
@@ -1257,9 +1027,6 @@ extension Interactor {
         } else {
           try await resizePages()
         }
-        // Wait for the pending zoom Task to finish before committing the undo step so the snapshot captures the
-        // post-resize camera position (otherwise undo/redo of fixedSize presets restores a stale camera).
-        await zoom.task?.value
         try engine?.editor.addUndoStep()
       } catch {
         handleError(error)
@@ -1446,11 +1213,7 @@ extension Interactor {
 
     sceneTask = Task {
       do {
-        let engine = try await Engine(
-          license: config.settings.license,
-          userID: config.settings.userID,
-          buildHost: config.settings.host,
-        )
+        let engine = try await Engine(license: config.settings.license, userID: config.settings.userID)
         _engine = engine
         onAppear()
 
@@ -1463,10 +1226,10 @@ extension Interactor {
 
         try await performPostOnCreateSetup(engine)
 
-        if engine.asset.findAllSources().contains("ly.img.typeface") {
+        if engine.asset.findAllSources().contains(Engine.DefaultAssetSource.typeface.rawValue) {
           try await fontLibrary.loadFromAssetSource(
             engine: engine,
-            sourceID: "ly.img.typeface",
+            sourceID: Engine.DefaultAssetSource.typeface.rawValue,
           )
         }
 
@@ -1625,9 +1388,7 @@ extension Interactor {
       }
       do {
         if !isPreviewMode {
-          if sheet.isFloating, sheet.isPresented {
-            return
-          }
+          if sheet.isFloating, sheet.isPresented { return }
           // Re-check edit mode at execution time - if we're in text mode now, never zoom to page
           // even if it was requested earlier. This handles race conditions where the edit mode
           // changes between when the task was created and when it executes.
@@ -1922,7 +1683,6 @@ extension Interactor {
                     and kind: BlockKind? = nil) -> SheetContent? {
     switch designBlockType {
     case BlockType.text.rawValue: return .text
-    case BlockType.caption.rawValue: return .caption
     case BlockType.group.rawValue: return .group
     case BlockType.page.rawValue: return .page
     case BlockType.audio.rawValue:
@@ -2051,12 +1811,6 @@ extension Interactor {
       if isSelectionVisible != resolvedSelectionVisibility {
         isSelectionVisible = resolvedSelectionVisibility
       }
-      // Read the playhead from the engine rather than the player: this runs before the player is
-      // refreshed for this tick, so its value is still the previous one.
-      let splittable = isSplittableAtCurrentPlaybackTime(selection?.blocks.first, page: currentPage)
-      if isSelectionSplittable != splittable {
-        isSelectionSplittable = splittable
-      }
       do {
         let isLoopingPlaybackEnabled = try engine.block.isLooping(currentPage)
         if self.isLoopingPlaybackEnabled != isLoopingPlaybackEnabled {
@@ -2076,21 +1830,6 @@ extension Interactor {
       for await _ in engine.editor.onStateChanged {
         updateState()
       }
-    }
-  }
-
-  /// Whether `id` can be divided where the playhead currently is. The margin matches web's, and is far
-  /// below the timeline's `minClipDuration` because captions routinely run shorter than that.
-  private func isSplittableAtCurrentPlaybackTime(_ id: BlockID?, page: BlockID) -> Bool {
-    guard let engine, let id, engine.block.isValid(id) else { return false }
-    let margin = 0.1
-    do {
-      let playhead = try engine.block.getPlaybackTime(page)
-      let start = try engine.block.getTimeOffset(id)
-      let duration = try engine.block.getDuration(id)
-      return playhead > start + margin && playhead < start + duration - margin
-    } catch {
-      return false
     }
   }
 
@@ -2114,26 +1853,6 @@ extension Interactor {
       }
       for await _ in engine.block.onClicked {
         openPlaceholderSheetIfNeeded()
-      }
-    }
-  }
-
-  /// Bridges engine asset-source changes to the asset library. When
-  /// `engine.asset.assetSourceContentsChanged(sourceID:)` fires — whether from
-  /// an `addAsset`/`removeAsset` call or an explicit notification — the open
-  /// library re-queries the affected source via the `.AssetSourceDidChange`
-  /// signal it already listens for.
-  func observeAssetSourceUpdated() -> Task<Void, Never> {
-    Task {
-      guard let engine else {
-        return
-      }
-      for await sourceID in engine.asset.onAssetSourceUpdated {
-        NotificationCenter.default.post(
-          name: .AssetSourceDidChange,
-          object: nil,
-          userInfo: ["sourceID": sourceID],
-        )
       }
     }
   }
@@ -2168,13 +1887,9 @@ extension Interactor {
       guard let engine else {
         return
       }
-      for await _ in engine.editor.onHistoryUpdatedWithKind {
+      for await _ in engine.editor.onHistoryUpdated {
         historyChanged()
         DispatchQueue.main.async { [weak self] in
-          // Transition blocks update independently of their owning clips. Rebuild
-          // the timeline from the committed history state so transition-derived
-          // clip trims and seams do not wait for a later clip interaction.
-          self?.refreshTimelineAfterHistoryChange()
           self?.refreshThumbnails()
         }
       }
@@ -2188,9 +1903,7 @@ extension Interactor {
       }
       for await page in engine.scene.onCarouselPageChanged {
         let pageIndex = try? engine.getPageIndex(page)
-        // Ignore carousel events while the Resize sheet is open — would dismiss the sheet via pageChanged().
-        let isPageResize = sheet.isPresented && sheet.type is SheetTypes.Resize
-        if !isCreating, !isPagesMode, !isPageResize, let pageIndex, pageIndex != self.page {
+        if !isCreating, !isPagesMode, let pageIndex, pageIndex != self.page {
           self.page = pageIndex
         }
       }
@@ -2267,21 +1980,23 @@ extension Interactor {
     guard oldValue != sheet else {
       return
     }
-    // Everything below reacts to a sheet *closing*.
-    guard !sheet.isPresented, oldValue.isPresented else { return }
-    if oldValue.associatedEditMode == .crop {
+    if !sheet.isPresented, oldValue.isPresented, oldValue.associatedEditMode == .crop {
       setEditMode(.transform)
     }
-    if (try? engine?.editor.getSettingBool("softwareKeyboardSuspended")) == true {
-      // A sheet that suspended the keyboard closed; clear the flag so the IME can resume.
-      try? engine?.editor.setSettingBool("softwareKeyboardSuspended", value: false)
-    }
-    if oldValue.type is SheetTypes.Voiceover {
+    if !sheet.isPresented,
+       oldValue.isPresented,
+       oldValue.type is SheetTypes.Voiceover {
       if ignoresNextVoiceOverSheetDismiss {
         ignoresNextVoiceOverSheetDismiss = false
         if let target = pendingVoiceOverRevealTarget {
           pendingVoiceOverRevealTarget = nil
-          revealInTimeline(target, selecting: true)
+          DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            guard engine?.block.isValid(target) == true else { return }
+
+            timelineProperties.requestScroll(to: target)
+            select(id: target)
+          }
         }
       } else if isVoiceOverRecordModeActive {
         Task { [weak self] in
@@ -2289,36 +2004,6 @@ extension Interactor {
         }
       }
     }
-    revealCaptionLaneIfNeeded(after: oldValue)
-  }
-
-  /// Reveals `blockID`'s row in the timeline, optionally selecting it. Hopped off the current runloop
-  /// turn because `sheetChanged` runs from a `@Published didSet` that SwiftUI may execute inside its own
-  /// update pass (the sheet's `isPresented` binding writes back on dismissal), where publishing is not
-  /// allowed.
-  private func revealInTimeline(_ blockID: DesignBlockID, verticalOnly: Bool = false, selecting: Bool = false) {
-    DispatchQueue.main.async { [weak self] in
-      guard let self, engine?.block.isValid(blockID) == true else { return }
-      timelineProperties.requestScroll(to: blockID, verticalOnly: verticalOnly)
-      if selecting {
-        select(id: blockID)
-      }
-    }
-  }
-
-  /// Unlike the floating voiceover sheet, both captions sheets unmount the timeline — so it comes back
-  /// scrolled to where it was before the caption lane existed. The edited caption is already the canvas
-  /// selection, hence no `selecting:`. Every caption shares the single caption lane, so the first one
-  /// resolves to the same row as any other. Vertical only because scrubbing the time axis to that first
-  /// caption would yank the timeline back to 0:00.
-  ///
-  /// Only meaningful for a sheet that just closed — `sheetChanged` has already established that.
-  private func revealCaptionLaneIfNeeded(after oldValue: SheetState) {
-    let wasCaptionsSheet = oldValue.type is SheetTypes.Captions || oldValue.type is SheetTypes.CaptionStyle
-    guard wasCaptionsSheet,
-          let target = timelineProperties.dataSource.captionTrack.clips.first else { return }
-
-    revealInTimeline(target.id, verticalOnly: true)
   }
 
   func selectionChanged(_ oldValue: Selection?) {
@@ -2327,12 +2012,6 @@ extension Interactor {
     }
     if selection?.blocks.isEmpty ?? true, !isPreviewMode {
       updateZoom(clampOnly: true)
-    }
-
-    if let sheetForBlock = sheet.type as? SheetTypeForDesignBlock,
-       selection?.blocks == [sheetForBlock.id] {
-      updateTimelineSelectionFromCanvas()
-      return
     }
 
     if sheet.isPresented {
@@ -2347,10 +2026,6 @@ extension Interactor {
            // Don't close a replace sheet when the new selection is also a placeholder —
            // onClicked will update its content in place for a seamless transition.
            !(sheet.isReplacing && placeholderContent(for: selection) != nil),
-           // The captions sheet drives the selection itself: it selects the row being edited (matching
-           // web) and clears it whenever a merge or delete destroys that caption. None of those are the
-           // user picking a different block, so they must not close the sheet — it has its own dismiss.
-           !(sheet.type is SheetTypes.Captions),
            oldValue?.blocks != selection?.blocks {
           sheet.isPresented = false
         }
@@ -2415,16 +2090,10 @@ extension Interactor {
   func historyChanged() {
     guard let engine else { return }
 
-    let isPageResize = sheet.isPresented && sheet.type is SheetTypes.Resize
     do {
       // If in page crop/resize mode, zoom to page again.
-      let isPageCrop: Bool = {
-        guard editMode == .crop,
-              let blockID = selection?.blocks.first,
-              let type = try? engine.block.getType(blockID) else { return false }
-        return type != DesignBlockType.graphic.rawValue
-      }()
-      if isPageCrop || isPageResize {
+      if editMode == .crop, let selection = selection?.blocks.first, let type = try? engine.block.getType(selection),
+         type != DesignBlockType.graphic.rawValue {
         updateZoom(for: .pageSizeChanged, with: (zoomModel.defaultInsets, zoomModel.canvasHeight, zoomModel.padding))
       }
       if isPagesMode {
@@ -2442,8 +2111,7 @@ extension Interactor {
         page = pageIndex
       }
     } else {
-      // Mirrors isResizingPages: suppress page-index sync while the Resize sheet is open.
-      if isResizingPages || isPageResize {
+      if isResizingPages {
         isResizingPages = false
       } else {
         let pageIndex = try? engine.getCurrentPageIndex()
@@ -2519,7 +2187,7 @@ extension PageOverviewState {
             block: $0,
             width: CGFloat(try engine.block.getFrameWidth($0)),
             height: CGFloat(try engine.block.getFrameHeight($0)),
-            // When engine exposes the page(s) changed for `onHistoryUpdatedWithKind` we can selectively refresh pages
+            // When engine exposes the page(s) changed for `onHistoryUpdated` we can selectively refresh pages
             // instead of all.
             refresh: UUID())
     }

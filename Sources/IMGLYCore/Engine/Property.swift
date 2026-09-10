@@ -41,14 +41,11 @@ import Foundation
 
   case playbackPlaying = "playback/playing"
 
-  case textText = "text/text"
   case textFontFileURI = "text/fontFileUri"
   case textFontSize = "text/fontSize"
   case textHorizontalAlignment = "text/horizontalAlignment"
   case textLetterSpacing = "text/letterSpacing"
   case textLineHeight = "text/lineHeight"
-  case textPathOffset = "text/pathOffset"
-  case textPathExternalRef = "text/pathExternalRef"
   case textVerticalAlignment = "text/verticalAlignment"
   case textClipLinesOutsideOfFrame = "text/clipLinesOutsideOfFrame"
   case textParagraphSpacing = "text/paragraphSpacing"

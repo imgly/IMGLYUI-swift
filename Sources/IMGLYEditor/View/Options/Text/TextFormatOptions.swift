@@ -8,47 +8,19 @@ struct TextFormatOptions: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  private var fontLibrary: FontLibrary {
-    interactor.fontLibrary
-  }
-
-  private var isTextOnPath: Bool {
-    interactor.isTextOnPath(id)
-  }
-
-  /// Captions reuse the text formatting UI but their properties live under `caption/*` instead of `text/*`.
-  /// The direct property bindings below are namespaced via ``namespacedProperty(_:)``; bold/italic, letter
-  /// case, and decorations write the whole block so the engine fans them out across the track (list style is
-  /// hidden — the engine can't sync it).
-  private var isCaption: Bool {
-    interactor.sheetContent(id) == .caption
-  }
-
-  private var namespace: String {
-    isCaption ? "caption" : "text"
-  }
-
-  /// A property in the block's text namespace (`text/*` or `caption/*`), e.g. `namespacedProperty("fontSize")`.
-  private func namespacedProperty(_ suffix: String) -> Property {
-    Property(rawValue: "\(namespace)/\(suffix)")
-  }
+  private var fontLibrary: FontLibrary { interactor.fontLibrary }
 
   var body: some View {
-    let content = interactor.sheetContent(id)
     List {
-      if content == .text || content == .caption {
+      if interactor.sheetContent(id) == .text {
         fontSelection
         fontWeightSelection
         fontSizeSelection
         alignmentSelection
         letterOptions
-        // Frame behavior + clipping are hidden for captions: caption size is preset-controlled and synced
-        // across the track.
-        if !isCaption, interactor.isAllowed(id, scope: .layerResize) {
+        if interactor.isAllowed(id, scope: .layerResize) {
           frameBehavior
-            .disabled(isTextOnPath)
           clipping
-            .disabled(isTextOnPath)
         }
       }
     }
@@ -57,12 +29,12 @@ struct TextFormatOptions: View {
   // MARK: - @ViewBuilder
 
   @ViewBuilder var fontSelection: some View {
-    let fontAssetID = interactor.bindFontAssetID(id, fontFileURIProperty: namespacedProperty("fontFileUri"))
+    let textReset = interactor.bindTextState(id, resetFontProperties: true)
 
     NavigationLinkPicker(
       title: .imgly.localized("ly_img_editor_sheet_format_text_label_font"),
       data: [fontLibrary.assets],
-      selection: fontAssetID,
+      selection: textReset.assetID,
     ) { asset, isSelected in
       FontLoader(fontURL: asset.result.payload?.typeface?.previewFont?.uri) { fontName in
         Label(asset.labelOrTypefaceName ?? "Unnamed Typeface", systemImage: "checkmark")
@@ -72,23 +44,60 @@ struct TextFormatOptions: View {
           .labelStyle(.icon(hidden: !isSelected, titleFont: .custom("", size: 17)))
       }
     } linkLabel: { selection in
-      Text(selection?.labelOrTypefaceName ?? "Default")
+      Text(selection?.labelOrTypefaceName ?? "Unnamed Typeface")
     }
   }
 
-  var fontWeightSelection: some View {
+  @ViewBuilder var fontWeightSelection: some View {
+    let text = interactor.bindTextState(id, resetFontProperties: false)
+
+    // Wrap interactor.bind to convert nil → .inactive so the setter fires on deselect.
+    // GenericPropertyButton sets nil when toggling off, but interactor.bind ignores nil values.
+    let rawUnderline: Binding<TextProperty?> = interactor.bind(id) { engine, block in
+      let decorations = try engine.block.getTextDecorations(block)
+      let hasUnderline = decorations.contains { $0.line.contains(.underline) }
+      return hasUnderline ? TextProperty.underline : TextProperty.inactive
+    } setter: { engine, blocks, _, completion in
+      try blocks.forEach {
+        try engine.block.toggleTextDecorationUnderline($0)
+      }
+      let didChange = !blocks.isEmpty
+      return try (completion?(engine, blocks, didChange) ?? false) || didChange
+    }
+    let underlineBinding = Binding<TextProperty?>(
+      get: { rawUnderline.wrappedValue },
+      set: { rawUnderline.wrappedValue = $0 ?? .inactive }
+    )
+
+    let rawStrikethrough: Binding<TextProperty?> = interactor.bind(id) { engine, block in
+      let decorations = try engine.block.getTextDecorations(block)
+      let hasStrikethrough = decorations.contains { $0.line.contains(.strikethrough) }
+      return hasStrikethrough ? TextProperty.strikethrough : TextProperty.inactive
+    } setter: { engine, blocks, _, completion in
+      try blocks.forEach {
+        try engine.block.toggleTextDecorationStrikethrough($0)
+      }
+      let didChange = !blocks.isEmpty
+      return try (completion?(engine, blocks, didChange) ?? false) || didChange
+    }
+    let strikethroughBinding = Binding<TextProperty?>(
+      get: { rawStrikethrough.wrappedValue },
+      set: { rawStrikethrough.wrappedValue = $0 ?? .inactive }
+    )
+
     HStack(spacing: 32) {
-      PropertyButton(property: .bold, selection: interactor.bindBoldToggle(id))
-      PropertyButton(property: .italic, selection: interactor.bindItalicToggle(id))
-      PropertyButton(property: .underline, selection: interactor.bindUnderlineToggle(id))
-      PropertyButton(property: .strikethrough, selection: interactor.bindStrikethroughToggle(id))
+      PropertyButton(property: .bold, selection: text.bold)
+      PropertyButton(property: .italic, selection: text.italic)
+      PropertyButton(property: .underline, selection: underlineBinding)
+      PropertyButton(property: .strikethrough, selection: strikethroughBinding)
       Spacer()
-      let selection: Binding<String?> = interactor.bind(
-        id, default: nil as String?,
-      ) { engine, block -> String? in
-        try engine.block.resolveTextFontID(block)
+      let selection: Binding<String?> = interactor.bind(id) { engine, block in
+        let typeface = try engine.block.getTypeface(block)
+        let styles = try engine.block.getTextFontStyles(block).first
+        let weights = try engine.block.getTextFontWeights(block).first
+        let currentFont = typeface.fonts.first { $0.style == styles && $0.weight == weights }
+        return currentFont?.id ?? ""
       } setter: { engine, blocks, value, completion in
-        guard let value else { return false }
         let changed = try blocks.filter {
           let typeface = try engine.block.getTypeface($0)
           let styles = try engine.block.getTextFontStyles($0).first
@@ -108,10 +117,10 @@ struct TextFormatOptions: View {
         return try (completion?(engine, blocks, didChange) ?? false) || didChange
       }
 
-      if let id,
-         let fonts: [Interactor.Font] = interactor.get(id, getter: { engine, block in
-           (try? engine.block.getTypeface(block))?.fonts ?? []
-         }), !fonts.isEmpty {
+      if let id, let fonts: [Interactor.Font] = interactor.get(id, getter: { engine, block in
+        let typeface = try engine.block.getTypeface(block)
+        return typeface.fonts
+      }) {
         let sortedFonts = fonts.sorted { $0.weight.rawValue < $1.weight.rawValue }
         let nonItalicFonts = sortedFonts.filter { $0.style != .italic }
         let italicFonts = sortedFonts.filter { $0.style == .italic }
@@ -126,8 +135,6 @@ struct TextFormatOptions: View {
         } linkLabel: { selection in
           if let selection {
             Text(selection.localizedSubFamiliy)
-          } else {
-            Text(.imgly.localized("ly_img_editor_sheet_format_text_font_subfamily_mixed"))
           }
         }
       }
@@ -146,21 +153,17 @@ struct TextFormatOptions: View {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_font_size"),
         in: fontSizeRange,
-        property: namespacedProperty("fontSize"),
-        setter: Interactor.Setter.textFontSize(),
-        getter: Interactor.Getter.textFontSize(),
+        property: .key(.textFontSize)
       )
     } header: {
       Text(String(localized: .imgly.localized("ly_img_editor_sheet_format_text_label_font_size")) + unitSuffix)
     }
   }
 
-  var alignmentSelection: some View {
+  @ViewBuilder var alignmentSelection: some View {
     Section {
       HStack {
-        let alignmentX: Binding<HorizontalAlignment?> = interactor.bind(
-          id, property: namespacedProperty("horizontalAlignment"),
-        )
+        let alignmentX: Binding<HorizontalAlignment?> = interactor.bind(id, property: .key(.textHorizontalAlignment))
         let effectiveAlignmentX: HorizontalAlignment? = id.flatMap { blockID in
           interactor.get(blockID) { engine, block in
             HorizontalAlignment(try engine.block.getTextEffectiveHorizontalAlignment(block))
@@ -188,9 +191,7 @@ struct TextFormatOptions: View {
         }
         Spacer()
         HStack(spacing: 16) {
-          let alignmentY: Binding<VerticalAlignment?> = interactor.bind(
-            id, property: namespacedProperty("verticalAlignment"),
-          )
+          let alignmentY: Binding<VerticalAlignment?> = interactor.bind(id, property: .key(.textVerticalAlignment))
           PropertyButton(property: .top, selection: alignmentY)
           PropertyButton(property: .center, selection: alignmentY)
           PropertyButton(property: .bottom, selection: alignmentY)
@@ -271,9 +272,7 @@ struct TextFormatOptions: View {
       false
     }
     if showClippingBinding.wrappedValue {
-      let clipping: Binding<Bool> = interactor.bind(
-        id, property: namespacedProperty("clipLinesOutsideOfFrame"), default: true,
-      )
+      let clipping: Binding<Bool> = interactor.bind(id, property: .key(.textClipLinesOutsideOfFrame), default: true)
       Toggle(isOn: clipping) {
         Text(.imgly.localized("ly_img_editor_sheet_format_text_label_frame_clipping"))
       }
@@ -284,14 +283,29 @@ struct TextFormatOptions: View {
   @ViewBuilder var letterOptions: some View {
     Section {
       HStack {
-        let letterCase = interactor.bindLetterCase(id)
-        PropertyButton(property: .normal, selection: letterCase, allowsDeselection: false)
+        let letterCase: Binding<Interactor.TextCase?> = interactor.bind(id) { engine, block in
+          let textCase = try engine.block.getTextCases(block).first
+          return textCase ?? .normal
+        } setter: { engine, blocks, value, completion in
+          let changed = try blocks.filter {
+            let textCase = try engine.block.getTextCases($0).first
+            return textCase != value
+          }
+
+          try changed.forEach {
+            try engine.block.setTextCase($0, textCase: value)
+          }
+
+          let didChange = !changed.isEmpty
+          return try (completion?(engine, blocks, didChange) ?? false) || didChange
+        }
+        PropertyButton(property: .normal, selection: letterCase)
         Spacer()
-        PropertyButton(property: .uppercase, selection: letterCase, allowsDeselection: false)
+        PropertyButton(property: .uppercase, selection: letterCase)
         Spacer()
-        PropertyButton(property: .lowercase, selection: letterCase, allowsDeselection: false)
+        PropertyButton(property: .lowercase, selection: letterCase)
         Spacer()
-        PropertyButton(property: .titlecase, selection: letterCase, allowsDeselection: false)
+        PropertyButton(property: .titlecase, selection: letterCase)
       }
       .padding([.leading, .trailing], 16)
       .labelStyle(.iconOnly)
@@ -303,43 +317,71 @@ struct TextFormatOptions: View {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"),
         in: -0.15 ... 1.4,
-        property: namespacedProperty("letterSpacing"),
+        property: .key(.textLetterSpacing)
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"))
     }
-    // List style is hidden for captions: the engine has no cross-caption sync for it, so it would apply to
-    // the selected caption only — out of step with the rest of the sheet, which fans out to the whole track.
-    if !isCaption {
-      listStyleSelection
-        .disabled(isTextOnPath)
-    }
+    listStyleSelection
     Section {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_line_height"),
         in: 0.5 ... 2.5,
-        property: namespacedProperty("lineHeight"),
+        property: .key(.textLineHeight)
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_line_height"))
     }
-    .disabled(isTextOnPath)
     Section {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"),
         in: 0 ... 2.5,
-        property: namespacedProperty("paragraphSpacing"),
+        property: .key(.textParagraphSpacing)
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"))
     }
-    .disabled(isTextOnPath)
   }
 
-  var listStyleSelection: some View {
+  @ViewBuilder var listStyleSelection: some View {
     Section {
       HStack {
-        let listStyle = interactor.bindListStyle(id)
+        // Use `default: nil` overload so the getter can return nil for mixed-paragraph state.
+        // This gives Binding<ListStyle?> where nil means "mixed" (no button highlighted).
+        let listStyle: Binding<IMGLYEngine.ListStyle?> = interactor.bind(
+          id, default: nil as IMGLYEngine.ListStyle?,
+        ) { engine, block -> IMGLYEngine.ListStyle? in
+          let cursorRange = try engine.block.getTextCursorRange()
+          let paragraphIndices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
+          guard !paragraphIndices.isEmpty else { return ListStyle.none }
+          let styles = try paragraphIndices.map {
+            try engine.block.getTextListStyle(block, paragraphIndex: $0)
+          }
+          let first = styles[0]
+          return styles.dropFirst().allSatisfy { $0 == first } ? first : nil
+        } setter: { engine, blocks, value, completion in
+          guard let value else { return false }
+          let cursorRange = try engine.block.getTextCursorRange()
+          let changed = try blocks.filter { block in
+            let paragraphIndices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
+            guard !paragraphIndices.isEmpty else { return false }
+            return try paragraphIndices.contains {
+              try engine.block.getTextListStyle(block, paragraphIndex: $0) != value
+            }
+          }
+          try changed.forEach { block in
+            if cursorRange != nil {
+              let paragraphIndices = try engine.block.getTextParagraphIndices(block, in: cursorRange)
+              try paragraphIndices.forEach { index in
+                try engine.block.setTextListStyle(block, listStyle: value, paragraphIndex: index)
+              }
+            } else {
+              try engine.block.setTextListStyle(block, listStyle: value, paragraphIndex: -1)
+            }
+          }
+          let didChange = !changed.isEmpty
+          return try (completion?(engine, blocks, didChange) ?? false) || didChange
+        }
 
         // Wrap so that PropertyButton's toggle-off (nil) maps to .none instead of mixed state.
         let mappedListStyle = Binding<IMGLYEngine.ListStyle?>(

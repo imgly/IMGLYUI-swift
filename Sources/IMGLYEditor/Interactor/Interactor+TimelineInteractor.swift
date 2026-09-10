@@ -6,21 +6,6 @@ import IMGLYEngine
 import SwiftUI
 
 extension Interactor: TimelineInteractor {
-  /// Rebuilds transition-derived clip geometry after a committed history change.
-  /// Transition blocks do not emit an owning-clip update event.
-  func refreshTimelineAfterHistoryChange() {
-    refreshTimeline()
-    updateDurations()
-  }
-
-  /// Recomputes the transition seams from the current clip state and zoom level.
-  /// Seam compactness depends on rendered clip widths, so a zoom change must
-  /// re-evaluate it even though no engine event fires. Matches Android's `setZoom`.
-  func refreshTransitionSeams() {
-    guard let engine else { return }
-    updateTransitionSeams(engine: engine)
-  }
-
   /// Configure the timeline.
   func configureTimeline() throws {
     guard let engine else { return }
@@ -154,21 +139,16 @@ extension Interactor: TimelineInteractor {
     }
 
     if events.contains(where: { $0.type == .updated }) {
-      // Style changes fan out as many events per block (and per fill/effect),
-      // so dedupe the block IDs before resolving them to clips.
-      let updatedBlocks = Set(events.lazy.filter { $0.type == .updated }.map(\.block))
-
       var clipsToUpdate = Set<Clip>()
-      for block in updatedBlocks {
-        if let clip = timelineProperties.dataSource.findClip(containing: block) {
+
+      for event in events {
+        guard event.type == .updated else { continue }
+        if let clip = timelineProperties.dataSource.findClip(containing: event.block) {
           clipsToUpdate.insert(clip)
         }
       }
       for clip in clipsToUpdate {
-        refresh(clip: clip, updatingSnapDetents: false)
-      }
-      if !clipsToUpdate.isEmpty {
-        timelineProperties.dataSource.updateSnapDetents()
+        refresh(clip: clip)
       }
       // Once per batch — reading page duration triggers `Track::layout()`, which
       // amplifies its gap-handling bug on intermediate state.
@@ -417,10 +397,7 @@ extension Interactor: TimelineInteractor {
   ) throws {
     try engine.block.insertChild(into: engineTrackID, child: clip.id, at: insertIndex)
     for sibling in targetTrack.clips where sibling.id != clip.id {
-      // Match Android: only commit siblings that were shifted by the cascade.
-      // Reapplying unchanged offsets invokes Track::layout() and can mutate
-      // unrelated clips when the drag is released.
-      guard let offset = siblingOffsets[sibling.id], offset != sibling.timeOffset else { continue }
+      let offset = siblingOffsets[sibling.id] ?? sibling.timeOffset
       try engine.block.setTimeOffset(sibling.id, offset: offset.seconds)
     }
     try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
@@ -469,22 +446,15 @@ extension Interactor: TimelineInteractor {
         packBackgroundChildren(engine: engine)
       }
     } else if targetTrack !== timelineProperties.dataSource.backgroundTrack {
-      refresh(clip: clip, updatingSnapDetents: false)
+      refresh(clip: clip)
       for sibling in targetTrack.clips where sibling.id != clip.id {
-        refresh(clip: sibling, updatingSnapDetents: false)
+        refresh(clip: sibling)
       }
-      timelineProperties.dataSource.updateSnapDetents()
-      // A same-track drop does not require a full rebuild, but it still changes
-      // which adjacent clips form a transition pair. Recompute the projected
-      // bounds and seams in this stack frame instead of waiting for the engine
-      // event batch.
-      updateDurations()
       return
     }
     // Cross-track or BG reorder — refreshTimeline rebuilds with reused instances and
     // recomputes the BG packed offsets deterministically.
     refreshTimeline()
-    updateDurations()
     timelineProperties.suppressNextDirtyRefresh = true
   }
 
@@ -554,7 +524,6 @@ extension Interactor: TimelineInteractor {
         packBackgroundChildren(engine: engine)
       }
       refreshTimeline()
-      updateDurations()
       timelineProperties.suppressNextDirtyRefresh = true
     } catch {
       handleError(error)
@@ -578,33 +547,31 @@ extension Interactor: TimelineInteractor {
     }
     for blockID in sortedIDs {
       if let clip = timelineProperties.dataSource.findClip(id: blockID) {
-        refresh(clip: clip, updatingSnapDetents: false)
+        refresh(clip: clip)
       }
     }
-    timelineProperties.dataSource.updateSnapDetents()
   }
 
   /// Sets a new trim to the passed `Clip` and its corresponding `DesignBlock`.
   /// - Parameters:
   ///   - clip: The `Clip` that will get the new trim.
-  ///   - timeOffset: The transition-projected offset relative to the containing `Page`.
+  ///   - timeOffset: The offset relative to the containing `Page`.
   ///   - trimOffset: The offset in the `Clip`’s footage.
-  ///   - duration: The transition-projected duration visible in the timeline.
+  ///   - duration: The duration for how long the `Clip` will be visible during playback.
   func setTrim(clip: Clip, timeOffset: CMTime, trimOffset: CMTime, duration: CMTime) {
-    guard let engine else { return }
-    let timing = transitionTiming(engine: engine, clip: clip.id, renderedDuration: duration)
-    setTimeOffset(clip: clip, timeOffset: max(.zero, timeOffset - timing.trim.lead))
+    setTimeOffset(clip: clip, timeOffset: timeOffset)
     setTrimOffset(clip: clip, trimOffset: trimOffset)
-    setDuration(clip: clip, duration: timing.rawDuration)
+    setDuration(clip: clip, duration: duration)
 
     // Call refresh manually to apply the change immediately (without a glitch):
     refresh(clip: clip)
 
-    // Keep raw sibling bounds valid after an engine trim. This applies to the
-    // background track as well; transition-projected cells must never be written
-    // back as engine timing.
-    if let track = timelineProperties.dataSource.findTrack(containing: clip) {
-      packAndPersistTrackClips(track: track, selectedClipID: clip.id)
+    // Work around the engine's `Track::layout()` gap-handling bug by packing clips
+    // ourselves on submit (like web's `packElements`).
+    if !clip.isInBackgroundTrack,
+       let track = timelineProperties.dataSource.findTrack(containing: clip),
+       track.engineTrackID != nil {
+      packAndPersistTrackClips(track: track)
     }
 
     // Sync now so anchored UI (e.g. "+ Add Clip") doesn't flicker before the async
@@ -614,99 +581,55 @@ extension Interactor: TimelineInteractor {
     addUndoStep()
   }
 
-  /// Mirrors Android's `packAndPersistSiblings`. The timeline cells are transition-
-  /// projected, so layout decisions and writes must use the raw engine extents.
-  private func packAndPersistTrackClips(track: Track, selectedClipID: DesignBlockID) {
+  /// Mirrors web's `packElements`: walk the track left-to-right, resolve overlaps,
+  /// persist positions, refresh.
+  private func packAndPersistTrackClips(track: Track) {
     guard let engine else { return }
+    let sorted = track.clips.sorted { $0.timeOffset < $1.timeOffset }
+    var cursor: CMTime = .zero
 
-    let sorted = rawTrackClips(track: track, engine: engine)
+    for (index, clip) in sorted.enumerated() {
+      let duration = clip.duration ?? .zero
 
-    guard let pivotIndex = sorted.firstIndex(where: { $0.clip.id == selectedClipID }) else { return }
-
-    var overrides: [DesignBlockID: CMTime] = [:]
-    packPrecedingTrackClips(sorted: sorted, pivotIndex: pivotIndex, engine: engine, overrides: &overrides)
-    packSucceedingTrackClips(sorted: sorted, pivotIndex: pivotIndex, engine: engine, overrides: &overrides)
-    persistTrackClipOffsets(overrides, engine: engine)
-
-    for clip in track.clips {
-      refresh(clip: clip, updatingSnapDetents: false)
-    }
-    timelineProperties.dataSource.updateSnapDetents()
-  }
-
-  private struct RawTrackClip {
-    let clip: Clip
-    let timeOffset: CMTime
-    let duration: CMTime
-  }
-
-  private func rawTrackClips(track: Track, engine: Engine) -> [RawTrackClip] {
-    track.clips.compactMap { clip in
-      guard let timeOffset = try? engine.block.getTimeOffset(clip.id),
-            let duration = try? engine.block.getDuration(clip.id) else { return nil }
-      return .init(
-        clip: clip,
-        timeOffset: CMTime(seconds: timeOffset),
-        duration: CMTime(seconds: duration),
-      )
-    }.sorted { $0.timeOffset < $1.timeOffset }
-  }
-
-  // Push preceding clips left only if the trim now overlaps them. Preserve a
-  // real transition's raw overlap instead of treating projected cells as gaps.
-  private func packPrecedingTrackClips(
-    sorted: [RawTrackClip], pivotIndex: Int, engine: Engine, overrides: inout [DesignBlockID: CMTime],
-  ) {
-    var next = sorted[pivotIndex]
-    var nextStart = next.timeOffset
-    for index in stride(from: pivotIndex - 1, through: 0, by: -1) {
-      let neighbor = sorted[index]
-      if neighbor.clip.isLocked {
-        break
+      if clip.isLocked {
+        // Locked clips stay at their authored position. Re-write it explicitly so the
+        // engine's `Track::layout()` (triggered by `setDuration` / `insertChild`) can't
+        // leave a locked clip drifted to a position we never asked for. Advance the
+        // cursor monotonically past it so trailing unlocked clips pack behind.
+        do {
+          try engine.block.setTimeOffset(clip.id, offset: clip.timeOffset.seconds)
+        } catch {
+          handleError(error)
+        }
+        cursor = max(cursor, clip.timeOffset + duration)
+        continue
       }
-      let overlap = transitionOverlap(engine: engine, outgoing: neighbor.clip.id, incoming: next.clip.id)
-      let desiredEnd = nextStart + overlap
-      guard neighbor.timeOffset + neighbor.duration > desiredEnd else { break }
-      let newOffset = max(.zero, desiredEnd - neighbor.duration)
-      overrides[neighbor.clip.id] = newOffset
-      next = neighbor
-      nextStart = newOffset
-    }
-  }
 
-  // The background lane packs successors; other tracks move only the clips that
-  // would overlap the committed raw bounds. This is the same rule Android uses.
-  private func packSucceedingTrackClips(
-    sorted: [RawTrackClip], pivotIndex: Int, engine: Engine, overrides: inout [DesignBlockID: CMTime],
-  ) {
-    let pivot = sorted[pivotIndex]
-    var previous = pivot
-    var previousEnd = pivot.timeOffset + pivot.duration
-    for index in (pivotIndex + 1) ..< sorted.count {
-      let neighbor = sorted[index]
-      if neighbor.clip.isLocked {
-        break
-      }
-      let overlap = transitionOverlap(engine: engine, outgoing: previous.clip.id, incoming: neighbor.clip.id)
-      let desiredStart = previousEnd - overlap
-      if !pivot.clip.isInBackgroundTrack, neighbor.timeOffset >= desiredStart {
-        break
-      }
-      if neighbor.timeOffset != desiredStart {
-        overrides[neighbor.clip.id] = desiredStart
-      }
-      previous = neighbor
-      previousEnd = desiredStart + neighbor.duration
-    }
-  }
+      let nextLockedStart = sorted[(index + 1)...]
+        .first(where: { $0.isLocked })?.timeOffset
 
-  private func persistTrackClipOffsets(_ overrides: [DesignBlockID: CMTime], engine: Engine) {
-    for (id, offset) in overrides {
+      var resolvedOffset = max(clip.timeOffset, cursor)
+      if let nextLockedStart {
+        // Cap at the next locked clip so an unlocked one can't overlap it.
+        let cap = nextLockedStart - duration
+        if cap >= cursor {
+          resolvedOffset = min(resolvedOffset, cap)
+        }
+        // If cap < cursor, the clip can't fit — accept overlap (the trim cap should
+        // prevent reaching this state).
+      }
+
+      clip.timeOffset = resolvedOffset
       do {
-        try engine.block.setTimeOffset(id, offset: offset.seconds)
+        try engine.block.setTimeOffset(clip.id, offset: resolvedOffset.seconds)
       } catch {
         handleError(error)
       }
+      cursor = resolvedOffset + duration
+    }
+
+    for clip in track.clips {
+      refresh(clip: clip)
     }
   }
 
@@ -758,13 +681,6 @@ extension Interactor: TimelineInteractor {
 
     guard let clip = timelineProperties.selectedClip else { return }
 
-    // A caption carries text as well as time, so the generic clip split — which duplicates the block —
-    // would leave both halves holding the whole line. Divide the text in the same proportion instead.
-    if (try? engine.block.getType(clip.id)) == BlockType.caption.rawValue {
-      CaptionsInteractor(self).splitCaption(clip.id, atTime: playheadPosition.seconds)
-      return
-    }
-
     let absoluteStartTime = clip.timeOffset
     let originalClipDurationOrInfinity = clip.duration ?? CMTime.positiveInfinity
 
@@ -788,9 +704,6 @@ extension Interactor: TimelineInteractor {
         return
       }
 
-      let wasBackgroundClip = timelineProperties.dataSource.findTrack(containing: clip)
-        === timelineProperties.dataSource.backgroundTrack
-
       do {
         _ = try engine.block.split(
           clip.id,
@@ -799,12 +712,6 @@ extension Interactor: TimelineInteractor {
         )
 
         addUndoStep()
-        cleanUpEmptyTracks()
-        if wasBackgroundClip {
-          packBackgroundChildren(engine: engine)
-        }
-        refreshTimeline()
-        timelineProperties.suppressNextDirtyRefresh = true
 
         // `createParentTrackIfNeeded` re-parents both halves into a new track, which
         // snaps the playhead back to the first half's start. Restore it.
@@ -843,16 +750,6 @@ extension Interactor: TimelineInteractor {
     }
   }
 
-  /// Refreshes only the thumbnails whose rendering depends on the zoom level
-  /// (video strips and audio waveforms). Text and caption thumbnails render
-  /// zoom-independently, and skipping them avoids re-reading every caption.
-  func refreshZoomDependentThumbnails() {
-    for clip in timelineProperties.dataSource.allClips()
-      where clip.clipType != .text && clip.clipType != .caption {
-      refreshThumbnail(clip: clip)
-    }
-  }
-
   /// Refreshes the thumbnail for a specific clip.
   /// - Parameter clip: The clip for which to refresh the thumbnail.
   func refreshThumbnail(clip: Clip) {
@@ -881,12 +778,9 @@ extension Interactor: TimelineInteractor {
   }
 
   /// Updates a clip representation in the timeline.
-  /// - Parameters:
-  ///   - clip: The clip to update.
-  ///   - updatingSnapDetents: Pass `false` when refreshing many clips in a batch
-  ///     and update the snap detents once after the batch instead.
-  private func refresh(clip: Clip, updatingSnapDetents: Bool = true) {
-    refresh(id: clip.id, clip: clip, updatingSnapDetents: updatingSnapDetents)
+  /// - Parameter clip: The clip to update.
+  private func refresh(clip: Clip) {
+    refresh(id: clip.id, clip: clip)
   }
 
   // swiftlint:disable cyclomatic_complexity
@@ -895,14 +789,7 @@ extension Interactor: TimelineInteractor {
   ///   - id: The engine block ID.
   ///   - existingClip: An existing clip to update, or `nil` to create a new one.
   ///   - targetTrack: When creating a new clip, the track to add it to. When `nil`, a new track is created.
-  ///   - updatingSnapDetents: Pass `false` when refreshing many clips in a batch
-  ///     and update the snap detents once after the batch instead.
-  private func refresh(
-    id: DesignBlockID,
-    clip existingClip: Clip?,
-    targetTrack: Track? = nil,
-    updatingSnapDetents: Bool = true,
-  ) {
+  private func refresh(id: DesignBlockID, clip existingClip: Clip?, targetTrack: Track? = nil) {
     guard let engine else { return }
 
     // Check if the block still exists or whether it has been deleted already.
@@ -910,10 +797,6 @@ extension Interactor: TimelineInteractor {
 
     do {
       let clip = existingClip ?? Clip(id: id)
-      let previousFillID = clip.fillID
-      let previousShapeID = clip.shapeID
-      let previousBlurID = clip.blurID
-      let previousEffectIDs = clip.effectIDs
 
       let fillID = try engine.block.supportsFill(id) ? try engine.block.getFill(id) : nil
       clip.fillID = fillID
@@ -932,17 +815,6 @@ extension Interactor: TimelineInteractor {
       clip.effectIDs = try engine.block.supportsEffects(id) ? try engine.block.getEffects(id) : []
       clip.blurID = try engine.block.supportsBlur(id) ? try engine.block.getBlur(id) : nil
 
-      // Invalidate the clip lookup only when membership or an indexed ID actually
-      // changed — batch flows like `commitPreviewedOffsets` interleave `findClip`
-      // with `refresh`, and a rebuild per clip would defeat the cache.
-      if existingClip == nil
-        || clip.fillID != previousFillID
-        || clip.shapeID != previousShapeID
-        || clip.blurID != previousBlurID
-        || clip.effectIDs != previousEffectIDs {
-        timelineProperties.dataSource.invalidateClipLookup()
-      }
-
       // Configure clip type
       let blockType = try engine.block.getType(id)
       let blockKind: BlockKind? = try? engine.block.getKind(id)
@@ -950,8 +822,6 @@ extension Interactor: TimelineInteractor {
       switch blockType {
       case DesignBlockType.audio.rawValue:
         try configureAudioClip(clip, id: id, kind: blockKind)
-      case DesignBlockType.caption.rawValue:
-        configureCaptionClip(clip)
       case DesignBlockType.graphic.rawValue:
         // Important: Don’t throw here!
         try configureGraphicClip(clip, fillType: fillType, kind: blockKind, fillID: fillID)
@@ -1001,9 +871,7 @@ extension Interactor: TimelineInteractor {
         }
       }
 
-      if updatingSnapDetents {
-        timelineProperties.dataSource.updateSnapDetents()
-      }
+      timelineProperties.dataSource.updateSnapDetents()
     } catch {
       handleError(error)
     }
@@ -1053,13 +921,6 @@ extension Interactor: TimelineInteractor {
     clip.footageURLString = try engine?.block.get(fillID, property: .key(.fillVideoFileURI))
   }
 
-  private func configureCaptionClip(_ clip: Clip) {
-    clip.clipType = .caption
-    clip.configuration = timelineProperties.configuration.captionClipConfiguration
-    // Text renders on the clip body, so the label shows only the icon.
-    clip.title = ""
-  }
-
   private func configureAudioClip(_ clip: Clip, id: DesignBlockID, kind: BlockKind?) throws {
     switch kind {
     case .key(.voiceover):
@@ -1084,18 +945,13 @@ extension Interactor: TimelineInteractor {
 
     let durationSeconds = try engine.block.getDuration(clip.id)
     if durationSeconds > Double(Int.max) {
-      clip.rawDuration = nil
       clip.duration = nil
     } else {
-      let duration = CMTime(seconds: durationSeconds)
-      clip.rawDuration = duration
-      clip.duration = duration
+      clip.duration = CMTime(seconds: durationSeconds)
     }
 
     let timeOffsetSeconds = try engine.block.getTimeOffset(clip.id)
-    let timeOffset = CMTime(seconds: timeOffsetSeconds)
-    clip.rawTimeOffset = timeOffset
-    clip.timeOffset = timeOffset
+    clip.timeOffset = CMTime(seconds: timeOffsetSeconds)
 
     if let fill = clip.fillID,
        let type = try? engine.block.getType(fill),
@@ -1207,119 +1063,26 @@ extension Interactor: TimelineInteractor {
     do {
       let blocks = try audioFirstOrderedPageChildren(engine: engine, pageID: pageID)
       let backgroundChildren = try resolveBackgroundTrack(engine: engine)
-      let captionChildren = try resolveCaptionTrack(engine: engine, pageID: pageID)
       let cache = buildOldClipCache()
 
       func resolveClip(_ id: DesignBlockID) -> Clip? {
         guard engine.block.isValid(id) else { return nil }
         let clip = cache.clipByID[id] ?? Clip(id: id)
-        refresh(id: id, clip: clip, updatingSnapDetents: false)
+        refresh(id: id, clip: clip)
         return clip
       }
 
-      let captionTrackID = timelineProperties.dataSource.captionTrack.engineTrackID
       let newTracks = try blocks
-        .filter { $0 != timelineProperties.backgroundTrack && $0 != captionTrackID }
+        .filter { $0 != timelineProperties.backgroundTrack }
         .compactMap { try buildTrack(forBlock: $0, engine: engine, cache: cache, resolveClip: resolveClip) }
       let newBgClips = packBackground(backgroundChildren.compactMap(resolveClip))
-      let newCaptionClips = captionChildren.compactMap(resolveClip)
 
       timelineProperties.dataSource.tracks = newTracks
       timelineProperties.dataSource.backgroundTrack.clips = newBgClips
-      timelineProperties.dataSource.captionTrack.clips = newCaptionClips
-      // Membership just changed wholesale; `updateTimelineSelectionFromCanvas()`
-      // below already reads through `findClip`.
-      timelineProperties.dataSource.invalidateClipLookup()
       timelineProperties.dataSource.updateSnapDetents()
       updateTimelineSelectionFromCanvas()
     } catch {
       handleError(error)
-    }
-  }
-
-  private func updateTransitionSeams(engine: Engine) {
-    var tracks = timelineProperties.dataSource.tracks
-    tracks.append(timelineProperties.dataSource.backgroundTrack)
-    tracks.append(timelineProperties.dataSource.captionTrack)
-    let selectedID = timelineProperties.selectedClip?.id
-    let totalDuration = timelineProperties.timeline?.totalDuration ?? .zero
-
-    for track in tracks {
-      applyTransitionGeometry(engine: engine, to: track)
-      let sorted = track.clips.sorted { $0.timeOffset < $1.timeOffset }
-      var availableWidths = Dictionary(uniqueKeysWithValues: sorted.map { clip in
-        (clip.id, timelineProperties.timeline?.convertToPoints(time: clip.duration ?? .zero) ?? 0)
-      })
-      let seams: [TransitionSeam] = zip(sorted, sorted.dropFirst()).compactMap { outgoing, incoming in
-        guard selectedID != outgoing.id, selectedID != incoming.id,
-              let outgoingDuration = outgoing.duration,
-              canShowTransition(
-                engine: engine,
-                outgoing: outgoing.id,
-                incoming: incoming.id,
-                outgoingEnd: outgoing.rawTimeOffset + (outgoing.rawDuration ?? outgoingDuration),
-                incomingStart: incoming.rawTimeOffset,
-              ) else { return nil }
-        let renderedSeamTime = CMTime(
-          seconds: (outgoing.timeOffset + outgoingDuration + incoming.timeOffset).seconds / 2,
-        )
-        guard renderedSeamTime < totalDuration else { return nil }
-        let assigned = hasRealTransition(engine: engine, outgoing: outgoing.id)
-        let hasSpace = [outgoing, incoming].allSatisfy { (availableWidths[$0.id] ?? 0) - 12 >= 30 }
-        let compact = !hasSpace
-        guard assigned || !compact else { return nil }
-        let radius: CGFloat = compact ? 5 : 12
-        availableWidths[outgoing.id, default: 0] -= radius
-        availableWidths[incoming.id, default: 0] -= radius
-        return TransitionSeam(
-          outgoingID: outgoing.id,
-          incomingID: incoming.id,
-          hasTransition: assigned,
-          isCompact: compact,
-        )
-      }
-      // Match Android: publish only on change so per-frame zoom updates do not
-      // re-render unchanged tracks.
-      if track.transitionSeams != seams {
-        track.transitionSeams = seams
-      }
-
-      // Reserve the seam's leading half inside the incoming clip label, matching
-      // Android. This keeps the clip type icon clear of both compact and regular
-      // seams without changing a clip's timeline geometry.
-      let leadingSeamSizes = Dictionary(uniqueKeysWithValues: seams.map { seam in
-        (seam.incomingID, seam.isCompact ? CGFloat(10) : CGFloat(24))
-      })
-      for clip in track.clips {
-        let leadingSeamSize = leadingSeamSizes[clip.id]
-        if clip.leadingTransitionSeamSize != leadingSeamSize {
-          clip.leadingTransitionSeamSize = leadingSeamSize
-        }
-      }
-    }
-  }
-
-  /// Mirrors Android's transition trims: the timeline leaves half of the effective
-  /// transition duration at each clip edge for the seam to occupy, while raw timing
-  /// remains available to trimming and engine mutations.
-  private func applyTransitionGeometry(engine: Engine, to track: Track) {
-    for clip in track.clips {
-      guard let rawDuration = clip.rawDuration else { continue }
-      let trim = transitionTrim(engine: engine, clip: clip.id)
-      let renderedDuration = max(.zero, rawDuration - trim.lead - trim.tail)
-      let renderedTimeOffset = clip.rawTimeOffset + trim.lead
-      if clip.duration != renderedDuration {
-        clip.duration = renderedDuration
-      }
-      if clip.timeOffset != renderedTimeOffset {
-        clip.timeOffset = renderedTimeOffset
-      }
-      if clip.transitionTrimLead != trim.lead {
-        clip.transitionTrimLead = trim.lead
-      }
-      if clip.transitionTrimTail != trim.tail {
-        clip.transitionTrimTail = trim.tail
-      }
     }
   }
 
@@ -1350,19 +1113,6 @@ extension Interactor: TimelineInteractor {
     return []
   }
 
-  /// Resolves the page's caption track and returns its current children.
-  /// Side-effect: updates the data-source caption lane's engine ID.
-  private func resolveCaptionTrack(engine: Engine, pageID: DesignBlockID) throws -> [DesignBlockID] {
-    let captionTrackID = try engine.block.getChildren(pageID)
-      .first { try engine.block.getType($0) == DesignBlockType.captionTrack.rawValue }
-    if let captionTrackID, engine.block.isValid(captionTrackID) {
-      timelineProperties.dataSource.captionTrack.engineTrackID = captionTrackID
-      return try engine.block.getChildren(captionTrackID)
-    }
-    timelineProperties.dataSource.captionTrack.engineTrackID = nil
-    return []
-  }
-
   private struct OldTrackCache {
     var trackByEngineID: [DesignBlockID: Track] = [:]
     var standaloneByClipID: [DesignBlockID: Track] = [:]
@@ -1383,9 +1133,6 @@ extension Interactor: TimelineInteractor {
       }
     }
     for clip in timelineProperties.dataSource.backgroundTrack.clips {
-      cache.clipByID[clip.id] = clip
-    }
-    for clip in timelineProperties.dataSource.captionTrack.clips {
       cache.clipByID[clip.id] = clip
     }
     return cache
@@ -1431,19 +1178,19 @@ extension Interactor: TimelineInteractor {
     do {
       let pageDuration = try engine.block.getDuration(pageID)
       let clipsDuration = timelineProperties.dataSource.allClips()
-        // Captions may sit past the content end, so they don't drive the timeline extent.
-        .filter { $0.clipType != .caption }
         .map { clip in
           let clipDuration = clip.duration?.seconds ?? max(0, pageDuration - clip.timeOffset.seconds)
           return clip.timeOffset.seconds + max(0, clipDuration)
         }
         .max() ?? 0
-      // A background track is the page duration source. Its clips may overlap for
-      // transitions, so summing their raw durations counts each overlap twice and
-      // lets the playhead travel beyond the rendered background timeline. Android
-      // uses the page duration for this same case.
+      // Sum local BG clip durations rather than reading `engine.block.getDuration(pageID)`.
+      // Right after a BG trim commit, `refresh(clip:)` has already pushed the new
+      // duration into the local `Clip`, but the engine's page duration can lag a frame
+      // — reading it here would briefly snap the "+ Add Clip" anchor back to the
+      // pre-trim position before the engine event lands.
       let resolvedDuration: Double = if timelineProperties.backgroundTrack != nil {
-        pageDuration
+        timelineProperties.dataSource.backgroundTrack.clips
+          .reduce(0.0) { $0 + ($1.duration?.seconds ?? 0) }
       } else {
         max(pageDuration, clipsDuration)
       }
@@ -1452,11 +1199,6 @@ extension Interactor: TimelineInteractor {
       if totalDuration != CMTime(seconds: timeline.totalDuration.seconds) {
         timelineProperties.timeline?.setTotalDuration(totalDuration)
       }
-      // A seam at the new end of an auto-packed background track becomes eligible
-      // only after the timeline has published that end. Running this from the
-      // duration path keeps the seam state in sync for both created and updated
-      // engine events.
-      updateTransitionSeams(engine: engine)
     } catch {
       handleError(error)
     }
@@ -1702,10 +1444,7 @@ extension Interactor: TimelineInteractor {
   func getTextContent(id: DesignBlockID) throws -> String {
     guard let engine else { throw Error(errorDescription: "Missing engine") }
 
-    let property = (try? engine.block.getType(id)) == DesignBlockType.caption.rawValue
-      ? "caption/text"
-      : "text/text"
-    return try engine.block.getString(id, property: property)
+    return try engine.block.getString(id, property: "text/text")
   }
 
   /// Generate thumbnails from a clip.
@@ -1763,7 +1502,6 @@ extension Interactor: TimelineInteractor {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }
     do {
-      timelineProperties.timeline?.animationPreview.stop(engine: engine, pageID: pageID)
       if seekToStartIfNeeded {
         let playbackTime = try engine.block.getPlaybackTime(pageID)
         let pageDuration = try engine.block.getDuration(pageID)
@@ -1782,9 +1520,8 @@ extension Interactor: TimelineInteractor {
     }
   }
 
-  /// Pause only when actually playing. Unlike ``pause()``, avoids the idle `setPlaying` that would
-  /// flip edit mode to TRANSFORM and tear down a text-edit session.
-  func pauseIfNeeded() {
+  /// Pause playback if needed.
+  private func pauseIfNeeded() {
     if timelineProperties.player.isPlaying {
       pause()
     }
@@ -1795,7 +1532,6 @@ extension Interactor: TimelineInteractor {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }
     do {
-      timelineProperties.timeline?.animationPreview.stop(engine: engine, pageID: pageID)
       try engine.block.setPlaying(pageID, enabled: false)
     } catch {
       handleError(error)
@@ -1822,7 +1558,6 @@ extension Interactor: TimelineInteractor {
           let timeline = timelineProperties.timeline,
           let pageID = timelineProperties.currentPage else { return }
     do {
-      timeline.animationPreview.stop(engine: engine, pageID: pageID)
       let maxTimelineSeconds = timeline.totalDuration.seconds
       var clampedSeconds = min(time.seconds, maxTimelineSeconds)
       if let maxPlaybackSeconds = timelineProperties.player.maxPlaybackDuration?.seconds {
@@ -1887,7 +1622,6 @@ extension Interactor: TimelineInteractor {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }
     do {
-      timelineProperties.timeline?.animationPreview.stop(engine: engine, pageID: pageID)
       try engine.block.setLooping(pageID, looping: !isLoopingPlaybackEnabled)
     } catch {
       handleError(error)
@@ -1931,19 +1665,6 @@ extension Interactor: TimelineInteractor {
     }
   }
 
-  func openTransition(for id: DesignBlockID) {
-    select(id: id)
-    guard timelineProperties.selectedClip?.id == id else { return }
-    pauseIfNeeded()
-    clampPlayheadPositionToSelectedClip()
-    let detent: PresentationDetent = if let engine, trackHasRealTransition(engine: engine, outgoing: id) {
-      .imgly.small
-    } else {
-      .imgly.tiny
-    }
-    sheet = .init(.transition(style: .only(detent: detent), id: id))
-  }
-
   func openCamera(_ assetSourceIDs: [MediaType: String]) {
     pause()
     uploadAssetSourceIDs = assetSourceIDs
@@ -1955,137 +1676,34 @@ extension Interactor: TimelineInteractor {
 
     guard let totalDuration = timelineProperties.timeline?.totalDuration else { return }
     Task {
-      do {
-        var currentTimeOffset = totalDuration
-        var trackForVideoIndex: [Int: DesignBlockID] = [:]
-        for recording in recordings {
-          for (index, video) in recording.videos.enumerated() {
-            // Add to asset library without invoking assetTapped()
-            isAddingCameraRecording = true
-            defer {
-              isAddingCameraRecording = false
-            }
-            let asset = try await uploadVideo(to: videoUploadAssetSourceID) { video.url }
-
-            guard let assetURL = asset.url else { continue }
-            guard let parentTrack = parentTrackForCameraVideo(
-              at: index,
-              memo: &trackForVideoIndex,
-            ) else { continue }
-            await addCameraVideo(
-              fileURL: assetURL,
-              rect: video.rect,
-              duration: recording.duration,
-              timeOffset: currentTimeOffset,
-              parentTrack: parentTrack,
-            )
+      var currentTimeOffset = totalDuration
+      var trackForVideoIndex: [Int: DesignBlockID] = [:]
+      for recording in recordings {
+        for (index, video) in recording.videos.enumerated() {
+          // Add to asset library without invoking assetTapped()
+          isAddingCameraRecording = true
+          defer {
+            isAddingCameraRecording = false
           }
-          // swiftlint:disable:next shorthand_operator
-          currentTimeOffset = currentTimeOffset + recording.duration
+          let asset = try await uploadVideo(to: videoUploadAssetSourceID) { video.url }
+
+          guard let assetURL = asset.url else { continue }
+          guard let parentTrack = parentTrackForCameraVideo(
+            at: index,
+            memo: &trackForVideoIndex,
+          ) else { continue }
+          await addCameraVideo(
+            fileURL: assetURL,
+            rect: video.rect,
+            duration: recording.duration,
+            timeOffset: currentTimeOffset,
+            parentTrack: parentTrack,
+          )
         }
-        addUndoStep()
-      } catch {
-        handleError(error)
+        // swiftlint:disable:next shorthand_operator
+        currentTimeOffset = currentTimeOffset + recording.duration
       }
-    }
-  }
-
-  func addCameraCapturesToTimeline(_ captures: [Capture]) {
-    setPlayheadPositionToEnding()
-    guard let totalDuration = timelineProperties.timeline?.totalDuration else { return }
-    Task {
-      isAddingCameraRecording = true
-      defer { isAddingCameraRecording = false }
-      do {
-        var currentTimeOffset = totalDuration
-        var trackForVideoIndex: [Int: DesignBlockID] = [:]
-        for capture in captures {
-          let captureDuration: CMTime
-          switch capture {
-          case let .photo(photo):
-            captureDuration = photo.duration
-            try await addCameraPhotoCapture(
-              photo,
-              timeOffset: currentTimeOffset,
-              trackForVideoIndex: &trackForVideoIndex,
-            )
-          case let .video(recording):
-            captureDuration = recording.duration
-            try await addCameraVideoCapture(
-              recording,
-              timeOffset: currentTimeOffset,
-              trackForVideoIndex: &trackForVideoIndex,
-            )
-          }
-          // swiftlint:disable:next shorthand_operator
-          currentTimeOffset = currentTimeOffset + captureDuration
-        }
-        addUndoStep()
-      } catch {
-        handleError(error)
-      }
-    }
-  }
-
-  private func addCameraPhotoCapture(
-    _ photo: Photo,
-    timeOffset: CMTime,
-    trackForVideoIndex: inout [Int: DesignBlockID],
-  ) async throws {
-    for (index, image) in photo.images.enumerated() {
-      let asset = try await uploadImage(to: imageUploadAssetSourceID) { image.url }
-      guard let assetURL = asset.url else { continue }
-      guard let parentTrack = parentTrackForCameraVideo(
-        at: index,
-        memo: &trackForVideoIndex,
-      ) else { continue }
-      await addCameraPhoto(
-        fileURL: assetURL,
-        rect: photo.images.count > 1 ? image.rect : nil,
-        duration: photo.duration,
-        timeOffset: timeOffset,
-        parentTrack: parentTrack,
-      )
-    }
-  }
-
-  private func addCameraVideoCapture(
-    _ recording: Recording,
-    timeOffset: CMTime,
-    trackForVideoIndex: inout [Int: DesignBlockID],
-  ) async throws {
-    for (index, video) in recording.videos.enumerated() {
-      let asset = try await uploadVideo(to: videoUploadAssetSourceID) { video.url }
-      guard let assetURL = asset.url else { continue }
-      guard let parentTrack = parentTrackForCameraVideo(
-        at: index,
-        memo: &trackForVideoIndex,
-      ) else { continue }
-      await addCameraVideo(
-        fileURL: assetURL,
-        rect: video.rect,
-        duration: recording.duration,
-        timeOffset: timeOffset,
-        parentTrack: parentTrack,
-      )
-    }
-  }
-
-  private func addCameraPhoto(
-    fileURL: URL,
-    rect: CGRect?,
-    duration: CMTime,
-    timeOffset: CMTime,
-    parentTrack: DesignBlockID,
-  ) async {
-    guard let engine else { return }
-    do {
-      let frame = rect ?? CGRect(origin: .zero, size: CameraConfiguration.defaultVideoSize)
-      guard let id = try placeImageGraphic(at: frame, fillURL: fileURL, parent: parentTrack) else { return }
-      try engine.block.setDuration(id, duration: duration.seconds)
-      try engine.block.setTimeOffset(id, offset: timeOffset.seconds)
-    } catch {
-      handleError(error)
+      addUndoStep()
     }
   }
 

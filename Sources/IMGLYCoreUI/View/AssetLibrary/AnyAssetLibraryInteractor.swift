@@ -4,9 +4,7 @@ import IMGLYEngine
 
 @MainActor
 class AnyAssetLibraryInteractor: AssetLibraryInteractor {
-  var isAddingAsset: Bool {
-    interactor.isAddingAsset
-  }
+  var isAddingAsset: Bool { interactor.isAddingAsset }
 
   func findAssets(sourceID: String, query: AssetQueryData) async throws -> AssetQueryResult {
     try await interactor.findAssets(sourceID: sourceID, query: query)

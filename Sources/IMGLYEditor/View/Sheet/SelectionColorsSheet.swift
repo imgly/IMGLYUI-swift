@@ -6,7 +6,7 @@ struct SelectionColorsSheet: View {
 
   @State var selectionColors = SelectionColors()
 
-  func colorOptions(_ title: LocalizedStringResource, colors: [SelectionColor]) -> some View {
+  @ViewBuilder func colorOptions(_ title: LocalizedStringResource, colors: [SelectionColor]) -> some View {
     ForEach(colors) { color in
       ColorOptions(title: title, color: color.binding, addUndoStep: interactor.addUndoStep)
     }

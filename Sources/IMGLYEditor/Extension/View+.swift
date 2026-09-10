@@ -42,13 +42,12 @@ public extension IMGLY where Wrapped: View {
 }
 
 extension IMGLY where Wrapped: View {
-  @MainActor
   func editor(_ settings: EngineSettings) -> some View {
     wrapped.modifier(ConfigurableEditor(settings: settings))
   }
 
   func fontFamilies(_ families: [String]?) -> some View {
-    wrapped.environment(\.imglyFontFamilies, families)
+    wrapped.environment(\.imglyFontFamilies, families ?? FontFamiliesKey.defaultValue)
   }
 
   func colorPalette(_ colors: [NamedColor]?) -> some View {
@@ -100,7 +99,7 @@ extension IMGLY where Wrapped: View {
     }
   }
 
-  @MainActor
+  @MainActor @ViewBuilder
   private func legacyPresentationConfiguration(_ largestUndimmedDetent: PresentationDetent?) -> some View {
     wrapped.introspect(.viewController, on: .iOS(.v16...), scope: .ancestor) { viewController in
       guard let controller = viewController.sheetPresentationController else {

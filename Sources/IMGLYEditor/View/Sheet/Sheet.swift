@@ -4,9 +4,7 @@ import SwiftUI
 struct Sheet: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.colorScheme) private var colorScheme
-  private var sheet: SheetState {
-    interactor.sheet
-  }
+  private var sheet: SheetState { interactor.sheet }
 
   @Environment(\.verticalSizeClass) private var verticalSizeClass
 
@@ -39,22 +37,18 @@ struct Sheet: View {
       CropOptionsSheet(sources: sheet.assetSourceIDs)
     case is SheetTypes.Voiceover: VoiceOverSheet()
     case is SheetTypes.Reorder: ReorderOptionsSheet()
-    case is SheetTypes.Captions: CaptionsSheet()
     case is SheetTypes.Adjustments: AdjustmentsOptionsSheet()
     case is SheetTypes.Filter: FilterOptionsSheet()
     case is SheetTypes.Effect: EffectOptionsSheet()
     case is SheetTypes.Blur: BlurOptionsSheet()
-    case is SheetTypes.CaptionStyle: CaptionStyleOptionsSheet()
     case is SheetTypes.Layer: LayerOptionsSheet()
     case is SheetTypes.FormatText: FormatTextOptionsSheet()
-    case is SheetTypes.TextOnPath: TextOnPathOptionsSheet()
     case is SheetTypes.Shape: ShapeOptionsSheet()
-    case let sheet as SheetTypes.FillStroke: FillStrokeOptionsSheet(fillOnly: sheet.fillOnly)
+    case is SheetTypes.FillStroke: FillStrokeOptionsSheet()
     case is SheetTypes.TextBackground: BackgroundOptionsSheet()
     case is SheetTypes.Volume: VolumeOptionsSheet()
     case is SheetTypes.ClipSpeed: ClipSpeedOptionsSheet()
     case is SheetTypes.Animation: AnimationOptionsSheet()
-    case is SheetTypes.Transition: TransitionOptionsSheet()
     case is SheetTypes.Resize: ResizeOptionsSheet()
     case is SheetTypes.DesignColors: SelectionColorsSheet()
     case is SheetTypes.GreetingSize: FontSizeSheet()

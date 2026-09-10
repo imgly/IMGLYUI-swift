@@ -1,5 +1,4 @@
 @_spi(Internal) import IMGLYCoreUI
-import IMGLYEngine
 import SwiftUI
 
 // MARK: - EditorEnvironment
@@ -18,7 +17,6 @@ import SwiftUI
   @_spi(Internal) public var onError: OnError.Callback?
   @_spi(Internal) public var onLoaded: OnLoaded.Callback?
   @_spi(Internal) public var onChanged: OnChanged.Callback?
-  @_spi(Internal) public var captionsGeneration: (@MainActor (_ engine: Engine) async throws -> URL?)?
 
   // MARK: - Dock
 
@@ -50,12 +48,6 @@ import SwiftUI
   @_spi(Internal) public var assetLibrary: (([AssetLibraryCategory]) -> any AssetLibrary)?
   @_spi(Internal) public var assetLibraryModifications: [CategoryModifications]
   @_spi(Internal) public var includeAVResources: Bool = false
-
-  /// Whether this editor accepts video resources from capture / upload flows. Aliases
-  /// `includeAVResources`; promote to a stored property to decouple.
-  @_spi(Internal) public var acceptsVideoCapture: Bool {
-    includeAVResources
-  }
 
   // MARK: - BottomPanel
 

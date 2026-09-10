@@ -1,14 +1,7 @@
 import Foundation
 import IMGLYEngine
 
-/// A legacy custom asset source that applies a fixed font weight and size (Title / Headline / Body) when applied to a
-/// text block.
-///
-/// The default text library now uses the split text sources (`ly.img.text` for plain-text presets, plus
-/// `ly.img.text.styles`, `ly.img.text.curves`, and `ly.img.text.components`) and no longer references this source.
-/// It is retained only for integrations that still register it explicitly; new integrations should use the split
-/// text sources instead.
-@available(*, deprecated, message: "Use the default text sources: ly.img.text, .styles, .curves, .components.")
+/// A custom asset source that applies different font weight and size when applied to a text block.
 public final class TextAssetSource: NSObject {
   private weak var engine: Engine?
   private let assets: [AssetResult]
@@ -22,7 +15,7 @@ public final class TextAssetSource: NSObject {
   public convenience init(
     engine: Engine,
     typefaceName: String = "Roboto",
-    typefaceSourceID: String = "ly.img.typeface",
+    typefaceSourceID: String = Engine.DefaultAssetSource.typeface.rawValue
   ) async throws {
     guard let asset = try await engine.asset.findAssets(
       sourceID: typefaceSourceID,
@@ -77,13 +70,10 @@ public final class TextAssetSource: NSObject {
   }
 }
 
-@available(*, deprecated, message: "Use the default text sources: ly.img.text, .styles, .curves, .components.")
 extension TextAssetSource: AssetSource {
   public static let id = "ly.img.asset.source.text"
 
-  public var id: String {
-    Self.id
-  }
+  public var id: String { Self.id }
 
   public func findAssets(queryData: AssetQueryData) async throws -> AssetQueryResult {
     let query = queryData.query?.lowercased() ?? ""
@@ -119,15 +109,9 @@ extension TextAssetSource: AssetSource {
     return .init(value: id)
   }
 
-  public var supportedMIMETypes: [String]? {
-    nil
-  }
+  public var supportedMIMETypes: [String]? { nil }
 
-  public var credits: AssetCredits? {
-    nil
-  }
+  public var credits: AssetCredits? { nil }
 
-  public var license: AssetLicense? {
-    nil
-  }
+  public var license: AssetLicense? { nil }
 }

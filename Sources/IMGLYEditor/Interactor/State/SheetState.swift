@@ -2,9 +2,7 @@ import IMGLYEngine
 import SwiftUI
 
 private extension SheetType {
-  var objectIdentifier: ObjectIdentifier {
-    .init(Self.self)
-  }
+  var objectIdentifier: ObjectIdentifier { .init(Self.self) }
 }
 
 struct EquatableSheetType: Equatable {
@@ -22,9 +20,7 @@ struct SheetState: BatchMutable, Equatable {
   var style: SheetStyle
 
   private let equatableType: EquatableSheetType?
-  var type: SheetType? {
-    equatableType?.value
-  }
+  var type: SheetType? { equatableType?.value }
 
   var isFloating: Bool {
     style.isFloating

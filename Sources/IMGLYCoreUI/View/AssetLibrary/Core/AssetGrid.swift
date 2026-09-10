@@ -2,7 +2,7 @@ import SwiftUI
 
 @_spi(Internal) public typealias AssetGridPlaceholderCount = @MainActor (
   _ state: AssetLoader.Models.State,
-  _ maxItemCount: Int,
+  _ maxItemCount: Int
 ) -> Int
 
 @_spi(Internal) public typealias AssetGridItemIndex = @MainActor (_ asset: AssetLoader.Asset) -> AnyHashable?
@@ -55,11 +55,7 @@ extension EnvironmentValues {
   private var isAttributionPresented: Binding<Bool> {
     Binding(
       get: { selectedAsset != nil },
-      set: {
-        if !$0 {
-          selectedAsset = nil
-        }
-      },
+      set: { if !$0 { selectedAsset = nil } },
     )
   }
 
@@ -67,7 +63,7 @@ extension EnvironmentValues {
     @ViewBuilder item: @escaping (AssetItem) -> Item,
     @ViewBuilder empty: @escaping (_ search: String) -> Empty = { _ in Message.noElements },
     @ViewBuilder first: @escaping () -> First = { EmptyView() },
-    @ViewBuilder more: @escaping () -> More = { EmptyView() },
+    @ViewBuilder more: @escaping () -> More = { EmptyView() }
   ) {
     self.item = item
     self.empty = empty
@@ -115,7 +111,7 @@ extension EnvironmentValues {
     }
   }
 
-  private var placeholderView: some View {
+  @ViewBuilder private var placeholderView: some View {
     grid {
       ForEach(0 ..< placeholderCount(data.model.state, maxItemCount), id: \.self) { _ in
         item(.placeholder)
@@ -167,7 +163,7 @@ extension EnvironmentValues {
     }
   }
 
-  private var contentView: some View {
+  @ViewBuilder private var contentView: some View {
     grid {
       first()
       let items = Array(data.model.assets

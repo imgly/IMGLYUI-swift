@@ -40,7 +40,7 @@ extension SizeLetter {
     }
   }
 
-  var icon: some View {
+  @ViewBuilder var icon: some View {
     Text(sizeLetter)
   }
 }

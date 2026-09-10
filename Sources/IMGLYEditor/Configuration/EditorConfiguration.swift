@@ -15,83 +15,53 @@ open class EditorConfiguration {
   // MARK: - Callbacks
 
   /// The `onCreate` handler.
-  open var onCreate: OnCreate.Handler? {
-    builder.onCreate
-  }
+  open var onCreate: OnCreate.Handler? { builder.onCreate }
 
   /// The `onExport` handler.
-  open var onExport: OnExport.Handler? {
-    builder.onExport
-  }
+  open var onExport: OnExport.Handler? { builder.onExport }
 
   /// The `onUpload` handler.
-  open var onUpload: OnUpload.Handler? {
-    builder.onUpload
-  }
+  open var onUpload: OnUpload.Handler? { builder.onUpload }
 
   /// The `onClose` handler.
-  open var onClose: OnClose.Handler? {
-    builder.onClose
-  }
+  open var onClose: OnClose.Handler? { builder.onClose }
 
   /// The `onError` handler.
-  open var onError: OnError.Handler? {
-    builder.onError
-  }
+  open var onError: OnError.Handler? { builder.onError }
 
   /// The `onLoaded` handler.
-  open var onLoaded: OnLoaded.Handler? {
-    builder.onLoaded
-  }
+  open var onLoaded: OnLoaded.Handler? { builder.onLoaded }
 
   /// The `onChanged` handler.
-  open var onChanged: OnChanged.Handler? {
-    builder.onChanged
-  }
+  open var onChanged: OnChanged.Handler? { builder.onChanged }
 
   // MARK: - Components
 
   /// The dock configuration.
-  open var dock: Dock.Configuration? {
-    builder.dock
-  }
+  open var dock: Dock.Configuration? { builder.dock }
 
   /// The inspector bar configuration.
-  open var inspectorBar: InspectorBar.Configuration? {
-    builder.inspectorBar
-  }
+  open var inspectorBar: InspectorBar.Configuration? { builder.inspectorBar }
 
   /// The canvas menu configuration.
-  open var canvasMenu: CanvasMenu.Configuration? {
-    builder.canvasMenu
-  }
+  open var canvasMenu: CanvasMenu.Configuration? { builder.canvasMenu }
 
   /// The navigation bar configuration.
-  open var navigationBar: NavigationBar.Configuration? {
-    builder.navigationBar
-  }
+  open var navigationBar: NavigationBar.Configuration? { builder.navigationBar }
 
   /// The asset library configuration.
-  open var assetLibrary: AssetLibraryConfiguration? {
-    builder.assetLibrary
-  }
+  open var assetLibrary: AssetLibraryConfiguration? { builder.assetLibrary }
 
   /// The bottom panel configuration.
-  open var bottomPanel: BottomPanel.Configuration? {
-    builder.bottomPanel
-  }
+  open var bottomPanel: BottomPanel.Configuration? { builder.bottomPanel }
 
   // MARK: - Other
 
   /// The color palette.
-  open var colorPalette: [NamedColor]? {
-    builder.colorPalette
-  }
+  open var colorPalette: [NamedColor]? { builder.colorPalette }
 
   /// The zoom padding for the canvas.
-  open var zoomPadding: CGFloat? {
-    builder.zoomPadding
-  }
+  open var zoomPadding: CGFloat? { builder.zoomPadding }
 
   /// Creates a configuration with optional customizations.
   ///
@@ -124,7 +94,6 @@ public extension EditorConfiguration {
     private(set) var onError: OnError.Handler?
     private(set) var onLoaded: OnLoaded.Handler?
     private(set) var onChanged: OnChanged.Handler?
-    private(set) var captionsGeneration: (@MainActor (_ engine: Engine) async throws -> URL?)?
 
     // MARK: - Components
 
@@ -189,25 +158,6 @@ public extension EditorConfiguration {
     /// Sets the `onChanged` handler.
     public func onChanged(_ handler: @escaping OnChanged.Handler) {
       onChanged = handler
-    }
-
-    /// Sets the caption generation callback that backs the Add Captions sheet's "Generate
-    /// Automatically" action. The sheet leaves the action out while no callback is configured, so the
-    /// editor offers automatic captions only when something can produce them. Unlike the chained
-    /// handlers, the last configured callback wins.
-    ///
-    /// The callback transcribes the scene's audible content — `engine` reads it — into a temporary SRT
-    /// or VTT file with cue timings relative to the page timeline. Return `nil` when the audio holds no
-    /// speech, so the editor can say so specifically; any error thrown surfaces as a generic failure
-    /// alert. The editor imports the file as a single undo step and
-    /// deletes it afterwards, and cancels the surrounding task when the user taps Cancel — so stay
-    /// cooperatively cancellable (`URLSession`'s async APIs already are). Nothing reaches the scene
-    /// until the callback returns, which is what leaves a cancel side-effect free.
-    ///
-    /// The IMG.LY auto-captions plugin (`IMGLYPluginAutoCaptions`) sets this for you; pass a callback
-    /// directly to use a different speech-to-text backend.
-    public func captionsGeneration(_ callback: @escaping @MainActor (_ engine: Engine) async throws -> URL?) {
-      captionsGeneration = callback
     }
 
     // MARK: - Component Methods
@@ -314,68 +264,37 @@ extension EditorConfiguration {
   // swiftlint:disable:next cyclomatic_complexity
   func configure(_ composer: EditorConfigurationComposer) {
     // Builder values take precedence over subclass overrides.
-    if let handler = builder.onCreate ?? onCreate {
-      composer.onCreate(handler)
-    }
-    if let handler = builder.onExport ?? onExport {
-      composer.onExport(handler)
-    }
-    if let handler = builder.onUpload ?? onUpload {
-      composer.onUpload(handler)
-    }
-    if let handler = builder.onClose ?? onClose {
-      composer.onClose(handler)
-    }
-    if let handler = builder.onError ?? onError {
-      composer.onError(handler)
-    }
-    if let handler = builder.onLoaded ?? onLoaded {
-      composer.onLoaded(handler)
-    }
-    if let handler = builder.onChanged ?? onChanged {
-      composer.onChanged(handler)
-    }
-    if let callback = builder.captionsGeneration {
-      composer.captionsGeneration = callback
-    }
+    if let handler = builder.onCreate ?? onCreate { composer.onCreate(handler) }
+    if let handler = builder.onExport ?? onExport { composer.onExport(handler) }
+    if let handler = builder.onUpload ?? onUpload { composer.onUpload(handler) }
+    if let handler = builder.onClose ?? onClose { composer.onClose(handler) }
+    if let handler = builder.onError ?? onError { composer.onError(handler) }
+    if let handler = builder.onLoaded ?? onLoaded { composer.onLoaded(handler) }
+    if let handler = builder.onChanged ?? onChanged { composer.onChanged(handler) }
 
     if let dock = builder.dock ?? dock {
       composer.dock { dockBuilder in
-        if let items = dock.items {
-          dockBuilder.items = items
-        }
+        if let items = dock.items { dockBuilder.items = items }
         for modification in dock.modifications {
           dockBuilder.modify(modification)
         }
-        if let alignment = dock.alignment {
-          dockBuilder.alignment = alignment
-        }
-        if let backgroundColor = dock.backgroundColor {
-          dockBuilder.backgroundColor = backgroundColor
-        }
-        if let scrollDisabled = dock.scrollDisabled {
-          dockBuilder.scrollDisabled = scrollDisabled
-        }
+        if let alignment = dock.alignment { dockBuilder.alignment = alignment }
+        if let backgroundColor = dock.backgroundColor { dockBuilder.backgroundColor = backgroundColor }
+        if let scrollDisabled = dock.scrollDisabled { dockBuilder.scrollDisabled = scrollDisabled }
       }
     }
     if let inspectorBar = builder.inspectorBar ?? inspectorBar {
       composer.inspectorBar { inspectorBarBuilder in
-        if let items = inspectorBar.items {
-          inspectorBarBuilder.items = items
-        }
+        if let items = inspectorBar.items { inspectorBarBuilder.items = items }
         for modification in inspectorBar.modifications {
           inspectorBarBuilder.modify(modification)
         }
-        if let enabled = inspectorBar.enabled {
-          inspectorBarBuilder.enabled = enabled
-        }
+        if let enabled = inspectorBar.enabled { inspectorBarBuilder.enabled = enabled }
       }
     }
     if let canvasMenu = builder.canvasMenu ?? canvasMenu {
       composer.canvasMenu { canvasMenuBuilder in
-        if let items = canvasMenu.items {
-          canvasMenuBuilder.items = items
-        }
+        if let items = canvasMenu.items { canvasMenuBuilder.items = items }
         for modification in canvasMenu.modifications {
           canvasMenuBuilder.modify(modification)
         }
@@ -383,9 +302,7 @@ extension EditorConfiguration {
     }
     if let navigationBar = builder.navigationBar ?? navigationBar {
       composer.navigationBar { navigationBarBuilder in
-        if let items = navigationBar.items {
-          navigationBarBuilder.items = items
-        }
+        if let items = navigationBar.items { navigationBarBuilder.items = items }
         for modification in navigationBar.modifications {
           navigationBarBuilder.modify(modification)
         }
@@ -393,37 +310,23 @@ extension EditorConfiguration {
     }
     if let assetLibrary = builder.assetLibrary ?? assetLibrary {
       composer.assetLibrary { assetLibraryBuilder in
-        if let categories = assetLibrary.categories {
-          assetLibraryBuilder.categories = categories
-        }
-        if let view = assetLibrary.view {
-          assetLibraryBuilder.view = view
-        }
+        if let categories = assetLibrary.categories { assetLibraryBuilder.categories = categories }
+        if let view = assetLibrary.view { assetLibraryBuilder.view = view }
         for modification in assetLibrary.modifications {
           assetLibraryBuilder.modify(modification)
         }
-        if assetLibrary.includeAVResources {
-          assetLibraryBuilder.includeAVResources = true
-        }
+        if assetLibrary.includeAVResources { assetLibraryBuilder.includeAVResources = true }
       }
     }
     if let bottomPanel = builder.bottomPanel ?? bottomPanel {
       composer.bottomPanel { bottomPanelBuilder in
-        if let content = bottomPanel.content {
-          bottomPanelBuilder.content = content
-        }
-        if let animation = bottomPanel.animation {
-          bottomPanelBuilder.animation = animation
-        }
+        if let content = bottomPanel.content { bottomPanelBuilder.content = content }
+        if let animation = bottomPanel.animation { bottomPanelBuilder.animation = animation }
       }
     }
 
-    if let palette = builder.colorPalette ?? colorPalette {
-      composer.colorPalette = palette
-    }
-    if let padding = builder.zoomPadding ?? zoomPadding {
-      composer.zoomPadding = padding
-    }
+    if let palette = builder.colorPalette ?? colorPalette { composer.colorPalette = palette }
+    if let padding = builder.zoomPadding ?? zoomPadding { composer.zoomPadding = padding }
   }
 }
 

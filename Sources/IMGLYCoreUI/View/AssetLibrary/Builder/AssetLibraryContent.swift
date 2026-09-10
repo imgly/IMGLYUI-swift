@@ -16,9 +16,7 @@ public protocol AssetLibraryContent {
 
 public extension AssetLibraryContent {
   /// A Boolean value indicating whether this content is empty.
-  var isEmpty: Bool {
-    sources.isEmpty
-  }
+  var isEmpty: Bool { sources.isEmpty }
 }
 
 struct AssetLibraryContent_Previews: PreviewProvider {

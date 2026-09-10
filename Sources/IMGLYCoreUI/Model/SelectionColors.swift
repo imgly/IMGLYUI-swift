@@ -28,9 +28,7 @@ import IMGLYEngine
     }
   }
 
-  @_spi(Internal) public var isEmpty: Bool {
-    namedColors.isEmpty
-  }
+  @_spi(Internal) public var isEmpty: Bool { namedColors.isEmpty }
 
   private func sort(colors all: Set<CGColor>) -> [CGColor] {
     let transparent = all.filter(HSBA.predicate(\.isTransparent))

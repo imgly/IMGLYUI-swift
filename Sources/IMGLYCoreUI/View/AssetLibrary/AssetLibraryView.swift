@@ -71,6 +71,7 @@ public struct AssetLibraryView: AssetLibrary {
     }
   }
 
+  @ViewBuilder
   private func tabViews(for categories: some RandomAccessCollection<AssetLibraryCategory>) -> some View {
     ForEach(categories, id: \.id) { category in
       if category.id == AssetLibraryCategory.ID.elements {
@@ -102,40 +103,52 @@ public struct AssetLibraryView: AssetLibrary {
   @ViewBuilder public var videosTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.videos) {
       tabView(for: category)
+    } else {
+      EmptyView()
     }
   }
 
   @ViewBuilder public var audioTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.audio) {
       tabView(for: category)
+    } else {
+      EmptyView()
     }
   }
 
   @ViewBuilder public var imagesTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.images) {
       tabView(for: category)
+    } else {
+      EmptyView()
     }
   }
 
   @ViewBuilder public var textTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.text) {
       tabView(for: category)
+    } else {
+      EmptyView()
     }
   }
 
   @ViewBuilder public var shapesTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.shapes) {
       tabView(for: category)
+    } else {
+      EmptyView()
     }
   }
 
   @ViewBuilder public var stickersTab: some View {
     if let category = category(for: AssetLibraryCategory.ID.stickers) {
       tabView(for: category)
+    } else {
+      EmptyView()
     }
   }
 
-  public var photoRollTab: some View {
+  @ViewBuilder public var photoRollTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_photo_roll")) {
       AssetLibrarySource.photoRoll(
         .title(.imgly.localized("ly_img_editor_asset_library_section_photo_roll")),
@@ -146,7 +159,7 @@ public struct AssetLibraryView: AssetLibrary {
     }
   }
 
-  public var clipsTab: some View {
+  @ViewBuilder public var clipsTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_clips")) {
       videosAndImagesContent
     } label: { _ in
@@ -154,7 +167,7 @@ public struct AssetLibraryView: AssetLibrary {
     }
   }
 
-  public var overlaysTab: some View {
+  @ViewBuilder public var overlaysTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_overlays")) {
       videosAndImagesContent
     } label: { _ in
@@ -162,7 +175,7 @@ public struct AssetLibraryView: AssetLibrary {
     }
   }
 
-  public var stickersAndShapesTab: some View {
+  @ViewBuilder public var stickersAndShapesTab: some View {
     AssetLibraryTab(.imgly.localized("ly_img_editor_asset_library_title_stickers_and_shapes")) {
       stickersAndShapesContent
     } label: { _ in
@@ -176,6 +189,7 @@ public struct AssetLibraryView: AssetLibrary {
     categories.first { $0.id == id }
   }
 
+  @ViewBuilder
   private func tabView(for category: AssetLibraryCategory) -> some View {
     AssetLibraryTab(category.title) {
       sectionsContent(for: category)
@@ -205,21 +219,33 @@ public struct AssetLibraryView: AssetLibrary {
   private func elementGroup(for category: AssetLibraryCategory) -> AssetLibraryContent {
     switch category.id {
     case AssetLibraryCategory.ID.photoRoll:
-      sectionsContent(for: category)
+      return sectionsContent(for: category)
+    case AssetLibraryCategory.ID.text:
+      let textComponentSourceIDs = Set(
+        category.sections
+          .filter { $0.contentType == .textComponent }
+          .map(\.source.id),
+      )
+      return AssetLibraryGroup.text(
+        category.title,
+        excludedPreviewSources: textComponentSourceIDs,
+      ) {
+        sectionsContent(for: category)
+      }
     case AssetLibraryCategory.ID.shapes:
-      AssetLibraryGroup.shape(category.title) {
+      return AssetLibraryGroup.shape(category.title) {
         sectionsContent(for: category)
       }
     case AssetLibraryCategory.ID.stickers:
-      AssetLibraryGroup.sticker(category.title) {
+      return AssetLibraryGroup.sticker(category.title) {
         sectionsContent(for: category)
       }
     case AssetLibraryCategory.ID.audio:
-      AssetLibraryGroup.audio(category.title) {
+      return AssetLibraryGroup.audio(category.title) {
         sectionsContent(for: category)
       }
     default:
-      AssetLibraryGroup(category.title) {
+      return AssetLibraryGroup(category.title) {
         sectionsContent(for: category)
       } preview: {
         AssetPreview.imageOrVideo
@@ -282,18 +308,6 @@ public struct AssetLibraryView: AssetLibrary {
 
     case .textComponent:
       return AssetLibrarySource.textComponent(.title(title), source: section.source)
-
-    case .textPreset:
-      // With a `groupTitleKeyPrefix`, drill into one section per asset group; otherwise a flat grid.
-      if let keyPrefix = section.groupTitleKeyPrefix {
-        return AssetLibraryGroup(title) {
-          AssetLibrarySource.textPreset(
-            .titleForGroup { TextPresetsGrid.sectionTitle(for: $0, keyPrefix: keyPrefix) },
-            source: section.source,
-          )
-        }
-      }
-      return AssetLibrarySource.textPreset(.title(title), source: section.source)
 
     case .shape:
       return AssetLibrarySource.shape(.title(title), source: section.source)

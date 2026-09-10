@@ -5,12 +5,9 @@ import SwiftUI
 struct PropertyButton<T: Labelable>: View {
   let property: T
   @Binding var selection: T?
-  /// When `false`, tapping the already-selected button re-applies its value instead of clearing the
-  /// selection. Use for mutually-exclusive rows (e.g. letter case) where there is no "off" state.
-  var allowsDeselection = true
 
   var body: some View {
-    GenericPropertyButton(property: property, selection: $selection, allowsDeselection: allowsDeselection) {
+    GenericPropertyButton(property: property, selection: $selection) {
       property.label
     }
   }
@@ -19,36 +16,24 @@ struct PropertyButton<T: Labelable>: View {
 struct GenericPropertyButton<T: Equatable, Label: View>: View {
   let property: T
   @Binding var selection: T?
-  var allowsDeselection = true
   @ViewBuilder let label: () -> Label
 
-  // The explicit foreground color below suppresses SwiftUI's automatic grey-out of disabled
-  // button labels, so an ambient `.disabled(true)` must be folded in manually.
-  @Environment(\.isEnabled) private var isEnabled
-
-  private var isSelected: Bool {
-    selection == property
-  }
-
-  private var hasNoSelection: Bool {
-    selection == nil
-  }
+  private var isSelected: Bool { selection == property }
+  private var isDisabled: Bool { selection == nil }
 
   private var foregroundColor: Color {
-    if hasNoSelection || !isEnabled {
-      return .secondary
-    }
+    if isDisabled { return .secondary }
     return isSelected ? .accentColor : .primary
   }
 
   var body: some View {
     Button {
-      selection = (allowsDeselection && isSelected) ? nil : property
+      selection = isSelected ? nil : property
     } label: {
       label()
     }
     .foregroundColor(foregroundColor)
-    .disabled(hasNoSelection)
+    .disabled(isDisabled)
   }
 }
 

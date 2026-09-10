@@ -1,5 +1,12 @@
 import SwiftUI
 
+struct FontFamiliesKey: EnvironmentKey {
+  static let defaultValue: [String]? = nil
+}
+
 extension EnvironmentValues {
-  @Entry var imglyFontFamilies: [String]?
+  var imglyFontFamilies: [String]? {
+    get { self[FontFamiliesKey.self] }
+    set { self[FontFamiliesKey.self] = newValue }
+  }
 }

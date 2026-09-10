@@ -62,9 +62,7 @@ struct CanvasMenuView: View {
         }
     } catch {
       let error = EditorError(
-        String(localized: .imgly.localized(
-          "ly_img_editor_error_canvas_menu_view_creation \(error.localizedDescription)",
-        )),
+        "Could not create View for Canvas Menu.\nReason:\n\(error.localizedDescription)",
       )
       interactor.handleErrorWithTask(error)
       return []
@@ -72,10 +70,7 @@ struct CanvasMenuView: View {
   }
 
   @ScaledMetric private var height = 38
-  private var halfHeight: CGFloat {
-    height / 2
-  }
-
+  private var halfHeight: CGFloat { height / 2 }
   private let paddingFromSelectionBoundingBox: CGFloat = 24
 
   var body: some View {

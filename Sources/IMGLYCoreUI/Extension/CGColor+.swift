@@ -50,9 +50,7 @@ public extension IMGLY where Wrapped == CGColor {
 // MARK: - Internal interface
 
 extension CGColor: HSBAConvertible {
-  var hsba: HSBA? {
-    HSBA(self)
-  }
+  var hsba: HSBA? { HSBA(self) }
 }
 
 @_spi(Internal) public extension CGColor {

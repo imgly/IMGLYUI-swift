@@ -5,7 +5,7 @@ import SwiftUI
 /// A scale picker a.k.a. sliding ruler that picks values at its center position. A cursor view is not part of it for
 /// best versatility. A cursor can be added with a centered overlay. See ``MeasurementScalePicker`` or
 /// `ScalePicker_Previews` for examples.
-@_spi(Internal) public struct ScalePicker<V: BinaryFloatingPoint>: View where V.Stride: BinaryFloatingPoint {
+@_spi(Internal) public struct ScalePicker<V>: View where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
   @_spi(Internal) public init(value: Binding<V>,
                               in bounds: ClosedRange<V>,
                               neutralValue: V? = nil,
@@ -48,22 +48,16 @@ import SwiftUI
   let ticks: [(tick: Int, value: V)]
   let tickWidth: CGFloat = 2
   let tickSpacing: CGFloat
-  var tickCell: CGFloat {
-    tickWidth + tickSpacing
-  }
-
-  var ptPerValue: CGFloat {
-    tickCell / CGFloat(tickStep)
-  }
-
+  var tickCell: CGFloat { tickWidth + tickSpacing }
+  var ptPerValue: CGFloat { tickCell / CGFloat(tickStep) }
   let leadingRemainder: V
   let trailingRemainder: V
 
-  func largeTick(value _: V) -> some View {
+  @ViewBuilder func largeTick(value _: V) -> some View {
     Capsule().frame(width: tickWidth, height: 6)
   }
 
-  func smallTick(value _: V) -> some View {
+  @ViewBuilder func smallTick(value _: V) -> some View {
     Capsule().frame(width: tickWidth, height: 2)
   }
 
@@ -80,9 +74,7 @@ import SwiftUI
   @StateObject private var hapticsHelper = HapticsHelper()
   @StateObject private var gestureHelper = GestureHelper()
 
-  var isInitialized: Bool {
-    scrollView != nil && scrollViewWidth != nil && contentGeometry != nil
-  }
+  var isInitialized: Bool { scrollView != nil && scrollViewWidth != nil && contentGeometry != nil }
 
   var isDragging: Bool {
     switch gestureHelper.state {
@@ -98,29 +90,12 @@ import SwiftUI
     return isDragging || scrollView.isTracking || scrollView.isDragging || scrollView.isDecelerating
   }
 
-  var contentFrame: CGRect {
-    contentGeometry?.frame ?? .zero
-  }
-
-  var contentWidth: CGFloat {
-    contentFrame.width
-  }
-
-  var contentOffset: CGFloat {
-    -contentFrame.minX
-  }
-
-  var contentPadding: CGFloat {
-    ((scrollViewWidth ?? 0) - tickWidth) / 2
-  }
-
-  var contentPaddingLeading: CGFloat {
-    contentPadding + (CGFloat(leadingRemainder) * ptPerValue)
-  }
-
-  var contentPaddingTrailing: CGFloat {
-    contentPadding + (CGFloat(trailingRemainder) * ptPerValue)
-  }
+  var contentFrame: CGRect { contentGeometry?.frame ?? .zero }
+  var contentWidth: CGFloat { contentFrame.width }
+  var contentOffset: CGFloat { -contentFrame.minX }
+  var contentPadding: CGFloat { ((scrollViewWidth ?? 0) - tickWidth) / 2 }
+  var contentPaddingLeading: CGFloat { contentPadding + (CGFloat(leadingRemainder) * ptPerValue) }
+  var contentPaddingTrailing: CGFloat { contentPadding + (CGFloat(trailingRemainder) * ptPerValue) }
 
   var scrollValue: CGFloat? {
     guard isInitialized, let scrollViewWidth else {
@@ -155,7 +130,7 @@ import SwiftUI
     }
   }
 
-  var ruler: some View {
+  @ViewBuilder var ruler: some View {
     HStack(alignment: .center, spacing: tickSpacing) {
       ForEach(ticks, id: \.tick) { tick, value in
         Group {
@@ -228,7 +203,7 @@ import SwiftUI
     return newStoredValue
   }
 
-  var slidingRuler: some View {
+  @ViewBuilder var slidingRuler: some View {
     ScrollView(.horizontal, showsIndicators: false) {
       ruler
         .padding([.leading], contentPaddingLeading)
@@ -360,7 +335,7 @@ private class HapticsHelper: ObservableObject {
 }
 
 struct ScalePicker_Previews: PreviewProvider {
-  static var preview: some View {
+  @ViewBuilder static var preview: some View {
     previewState(Float(20)) { binding in
       VStack {
         ScalePicker(value: binding, in: -10 ... 45).overlay { Capsule().frame(width: 2) }
