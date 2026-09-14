@@ -19,7 +19,6 @@ struct AssetLibrarySheet: View {
     case .shape: assetLibrary.shapesTab
     case .sticker: assetLibrary.stickersTab
     case .clip: assetLibrary.clipsTab
-    case .video: assetLibrary.videosTab
     case .audio: assetLibrary.audioTab
     default: assetLibrary
     }

@@ -20,8 +20,6 @@ extension ResizeOverlay {
       }
     }
 
-    @Published var fontUnit: FontUnit
-
     @Published var width: CGFloat {
       didSet {
         widthChanged(width)
@@ -55,7 +53,6 @@ extension ResizeOverlay {
       _dpi = .init(initialValue: dimensions.dpi)
       _pixelScale = .init(initialValue: dimensions.pixelScale)
       _designUnit = .init(initialValue: dimensions.designUnit)
-      _fontUnit = .init(initialValue: dimensions.fontUnit)
       _width = .init(initialValue: dimensions.width)
       _height = .init(initialValue: dimensions.height)
     }
@@ -67,7 +64,6 @@ extension ResizeOverlay {
         width: width,
         height: height,
         designUnit: designUnit,
-        fontUnit: fontUnit,
         dpi: dpi,
         pixelScale: pixelScale,
       )

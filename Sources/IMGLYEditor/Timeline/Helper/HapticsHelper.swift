@@ -6,7 +6,6 @@ class HapticsHelper {
   static let shared = HapticsHelper()
 
   private let impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .light)
-  private let mediumImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
   private let softImpactFeedbackGenerator = UIImpactFeedbackGenerator(style: .soft)
   private let selectionFeedbackGenerator = UISelectionFeedbackGenerator()
 
@@ -27,9 +26,7 @@ class HapticsHelper {
   }
 
   func timelineReorderStart() {
-    // Stronger thump than the regular reorder snap so the long-press → drag transition
-    // feels distinct from incidental haptics.
-    mediumImpactFeedbackGenerator.impactOccurred()
+    impactFeedbackGenerator.impactOccurred()
   }
 
   func timelineReorderFinish() {

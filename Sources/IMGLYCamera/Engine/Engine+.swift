@@ -120,11 +120,6 @@ private extension Engine {
   ) throws -> Double {
     var didSkipFirstVideo = false
     var offset: Double = 0
-    var trackForVideoIndex: [Int: DesignBlockID] = [:]
-    if let backgroundTrack {
-      trackForVideoIndex[0] = backgroundTrack
-    }
-
     for recording in recordings {
       for (index, video) in recording.videos.enumerated() {
         if skipFirstVideoBecauseItWasAddedToTheSceneAlready, !didSkipFirstVideo {
@@ -132,21 +127,12 @@ private extension Engine {
           continue
         }
 
-        let parent: DesignBlockID
-        if let existing = trackForVideoIndex[index] {
-          parent = existing
-        } else {
-          let newTrack = try block.create(.track)
-          try block.appendChild(to: page, child: newTrack)
-          trackForVideoIndex[index] = newTrack
-          parent = newTrack
-        }
-
+        let track = index == 0 ? (backgroundTrack ?? page) : page
         try addVideo(
           video,
           duration: recording.duration.seconds,
           at: offset,
-          appendTo: parent,
+          appendTo: track,
         )
       }
       offset += recording.duration.seconds

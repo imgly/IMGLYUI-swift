@@ -67,7 +67,6 @@ import SwiftUI
   typealias Font = IMGLYEngine.Font
   typealias TextCase = IMGLYEngine.TextCase
   typealias DesignUnit = IMGLYEngine.DesignUnit
-  typealias FontUnit = IMGLYEngine.FontUnit
   typealias FillType = IMGLYEngine.FillType
 
   struct Selection: Equatable {
@@ -214,7 +213,7 @@ import SwiftUI
   init(
     config: EngineConfiguration,
     dismiss: DismissAction,
-    assetLibrary: any AssetLibrary,
+    assetLibrary: any AssetLibrary
   ) {
     self.config = config
     self.dismiss = dismiss
@@ -344,7 +343,6 @@ extension Interactor {
   func isSolidFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .solid) }
   func isGradientFill(_ id: DesignBlockID?) -> Bool { isColorFillType(id, type: .gradient) }
   func isColorFill(_ id: DesignBlockID?) -> Bool { isSolidFill(id) || isGradientFill(id) }
-  func isLineOrigin(_ id: BlockID?) -> Bool { block(id, engine?.block.isLineOrigin) ?? false }
   func isVisibleAtCurrentPlaybackTime(_ id: BlockID?) -> Bool {
     block(id, engine?.block.isVisibleAtCurrentPlaybackTime) ?? false
   }
@@ -608,28 +606,6 @@ extension Interactor {
       { engine, blocks, propertyBlock, property, value, completion in
         let didChange = try engine.block.overrideAndRestore(blocks, scopes: overrideScopes) {
           try engine.block.set($0, propertyBlock, property: property, value: value)
-        }
-        return try (completion?(engine, blocks, didChange) ?? false) || didChange
-      }
-    }
-
-    /// Sets the stroke style and the cap its preset implies, like the web editor. Dotted/*Round
-    /// presets need a Round cap, else a Dotted stroke is invisible (ANDROID-814). All four caps
-    /// are set equal to keep the renderer on its fast path.
-    static func strokeStyleWithPresetCaps() -> Interactor.PropertySetter<IMGLYCoreUI.StrokeStyle> {
-      { engine, blocks, propertyBlock, property, value, completion in
-        let didChange = try engine.block.set(blocks, propertyBlock, property: property, value: value)
-        if didChange {
-          let cap: StrokeCap = switch value {
-          case .dotted, .dashedRound, .longDashedRound: .round
-          case .solid, .dashed, .longDashed: .butt
-          }
-          for block in blocks {
-            try engine.block.setStrokeStartCap(block, cap: cap)
-            try engine.block.setStrokeEndCap(block, cap: cap)
-            try engine.block.setStrokeDashStartCap(block, cap: cap)
-            try engine.block.setStrokeDashEndCap(block, cap: cap)
-          }
         }
         return try (completion?(engine, blocks, didChange) ?? false) || didChange
       }
@@ -1034,14 +1010,7 @@ extension Interactor {
     }
   }
 
-  func resizePages(
-    width: CGFloat,
-    height: CGFloat,
-    designUnit: DesignUnit,
-    fontUnit: FontUnit? = nil,
-    dpi: CGFloat,
-    pixelScale: CGFloat,
-  ) throws {
+  func resizePages(width: CGFloat, height: CGFloat, designUnit: DesignUnit, dpi: CGFloat, pixelScale: CGFloat) throws {
     guard let pages = try engine?.getSortedPages(), let scene = try engine?.scene.get() else { return }
     // Temporarily disable camera clamping as otherwise the page carousel breaks
     // while resizing as we cannot batch update the sizes for all pages.
@@ -1050,9 +1019,6 @@ extension Interactor {
     try disableCameraClamping()
 
     try engine?.scene.setDesignUnit(designUnit)
-    if let fontUnit {
-      try engine?.scene.setFontSizeUnit(fontUnit)
-    }
     try engine?.block.setFloat(scene, property: "scene/pixelScaleFactor", value: Float(pixelScale))
     try engine?.block.setFloat(scene, property: "scene/dpi", value: Float(dpi))
     try engine?.block.setFloat(scene, property: "scene/pageDimensions/width", value: Float(width))
@@ -1743,21 +1709,10 @@ extension Interactor {
       let showsPlaceholderButton = try engine.block.isPlaceholderControlsButtonEnabled(block)
       let showsPlaceholderOverlay = try engine.block.isPlaceholderControlsOverlayEnabled(block)
 
-      guard isPlaceholder, showsPlaceholderButton || showsPlaceholderOverlay else {
-        return nil
-      }
-      // A page holds its replaceable media in its fill, not the block type, so for a page
-      // placeholder resolve the library from the fill type (mirrors the graphic case in
-      // `sheetContent(for:with:and:)`). Non-media fills (color/gradient) have nothing to
-      // replace, so no sheet opens.
-      guard case .page = content else {
+      if isPlaceholder, showsPlaceholderButton || showsPlaceholderOverlay {
         return content
-      }
-      let fill = try engine.block.getFill(block)
-      switch try engine.block.getType(fill) {
-      case FillType.image.rawValue: return .image
-      case FillType.video.rawValue: return .video
-      default: return nil
+      } else {
+        return nil
       }
     } catch {
       handleError(error)
@@ -2187,8 +2142,8 @@ extension PageOverviewState {
             block: $0,
             width: CGFloat(try engine.block.getFrameWidth($0)),
             height: CGFloat(try engine.block.getFrameHeight($0)),
-            // When engine exposes the page(s) changed for `onHistoryUpdated` we can selectively refresh pages
-            // instead of all.
+            // When engine exposes the page(s) changed for `onHistoryUpdated` we can selectively refresh pages instead
+            // of all.
             refresh: UUID())
     }
   }

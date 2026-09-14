@@ -543,15 +543,11 @@ public extension InspectorBar.Buttons {
   static func fillStroke(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .fillStroke())) },
     @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = {
-      let showStroke = try $0.engine.block.supportsStroke($0.selection.block) &&
-        $0.engine.block.isAllowedByScope($0.selection.block, key: "stroke/change")
-      // Line-origin graphics surface their colour through the stroke section, so the fill is
-      // hidden when a stroke section is available — matching the sheet this button opens.
-      let hideFillForLine = try $0.engine.block.isLineOrigin($0.selection.block) && showStroke
       let showFill = try [.none, .color, .linearGradient].contains($0.selection.fillType) &&
         $0.engine.block.supportsFill($0.selection.block) &&
-        !hideFillForLine &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change")
+      let showStroke = try $0.engine.block.supportsStroke($0.selection.block) &&
+        $0.engine.block.isAllowedByScope($0.selection.block, key: "stroke/change")
       if showFill, showStroke {
         return Text(.imgly.localized("ly_img_editor_inspector_bar_button_fill_and_stroke"))
       } else if showFill {
@@ -563,15 +559,11 @@ public extension InspectorBar.Buttons {
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { FillStrokeIcon(id: $0.selection.block) },
     isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
-      let showStroke = try $0.engine.block.supportsStroke($0.selection.block) &&
-        $0.engine.block.isAllowedByScope($0.selection.block, key: "stroke/change")
-      // Line-origin graphics surface their colour through the stroke section, so the fill is
-      // hidden when a stroke section is available — matching the sheet this button opens.
-      let hideFillForLine = try $0.engine.block.isLineOrigin($0.selection.block) && showStroke
       let showFill = try [.none, .color, .linearGradient].contains($0.selection.fillType) &&
         $0.engine.block.supportsFill($0.selection.block) &&
-        !hideFillForLine &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change")
+      let showStroke = try $0.engine.block.supportsStroke($0.selection.block) &&
+        $0.engine.block.isAllowedByScope($0.selection.block, key: "stroke/change")
       return $0.selection.kind != "sticker" && $0.selection.kind != "animatedSticker" &&
         (showFill || showStroke)
     },
@@ -674,7 +666,7 @@ public extension InspectorBar.Buttons {
   /// used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
-  /// `DesignBlockType.audio`, `.graphic`, or `.page`, its fill type is `FillType.video` or `.image`, its engine scope
+  /// `DesignBlockType.audio` or `.graphic`, its fill type is `FillType.video` or `.image`, its engine scope
   /// `"fill/change"` is allowed and its kind is not `"voiceover"`, `"sticker"` or `"animatedSticker"`.
   /// - Returns: The created button.
   static func replace(
@@ -697,17 +689,6 @@ public extension InspectorBar.Buttons {
               "Unsupported fillType \(context.selection.fillType?.rawValue ?? "") for replace inspector bar button.",
             )
           }
-        case .page:
-          switch context.selection.fillType {
-          case .video:
-            context.assetLibrary.videosTab
-          case .image:
-            context.assetLibrary.imagesTab
-          default:
-            throw EditorError(
-              "Unsupported fillType \(context.selection.fillType?.rawValue ?? "") for replace inspector bar button.",
-            )
-          }
         default:
           throw EditorError(
             "Unsupported type \(context.selection.type?.rawValue ?? "") for replace inspector bar button.",
@@ -724,10 +705,7 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = {
       try (
         ($0.selection.type == .audio && $0.selection.kind != "voiceover") ||
-          (
-            ($0.selection.type == .graphic || $0.selection.type == .page) &&
-              [.image, .video].contains($0.selection.fillType)
-          ),
+          ($0.selection.type == .graphic && [.image, .video].contains($0.selection.fillType))
       ) && $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change") &&
         $0.selection.kind != "sticker" && $0.selection.kind != "animatedSticker"
     },
@@ -911,8 +889,7 @@ public extension InspectorBar.Buttons {
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block fill type
   /// is not `FillType.image` or its kind is not `"sticker"` and its kind is not `"animatedSticker"`, its engine
-  /// scope `"shape/change"` is allowed, and its shape type is `ShapeType.star`, `.polygon`, or `.rect`. Lines are
-  /// excluded because their thickness is configured via the stroke section, not shape options.
+  /// scope `"shape/change"` is allowed, and its shape type is `ShapeType.line`, `.star`, `.polygon`, or `.rect`.
   /// - Returns: The created button.
   static func shape(
     action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.openSheet(type: .shape())) },
@@ -926,7 +903,7 @@ public extension InspectorBar.Buttons {
         $0.selection.kind != "animatedSticker" &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "shape/change") &&
         $0.engine.block.supportsShape($0.selection.block) &&
-        [.star, .polygon, .rect].contains(
+        [.line, .star, .polygon, .rect].contains(
           ShapeType(rawValue: $0.engine.block.getType($0.engine.block.getShape($0.selection.block))),
         )
     },

@@ -11,13 +11,6 @@ struct TrackView: View {
 
   @ObservedObject var track: Track
 
-  /// Engine-backed tracks (multi-clip foreground *and* background) lay out via
-  /// `clip.displayTimeOffset`, so the `previewTimeOffset` cascade applies to both.
-  /// Standalone foreground clips stick with HStack.
-  private var usesAbsolutePositioning: Bool {
-    track.engineTrackID != nil
-  }
-
   var body: some View {
     GeometryReader { geometry in
       ZStack(alignment: .leading) {
@@ -25,46 +18,23 @@ struct TrackView: View {
           placeholder
         }
 
-        if usesAbsolutePositioning {
+        HStack(spacing: 0) {
           ForEach(track.clips, id: \.id) { clip in
-            clipView(for: clip)
-          }
-        } else {
-          HStack(spacing: 0) {
-            ForEach(track.clips, id: \.id) { clip in
-              clipView(for: clip)
+            ClipView(
+              clip: clip,
+              isSelected: clip == timelineProperties.selectedClip,
+              clipSpacing: configuration.clipSpacing,
+            )
+            .onTapGesture(count: 1) {
+              guard clip.allowsSelecting else {
+                return
+              }
+              timeline.interactor?.select(id: clip.id)
             }
           }
         }
-
-        DropSlotIndicatorView(trackID: track.id)
       }
       .frame(width: geometry.size.width, height: geometry.size.height, alignment: .leading)
-      // Publish this track's global-space frame so drag & drop can resolve a target
-      // track from the pan gesture's window-space pointer.
-      .background(
-        GeometryReader { proxy in
-          Color.clear.preference(
-            key: TrackFramesPreferenceKey.self,
-            value: [track.id: proxy.frame(in: .global)],
-          )
-        },
-      )
-    }
-  }
-
-  @ViewBuilder
-  private func clipView(for clip: Clip) -> some View {
-    ClipView(
-      clip: clip,
-      isSelected: clip == timelineProperties.selectedClip,
-      clipSpacing: configuration.clipSpacing,
-    )
-    .onTapGesture(count: 1) {
-      guard clip.allowsSelecting else {
-        return
-      }
-      timeline.interactor?.select(id: clip.id)
     }
   }
 

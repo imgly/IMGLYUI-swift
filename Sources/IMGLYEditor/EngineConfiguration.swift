@@ -46,7 +46,7 @@ public enum OnCreate {
     let color: IMGLYEngine.Color = try engine.editor.getSettingColor("highlightColor")
     try engine.editor.setSettingColor("placeholderHighlightColor", color: color)
 
-    try engine.editor.setSettingBool("features/removeForegroundTracksOnSceneLoad", value: false)
+    try engine.editor.setSettingBool("features/removeForegroundTracksOnSceneLoad", value: true)
     try engine.editor.setSettingBool("features/videoTranscodingEnabled",
                                      value: !FeatureFlags.isEnabled(.transcodePickerVideoImports))
 
@@ -346,7 +346,7 @@ public enum OnLoaded {
     /// ```swift
     /// .imgly.onLoaded { context in
     ///   context.task {
-    ///     for try await _ in context.engine.editor.onHistoryUpdatedWithKind {
+    ///     for try await _ in context.engine.editor.onHistoryUpdated {
     ///       // React to history changes
     ///     }
     ///   }
