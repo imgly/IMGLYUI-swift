@@ -15,7 +15,7 @@ struct ReorderableForEach<Item: Reorderable, Content: View, Preview: View>: View
     active: Binding<Item?>,
     @ViewBuilder content: @escaping (Item) -> Content,
     @ViewBuilder preview: @escaping (Item) -> Preview,
-    moveAction: @escaping (IndexSet, Int) -> Void
+    moveAction: @escaping (IndexSet, Int) -> Void,
   ) {
     self.items = items
     _active = active
@@ -28,7 +28,7 @@ struct ReorderableForEach<Item: Reorderable, Content: View, Preview: View>: View
     _ items: [Item],
     active: Binding<Item?>,
     @ViewBuilder content: @escaping (Item) -> Content,
-    moveAction: @escaping (IndexSet, Int) -> Void
+    moveAction: @escaping (IndexSet, Int) -> Void,
   ) where Preview == EmptyView {
     self.items = items
     _active = active

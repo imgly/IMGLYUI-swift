@@ -15,6 +15,12 @@ public struct AssetLibrarySection: Sendable, Equatable {
   /// The type of content this section displays.
   public let contentType: ContentType
 
+  /// Optional localization-key prefix for sections expanded from the source's asset groups.
+  ///
+  /// When set, the section drills into one sub-section per asset group, each titled
+  /// `<prefix><group>`, falling back to a humanized group name.
+  public let groupTitleKeyPrefix: String?
+
   /// The content type determines how the section is rendered.
   public enum ContentType: Sendable, Equatable {
     case image
@@ -25,6 +31,7 @@ public struct AssetLibrarySection: Sendable, Equatable {
     case audioUpload
     case text
     case textComponent
+    case textPreset
     case shape
     case sticker
     case photoRoll(media: [PhotoRollMediaType])
@@ -36,16 +43,20 @@ public struct AssetLibrarySection: Sendable, Equatable {
   ///   - title: The localized title for this section.
   ///   - source: The asset source data.
   ///   - contentType: The type of content this section displays.
+  ///   - groupTitleKeyPrefix: Optional localization-key prefix to drill the source's asset groups
+  ///     into per-group sub-sections.
   public init(
     id: String,
     title: LocalizedStringResource?,
     source: AssetLoader.SourceData,
-    contentType: ContentType
+    contentType: ContentType,
+    groupTitleKeyPrefix: String? = nil,
   ) {
     self.id = id
     self.title = title
     self.source = source
     self.contentType = contentType
+    self.groupTitleKeyPrefix = groupTitleKeyPrefix
   }
 
   public static func == (lhs: AssetLibrarySection, rhs: AssetLibrarySection) -> Bool {
@@ -87,9 +98,16 @@ public struct AssetLibrarySection: Sendable, Equatable {
   // MARK: Text
 
   /// ID for the default text section.
+  @available(*, deprecated, message: "Plain text is deprecated. Use `textPlain` instead.")
   static let text = "ly.img.section.text"
   /// ID for the text components section.
   static let textComponents = "ly.img.section.text.components"
+  /// ID for the text styles section.
+  static let textStyles = "ly.img.section.text.styles"
+  /// ID for the plain text section.
+  static let textPlain = "ly.img.section.text.plain"
+  /// ID for the curve (text-on-path) section.
+  static let textCurves = "ly.img.section.text.curves"
 
   // MARK: Shapes
 
@@ -212,6 +230,7 @@ public extension AssetLibrarySection {
   ///   - id: A unique identifier for this section. Provide a unique, stable identifier for your section.
   ///   - title: The localized title for this section.
   ///   - source: The asset source data.
+  @available(*, deprecated, message: "Plain text is deprecated. Use `textPreset(id:title:source:)` instead.")
   static func text(
     id: String,
     title: LocalizedStringResource,
@@ -231,6 +250,28 @@ public extension AssetLibrarySection {
     source: AssetLoader.SourceData,
   ) -> Self {
     .init(id: id, title: title, source: source, contentType: .textComponent)
+  }
+
+  /// Creates a text style-preset section.
+  /// - Parameters:
+  ///   - id: A unique identifier for this section. Provide a unique, stable identifier for your section.
+  ///   - title: The localized title for this section.
+  ///   - source: The asset source data.
+  ///   - groupTitleKeyPrefix: Optional localization-key prefix to drill the source's asset groups
+  ///     into per-group sub-sections (e.g. Plain Text → Default / Elegant / Modern Tech).
+  static func textPreset(
+    id: String,
+    title: LocalizedStringResource,
+    source: AssetLoader.SourceData,
+    groupTitleKeyPrefix: String? = nil,
+  ) -> Self {
+    .init(
+      id: id,
+      title: title,
+      source: source,
+      contentType: .textPreset,
+      groupTitleKeyPrefix: groupTitleKeyPrefix,
+    )
   }
 
   /// Creates a shape section.
@@ -291,7 +332,7 @@ public extension AssetLibrarySection {
     .image(
       id: ID.images,
       title: .imgly.localized("ly_img_editor_asset_library_section_images"),
-      source: .init(demoSource: .image),
+      source: .init(id: "ly.img.image"),
     )
   }
 
@@ -309,7 +350,7 @@ public extension AssetLibrarySection {
     .video(
       id: ID.videos,
       title: .imgly.localized("ly_img_editor_asset_library_section_videos"),
-      source: .init(demoSource: .video),
+      source: .init(id: "ly.img.video"),
     )
   }
 
@@ -327,7 +368,7 @@ public extension AssetLibrarySection {
     .audio(
       id: ID.audio,
       title: .imgly.localized("ly_img_editor_asset_library_section_audio"),
-      source: .init(demoSource: .audio),
+      source: .init(id: "ly.img.audio"),
     )
   }
 
@@ -335,12 +376,13 @@ public extension AssetLibrarySection {
     .audioUpload(
       id: ID.audioUpload,
       title: .imgly.localized("ly_img_editor_asset_library_section_audio_uploads"),
-      source: .init(demoSource: .audioUpload),
+      source: .init(id: "ly.img.audio.upload"),
     )
   }
 
   // MARK: Text
 
+  @available(*, deprecated, message: "Use `defaultTextPlain` instead.")
   static var defaultText: Self {
     .text(
       id: ID.text,
@@ -353,7 +395,32 @@ public extension AssetLibrarySection {
     .textComponent(
       id: ID.textComponents,
       title: .imgly.localized("ly_img_editor_asset_library_section_font_combinations"),
-      source: .init(demoSource: .textComponents),
+      source: .init(id: "ly.img.text.components"),
+    )
+  }
+
+  static var defaultTextPlain: Self {
+    .textPreset(
+      id: ID.textPlain,
+      title: .imgly.localized("ly_img_editor_asset_library_section_plain_text"),
+      source: .init(id: "ly.img.text"),
+      groupTitleKeyPrefix: "ly_img_editor_asset_library_section_text_style_presets_",
+    )
+  }
+
+  static var defaultTextStyles: Self {
+    .textPreset(
+      id: ID.textStyles,
+      title: .imgly.localized("ly_img_editor_asset_library_section_text_styles"),
+      source: .init(id: "ly.img.text.styles"),
+    )
+  }
+
+  static var defaultTextCurves: Self {
+    .textPreset(
+      id: ID.textCurves,
+      title: .imgly.localized("ly_img_editor_asset_library_section_curve_text"),
+      source: .init(id: "ly.img.text.curves"),
     )
   }
 
@@ -363,10 +430,7 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesFilled,
       title: .imgly.localized("ly_img_editor_asset_library_section_filled"),
-      source: .init(
-        defaultSource: .vectorPath,
-        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/filled"]),
-      ),
+      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["filled"])),
     )
   }
 
@@ -374,10 +438,7 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesOutline,
       title: .imgly.localized("ly_img_editor_asset_library_section_outline"),
-      source: .init(
-        defaultSource: .vectorPath,
-        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/outline"]),
-      ),
+      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["outline"])),
     )
   }
 
@@ -385,10 +446,7 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesGradient,
       title: .imgly.localized("ly_img_editor_asset_library_section_gradient"),
-      source: .init(
-        defaultSource: .vectorPath,
-        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/gradient"]),
-      ),
+      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["gradient"])),
     )
   }
 
@@ -396,10 +454,7 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesImage,
       title: .imgly.localized("ly_img_editor_asset_library_section_image"),
-      source: .init(
-        defaultSource: .vectorPath,
-        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/image"]),
-      ),
+      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["image"])),
     )
   }
 
@@ -407,10 +462,7 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesAbstractFilled,
       title: .imgly.localized("ly_img_editor_asset_library_section_abstract_filled"),
-      source: .init(
-        defaultSource: .vectorPath,
-        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-filled"]),
-      ),
+      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-filled"])),
     )
   }
 
@@ -418,10 +470,7 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesAbstractOutline,
       title: .imgly.localized("ly_img_editor_asset_library_section_abstract_outline"),
-      source: .init(
-        defaultSource: .vectorPath,
-        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-outline"]),
-      ),
+      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-outline"])),
     )
   }
 
@@ -429,10 +478,7 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesAbstractGradient,
       title: .imgly.localized("ly_img_editor_asset_library_section_abstract_gradient"),
-      source: .init(
-        defaultSource: .vectorPath,
-        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-gradient"]),
-      ),
+      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-gradient"])),
     )
   }
 
@@ -440,10 +486,7 @@ public extension AssetLibrarySection {
     .shape(
       id: ID.shapesAbstractImage,
       title: .imgly.localized("ly_img_editor_asset_library_section_abstract_image"),
-      source: .init(
-        defaultSource: .vectorPath,
-        config: .init(groups: ["//ly.img.cesdk.vectorpaths/category/abstract-image"]),
-      ),
+      source: .init(id: "ly.img.vector.shape", config: .init(groups: ["abstract-image"])),
     )
   }
 
@@ -453,10 +496,7 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickersEmoji,
       title: .imgly.localized("ly_img_editor_asset_library_section_emoji"),
-      source: .init(
-        defaultSource: .sticker,
-        config: .init(groups: ["//ly.img.cesdk.stickers.emoji/category/emoji"]),
-      ),
+      source: .init(id: "ly.img.sticker", config: .init(groups: ["emoji"])),
     )
   }
 
@@ -464,10 +504,7 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickersEmoticons,
       title: .imgly.localized("ly_img_editor_asset_library_section_emoticons"),
-      source: .init(
-        defaultSource: .sticker,
-        config: .init(groups: ["//ly.img.cesdk.stickers.emoticons/category/emoticons"]),
-      ),
+      source: .init(id: "ly.img.sticker", config: .init(groups: ["emoticons"])),
     )
   }
 
@@ -475,10 +512,7 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickersCraft,
       title: .imgly.localized("ly_img_editor_asset_library_section_craft"),
-      source: .init(
-        defaultSource: .sticker,
-        config: .init(groups: ["//ly.img.cesdk.stickers.craft/category/craft"]),
-      ),
+      source: .init(id: "ly.img.sticker", config: .init(groups: ["craft"])),
     )
   }
 
@@ -486,10 +520,7 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickers3D,
       title: .imgly.localized("ly_img_editor_asset_library_section_3d_stickers"),
-      source: .init(
-        defaultSource: .sticker,
-        config: .init(groups: ["//ly.img.cesdk.stickers.3Dstickers/category/3Dstickers"]),
-      ),
+      source: .init(id: "ly.img.sticker", config: .init(groups: ["3Dstickers"])),
     )
   }
 
@@ -497,10 +528,7 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickersHand,
       title: .imgly.localized("ly_img_editor_asset_library_section_hand"),
-      source: .init(
-        defaultSource: .sticker,
-        config: .init(groups: ["//ly.img.cesdk.stickers.hand/category/hand"]),
-      ),
+      source: .init(id: "ly.img.sticker", config: .init(groups: ["hand"])),
     )
   }
 
@@ -508,10 +536,7 @@ public extension AssetLibrarySection {
     .sticker(
       id: ID.stickersDoodle,
       title: .imgly.localized("ly_img_editor_asset_library_section_doodle"),
-      source: .init(
-        defaultSource: .sticker,
-        config: .init(groups: ["//ly.img.cesdk.stickers.doodle/category/doodle"]),
-      ),
+      source: .init(id: "ly.img.sticker", config: .init(groups: ["doodle"])),
     )
   }
 }

@@ -11,7 +11,9 @@ struct FeaturesMenuView: View {
   @State private var transientLabelTimer: Timer?
 
   private let labelDisappearInterval: TimeInterval = 3
-  var allowModeSwitching: Bool { camera.configuration.allowModeSwitching }
+  var allowModeSwitching: Bool {
+    camera.configuration.allowModeSwitching
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
@@ -58,7 +60,7 @@ struct FeaturesMenuView: View {
 }
 
 extension FeaturesMenuView {
-  @ViewBuilder func countdownButton() -> some View {
+  func countdownButton() -> some View {
     Menu {
       Picker(selection: $camera.countdownMode) {
         ForEach(CountdownMode.allCases, id: \.rawValue) { mode in

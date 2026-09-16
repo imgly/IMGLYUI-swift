@@ -27,25 +27,34 @@ struct RecordButton: View {
             // The circle transform into a square stop shape while recording
             if isEnabled {
               let width = geometry.size.width
-              RoundedRectangle(
-                cornerRadius: [.recording, .countingDown].contains(state) ? cornerRadius : geometry.size.width / 2,
-              )
-              .rotation(.degrees([.recording, .countingDown].contains(state) ? 0 : -45))
-              .fill(state == .recording ? camera.configuration.recordingColor : .white)
-              .aspectRatio(1, contentMode: .fit)
-              .frame(maxWidth: [.recording, .countingDown].contains(state) ? width / 2 + padding : width - padding * 2)
-              .shadow(color: .black.opacity(0.25), radius: 5, x: 0, y: 2)
-              .animation(.imgly.growShrinkQuick, value: state)
+              // Video mode pre-tints the shutter; photo mode stays white.
+              let useRecordingColor = state == .recording || camera.isVideoModeActive
+              let videoModeInset: Double = camera.isVideoModeActive ? 16 : 0
+              let isRecordingState = [.recording, .countingDown].contains(state)
+              let maxWidth = isRecordingState
+                ? width / 2 + padding
+                : width - padding * 2 - videoModeInset
+              RoundedRectangle(cornerRadius: isRecordingState ? cornerRadius : geometry.size.width / 2)
+                .rotation(.degrees(isRecordingState ? 0 : -45))
+                .fill(useRecordingColor ? camera.configuration.recordingColor : .white)
+                .aspectRatio(1, contentMode: .fit)
+                .frame(maxWidth: maxWidth)
+                .shadow(color: .black.opacity(0.25), radius: 5, x: 0, y: 2)
+                .animation(.imgly.growShrinkQuick, value: state)
+                .animation(.easeInOut(duration: 0.2), value: useRecordingColor)
+                .animation(.easeInOut(duration: 0.2), value: camera.isVideoModeActive)
             }
           }
       }
       .background {
-        // A growing circle as visual feedback on tap / hold
-        Circle()
-          .fill(camera.configuration.recordingColor)
-          .opacity(isPressed ? 0.8 : 0)
-          .scaleEffect(isPressed ? 1.8 : 1)
-          .animation(.easeInOut(duration: isPressed ? longPressTimeout : 0.2), value: isPressed)
+        // A growing circle as visual feedback on tap / hold. Suppressed in photo mode.
+        if camera.isVideoModeActive {
+          Circle()
+            .fill(camera.configuration.recordingColor)
+            .opacity(isPressed ? 0.8 : 0)
+            .scaleEffect(isPressed ? 1.8 : 1)
+            .animation(.easeInOut(duration: isPressed ? longPressTimeout : 0.2), value: isPressed)
+        }
       }
       .buttonStyle(
         ShortLongPressButtonStyle(
@@ -53,16 +62,16 @@ struct RecordButton: View {
           isPressed: $isPressed,
           onShortPress: {
             guard !isTemporarilyDisabled else { return }
-            camera.toggleRecording()
+            camera.shutterTapped()
             disableTemporarily()
             HapticsHelper.shared.cameraStartRecording()
           },
           onLongPress: {
-            camera.startRecording()
+            camera.shutterLongPressed()
             HapticsHelper.shared.cameraStartRecording()
           },
           onLongPressRelease: {
-            camera.stopRecording()
+            camera.shutterLongPressReleased()
             disableTemporarily()
             HapticsHelper.shared.cameraStopRecording()
           },

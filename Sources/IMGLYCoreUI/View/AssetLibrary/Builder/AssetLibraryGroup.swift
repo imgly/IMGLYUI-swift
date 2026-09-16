@@ -12,8 +12,13 @@ public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
     return hasher.finalize()
   }
 
-  public var sources: [AssetLoader.SourceData] { components.flatMap(\.sources) }
-  public var view: AnyView { AnyView(erasing: body) }
+  public var sources: [AssetLoader.SourceData] {
+    components.flatMap(\.sources)
+  }
+
+  public var view: AnyView {
+    AnyView(erasing: body)
+  }
 
   private let title: LocalizedStringResource?
   private let excludedPreviewSources: Set<String>
@@ -48,7 +53,7 @@ public struct AssetLibraryGroup<Preview: View>: AssetLibraryContent, View {
     self.preview = preview
   }
 
-  @ViewBuilder private var scrollView: some View {
+  private var scrollView: some View {
     AssetLibraryScrollView {
       ForEach(components, id: \.id) {
         $0.view

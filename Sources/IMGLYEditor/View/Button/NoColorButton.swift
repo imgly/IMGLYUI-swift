@@ -4,7 +4,9 @@ struct NoColorButton: View {
   let name: LocalizedStringKey = "None"
   @Binding var isEnabled: Bool
 
-  private var isSelected: Bool { !isEnabled }
+  private var isSelected: Bool {
+    !isEnabled
+  }
 
   var body: some View {
     Button {

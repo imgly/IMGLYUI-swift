@@ -5,7 +5,9 @@ enum AnimationTab: Int, CaseIterable, Identifiable {
   case loop = 1
   case out = 2
 
-  var id: Int { rawValue }
+  var id: Int {
+    rawValue
+  }
 
   var label: LocalizedStringResource {
     switch self {

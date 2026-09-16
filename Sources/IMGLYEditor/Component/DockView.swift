@@ -22,7 +22,9 @@ struct DockView: View {
       }
     } catch {
       let error = EditorError(
-        "Could not create View for Dock.\nReason:\n\(error.localizedDescription)",
+        String(localized: .imgly.localized(
+          "ly_img_editor_error_dock_view_creation \(error.localizedDescription)",
+        )),
       )
       interactor.handleErrorWithTask(error)
       return []

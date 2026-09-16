@@ -61,5 +61,7 @@ import Foundation
     }
   }
 
-  @_spi(Internal) public var imageName: String? { nil }
+  @_spi(Internal) public var imageName: String? {
+    nil
+  }
 }

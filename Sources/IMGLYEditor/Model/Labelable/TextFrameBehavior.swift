@@ -20,5 +20,7 @@ enum TextFrameBehavior: Labelable, CaseIterable {
     }
   }
 
-  var isSystemImage: Bool { false }
+  var isSystemImage: Bool {
+    false
+  }
 }

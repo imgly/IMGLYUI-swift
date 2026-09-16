@@ -177,7 +177,7 @@ actor PhotoLibraryService: NSObject {
 }
 
 extension PhotoLibraryService: PHPhotoLibraryChangeObserver {
-  public nonisolated func photoLibraryDidChange(_ change: PHChange) {
+  nonisolated func photoLibraryDidChange(_ change: PHChange) {
     Task { [weak self] in
       guard let self, let currentResult = await currentFetchResult,
             let changeDetails = change.changeDetails(for: currentResult),

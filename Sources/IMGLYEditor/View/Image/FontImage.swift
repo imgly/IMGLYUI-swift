@@ -13,7 +13,7 @@ struct FontImage: View {
 struct FontImage_Previews: PreviewProvider {
   static let size: CGFloat = 28
 
-  @ViewBuilder static var fonts: some View {
+  static var fonts: some View {
     VStack {
       FontImage(font: .custom("HelveticaNeue-Bold", size: size))
       FontImage(font: .custom("Arial-ItalicMT", size: size))

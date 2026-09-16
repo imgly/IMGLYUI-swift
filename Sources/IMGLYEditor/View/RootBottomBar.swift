@@ -43,7 +43,7 @@ struct RootBottomBar: View {
     return false
   }
 
-  @ViewBuilder var content: some View {
+  var content: some View {
     HStack(spacing: 0) {
       ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: 0) {

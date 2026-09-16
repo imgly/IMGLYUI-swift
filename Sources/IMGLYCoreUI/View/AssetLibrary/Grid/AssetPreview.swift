@@ -14,7 +14,7 @@ public struct AssetPreview<Empty: View>: View {
   ///   - empty: A view to display when the grid is empty.
   public init(
     height: CGFloat?,
-    @ViewBuilder empty: @escaping () -> Empty = { Message.noElements }
+    @ViewBuilder empty: @escaping () -> Empty = { Message.noElements },
   ) {
     self.height = height
     self.empty = empty
@@ -24,9 +24,11 @@ public struct AssetPreview<Empty: View>: View {
   // swiftlint:disable:next cyclomatic_complexity
   @ViewBuilder func item(_ assetItem: AssetItem) -> some View {
     if case let .asset(asset) = assetItem {
-      // If not set assume the default engine value.
-      let designBlockType = asset.result.blockType ?? DesignBlockType.graphic.rawValue
-      if designBlockType == DesignBlockType.graphic.rawValue {
+      // Style-preset assets ship pre-rendered thumbnails — render them aspect-fit instead of
+      // the cropping `ImageItem`.
+      if asset.result.payload?.stylePreset != nil {
+        StickerItem(asset: assetItem)
+      } else if (asset.result.blockType ?? DesignBlockType.graphic.rawValue) == DesignBlockType.graphic.rawValue {
         let fillType = asset.result.fillType ?? ""
         let designBlockKind = asset.result.blockKind ?? ""
         let mimeType = asset.result.mimeType ?? ""

@@ -29,6 +29,23 @@ enum AnimationPropertyDefinitions {
     "/easingDuration": .imgly.localized("ly_img_editor_sheet_animations_label_easing_duration"),
   ]
 
+  private static let transitionPropertyLabels: [String: LocalizedStringResource] = [
+    "playback/duration": .imgly.localized("ly_img_editor_sheet_transition_label_duration"),
+    "animationEasing": .imgly.localized("ly_img_editor_sheet_transition_label_easing"),
+  ]
+
+  private static let transitionPropertySuffixLabels: [String: LocalizedStringResource] = [
+    "/direction": .imgly.localized("ly_img_editor_sheet_transition_label_direction"),
+    "/corner": .imgly.localized("ly_img_editor_sheet_transition_label_corner"),
+    "/sigma": .imgly.localized("ly_img_editor_sheet_transition_label_blur"),
+    "/blur": .imgly.localized("ly_img_editor_sheet_transition_label_blur"),
+    "/zoom": .imgly.localized("ly_img_editor_sheet_transition_label_zoom"),
+    "/intensity": .imgly.localized("ly_img_editor_sheet_transition_label_intensity"),
+    "/bandCount": .imgly.localized("ly_img_editor_sheet_transition_label_band_count"),
+    "/color": .imgly.localized("ly_img_editor_sheet_transition_label_color"),
+    "/morph": .imgly.localized("ly_img_editor_sheet_transition_label_morph"),
+  ]
+
   // MARK: - Enum Option Labels
 
   private static let enumOptionLabels: [String: LocalizedStringResource] = [
@@ -65,15 +82,52 @@ enum AnimationPropertyDefinitions {
     "Word": .imgly.localized("ly_img_editor_sheet_animations_writing_style_option_word"),
   ]
 
+  private static let transitionEnumOptionLabels: [String: LocalizedStringResource] = [
+    // Easing — transitions use the same engine enum values and localized labels as animations.
+    "Linear": .imgly.localized("ly_img_editor_sheet_animations_easing_option_linear"),
+    "EaseInQuint": .imgly.localized("ly_img_editor_sheet_animations_easing_option_smooth_accelerate"),
+    "EaseOutQuint": .imgly.localized("ly_img_editor_sheet_animations_easing_option_smooth_decelerate"),
+    "EaseInOutQuint": .imgly.localized("ly_img_editor_sheet_animations_easing_option_smooth_natural"),
+    "EaseInBack": .imgly.localized("ly_img_editor_sheet_animations_easing_option_bounce_away"),
+    "EaseOutBack": .imgly.localized("ly_img_editor_sheet_animations_easing_option_bounce_in"),
+    "EaseInOutBack": .imgly.localized("ly_img_editor_sheet_animations_easing_option_bounce_double"),
+    "EaseInSpring": .imgly.localized("ly_img_editor_sheet_animations_easing_option_wiggle_away"),
+    "EaseOutSpring": .imgly.localized("ly_img_editor_sheet_animations_easing_option_wiggle_in"),
+    "EaseInOutSpring": .imgly.localized("ly_img_editor_sheet_animations_easing_option_wiggle_double"),
+    // Transition-specific options.
+    "Up": .imgly.localized("ly_img_editor_sheet_transition_direction_up"),
+    "Right": .imgly.localized("ly_img_editor_sheet_transition_direction_right"),
+    "Down": .imgly.localized("ly_img_editor_sheet_transition_direction_down"),
+    "Left": .imgly.localized("ly_img_editor_sheet_transition_direction_left"),
+    "Clockwise": .imgly.localized("ly_img_editor_sheet_transition_direction_clockwise"),
+    "CounterClockwise": .imgly.localized("ly_img_editor_sheet_transition_direction_counter_clockwise"),
+    "Horizontal": .imgly.localized("ly_img_editor_sheet_transition_direction_horizontal"),
+    "Vertical": .imgly.localized("ly_img_editor_sheet_transition_direction_vertical"),
+    "TopLeft": .imgly.localized("ly_img_editor_sheet_transition_corner_top_left"),
+    "TopRight": .imgly.localized("ly_img_editor_sheet_transition_corner_top_right"),
+    "BottomLeft": .imgly.localized("ly_img_editor_sheet_transition_corner_bottom_left"),
+    "BottomRight": .imgly.localized("ly_img_editor_sheet_transition_corner_bottom_right"),
+    "RaisedRamp": .imgly.localized("ly_img_editor_sheet_transition_direction_raised_ramp"),
+    "LoweredRamp": .imgly.localized("ly_img_editor_sheet_transition_direction_lowered_ramp"),
+  ]
+
   // MARK: - Float-to-String Mappings
 
   private static func radiansToDirectionString(_ radians: Float) -> String {
     let twoPi = Float.pi * 2
     var dir = radians.truncatingRemainder(dividingBy: twoPi)
-    if dir < 0 { dir += twoPi }
-    if dir <= 0.25 * .pi || dir > 1.75 * .pi { return "Right" }
-    if dir <= 0.75 * .pi { return "Down" }
-    if dir <= 1.25 * .pi { return "Left" }
+    if dir < 0 {
+      dir += twoPi
+    }
+    if dir <= 0.25 * .pi || dir > 1.75 * .pi {
+      return "Right"
+    }
+    if dir <= 0.75 * .pi {
+      return "Down"
+    }
+    if dir <= 1.25 * .pi {
+      return "Left"
+    }
     return "Up"
   }
 
@@ -100,6 +154,9 @@ enum AnimationPropertyDefinitions {
       case let .boolean(property, _, defaultValue):
         let current = try engine.block.getBool(blockID, property: property)
         return .boolean(property: property, value: current, defaultValue: defaultValue)
+      case let .color(property, _, defaultValue):
+        let current: IMGLYEngine.Color = try engine.block.getColor(blockID, property: property)
+        return .color(property: property, value: current, defaultValue: defaultValue)
       case let .enum(property, _, defaultValue, options):
         let current: String
         if let enumValue = try? engine.block.getEnum(blockID, property: property) {
@@ -134,7 +191,15 @@ enum AnimationPropertyDefinitions {
 
   // MARK: - Build Properties from Asset Payload
 
-  private static func label(for propertyKey: String) -> LocalizedStringResource {
+  private static func label(for propertyKey: String, sourceID: String) -> LocalizedStringResource {
+    if sourceID == "ly.img.transitions" {
+      if let label = transitionPropertyLabels[propertyKey] {
+        return label
+      }
+      for (suffix, label) in transitionPropertySuffixLabels where propertyKey.hasSuffix(suffix) {
+        return label
+      }
+    }
     if let label = propertyLabels[propertyKey] {
       return label
     }
@@ -175,7 +240,7 @@ enum AnimationPropertyDefinitions {
     switch assetProperty {
     case let .float(property, _, defaultValue, min, max, _):
       return EffectProperty(
-        label: label(for: property),
+        label: label(for: property, sourceID: sourceID),
         value: .float(range: min ... max, defaultValue: defaultValue),
         property: .raw(property),
         id: blockID,
@@ -183,7 +248,7 @@ enum AnimationPropertyDefinitions {
       )
     case let .double(property, _, defaultValue, min, max, _):
       return EffectProperty(
-        label: label(for: property),
+        label: label(for: property, sourceID: sourceID),
         value: .double(range: min ... max, defaultValue: defaultValue),
         property: .raw(property),
         id: blockID,
@@ -191,21 +256,30 @@ enum AnimationPropertyDefinitions {
       )
     case let .boolean(property, _, defaultValue):
       return EffectProperty(
-        label: label(for: property),
+        label: label(for: property, sourceID: sourceID),
         value: .boolean(defaultValue: defaultValue),
         property: .raw(property),
         id: blockID,
         assetContext: context,
       )
+    case let .color(property, _, defaultValue):
+      return EffectProperty(
+        label: label(for: property, sourceID: sourceID),
+        value: .color(supportsOpacity: true, defaultValue: defaultValue.cgColor),
+        property: .raw(property),
+        id: blockID,
+        assetContext: context,
+      )
     case let .enum(property, _, defaultValue, options):
+      let optionLabels = sourceID == "ly.img.transitions" ? transitionEnumOptionLabels : enumOptionLabels
       let enumOptions = options.map { option in
         EffectProperty.EnumOption(
           id: option,
-          label: enumOptionLabels[option] ?? .init(stringLiteral: option),
+          label: optionLabels[option] ?? .init(stringLiteral: option),
         )
       }
       return EffectProperty(
-        label: label(for: property),
+        label: label(for: property, sourceID: sourceID),
         value: .enum(options: enumOptions, defaultValue: defaultValue),
         property: .raw(property),
         id: blockID,
@@ -213,7 +287,7 @@ enum AnimationPropertyDefinitions {
       )
     case let .int(property, _, defaultValue, min, max, _):
       return EffectProperty(
-        label: label(for: property),
+        label: label(for: property, sourceID: sourceID),
         value: .float(range: Float(min) ... Float(max), defaultValue: Float(defaultValue)),
         property: .raw(property),
         id: blockID,

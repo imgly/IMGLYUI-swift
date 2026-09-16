@@ -21,17 +21,21 @@ struct StrokeOptions: View {
         }
         PropertyPicker<StrokeStyle>(
           .imgly.localized("ly_img_editor_sheet_fill_stroke_label_style"),
-          property: .key(.strokeStyle)
+          property: .key(.strokeStyle),
         )
-        PropertyPicker<StrokePosition>(
-          .imgly.localized("ly_img_editor_sheet_fill_stroke_label_position"),
-          property: .key(.strokePosition)
-        )
-        .disabled(interactor.sheet.content == .text)
-        PropertyPicker<StrokeJoin>(
-          .imgly.localized("ly_img_editor_sheet_fill_stroke_label_join"),
-          property: .key(.strokeCornerGeometry)
-        )
+        // Position and Join pickers don't apply to a 1-D primitive.
+        if !interactor.isLineOrigin(id) {
+          PropertyPicker<StrokePosition>(
+            .imgly.localized("ly_img_editor_sheet_fill_stroke_label_position"),
+            property: .key(.strokePosition),
+          )
+          // Stroke position is fixed for text and captions (text-family blocks), as on text.
+          .disabled(interactor.sheet.content == .text || interactor.sheet.content == .caption)
+          PropertyPicker<StrokeJoin>(
+            .imgly.localized("ly_img_editor_sheet_fill_stroke_label_join"),
+            property: .key(.strokeCornerGeometry),
+          )
+        }
       }
     }
   }

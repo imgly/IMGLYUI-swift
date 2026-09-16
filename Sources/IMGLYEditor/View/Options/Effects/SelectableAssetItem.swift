@@ -8,12 +8,18 @@ struct SelectableAssetItem<Content: View>: View {
   let properties: [EffectProperty]
   let asset: AssetLoader.Asset
   @Binding var sheetState: EffectSheetState
+  /// Set when the properties page is custom instead of derived from `properties`, which may then be empty.
+  var hasCustomProperties = false
 
   @EnvironmentObject private var interactor: Interactor
 
   // Since we still don't support localization in asset sources, this allows customers to localize titles directly
   private var localizedTitle: String {
     String(localized: LocalizedStringResource(stringLiteral: title))
+  }
+
+  private var showsProperties: Bool {
+    hasCustomProperties || !properties.isEmpty
   }
 
   private var image: Image {
@@ -24,7 +30,7 @@ struct SelectableAssetItem<Content: View>: View {
     }
   }
 
-  @ViewBuilder var overlay: some View {
+  var overlay: some View {
     ZStack {
       Color.black.opacity(0.5)
       image
@@ -32,22 +38,22 @@ struct SelectableAssetItem<Content: View>: View {
         .font(.largeTitle)
     }
     .onTapGesture {
-      let currentDetent = interactor.sheet.style.detent
+      let currentStyle = interactor.sheet.style
       let propertyState = AssetProperties(
         title: localizedTitle,
         backTitle: .imgly.localized("ly_img_editor_sheet_button_back"),
         properties: properties,
-        previousDetent: currentDetent,
+        previousStyle: currentStyle,
       )
       sheetState = .properties(propertyState)
       var detent = PresentationDetent.imgly.tiny
       var detents: Set<PresentationDetent> = [detent]
-      if properties.count > 1 {
+      if properties.count > 1 || hasCustomProperties {
         detent = .imgly.medium
         detents.insert(.imgly.medium)
       }
       interactor.sheet.commit { model in
-        model.style = .default(detent: detent, detents: detents)
+        model.style = currentStyle.resized(detent: detent, detents: detents)
       }
     }
   }
@@ -57,7 +63,8 @@ struct SelectableAssetItem<Content: View>: View {
       ZStack {
         content
         overlay
-          .opacity((selected && !properties.isEmpty) ? 1 : 0)
+          .opacity((selected && showsProperties) ? 1 : 0)
+          .allowsHitTesting(selected && showsProperties)
       }
     }
   }

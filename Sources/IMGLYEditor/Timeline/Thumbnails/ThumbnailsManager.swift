@@ -16,7 +16,7 @@ class ThumbnailsManager {
     case .audio, .voiceOver:
       let provider = ThumbnailsAudioProvider(interactor: interactor)
       providers[clip.id] = provider
-    case .text:
+    case .caption, .text:
       let provider = ThumbnailsTextProvider(interactor: interactor)
       providers[clip.id] = provider
     default:

@@ -20,7 +20,7 @@ struct PropertyEnumPicker: View {
     property: Property,
     selection: Interactor.BlockID? = nil,
     defaultValue: String?,
-    assetContext: EffectProperty.AssetContext? = nil
+    assetContext: EffectProperty.AssetContext? = nil,
   ) {
     self.label = label
     self.options = options

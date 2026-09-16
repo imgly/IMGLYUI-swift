@@ -31,6 +31,8 @@ public extension IMGLY where Wrapped == Image {
   static let addCameraForeground = Wrapped("custom.camera.badge.plus", bundle: .module)
   /// An icon image for adding a voiceover.
   static let addVoiceover = Wrapped("custom.mic.badge.plus", bundle: .module)
+  /// An icon image for captions.
+  static let captions = Wrapped(systemName: "captions.bubble")
 
   /// An icon image for reoder.
   static let reorder = Wrapped(systemName: "rectangle.portrait.arrowtriangle.2.outward")
@@ -48,6 +50,8 @@ public extension IMGLY where Wrapped == Image {
   static let clipSpeed = Wrapped(systemName: "hare")
   /// An icon image for animation.
   static let animation = Wrapped("custom.circle.dotted.and.circle", bundle: .module)
+  /// An icon image for transitions.
+  static let transition = Wrapped("custom.transition.is.set", bundle: .module)
   /// An icon image for crop.
   static let crop = Wrapped(systemName: "crop.rotate")
   /// An icon image for resize.
@@ -75,6 +79,10 @@ public extension IMGLY where Wrapped == Image {
   static let editText = Wrapped(systemName: "keyboard")
   /// An icon image for format text.
   static let formatText = Wrapped(systemName: "textformat.alt")
+  /// An icon image for text style presets ("Presets").
+  static let textStyles = Wrapped(systemName: "swatchpalette")
+  /// An icon image for text on path.
+  static let textOnPath = Wrapped("custom.text.on.path", bundle: .module)
   /// An icon image for shape.
   static let shape = Wrapped(systemName: "square.on.circle")
 

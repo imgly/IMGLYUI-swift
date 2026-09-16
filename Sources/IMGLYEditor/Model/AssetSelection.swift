@@ -13,7 +13,7 @@ struct AssetSelection {
     assetURL: String? = nil,
     metadata: [String: String]? = nil,
     sourceID: String? = nil,
-    id: Interactor.BlockID? = nil
+    id: Interactor.BlockID? = nil,
   ) {
     self.identifier = identifier
     self.assetURL = assetURL

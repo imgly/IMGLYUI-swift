@@ -8,9 +8,9 @@ private enum PreviewServerRequestState<Value> {
 }
 
 @_spi(Internal) public extension PreviewProvider {
-  @ViewBuilder static
-  func previewState<Value>(_ value: Value,
-                           @ViewBuilder content: @escaping (_ binding: Binding<Value>) -> some View) -> some View {
+  static func previewState<Value>(_ value: Value,
+                                  @ViewBuilder content: @escaping (_ binding: Binding<Value>) -> some View)
+    -> some View {
     StatefulPreviewContainer(value) { binding in
       content(binding)
     }
@@ -60,7 +60,7 @@ private enum PreviewServerRequestState<Value> {
 }
 
 extension PreviewProvider {
-  @ViewBuilder static var assetLibraryPreview: some View {
+  static var assetLibraryPreview: some View {
     previewState(true) { binding in
       Button("Show Asset Library") {
         binding.wrappedValue = true

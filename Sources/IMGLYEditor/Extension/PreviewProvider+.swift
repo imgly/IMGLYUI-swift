@@ -7,11 +7,11 @@ extension PreviewProvider {
     getResource("apparel-ui-b-1", withExtension: "scene")
   }
 
-  @ViewBuilder static var defaultPreviews: some View {
+  static var defaultPreviews: some View {
     defaultPreviews()
   }
 
-  @ViewBuilder static func editorPreview(sheet: SheetState?) -> some View {
+  static func editorPreview(sheet: SheetState?) -> some View {
     NavigationView {
       getSecrets { secrets in
         let config = EngineConfiguration(
@@ -23,7 +23,7 @@ extension PreviewProvider {
     }
   }
 
-  @ViewBuilder static func defaultPreviews(sheet: SheetState? = nil) -> some View {
+  static func defaultPreviews(sheet: SheetState? = nil) -> some View {
     Group {
       editorPreview(sheet: sheet)
       editorPreview(sheet: sheet).imgly.nonDefaultPreviewSettings()

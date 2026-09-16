@@ -86,6 +86,57 @@
         }
       }
     },
+    "ly_img_editor_asset_label_chop" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zerhacken"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chop"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_color_fade" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farbübergang"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color Fade"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_color_wipe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farb-Wischen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color Wipe"
+          }
+        }
+      }
+    },
     "ly_img_editor_asset_label_crop_zoom" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -99,6 +150,108 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crop Zoom"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_cross_blur" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weichblenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cross Blur"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_cross_fade" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überblenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cross Fade"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_cross_spin" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dreh-Übergang"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cross Spin"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_cross_warp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verformen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cross Warp"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_cross_zoom" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom-Überblenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cross Zoom"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_diagonal_splice" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagonalschnitt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagonal Splice"
           }
         }
       }
@@ -133,6 +286,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fade"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_fade_to_black" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übergang zu Schwarz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fade to Black"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_fade_to_white" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übergang zu Weiß"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fade to White"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_gradient_fade" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verlaufsübergang"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gradient Fade"
           }
         }
       }
@@ -273,6 +477,23 @@
         }
       }
     },
+    "ly_img_editor_asset_label_push" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schieben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Push"
+          }
+        }
+      }
+    },
     "ly_img_editor_asset_label_scale_loop" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -341,6 +562,23 @@
         }
       }
     },
+    "ly_img_editor_asset_label_splice" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schneiden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Splice"
+          }
+        }
+      }
+    },
     "ly_img_editor_asset_label_spread_text" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -388,6 +626,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sway"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_label_two_stripes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zwei Streifen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Two Stripes"
           }
         }
       }
@@ -1021,6 +1276,23 @@
         }
       }
     },
+    "ly_img_editor_asset_library_section_curve_text" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebogener Text"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Curved Text"
+          }
+        }
+      }
+    },
     "ly_img_editor_asset_library_section_doodle" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1095,13 +1367,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Textdesigns"
+            "value" : "Textkombinationen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Text Designs"
+            "value" : "Text Combinations"
           }
         }
       }
@@ -1323,6 +1595,176 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Text"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textstilvorlagen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text Style Presets"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_curves" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebogener Text"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Curved Text"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_default" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_elegant" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegant"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegant"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_modernTech" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modern Tech"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modern Tech"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_paragraphDefault" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Absatz · Standard"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paragraph · Default"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_paragraphElegant" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Absatz · Elegant"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paragraph · Elegant"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_paragraphModernTech" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Absatz · Modern Tech"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paragraph · Modern Tech"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_style_presets_textStyles" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textstile"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text Styles"
+          }
+        }
+      }
+    },
+    "ly_img_editor_asset_library_section_text_styles" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textstile"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text Styles"
           }
         }
       }
@@ -1731,6 +2173,159 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Done"
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_captions_delete_all_button_confirm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle löschen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete All"
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_captions_delete_all_button_dismiss" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbrechen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_captions_delete_all_text" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Untertitel werden aus dem Video entfernt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every caption will be removed from the video."
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_captions_delete_all_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Untertitel löschen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete all captions?"
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_captions_import_error_file_damaged" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datei konnte nicht gelesen werden. Sie scheint beschädigt oder unvollständig zu sein."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file couldn't be read. It appears to be damaged or incomplete."
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_captions_import_error_file_unreadable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datei konnte nicht gelesen werden. Bitte erneut versuchen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file couldn't be read. Please try again."
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_captions_import_error_parse_empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In der Datei wurden keine Untertitel gefunden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No captions were found in the file."
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_captions_import_error_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel konnten nicht importiert werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't import captions"
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_captions_import_error_unsupported_format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Dateiformat wird nicht unterstützt. Es können nur SRT- oder VTT-Dateien importiert werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This file format isn't supported. Import an SRT or VTT file."
           }
         }
       }
@@ -2262,6 +2857,23 @@
         }
       }
     },
+    "ly_img_editor_dialog_resize_label_font_unit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schriftgrößeneinheit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Font size unit"
+          }
+        }
+      }
+    },
     "ly_img_editor_dialog_resize_label_height %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2415,6 +3027,23 @@
         }
       }
     },
+    "ly_img_editor_dialog_resize_unit_option_point" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Punkt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Point"
+          }
+        }
+      }
+    },
     "ly_img_editor_dialog_video_min_length_button" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2530,6 +3159,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Camera"
+          }
+        }
+      }
+    },
+    "ly_img_editor_dock_button_captions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Captions"
           }
         }
       }
@@ -2823,6 +3469,227 @@
         }
       }
     },
+    "ly_img_editor_edit_text_button_bold" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fett"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bold"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_button_italic" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kursiv"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Italic"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_button_strikethrough" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durchgestrichen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strikethrough"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_button_underline" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterstrichen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Underline"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_label_letter_case" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groß-/Kleinschreibung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letter Case"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_label_list_style" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listenstil"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List Style"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_letter_case_option_lowercase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "alles klein"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "lower case"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_letter_case_option_none" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie geschrieben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As typed"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_letter_case_option_title_case" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Großschreibung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Capitalized Case"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_letter_case_option_uppercase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ALLES GROSS"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UPPER CASE"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_list_style_option_bulleted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufzählungsliste"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bulleted List"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_list_style_option_none" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        }
+      }
+    },
+    "ly_img_editor_edit_text_list_style_option_numbered" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nummerierte Liste"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numbered List"
+          }
+        }
+      }
+    },
     "ly_img_editor_edit_text_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2836,6 +3703,91 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Edit Text"
+          }
+        }
+      }
+    },
+    "ly_img_editor_error_canvas_menu_view_creation %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht für Canvas Menu konnte nicht erstellt werden.\nGrund:\n%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create View for Canvas Menu.\nReason:\n%@"
+          }
+        }
+      }
+    },
+    "ly_img_editor_error_dock_view_creation %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht für Dock konnte nicht erstellt werden.\nGrund:\n%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create View for Dock.\nReason:\n%@"
+          }
+        }
+      }
+    },
+    "ly_img_editor_error_editor_component_view_creation %@ %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht für EditorComponent `%1$@` konnte nicht erstellt werden.\nGrund:\n%2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create View for EditorComponent `%1$@`.\nReason:\n%2$@"
+          }
+        }
+      }
+    },
+    "ly_img_editor_error_inspector_bar_view_creation %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht für Inspector Bar konnte nicht erstellt werden.\nGrund:\n%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create View for Inspector Bar.\nReason:\n%@"
+          }
+        }
+      }
+    },
+    "ly_img_editor_error_navigation_bar_view_creation %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansicht für Navigation Bar konnte nicht erstellt werden.\nGrund:\n%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create View for Navigation Bar.\nReason:\n%@"
           }
         }
       }
@@ -2887,6 +3839,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Blur"
+          }
+        }
+      }
+    },
+    "ly_img_editor_inspector_bar_button_caption_style" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Style"
           }
         }
       }
@@ -2972,6 +3941,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Duplicate"
+          }
+        }
+      }
+    },
+    "ly_img_editor_inspector_bar_button_edit_captions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel bearbeiten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Captions"
           }
         }
       }
@@ -3261,6 +4247,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Background"
+          }
+        }
+      }
+    },
+    "ly_img_editor_inspector_bar_button_text_on_path" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text auf Pfad"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text on Path"
+          }
+        }
+      }
+    },
+    "ly_img_editor_inspector_bar_button_text_styles" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorlagen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Presets"
+          }
+        }
+      }
+    },
+    "ly_img_editor_inspector_bar_button_transition" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übergang"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transition"
           }
         }
       }
@@ -4956,6 +5993,380 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Close"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_caption_style_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Style"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_button_add" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuen Untertitel hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add New Caption"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_button_create" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manuell erstellen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Manually"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_button_delete_all" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Untertitel löschen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete All Captions"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_button_done" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fertig"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_button_generate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch generieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generate Automatically"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_button_import" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datei importieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import File"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_button_more" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mehr"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_button_next" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nächster Untertitel"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next Caption"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_button_previous" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorheriger Untertitel"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous Caption"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_generate_error_generic" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beim Generieren der Untertitel ist ein Fehler aufgetreten. Bitte erneut versuchen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Something went wrong while generating captions. Please try again."
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_generate_error_no_speech" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In der Tonspur wurde keine Sprache erkannt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No speech was detected in the audio."
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_generate_error_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel konnten nicht generiert werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't Generate Captions"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_generating" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel werden generiert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generating Captions"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_row_add_after" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuen darunter hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add new below"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_row_delete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel löschen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete caption"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_row_edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeiten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_row_merge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit vorherigem zusammenführen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Merge with previous"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_row_placeholder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuer Untertitel"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Caption"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_row_split" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Am Cursor teilen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split at cursor"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_title_add" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Captions"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_captions_title_edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Untertitel bearbeiten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Captions"
           }
         }
       }
@@ -6847,6 +8258,23 @@
         }
       }
     },
+    "ly_img_editor_sheet_format_text_font_subfamily_mixed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemischt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mixed"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_format_text_font_subfamily_regular" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7080,7 +8508,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Frame Clipping"
+            "value" : "Clipping"
           }
         }
       }
@@ -8190,6 +9618,584 @@
         }
       }
     },
+    "ly_img_editor_sheet_text_on_path_direction_option_forward" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorwärts"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forward"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_direction_option_reversed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umgekehrt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reversed"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_label_alignment" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausrichtung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alignment"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_label_direction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richtung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direction"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_label_offset" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versatz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offset"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_label_path_position" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pfadposition"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Path Position"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_text_on_path_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text auf Pfad"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text on Path"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_button_apply_to_all_clips_in_track" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf alle Clips in der Spur anwenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply to all clips in track"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_button_remove_all_transitions_in_track" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Übergänge in der Spur entfernen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove all transitions in track"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_corner_bottom_left" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unten links"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bottom left"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_corner_bottom_right" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unten rechts"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bottom right"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_corner_top_left" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oben links"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top left"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_corner_top_right" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oben rechts"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top right"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_direction_clockwise" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Im Uhrzeigersinn"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clockwise"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_direction_counter_clockwise" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gegen den Uhrzeigersinn"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Counterclockwise"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_direction_down" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unten"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Down"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_direction_horizontal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horizontal"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Horizontal"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_direction_left" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Links"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Left"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_direction_lowered_ramp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Absteigende Rampe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lowered ramp"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_direction_raised_ramp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufsteigende Rampe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raised ramp"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_direction_right" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechts"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Right"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_direction_up" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oben"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_direction_vertical" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vertikal"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vertical"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_label_band_count" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anzahl der Bänder"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Band count"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_label_blur" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unschärfe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blur"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_label_color" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farbe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_label_corner" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ecke"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corner"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_label_direction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richtung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direction"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_label_duration" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dauer"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duration"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_label_easing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beschleunigung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Easing"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_label_intensity" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intensität"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intensity"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_label_morph" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morph"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morph"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_label_zoom" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
+          }
+        }
+      }
+    },
+    "ly_img_editor_sheet_transition_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übergang"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transition"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_voiceover_button_add_recording" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8315,13 +10321,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Musik"
+            "value" : "Audio"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Music"
+            "value" : "Audio"
           }
         }
       }
@@ -8411,6 +10417,23 @@
         }
       }
     },
+    "ly_img_editor_timeline_button_add_transition" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übergang hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Transition"
+          }
+        }
+      }
+    },
     "ly_img_editor_timeline_button_hide_timeline" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8492,6 +10515,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Timeline"
+          }
+        }
+      }
+    },
+    "ly_img_editor_timeline_button_view_transition" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übergang anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Transition"
           }
         }
       }

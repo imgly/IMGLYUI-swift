@@ -17,7 +17,12 @@ class ThumbnailsTextProvider {
 
 extension ThumbnailsTextProvider: ThumbnailsProvider {
   func loadThumbnails(clip: Clip, availableWidth _: Double, thumbHeight _: Double) {
-    text = (try? interactor?.getTextContent(id: clip.id)) ?? ""
+    let newText = (try? interactor?.getTextContent(id: clip.id)) ?? ""
+    // Republishing an unchanged value would invalidate every text clip view on
+    // each history step — costly with hundreds of captions.
+    if text != newText {
+      text = newText
+    }
   }
 
   func cancel() {}

@@ -1,9 +1,8 @@
 @_spi(Internal) import IMGLYCore
 import SwiftUI
 
-@_spi(Internal) public struct MeasurementScalePicker<V, UnitType>: View where V: BinaryFloatingPoint,
-  V.Stride: BinaryFloatingPoint,
-  UnitType: Dimension {
+@_spi(Internal) public struct MeasurementScalePicker<V: BinaryFloatingPoint, UnitType: Dimension>: View
+  where V.Stride: BinaryFloatingPoint {
   @_spi(Internal) public init(value: Binding<V>,
                               unit: UnitType,
                               in bounds: ClosedRange<V>,
@@ -55,7 +54,7 @@ import SwiftUI
     }
   }
 
-  @ViewBuilder var cursor: some View {
+  var cursor: some View {
     Text(formatNonNegativeZero(value))
       .padding(4)
       .font(.headline)

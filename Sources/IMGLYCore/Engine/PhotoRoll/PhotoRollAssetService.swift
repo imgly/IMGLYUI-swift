@@ -17,7 +17,7 @@ import IMGLYEngine
 
   @_spi(Internal) public init(
     maxCacheSize: Int = 500,
-    thumbnailTargetSize: CGSize = .init(width: 250, height: 250)
+    thumbnailTargetSize: CGSize = .init(width: 250, height: 250),
   ) {
     self.maxCacheSize = maxCacheSize
     self.thumbnailTargetSize = thumbnailTargetSize

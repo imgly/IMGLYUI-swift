@@ -19,7 +19,7 @@ struct TransformOptions<Item: View>: View {
     interactor: Interactor,
     item: @escaping (AssetItem) -> Item,
     sources: [AssetLoader.SourceData],
-    mode: TransformMode = .cropAndResize
+    mode: TransformMode = .cropAndResize,
   ) {
     self.interactor = interactor
     self.item = item
@@ -108,8 +108,6 @@ struct TransformOptions<Item: View>: View {
               .frame(width: 20)
           }
         }
-      } else {
-        EmptyView()
       }
     }
   }

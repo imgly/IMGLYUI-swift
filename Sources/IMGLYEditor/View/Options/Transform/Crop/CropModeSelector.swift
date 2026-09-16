@@ -72,8 +72,6 @@ struct CropModePicker: View {
       } else {
         Image(imageName, bundle: .module)
       }
-    } else {
-      EmptyView()
     }
   }
 }

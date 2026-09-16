@@ -29,7 +29,7 @@ public extension EditorComponents {
       @ViewBuilder label: @escaping Context.To<Label>,
       isEnabled: @escaping Context.To<Bool> = { _ in true },
       isVisible: @escaping Context.To<Bool> = { _ in true },
-      modifier: @escaping Context.To<Modifier>
+      modifier: @escaping Context.To<Modifier>,
     ) {
       self.id = id
       self.action = action
@@ -86,7 +86,7 @@ public extension EditorComponents {
       id: EditorComponentID,
       @ViewBuilder content: @escaping Context.To<Content>,
       isEnabled: @escaping Context.To<Bool> = { _ in true },
-      isVisible: @escaping Context.To<Bool> = { _ in true }
+      isVisible: @escaping Context.To<Bool> = { _ in true },
     ) {
       self.id = id
       self.content = content

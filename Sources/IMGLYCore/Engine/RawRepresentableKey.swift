@@ -1,7 +1,7 @@
 import Foundation
 
-@_spi(Internal) public enum RawRepresentableKey<T>: Hashable, RawRepresentable where T: RawRepresentable,
-  T.RawValue == String {
+@_spi(Internal) public enum RawRepresentableKey<T: RawRepresentable>: Hashable,
+  RawRepresentable where T.RawValue == String {
   case key(T)
   case raw(String)
 

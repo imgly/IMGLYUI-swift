@@ -72,31 +72,30 @@ struct BackgroundOptions: View {
     }
   }
 
+  @ViewBuilder
   private var paddingControls: some View {
-    Group {
-      Section {
-        PropertySlider<Float>(
-          .imgly.localized("ly_img_editor_sheet_text_background_label_vertical_padding"),
-          in: 0 ... maxVerticalPadding,
-          property: .key(.backgroundColorPaddingTop),
-          setter: backgroundVerticalPaddingSetter,
-          getter: backgroundVerticalPaddingGetter
-        )
-      } header: {
-        Text(.imgly.localized("ly_img_editor_sheet_text_background_label_vertical_padding"))
-      }
+    Section {
+      PropertySlider<Float>(
+        .imgly.localized("ly_img_editor_sheet_text_background_label_vertical_padding"),
+        in: 0 ... maxVerticalPadding,
+        property: .key(.backgroundColorPaddingTop),
+        setter: backgroundVerticalPaddingSetter,
+        getter: backgroundVerticalPaddingGetter,
+      )
+    } header: {
+      Text(.imgly.localized("ly_img_editor_sheet_text_background_label_vertical_padding"))
+    }
 
-      Section {
-        PropertySlider<Float>(
-          .imgly.localized("ly_img_editor_sheet_text_background_label_horizontal_padding"),
-          in: 0 ... maxHorizontalPadding,
-          property: .key(.backgroundColorPaddingLeft),
-          setter: backgroundHorizontalPaddingSetter,
-          getter: backgroundHorizontalPaddingGetter
-        )
-      } header: {
-        Text(.imgly.localized("ly_img_editor_sheet_text_background_label_horizontal_padding"))
-      }
+    Section {
+      PropertySlider<Float>(
+        .imgly.localized("ly_img_editor_sheet_text_background_label_horizontal_padding"),
+        in: 0 ... maxHorizontalPadding,
+        property: .key(.backgroundColorPaddingLeft),
+        setter: backgroundHorizontalPaddingSetter,
+        getter: backgroundHorizontalPaddingGetter,
+      )
+    } header: {
+      Text(.imgly.localized("ly_img_editor_sheet_text_background_label_horizontal_padding"))
     }
   }
 
@@ -105,7 +104,7 @@ struct BackgroundOptions: View {
       PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_text_background_label_round_corners"),
         in: 0 ... maxCornerRadius,
-        property: .key(.backgroundColorCornerRadius)
+        property: .key(.backgroundColorCornerRadius),
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_text_background_label_round_corners"))

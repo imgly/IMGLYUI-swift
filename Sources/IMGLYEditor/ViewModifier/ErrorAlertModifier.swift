@@ -23,7 +23,11 @@ struct ErrorAlertModifier: ViewModifier {
         String(localized: .imgly.localized("ly_img_editor_dialog_error_generic_title")),
         isPresented: Binding<Bool>(
           get: { identifiableError != nil },
-          set: { if !$0 { identifiableError = nil } }
+          set: {
+            if !$0 {
+              identifiableError = nil
+            }
+          },
         ),
       ) {
         Button(String(localized: .imgly.localized("ly_img_editor_button_ok")), role: .cancel) {

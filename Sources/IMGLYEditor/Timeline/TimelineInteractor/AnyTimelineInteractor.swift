@@ -6,15 +6,40 @@ import IMGLYEngine
 import SwiftUI
 
 class AnyTimelineInteractor: TimelineInteractor {
-  var timelineProperties: TimelineProperties { interactor.timelineProperties }
-  var isLoopingPlaybackEnabled: Bool { interactor.isLoopingPlaybackEnabled }
-  var isVoiceOverRecordModeActive: Bool { interactor.isVoiceOverRecordModeActive }
-  var isVoiceOverRecordModeRecording: Bool { interactor.isVoiceOverRecordModeRecording }
-  var hasVoiceOverRecordModeRecordedAudio: Bool { interactor.hasVoiceOverRecordModeRecordedAudio }
-  var voiceOverRecordModeTarget: DesignBlockID? { interactor.voiceOverRecordModeTarget }
+  var timelineProperties: TimelineProperties {
+    interactor.timelineProperties
+  }
+
+  var isLoopingPlaybackEnabled: Bool {
+    interactor.isLoopingPlaybackEnabled
+  }
+
+  var isVoiceOverRecordModeActive: Bool {
+    interactor.isVoiceOverRecordModeActive
+  }
+
+  var isVoiceOverRecordModeRecording: Bool {
+    interactor.isVoiceOverRecordModeRecording
+  }
+
+  var hasVoiceOverRecordModeRecordedAudio: Bool {
+    interactor.hasVoiceOverRecordModeRecordedAudio
+  }
+
+  var voiceOverRecordModeTarget: DesignBlockID? {
+    interactor.voiceOverRecordModeTarget
+  }
 
   func setTrim(clip: Clip, timeOffset: CMTime, trimOffset: CMTime, duration: CMTime) {
     interactor.setTrim(clip: clip, timeOffset: timeOffset, trimOffset: trimOffset, duration: duration)
+  }
+
+  func commitPreviewedOffsets(_ offsets: [DesignBlockID: CMTime]) {
+    interactor.commitPreviewedOffsets(offsets)
+  }
+
+  func applyDrop(clip: Clip, target: DropTarget, siblingOffsets: [DesignBlockID: CMTime]) {
+    interactor.applyDrop(clip: clip, target: target, siblingOffsets: siblingOffsets)
   }
 
   func splitSelectedClipAtPlayheadPosition() {
@@ -31,6 +56,10 @@ class AnyTimelineInteractor: TimelineInteractor {
 
   func refreshThumbnails() {
     interactor.refreshThumbnails()
+  }
+
+  func refreshZoomDependentThumbnails() {
+    interactor.refreshZoomDependentThumbnails()
   }
 
   func refreshThumbnail(id: DesignBlockID) {
@@ -65,6 +94,14 @@ class AnyTimelineInteractor: TimelineInteractor {
     interactor.addUndoStep()
   }
 
+  func openTransition(for id: DesignBlockID) {
+    interactor.openTransition(for: id)
+  }
+
+  func refreshTransitionSeams() {
+    interactor.refreshTransitionSeams()
+  }
+
   func getAspectRatio(clip: Clip) throws -> Double {
     try interactor.getAspectRatio(clip: clip)
   }
@@ -93,7 +130,7 @@ class AnyTimelineInteractor: TimelineInteractor {
                                timeRange: ClosedRange<Double>,
                                numberOfSamples: Int) async throws -> AsyncThrowingStream<
     IMGLYEngine.AudioThumbnail,
-    Swift.Error
+    Swift.Error,
   > {
     try await interactor.generateAudioThumbnails(
       clip: clip,

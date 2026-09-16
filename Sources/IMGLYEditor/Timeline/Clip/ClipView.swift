@@ -1,5 +1,7 @@
 import CoreMedia
+@_spi(Internal) import IMGLYCore
 @_spi(Internal) import IMGLYCoreUI
+import IMGLYEngine
 import SwiftUI
 
 /// A `ClipView` that is displayed in the `TimelineView`.
@@ -17,9 +19,22 @@ struct ClipView: View {
   private let isSelected: Bool
 
   @State private var pointsDurationWidth: CGFloat = 0
-  @State private var pointsTimeOffsetWidth: CGFloat = 0
   @State private var pointsTrimOffsetWidth: CGFloat = 0
   @State private var labelWidth: CGFloat = 0
+
+  // Computed live (not cached in `@State`) because `refreshTimeline()` replaces Clip
+  // instances behind a reused ClipView; cached state would render a stale offset.
+  private var pointsTimeOffsetWidth: CGFloat {
+    timeline.convertToPoints(time: clip.displayTimeOffset)
+  }
+
+  // Move-drag state lives here, not in `ClipTrimmingView`, so the long-press works on
+  // unselected clips too (`ClipTrimmingView` only mounts for the selected clip).
+  @StateObject var movePanDelegate = ClipMoveLongPressGestureRecognizerDelegate()
+  @State var isMoveDragging: Bool = false
+  @State var offsetDelta: CMTime = .zero
+  @State var previewSiblingOriginals: [DesignBlockID: CMTime] = [:]
+  @State var previewTrackSnapshots: [UUID: [DesignBlockID: CMTime]] = [:]
 
   private let clipSpacing: CGFloat
 
@@ -70,11 +85,11 @@ struct ClipView: View {
             cornerRadius: cornerRadius - 2,
             isLooping: clip.isLooping,
             hasAnimation: clip.hasAnimation,
+            basePadding: clip.leadingTransitionSeamSize.map { $0 / 2 + 2 } ?? 0,
           )
         }
       }
       .onPreferenceChange(ClipLabelWidthKey.self) { width in
-        // Only update if changed to avoid unnecessary re-renders
         if labelWidth != width {
           labelWidth = width
         }
@@ -86,7 +101,9 @@ struct ClipView: View {
       // We don’t show the gap when the clip is selected.
       .padding(.trailing, isSelected ? 0 : clipSpacing)
       .frame(width: pointsDurationWidth)
-      // Dimming overlay where clip exceeds total duration
+      // Dimming overlay where clip exceeds total duration. Clamped to the clip's own width: one starting
+      // past the end overflows by more than its length, and the surplus would spill over the neighbours to
+      // its left. Input-transparent, as on web — past the end is a cue, not a lock.
       .overlay(alignment: .trailing) {
         let maxDuration = timelineProperties.player.maxPlaybackDuration ?? timeline.totalDuration
         let maxWidth = timeline.convertToPoints(time: maxDuration)
@@ -95,19 +112,29 @@ struct ClipView: View {
           .fill(colorScheme == .dark
             ? Color(uiColor: .systemBackground).opacity(0.6)
             : Color(uiColor: .secondarySystemBackground).opacity(0.8))
-          .frame(width: max(0, -overflow))
+          .frame(width: min(pointsDurationWidth, max(0, -overflow)))
+          .allowsHitTesting(false)
+      }
+      // Sits below the selection overlay so the trim handles still absorb their own
+      // touches; `ClipTrimmingView`'s visual content is hit-test disabled so the clip
+      // body falls through to this recognizer.
+      .overlay {
+        if clip.allowsSelecting {
+          ClipMoveLongPressGestureView(delegate: movePanDelegate)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
       }
       .overlay(selectedOverlay)
+      // Hide the in-track render while dragging — `FloatingClipOverlayView` at the
+      // timeline root takes over so the clip lifts above its track's bounds. Padding
+      // stays applied so siblings don't reflow. Captions are the exception — they slide in-lane.
+      .opacity(isBeingDragged && clip.clipType != .caption ? 0 : 1)
       .padding(.leading, pointsTimeOffsetWidth)
       .zIndex(isSelected ? 2 : 1)
       // Use .task instead of .onAppear to prevent animation glitches
       // when the timeline reappears when dismissing a sheet.
       .task {
         updateWidths(duration: clip.duration)
-        updateTimeOffsetWidth(timeOffset: clip.timeOffset)
-      }
-      .onChange(of: clip.timeOffset) { newOffset in
-        updateTimeOffsetWidth(timeOffset: newOffset)
       }
       .onChange(of: clip.trimOffset) { _ in
         updateWidths(duration: clip.duration)
@@ -117,14 +144,39 @@ struct ClipView: View {
       }
       .onChange(of: timeline.zoomLevel) { _ in
         updateWidths(duration: clip.duration)
-        updateTimeOffsetWidth(timeOffset: clip.timeOffset)
+      }
+
+      // See `ClipView+MoveDrag.swift` for the flow. Translation is observed separately
+      // because `onChange(of: phase)` doesn't re-fire on consecutive `.changed` events.
+      .onChange(of: movePanDelegate.phase) { phase in
+        onMovePhaseChanged(phase)
+      }
+      .onChange(of: movePanDelegate.translation) { _ in
+        onMoveTranslationChanged()
+      }
+      // Re-run the preview when auto-scroll moves the timeline, so the drop slot keeps
+      // tracking the finger without requiring the user to actually move it.
+      .onChange(of: timelineProperties.horizontalScrollOffsetPoints) { _ in
+        onMoveDragScrollOffsetChanged()
       }
   }
 
   private var clipOpacity: Double {
-    if !isSelected { return 1 }
-    if clip.clipType == .voiceOver, !clip.allowsTrimming { return 1 }
+    if !isSelected {
+      return 1
+    }
+    if clip.clipType == .voiceOver, !clip.allowsTrimming {
+      return 1
+    }
     return 0
+  }
+
+  private var isBeingDragged: Bool {
+    if case let .dragging(context) = timelineProperties.dragDropState,
+       context.clipID == clip.id {
+      return true
+    }
+    return false
   }
 
   @ViewBuilder
@@ -146,6 +198,7 @@ struct ClipView: View {
       cornerRadius: configuration.cornerRadius,
       trimHandleWidth: configuration.trimHandleWidth,
       icon: clip.configuration.icon,
+      isMoveDragging: isMoveDragging,
     )
     .id(ObjectIdentifier(clip))
   }
@@ -183,12 +236,6 @@ struct ClipView: View {
     pointsDurationWidth = timeline.convertToPoints(time: duration)
   }
 
-  private func updateTimeOffsetWidth(timeOffset: CMTime) {
-    if !clip.isInBackgroundTrack {
-      pointsTimeOffsetWidth = timeline.convertToPoints(time: timeOffset)
-    }
-  }
-
   private var unselectedClipLabelTitle: String {
     if clip.clipType == .voiceOver {
       ""
@@ -199,7 +246,7 @@ struct ClipView: View {
 
   private var selectedClipLabelTitle: String {
     switch clip.clipType {
-    case .text:
+    case .text, .caption:
       ""
     case .voiceOver:
       isSelected ? (clip.title.isEmpty ? clip.clipType.description : clip.title) : ""

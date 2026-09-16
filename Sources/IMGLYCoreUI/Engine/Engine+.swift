@@ -21,7 +21,9 @@ private struct Random: RandomNumberGenerator {
 }
 
 @_spi(Internal) public extension Engine {
-  private var engine: Engine { self }
+  private var engine: Engine {
+    self
+  }
 
   private static var rng: RandomNumberGenerator = ProcessInfo
     .isUITesting ? Random(seed: 0) : SystemRandomNumberGenerator()
@@ -77,7 +79,13 @@ private struct Random: RandomNumberGenerator {
       }
     }
 
-    let hasFill = try engine.block.supportsFill(id)
+    // Only solid/gradient fills have a readable `fill/solid/color`; others would throw.
+    let hasFill: Bool = if try engine.block.supportsFill(id),
+                           let fillType: ColorFillType = try? engine.block.get(id, .fill, property: .key(.type)) {
+      fillType == .solid || fillType == .gradient
+    } else {
+      false
+    }
     let hasStroke = try engine.block.supportsStroke(id)
 
     if hasFill, hasStroke {
@@ -451,6 +459,11 @@ private struct Random: RandomNumberGenerator {
   func resetCropSelectedElement() throws {
     try engine.block.findAllSelected().forEach {
       try engine.block.resetCrop($0)
+      // `resetCrop` switches the fill mode to `.cover`; restore `.crop` so the
+      // user stays in the Crop sheet's editing mode.
+      if try engine.block.supportsContentFillMode($0) {
+        try engine.block.setContentFillMode($0, mode: .crop)
+      }
     }
     try engine.editor.addUndoStep()
   }

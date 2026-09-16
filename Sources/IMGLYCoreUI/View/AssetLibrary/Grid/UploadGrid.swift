@@ -34,7 +34,7 @@ public struct UploadGrid: View {
 
   @State private var showImagePicker = false
 
-  @ViewBuilder var firstAddButton: some View {
+  var firstAddButton: some View {
     UploadMenu(media: media) {
       ZStack {
         GridItemBackground()

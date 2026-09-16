@@ -360,7 +360,10 @@ public extension AssetLoader {
     fileprivate let id: UUID
     @_spi(Internal) public let state: Source
     private let _assets: Assets
-    @_spi(Internal) public var assets: [AssetLoader.Asset] { _assets.assets }
+    @_spi(Internal) public var assets: [AssetLoader.Asset] {
+      _assets.assets
+    }
+
     private var perPage: Int
 
     private init(_ id: UUID, _ source: Source, _ assets: Assets, _ perPage: Int) {

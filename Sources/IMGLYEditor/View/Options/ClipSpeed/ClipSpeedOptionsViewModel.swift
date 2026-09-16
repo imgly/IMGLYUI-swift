@@ -123,7 +123,9 @@ extension ClipSpeedOptions {
     }
 
     func previousStepValue(_ current: Float) -> Float? {
-      if current <= ClipSpeedDefaults.minSpeed + ClipSpeedDefaults.compareEpsilon { return nil }
+      if current <= ClipSpeedDefaults.minSpeed + ClipSpeedDefaults.compareEpsilon {
+        return nil
+      }
       let stepIndex = current / ClipSpeedDefaults.step
       let targetStep: Double = if isOnStep(current) {
         Double((stepIndex - 1).rounded(.down))
@@ -136,7 +138,9 @@ extension ClipSpeedOptions {
 
     func nextStepValue(_ current: Float) -> Float? {
       let maxSpeed = state.maxSpeed
-      if current >= maxSpeed - ClipSpeedDefaults.compareEpsilon { return nil }
+      if current >= maxSpeed - ClipSpeedDefaults.compareEpsilon {
+        return nil
+      }
       let stepIndex = current / ClipSpeedDefaults.step
       let targetStep: Double = if isOnStep(current) {
         Double((stepIndex + 1).rounded(.up))
@@ -251,6 +255,8 @@ extension ClipSpeedOptions {
       guard let trackChildren = try? engine.block.getChildren(track), trackChildren.count > 1 else { return false }
 
       guard let currentStartTime = try? engine.block.getTimeOffset(block) else { return false }
+      guard let currentDuration = try? engine.block.getDuration(block) else { return false }
+      let currentEndTime = currentStartTime + currentDuration
       let newEndTime = currentStartTime + newDuration
 
       let nextClipStartTime = trackChildren
@@ -260,7 +266,11 @@ extension ClipSpeedOptions {
         .min()
 
       guard let nextClipStartTime else { return false }
-      return newEndTime > nextClipStartTime
+
+      // A transition intentionally overlaps the outgoing and incoming clips. Keep
+      // that pair in its track; only separate the clip when changing its speed
+      // introduces an overlap that did not exist before.
+      return currentEndTime <= nextClipStartTime && newEndTime > nextClipStartTime
     }
 
     private func moveClipToNewTrack(engine: Engine, block: DesignBlockID) throws {

@@ -50,6 +50,11 @@ public extension SheetTypes {
     public let style: SheetStyle
   }
 
+  /// A sheet that is used to create and edit captions on a video.
+  struct Captions: SheetType {
+    public let style: SheetStyle
+  }
+
   /// A sheet that is used to make adjustments to design blocks with image and video fills.
   struct Adjustments: SheetTypeForDesignBlock {
     public let style: SheetStyle
@@ -70,6 +75,12 @@ public extension SheetTypes {
 
   /// A sheet that is used to set blurs to design blocks with image and video fills.
   struct Blur: SheetTypeForDesignBlock {
+    public let style: SheetStyle
+    let id: DesignBlockID
+  }
+
+  /// A sheet that is used to apply a caption style preset to a caption block.
+  struct CaptionStyle: SheetTypeForDesignBlock {
     public let style: SheetStyle
     let id: DesignBlockID
   }
@@ -97,6 +108,11 @@ public extension SheetTypes {
     public let style: SheetStyle
   }
 
+  /// A sheet that is used to control placing text along an SVG baseline path.
+  struct TextOnPath: SheetType {
+    public let style: SheetStyle
+  }
+
   /// A sheet that is used to control the shape of various blocks.
   struct Shape: SheetType {
     public let style: SheetStyle
@@ -105,6 +121,8 @@ public extension SheetTypes {
   /// A sheet that is used to control the fill and/or stroke of various blocks.
   struct FillStroke: SheetType {
     public let style: SheetStyle
+    /// When `true`, only the fill section is shown (no stroke).
+    public let fillOnly: Bool
   }
 
   /// A sheet that is used to control the volume of audio/video.
@@ -125,6 +143,12 @@ public extension SheetTypes {
   /// A sheet that is used to configure animations on design blocks.
   struct Animation: SheetType {
     public let style: SheetStyle
+  }
+
+  /// A sheet that is used to configure a transition owned by an outgoing clip.
+  struct Transition: SheetTypeForDesignBlock {
+    public let style: SheetStyle
+    let id: DesignBlockID
   }
 }
 
@@ -203,7 +227,22 @@ public extension SheetType where Self == SheetTypes.Reorder {
   /// Creates a ``SheetType`` that is used to reorder videos on the background track.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is
   /// - Returns: The created ``SheetTypes/Reorder`` sheet type.
-  static func reorder(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
+  static func reorder(style: SheetStyle = .only(detent: .imgly.medium)) -> Self {
+    Self(style: style)
+  }
+}
+
+public extension SheetType where Self == SheetTypes.Captions {
+  /// Creates a ``SheetType`` that is used to create and edit captions on a video.
+  /// - Parameter style: The style of the sheet. By default, the sheet opens at the compact
+  /// ``IMGLYCore/IMGLY/small`` detent (enough for the "Add Captions" actions) and can be dragged up to
+  /// ``IMGLYCore/IMGLY/medium`` / ``IMGLYCore/IMGLY/large`` for the caption list and while editing.
+  /// - Returns: The created ``SheetTypes/Captions`` sheet type.
+  static func captions(
+    style: SheetStyle = .default(detent: .imgly.small, detents: [.imgly.small, .imgly.medium, .imgly.large]),
+  ) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.Adjustments {
@@ -250,6 +289,18 @@ public extension SheetType where Self == SheetTypes.Blur {
   }
 }
 
+public extension SheetType where Self == SheetTypes.CaptionStyle {
+  /// Creates a ``SheetType`` that is used to apply a caption style preset to a caption block.
+  /// - Parameters:
+  ///   - style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used
+  /// with a compact detent.
+  ///   - id: The id of the caption block to style.
+  /// - Returns: The created ``SheetTypes/CaptionStyle`` sheet type.
+  static func captionStyle(style: SheetStyle = .only(detent: .imgly.tiny), id: DesignBlockID) -> Self {
+    Self(style: style, id: id)
+  }
+}
+
 public extension SheetType where Self == SheetTypes.Crop {
   /// Creates a ``SheetType`` that is used to crop design blocks with image and video fills.
   /// - Parameters:
@@ -261,7 +312,7 @@ public extension SheetType where Self == SheetTypes.Crop {
   static func crop(
     style: SheetStyle = .only(detent: .imgly.medium),
     id: DesignBlockID,
-    assetSourceIDs: [String] = [Engine.DefaultAssetSource.cropPresets.rawValue],
+    assetSourceIDs: [String] = ["ly.img.crop.presets"],
   ) -> Self {
     Self(style: style, id: id, assetSourceIDs: assetSourceIDs)
   }
@@ -274,21 +325,36 @@ public extension SheetType where Self == SheetTypes.Resize {
   /// - Returns: The created ``SheetTypes/Resize`` sheet type.
   static func resize(
     style: SheetStyle = .only(detent: .imgly.small),
-  ) -> Self { Self(style: style) }
+  ) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.Layer {
   /// Creates a ``SheetType`` that is used to control the layering of design blocks.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/Layer`` sheet type.
-  static func layer(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
+  static func layer(style: SheetStyle = .only(detent: .imgly.medium)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.FormatText {
   /// Creates a ``SheetType`` that is used to control formatting of text blocks.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/FormatText`` sheet type.
-  static func formatText(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
+  static func formatText(style: SheetStyle = .only(detent: .imgly.medium)) -> Self {
+    Self(style: style)
+  }
+}
+
+public extension SheetType where Self == SheetTypes.TextOnPath {
+  /// Creates a ``SheetType`` that is used to control placing text along an SVG baseline path.
+  /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
+  /// - Returns: The created ``SheetTypes/TextOnPath`` sheet type.
+  static func textOnPath(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.Shape {
@@ -297,43 +363,64 @@ public extension SheetType where Self == SheetTypes.Shape {
   /// style is used.
   /// - Returns: The created ``SheetTypes/Shape`` sheet type.
   static func shape(style: SheetStyle = .default(detent: .imgly.small, detents: [.imgly.tiny, .imgly.small]))
-    -> Self { Self(style: style) }
+    -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.FillStroke {
   /// Creates a ``SheetType`` that is used to control the fill and/or stroke of various blocks.
-  /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/default(isFloating:detent:detents:)``
-  /// style is used.
+  /// - Parameters:
+  ///   - style: The style of the sheet. By default, the ``SheetStyle/default(isFloating:detent:detents:)``
+  ///     style is used.
+  ///   - fillOnly: When `true`, the sheet shows only the fill section. Defaults to `false`.
   /// - Returns: The created ``SheetTypes/FillStroke`` sheet type.
-  static func fillStroke(style: SheetStyle = .default()) -> Self { Self(style: style) }
+  static func fillStroke(style: SheetStyle = .default(), fillOnly: Bool = false) -> Self {
+    Self(style: style, fillOnly: fillOnly)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.Volume {
   /// Creates a ``SheetType`` that is used to control the volume of audio/video.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/Volume`` sheet
-  static func volume(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self { Self(style: style) }
+  static func volume(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.ClipSpeed {
   /// Creates a ``SheetType`` that is used to control the playback speed of clips.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/ClipSpeed`` sheet type.
-  static func clipSpeed(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self { Self(style: style) }
+  static func clipSpeed(style: SheetStyle = .only(detent: .imgly.tiny)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.TextBackground {
   /// Creates a ``SheetType`` that is used to control the text background properties.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/TextBackground`` sheet
-  static func textBackground(style: SheetStyle = .only(detent: .imgly.medium)) -> Self { Self(style: style) }
+  static func textBackground(style: SheetStyle = .only(detent: .imgly.medium)) -> Self {
+    Self(style: style)
+  }
 }
 
 public extension SheetType where Self == SheetTypes.Animation {
   /// Creates a ``SheetType`` that is used to configure animations on design blocks.
   /// - Parameter style: The style of the sheet. By default, the ``SheetStyle/only(isFloating:detent:)`` style is used.
   /// - Returns: The created ``SheetTypes/Animation`` sheet type.
-  static func animation(style: SheetStyle = .only(detent: .imgly.small)) -> Self { Self(style: style) }
+  static func animation(style: SheetStyle = .only(detent: .imgly.small)) -> Self {
+    Self(style: style)
+  }
+}
+
+public extension SheetType where Self == SheetTypes.Transition {
+  /// Creates a sheet for configuring the outgoing transition of `id`.
+  static func transition(style: SheetStyle = .only(detent: .imgly.small), id: DesignBlockID) -> Self {
+    Self(style: style, id: id)
+  }
 }
 
 // MARK: - Postcard

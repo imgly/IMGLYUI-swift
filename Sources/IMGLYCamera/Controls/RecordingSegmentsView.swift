@@ -52,7 +52,7 @@ struct RecordingSegmentsView: View {
           .shadow(color: .black.opacity(0.25), radius: 1, x: 0, y: 0)
         }
       }
-      .onChange(of: recordingsManager.clips) { _ in
+      .onChange(of: recordingsManager.captures) { _ in
         updateNormalizedSegmentPositions()
       }
       .onChange(of: recordingsManager.currentlyRecordedClipDuration) { _ in

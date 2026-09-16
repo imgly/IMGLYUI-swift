@@ -28,7 +28,9 @@ enum PercentageSliderHelper {
   /// Map a value in the range of `min...max` to the range of `0...100`
   /// (or `-100...100` when it is a symmetrical slider).
   static func valueToPercentage<T: BinaryFloatingPoint>(value: T, min: T, max: T) -> T {
-    func valueToSteps(_ stepCount: T) -> T { (value - min) / ((max - min) / stepCount) }
+    func valueToSteps(_ stepCount: T) -> T {
+      (value - min) / ((max - min) / stepCount)
+    }
     if isSymmetricalPercentageSlider(min: min, max: max) {
       return valueToSteps(200) - 100
     } else {
@@ -54,7 +56,9 @@ enum PercentageSliderHelper {
     guard let dotIndex = str.lastIndex(of: ".") else { return 0 }
     let fraction = str[str.index(after: dotIndex)...]
     // Trailing zero means it's a whole number represented as e.g. "1.0"
-    if fraction == "0" { return 0 }
+    if fraction == "0" {
+      return 0
+    }
     return Swift.min(fraction.count, maxFractionDigits)
   }
 

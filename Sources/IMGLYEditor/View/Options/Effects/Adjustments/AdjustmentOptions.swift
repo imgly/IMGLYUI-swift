@@ -5,7 +5,7 @@ struct AdjustmentsOptions: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
-  @ViewBuilder var adjustmentOptions: some View {
+  var adjustmentOptions: some View {
     ForEach(Adjustment.allCases, id: \.rawValue) { adjustment in
       AdjustmentSlider(adjustment: adjustment, title: adjustment.localizedStringResource)
     }

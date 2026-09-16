@@ -15,7 +15,7 @@ public enum OnCreate {
   /// The handler type that receives an `existing` closure for chaining.
   public typealias Handler = @MainActor (
     _ engine: Engine,
-    _ existing: () async throws -> Void
+    _ existing: () async throws -> Void,
   ) async throws -> Void
 
   /// The default callback which creates a new scene.
@@ -46,7 +46,7 @@ public enum OnCreate {
     let color: IMGLYEngine.Color = try engine.editor.getSettingColor("highlightColor")
     try engine.editor.setSettingColor("placeholderHighlightColor", color: color)
 
-    try engine.editor.setSettingBool("features/removeForegroundTracksOnSceneLoad", value: true)
+    try engine.editor.setSettingBool("features/removeForegroundTracksOnSceneLoad", value: false)
     try engine.editor.setSettingBool("features/videoTranscodingEnabled",
                                      value: !FeatureFlags.isEnabled(.transcodePickerVideoImports))
 
@@ -103,7 +103,7 @@ public enum OnExport {
   public typealias Handler = @MainActor (
     _ engine: Engine,
     _ eventHandler: EditorEventHandler,
-    _ existing: () async throws -> Void
+    _ existing: () async throws -> Void,
   ) async throws -> Void
 
   /// Creates a callback that exports the scene as a static file (e.g., PDF, PNG), writes it to a temporary file,
@@ -172,6 +172,36 @@ public enum OnExport {
     return (data, mimeType.uniformType)
   }
 
+  /// A utility that calls the streamed `BlockAPI.export` overload.
+  /// This fuses `export` and writing the result to a file into a single streamed pass: the document is
+  /// written out chunk by chunk while it is being encoded, so it is never held in memory as a whole.
+  /// Prefer it over `export` followed by `Data.write(to:)` for large multi-page
+  /// documents such as photo books and magazines, where the intermediate `Data` is the peak allocation.
+  /// - Parameters:
+  ///   - engine: The used engine.
+  ///   - mimeType: Optional mime type of the export. If `nil` `MIMEType.pdf` is used. Streamed export
+  /// only supports `MIMEType.pdf`. It is also used to derive the extension of the written file.
+  ///   - url: Optional destination. If `nil` a file named `Export` in the temporary directory is used.
+  /// - Returns: The file the exported document was written to and its type.
+  @MainActor
+  public static func exportToFile(_ engine: Engine, mimeType: MIMEType? = nil,
+                                  to url: URL? = nil) async throws -> (URL, UTType) {
+    guard let scene = try engine.scene.get() else {
+      throw EditorError("No scene was found.")
+    }
+    let mimeType = mimeType ?? .pdf
+    let contentType = mimeType.uniformType
+    let url = url ?? FileManager.default.temporaryDirectory
+      .appendingPathComponent("Export", conformingTo: contentType)
+    try await engine.block.export(scene, to: url, mimeType: mimeType, onPreExport: { engine in
+      try engine.scene.getPages().forEach {
+        try engine.block.setScopeEnabled($0, key: "layer/visibility", enabled: true)
+        try engine.block.setVisible($0, visible: true)
+      }
+    })
+    return (url, contentType)
+  }
+
   /// A utility that calls `BlockAPI.exportVideo` and displays a progress indicator.
   /// - Parameters:
   ///   - engine: The used engine.
@@ -217,7 +247,7 @@ public enum OnUpload {
   public typealias Callback = @MainActor (
     _ engine: Engine,
     _ sourceID: String,
-    _ asset: AssetDefinition
+    _ asset: AssetDefinition,
   ) async throws -> AssetDefinition
 
   /// The handler type that receives an `existing` closure for chaining.
@@ -226,7 +256,7 @@ public enum OnUpload {
     _ engine: Engine,
     _ sourceID: String,
     _ asset: AssetDefinition,
-    _ existing: (AssetDefinition) async throws -> AssetDefinition
+    _ existing: (AssetDefinition) async throws -> AssetDefinition,
   ) async throws -> AssetDefinition
 
   /// The default callback which forwards the unmodified `AssetDefinition`.
@@ -240,14 +270,14 @@ public enum OnClose {
   /// The callback type.
   public typealias Callback = @MainActor (
     _ engine: Engine,
-    _ eventHandler: EditorEventHandler
+    _ eventHandler: EditorEventHandler,
   ) -> Void
 
   /// The handler type that receives an `existing` closure for chaining.
   public typealias Handler = @MainActor (
     _ engine: Engine,
     _ eventHandler: EditorEventHandler,
-    _ existing: () -> Void
+    _ existing: () -> Void,
   ) -> Void
 
   /// The default callback that displays the close confirmation alert if there are any unsaved changes, else closes the
@@ -268,14 +298,14 @@ public enum OnError {
   /// The callback type.
   public typealias Callback = @MainActor (
     _ error: Swift.Error,
-    _ eventHandler: EditorEventHandler
+    _ eventHandler: EditorEventHandler,
   ) -> Void
 
   /// The handler type that receives an `existing` closure for chaining.
   public typealias Handler = @MainActor (
     _ error: Swift.Error,
     _ eventHandler: EditorEventHandler,
-    _ existing: () -> Void
+    _ existing: () -> Void,
   ) -> Void
 
   /// The default callback that displays the error alert.
@@ -293,7 +323,7 @@ public enum OnLoaded {
   /// The handler type that receives an `existing` closure for chaining.
   public typealias Handler = @MainActor (
     _ context: OnLoaded.Context,
-    _ existing: () async throws -> Void
+    _ existing: () async throws -> Void,
   ) async throws -> Void
 
   /// The default empty callback.
@@ -308,7 +338,9 @@ public enum OnLoaded {
       operations.append(operation)
     }
 
-    var isEmpty: Bool { operations.isEmpty }
+    var isEmpty: Bool {
+      operations.isEmpty
+    }
 
     /// Runs all collected operations concurrently.
     /// Blocks until all complete or one throws. Cancelling the parent task cancels all operations.
@@ -346,7 +378,7 @@ public enum OnLoaded {
     /// ```swift
     /// .imgly.onLoaded { context in
     ///   context.task {
-    ///     for try await _ in context.engine.editor.onHistoryUpdated {
+    ///     for try await _ in context.engine.editor.onHistoryUpdatedWithKind {
     ///       // React to history changes
     ///     }
     ///   }
@@ -379,14 +411,14 @@ public enum OnChanged {
   /// The callback type.
   public typealias Callback = @Sendable @MainActor (
     _ update: OnChanged.EditorStateChange,
-    _ context: OnChanged.Context
+    _ context: OnChanged.Context,
   ) throws -> Void
 
   /// The handler type that receives an `existing` closure for chaining.
   public typealias Handler = @Sendable @MainActor (
     _ update: OnChanged.EditorStateChange,
     _ context: OnChanged.Context,
-    _ existing: () throws -> Void
+    _ existing: () throws -> Void,
   ) throws -> Void
 
   /// The default callback.
@@ -492,7 +524,7 @@ public enum OnChanged {
     onUpload: @escaping OnUpload.Callback = OnUpload.default,
     onClose: @escaping OnClose.Callback = OnClose.default,
     onError: @escaping OnError.Callback = OnError.default,
-    onChanged: @escaping OnChanged.Callback = OnChanged.default
+    onChanged: @escaping OnChanged.Callback = OnChanged.default,
   ) {
     self.onCreate = onCreate
     self.onLoaded = onLoaded

@@ -1,0 +1,703 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "ly_img_engine_error_asset_cannot_apply_color_no_target" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das ausgewählte Element hat keine Füllung, Kontur oder Textfarbe, auf die diese Farbe angewendet werden könnte."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The selected element has no fill, stroke, or text color to apply this color to."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_color_cmyk_missing_fields" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Farb-Asset ist unvollständig und konnte nicht angewendet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This color asset is incomplete and couldn't be applied."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_color_missing_color_space" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Farb-Asset ist unvollständig und konnte nicht angewendet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This color asset is incomplete and couldn't be applied."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_color_spot_missing_fields" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Farb-Asset ist unvollständig und konnte nicht angewendet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This color asset is incomplete and couldn't be applied."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_color_spot_representation_invalid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Farb-Asset ist unvollständig und konnte nicht angewendet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This color asset is incomplete and couldn't be applied."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_color_srgb_missing_fields" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Farb-Asset ist unvollständig und konnte nicht angewendet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This color asset is incomplete and couldn't be applied."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_resource_data_not_available" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datei dieses Assets konnte nicht geladen werden. Bitte versuchen Sie es erneut oder verwenden Sie ein anderes Asset."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This asset's file couldn't be loaded. Please try again or use a different asset."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_resource_not_found_at_uri" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datei dieses Assets wurde nicht gefunden. Sie wurde möglicherweise verschoben oder entfernt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This asset's file couldn't be found. It may have been moved or removed."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_resource_not_ready_at_uri" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Asset wird noch geladen. Bitte warten Sie einen Moment und versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This asset is still loading. Please wait a moment and try again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_transform_preset_fixed_aspect_missing_fields" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Größenvorgabe ist unvollständig und konnte nicht angewendet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This size preset is incomplete and couldn't be applied."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_transform_preset_fixed_size_missing_fields" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Größenvorgabe ist unvollständig und konnte nicht angewendet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This size preset is incomplete and couldn't be applied."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_transform_preset_missing_type" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Größenvorgabe ist unvollständig und konnte nicht angewendet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This size preset is incomplete and couldn't be applied."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_unsupported_mime_type_for_block" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Dateityp wird nicht unterstützt und konnte nicht hinzugefügt werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This file type isn't supported and couldn't be added."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_asset_uri_meta_missing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diesem Asset fehlt die Dateireferenz, daher konnte es nicht angewendet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This asset is missing its file reference, so it couldn't be applied."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_crop_element_not_croppable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Element kann nicht zugeschnitten werden. Versuchen Sie stattdessen, ein Bild oder eine Form auszuwählen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This element can't be cropped. Try selecting an image or shape instead."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_crop_no_selected_element" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wählen Sie zuerst ein Element aus, um mit dem Zuschneiden zu beginnen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select an element first to start cropping."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_no_scene_available" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es ist noch kein Design geöffnet. Erstellen oder öffnen Sie eines, um fortzufahren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There's no design open yet. Create or open one to continue."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_scene_content_empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Design-Datei ist leer und konnte nicht geöffnet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This design file is empty and couldn't be opened."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_scene_decompress_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Design-Datei konnte nicht gelesen werden. Sie ist möglicherweise beschädigt oder unvollständig."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This design file couldn't be read. It may be corrupted or incomplete."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_scene_entity_invalid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Design konnte nicht korrekt geladen werden. Bitte versuchen Sie erneut, es zu öffnen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The design couldn't be loaded correctly. Please try opening it again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_scene_input_invalid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Datei ist kein gültiges Design und konnte nicht geöffnet werden. Sie ist möglicherweise beschädigt oder wurde mit einer inkompatiblen Version erstellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This file isn't a valid design and couldn't be opened. It may be corrupted or created with an incompatible version."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_scene_missing_required_key" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Design-Datei fehlen erforderliche Daten und sie konnte nicht geöffnet werden. Sie ist möglicherweise beschädigt oder unvollständig."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This design file is missing required data and couldn't be opened. It may be corrupted or incomplete."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_scene_requires_url_load" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Design ist Teil eines Archivs und muss von seinem ursprünglichen Speicherort geöffnet werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This design is part of an archive and must be opened from its original location."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_scene_size_unavailable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Design bereitet noch sein Layout vor. Bitte warten Sie einen Moment und versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The design is still preparing its layout. Please wait a moment and try again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_editor_unsupported_serialization_format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Design wurde in einem nicht unterstützten Format gespeichert. Es wurde möglicherweise mit einer neueren Version erstellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This design was saved in a format that isn't supported. It may have been created with a newer version."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_cancelled_by_block_error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Element in Ihrem Design konnte nicht exportiert werden. Bitte überprüfen Sie Ihr Design und versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An element in your design couldn't be exported. Please review your design and try again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_export_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beim Exportieren ist etwas schiefgelaufen. Bitte versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Something went wrong while exporting. Please try again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_gpu_lost_generic" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihrem Gerät sind während des Exports die Grafikressourcen ausgegangen. Versuchen Sie, mit einer niedrigeren Auflösung zu exportieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your device ran out of graphics resources during export. Try exporting at a lower resolution."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_gpu_lost_pdf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihrem Gerät sind beim PDF-Export die Grafikressourcen ausgegangen. Ihr Design enthält möglicherweise Elemente, die die Fähigkeiten Ihres Geräts übersteigen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your device ran out of graphics resources while exporting the PDF. Your design may contain elements that exceed your device's capabilities."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_gpu_lost_svg" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihrem Gerät sind während des Exports die Grafikressourcen ausgegangen. Versuchen Sie, die Größe großer Bilder in Ihrem Design zu reduzieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your device ran out of graphics resources while exporting. Try reducing the size of large images in your design."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_insufficient_resources" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ihr Gerät verfügt nicht über genügend Ressourcen für den Export. Versuchen Sie, mit einer niedrigeren Auflösung zu exportieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your device doesn't have enough resources to export. Try exporting at a lower resolution."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_not_all_resources_loaded" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einige Inhalte Ihres Designs waren noch nicht vollständig geladen. Warten Sie, bis alles geladen ist, und versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Some content in your design hadn't finished loading. Please wait for everything to load, then try again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_output_size_exceeds_max" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Exportgröße von {{width}}x{{height}} px ist größer als von diesem Gerät unterstützt (max. {{maxSize}}). Versuchen Sie, mit einer kleineren Größe zu exportieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The export size of {{width}}x{{height}} px is larger than this device supports (max {{maxSize}}). Try exporting at a smaller size."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_output_size_insufficient_resources" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export mit {{width}}x{{height}} nicht möglich. Ihr Gerät verfügt nicht über genügend Ressourcen. Versuchen Sie eine niedrigere Auflösung."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't export at {{width}}x{{height}}. Your device doesn't have enough resources. Try a lower resolution."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_pdf_render_size_exceeds_max" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die PDF-Rendergröße von {{width}}x{{height}} px (bei {{dpi}} DPI) übersteigt die von diesem Gerät unterstützte Größe (max. {{maxSize}}). Verringern Sie die DPI oder die Exportgröße."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The PDF render size of {{width}}x{{height}} px (at {{dpi}} DPI) exceeds what this device supports (max {{maxSize}}). Try lowering the DPI or the export size."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_resource_load_failed_with_reason" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Datei in Ihrem Design konnte nicht geladen werden, daher wurde der Export abgebrochen. Stellen Sie sicher, dass alle Assets verfügbar sind, und versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A file in your design couldn't be loaded, so the export was stopped. Check that all assets are available and try again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_video_frame_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Videobild konnte beim Export nicht verarbeitet werden. Bitte versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A video frame couldn't be processed during export. Please try again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_fetch_json_fetch_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Asset konnte nicht geladen werden. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This asset couldn't be loaded. Check your connection and try again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_fetch_resource_data_empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datei dieses Assets scheint leer zu sein und konnte nicht geladen werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This asset's file appears to be empty and couldn't be loaded."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_media_image_encode_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Bild konnte für den Export nicht kodiert werden. Bitte versuchen Sie es erneut oder verwenden Sie ein anderes Format."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The image couldn't be encoded for export. Please try again, or try a different format."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_scene_no_pages_for_audio_export" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Design hat keine Seiten, aus denen Audio exportiert werden kann. Fügen Sie eine Seite hinzu und versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This design has no pages to export audio from. Add a page and try again."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

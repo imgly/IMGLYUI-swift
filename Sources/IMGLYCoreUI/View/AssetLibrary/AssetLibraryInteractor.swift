@@ -73,7 +73,9 @@ import UIKit
     guard result.assets.count == 1, let asset = result.assets.first else {
       throw Error(errorDescription: "Could not retrieve uploaded asset.")
     }
-    NotificationCenter.default.post(name: .AssetSourceDidChange, object: nil, userInfo: ["sourceID": sourceID])
+    // `addAsset` above fires `engine.asset.onAssetSourceUpdated`, which the
+    // editor's Interactor bridges to `.AssetSourceDidChange`, so the open
+    // library re-queries this source without a manual post here.
 
     return asset
   }
@@ -94,16 +96,20 @@ private func getMeta(url: URL, thumbURL: URL? = nil, blockKind: BlockKind,
     guard let fillType else {
       throw Error(errorDescription: "Could not retrieve `fillType` of uploaded asset.")
     }
-    let (size, thumbURL) = try await getSizeAndThumb(url: url, thumbURL: thumbURL, fillType: fillType)
-    let meta: AssetMeta = [
+    let media = try await getMedia(url: url, thumbURL: thumbURL, fillType: fillType)
+    var meta: AssetMeta = [
       .uri: url.absoluteString,
-      .thumbUri: thumbURL.absoluteString,
+      .thumbUri: media.thumbURL.absoluteString,
       .kind: blockKind.rawValue,
-      .width: String(Int(size.width)),
-      .height: String(Int(size.height)),
+      .width: String(Int(media.size.width)),
+      .height: String(Int(media.size.height)),
       .blockType: DesignBlockType.graphic.rawValue,
       .fillType: fillType.rawValue,
     ]
+    // An asset without a duration is added with a fixed fallback length, so an uploaded video would be truncated.
+    if let duration = media.duration {
+      meta[.duration] = String(duration)
+    }
     return meta
 
   case .key(.audio):
@@ -152,30 +158,42 @@ private func getMeta(url: URL, thumbURL: URL? = nil, blockKind: BlockKind,
   }
 }
 
-private func getSizeAndThumb(url: URL, thumbURL: URL?, fillType: FillType) async throws -> (CGSize, URL) {
+private struct UploadedMedia {
+  let size: CGSize
+  let thumbURL: URL
+  let duration: TimeInterval?
+}
+
+private func getMedia(url: URL, thumbURL: URL?, fillType: FillType) async throws -> UploadedMedia {
   switch fillType {
   case .image:
     let (data, _) = try await URLSession.shared.data(from: url)
     guard let image = UIImage(data: data) else {
       throw Error(errorDescription: "Unsupported image data.")
     }
-    return (image.size, thumbURL ?? url)
+    return .init(size: image.size, thumbURL: thumbURL ?? url, duration: nil)
 
   case .video:
     let asset = AVURLAsset(url: url)
+    let time = try? await asset.load(.duration)
+    let duration: TimeInterval? = if let time, time.isNumeric, time.seconds > 0 {
+      time.seconds
+    } else {
+      nil
+    }
     let imageGenerator = AVAssetImageGenerator(asset: asset)
     imageGenerator.appliesPreferredTrackTransform = true
     let result = try await imageGenerator.image(at: .zero)
     let image = UIImage(cgImage: result.image)
     if let thumbURL {
-      return (image.size, thumbURL)
+      return .init(size: image.size, thumbURL: thumbURL, duration: duration)
     } else {
       let data = image.jpegData(compressionQuality: 1)
       guard let data else {
         throw Error(errorDescription: "Could not save video thumbnail to data.")
       }
       let thumbURL = try data.writeToUniqueCacheURL(for: .jpeg)
-      return (image.size, thumbURL)
+      return .init(size: image.size, thumbURL: thumbURL, duration: duration)
     }
 
   default:

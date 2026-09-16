@@ -6,6 +6,7 @@ import SwiftUI
 enum ClipType {
   case invalid
   case audio
+  case caption
   case image
   case shape
   case sticker
@@ -15,11 +16,20 @@ enum ClipType {
   case group
 }
 
+extension ClipType {
+  /// True for types the background track accepts — everything except audio,
+  /// voiceover, and caption. Matches the `moveAsClip` inspector rule.
+  var allowedInBackgroundTrack: Bool {
+    self != .audio && self != .voiceOver && self != .caption
+  }
+}
+
 extension ClipType: CustomStringConvertible {
   var description: String {
     switch self {
     case .invalid: ""
     case .audio: "Audio Clip"
+    case .caption: "Caption"
     case .image: "Image"
     case .shape: "Shape"
     case .sticker: "Sticker"
@@ -71,6 +81,18 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   /// Whether the clip can be selected
   @Published var allowsSelecting: Bool = true
 
+  /// Whether the clip's position is locked — i.e. it stays put when sibling drags or
+  /// trims would otherwise cascade through it. The cascade and trim-cap code paths
+  /// gate on this property; everything else (lock icon, gesture gates, opacity) keys
+  /// off ``allowsSelecting``.
+  ///
+  /// Always `false` for now — there's no engine scope that means "position locked"
+  /// today. Web doesn't model this either: an unselectable clip can still be moved
+  /// by the cascade. The companion code (locked-successor wall, locked-predecessor
+  /// pull, trim-to-fit) stays in the codebase but is inert until product nails down
+  /// the semantic and we wire this property to a real engine signal.
+  @Published var isLocked: Bool = false
+
   /// Whether the clip has an audio track
   let hasAudio: Bool = false
 
@@ -80,11 +102,47 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   /// A positive time offset in seconds that is inserted *before* the start of clip.
   @Published var timeOffset: CMTime = .init(seconds: 0)
 
+  /// Engine-authored timing before transition overlap is rendered in the timeline.
+  @Published var rawTimeOffset: CMTime = .init(seconds: 0)
+
+  /// Drag-preview shadow of `timeOffset`. Non-nil while a sibling's drag is pushing this
+  /// clip; `nil` otherwise. Views render from `displayTimeOffset` to keep the authoritative
+  /// `timeOffset` untouched until commit.
+  @Published var previewTimeOffset: CMTime?
+
+  /// Value the view should render — preview during drag, authoritative otherwise.
+  var displayTimeOffset: CMTime {
+    previewTimeOffset ?? timeOffset
+  }
+
+  /// Diameter of the seam immediately before this clip. The label uses half of
+  /// this space plus its normal inset so its type icon does not sit beneath it.
+  @Published var leadingTransitionSeamSize: CGFloat?
+
+  func applyPreview(timeOffset newOffset: CMTime) {
+    previewTimeOffset = newOffset
+  }
+
+  func clearPreviewTimeOffset() {
+    previewTimeOffset = nil
+  }
+
   /// A positive time offset as `CMTime` that is trimmed from the *start* of the clip.
   @Published var trimOffset: CMTime = .init(seconds: 0)
 
   /// The trimmed or looped duration in the timeline as `CMTime`
   @Published var duration: CMTime?
+
+  /// Engine-authored duration before transition overlap is rendered in the timeline.
+  @Published var rawDuration: CMTime?
+
+  /// Half of the leading transition's overlap: how far the rendered start edge is
+  /// inset from `rawTimeOffset`.
+  @Published var transitionTrimLead: CMTime = .zero
+
+  /// Half of the trailing transition's overlap: how far the rendered end edge is
+  /// inset from the raw end (`rawTimeOffset` + `rawDuration`).
+  @Published var transitionTrimTail: CMTime = .zero
 
   /// A value between 0 and 1 that represents the volume of this `Clip`.
   @Published var audioVolume: Double = 1

@@ -13,6 +13,7 @@ struct PropertyColorPicker: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
   @State private var showColorPicker = false
+  @State private var didAppear = false
 
   init(_ title: LocalizedStringResource, supportsOpacity: Bool = true, property: Property,
        propertyBlock: PropertyBlock? = nil,
@@ -40,6 +41,13 @@ struct PropertyColorPicker: View {
     ColorPicker(selection: color) {
       Text(title)
     }
+    // Workaround for iOS 26 SwiftUI bug (IOS-342): when two `ColorPicker`s
+    // are stacked in a `List`, the second swatch loses its inner clip mask
+    // and draws the selected color as a square overlapping the rainbow ring
+    // until any relayout occurs. Flipping `.id` once after first appearance
+    // forces a fresh layout pass that applies the clip correctly.
+    .id(didAppear)
+    .task { didAppear = true }
     .onTapGesture {
       // Override normal tap and show custom color picker instead.
       showColorPicker = true

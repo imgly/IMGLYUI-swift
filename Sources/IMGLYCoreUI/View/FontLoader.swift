@@ -10,7 +10,7 @@ import SwiftUI
   @_spi(Internal) public init(
     fontURL: URL?,
     @ViewBuilder content: @escaping (_ fontName: String) -> Content,
-    @ViewBuilder placeholder: @escaping () -> Placeholder
+    @ViewBuilder placeholder: @escaping () -> Placeholder,
   ) {
     self.fontURL = fontURL
     self.content = content

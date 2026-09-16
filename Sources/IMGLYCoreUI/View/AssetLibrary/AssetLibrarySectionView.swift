@@ -42,20 +42,32 @@ import SwiftUI
   }
 
   @MainActor
-  @ViewBuilder var content: some View {
+  var content: some View {
     destination()
       .environmentObject(configuration)
       .navigationTitle(Text(title))
       .toolbar {
         if !searchState.isPresented {
-          ToolbarItem {
-            HStack(spacing: 16) {
-              if configuration.isSearchAllowed {
-                SearchButton()
-                dismissButtonView
-              } else {
-                dismissButtonView
-                  .buttonStyle(.plain)
+          if #available(iOS 26.0, *), !usesLegacyDesign, configuration.isSearchAllowed {
+            // Liquid Glass: search and the dismiss chevron each get their own glass group, so the
+            // chevron stays isolated (a ToolbarSpacer between the items is what splits the glass).
+            ToolbarItem(placement: .topBarTrailing) {
+              SearchButton()
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItem(placement: .topBarTrailing) {
+              dismissButtonView
+            }
+          } else {
+            ToolbarItem {
+              HStack(spacing: 16) {
+                if configuration.isSearchAllowed {
+                  SearchButton()
+                  dismissButtonView
+                } else {
+                  dismissButtonView
+                    .buttonStyle(.plain)
+                }
               }
             }
           }

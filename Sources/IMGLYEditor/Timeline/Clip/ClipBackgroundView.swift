@@ -22,7 +22,7 @@ struct ClipBackgroundView: View {
     cornerRadius: CGFloat,
     pointsTrimOffsetWidth: CGFloat,
     thumbnailsProvider: AnyThumbnailsProvider,
-    labelWidth: CGFloat = 0
+    labelWidth: CGFloat = 0,
   ) {
     self.clip = clip
     self.cornerRadius = cornerRadius
