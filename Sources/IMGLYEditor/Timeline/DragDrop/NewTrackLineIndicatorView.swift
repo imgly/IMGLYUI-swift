@@ -5,7 +5,7 @@ import SwiftUI
 /// Horizontal line in the gap above/below/between foreground tracks signalling
 /// "release here to create a new track".
 struct NewTrackLineIndicatorView: View {
-  @EnvironmentObject var timeline: Timeline
+  @EnvironmentObject var timeline: TimelineState
   @EnvironmentObject var timelineProperties: TimelineProperties
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
 

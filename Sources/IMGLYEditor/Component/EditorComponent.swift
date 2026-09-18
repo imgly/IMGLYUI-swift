@@ -19,7 +19,9 @@ public struct EditorComponentID: Hashable {
   /// Creates an editor component identifier.
   /// - Parameters:
   ///   - value: The value of the identifier.
-  ///   - isUnique: Whether the identifier is unique. `false` is currently only supported for ``CanvasMenu`` items.
+  ///   - isUnique: Whether the identifier is unique. `false` is supported for ``CanvasMenu`` items and
+  /// ``Timeline`` header items, which resolve a per-render `uniqueID` from the item's position. A
+  /// non-unique id cannot be used as an ``ArrayModifier`` anchor.
   init(_ value: String, isUnique: Bool) {
     self.value = value
     self.isUnique = isUnique

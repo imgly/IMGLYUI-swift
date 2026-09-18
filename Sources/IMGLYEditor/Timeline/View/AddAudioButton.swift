@@ -1,57 +1,30 @@
 import SwiftUI
+@_spi(Internal) import IMGLYCore
 
-/// A call-to-action button that sits next to the timeline.
+/// A call-to-action button that sits next to the timeline and opens a menu.
 struct AddAudioButton: View {
-  // MARK: Properties
+  let options: Timeline.AddAudioOptions
+  let context: Timeline.ItemContext
+  /// Replaces the button's own title when set, in both the menu and the lone-option branches.
+  var title: (() -> AnyView)?
+  /// Replaces the button's own icon when set, in both the menu and the lone-option branches.
+  var icon: (() -> AnyView)?
+
+  @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
+  @EnvironmentObject private var editorInteractor: Interactor
 
   private enum Localization {
     static var buttonAddAudio: LocalizedStringResource {
       .imgly.localized("ly_img_editor_timeline_button_add_audio")
     }
 
-    static var buttonAddMusic: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_timeline_add_audio_option_music")
-    }
-
-    static var buttonAddVoiceover: LocalizedStringResource {
-      .imgly.localized("ly_img_editor_timeline_add_audio_option_voiceover")
-    }
-
-    static var accessabilityAddAudio: LocalizedStringKey {
+    static var accessibilityAddAudio: LocalizedStringKey {
       "Add Audio Menu"
     }
-
-    static var accessabilityAddMusic: LocalizedStringKey {
-      "Add Music"
-    }
-
-    static var accessabilityAddVoiceover: LocalizedStringKey {
-      "Add Voiceover"
-    }
   }
-
-  private enum Images {
-    static var customMusic: String {
-      "custom.audio.badge.plus"
-    }
-
-    static var customVoiceover: String {
-      "custom.mic.badge.plus"
-    }
-
-    static var systemPlus: String {
-      "plus"
-    }
-  }
-
-  @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
-  @EnvironmentObject var interactor: AnyTimelineInteractor
-
-  // MARK: Body
 
   var body: some View {
-    Menu(content: menuContent, label: menuLabel)
-      .menuOrder(.fixed)
+    buttonContent
       .frame(height: configuration.backgroundTrackHeight)
       .buttonStyle(.plain)
       .font(.caption)
@@ -66,40 +39,89 @@ struct AddAudioButton: View {
           .stroke(Color(uiColor: .separator), lineWidth: 0.5)
       }
       .fixedSize(horizontal: true, vertical: false)
-      .accessibilityLabel(Text(Localization.accessabilityAddAudio))
+  }
+
+  /// The options that ``EditorComponent/isVisible(_:)`` allows, resolved once so the
+  /// single-option shortcut below counts only options that actually appear.
+  private var visibleOptions: [Timeline.AddAudioOption] {
+    do {
+      let options = try options(context)
+      assert(
+        Set(options.map(\.id)).count == options.count,
+        "Timeline.Buttons.addAudio options must have unique ids; SwiftUI cannot diff duplicates.",
+      )
+      return try options.filter { try $0.isVisible(context) }
+    } catch {
+      let id = Timeline.Buttons.ID.addAudio.value
+      editorInteractor.handleErrorWithTask(EditorError(
+        String(localized: .imgly.localized(
+          "ly_img_editor_error_editor_component_view_creation \(id) \(error.localizedDescription)",
+        )),
+      ))
+      return []
+    }
   }
 
   @ViewBuilder
-  private func menuContent() -> some View {
-    Button {
-      interactor.addAudioAsset()
-    } label: {
-      Label {
-        Text(Localization.buttonAddMusic)
-      } icon: {
-        Image(Images.customMusic, bundle: .module)
-      }
+  private var buttonContent: some View {
+    let options = visibleOptions
+    if options.count == 1, let option = options.first {
+      // A lone option triggers directly, so the button shows that option rather than a generic
+      // "Add Audio" label.
+      Button { perform(option) } label: { singleOptionLabel(option) }
+        .disabled(!isEnabled(option))
+    } else {
+      // Only the menu is labelled: the single-option branch is a plain button, and must keep the
+      // option's own label so VoiceOver announces the action rather than "Add Audio Menu".
+      Menu(content: { menuContent(options) }, label: menuLabel)
+        .menuOrder(.fixed)
+        .accessibilityLabel(Text(Localization.accessibilityAddAudio))
     }
-    .accessibilityLabel(Text(Localization.accessabilityAddMusic))
+  }
 
-    Button {
-      interactor.openVoiceOver(style: .only(isFloating: true, detent: .imgly.micro))
-    } label: {
-      Label {
-        Text(Localization.buttonAddVoiceover)
-      } icon: {
-        Image(Images.customVoiceover, bundle: .module)
-      }
+  private func menuContent(_ options: [Timeline.AddAudioOption]) -> some View {
+    ForEach(options, id: \.id) { option in
+      Button { perform(option) } label: { menuItemLabel(option) }
+        .disabled(!isEnabled(option))
     }
-    .accessibilityLabel(Text(Localization.accessabilityAddVoiceover))
+  }
+
+  /// Whether the option can be triggered. A throwing predicate leaves the option enabled, matching
+  /// how a thrown visibility predicate is treated.
+  private func isEnabled(_ option: Timeline.AddAudioOption) -> Bool {
+    (try? option.isEnabled(context)) ?? true
+  }
+
+  private func menuItemLabel(_ option: Timeline.AddAudioOption) -> some View {
+    AnyView(option.nonThrowingBody(context))
+  }
+
+  /// The lone remaining option, which names the button in place of the generic "Add Audio".
+  private func singleOptionLabel(_ option: Timeline.AddAudioOption) -> some View {
+    buttonLabel(
+      builtInTitle: { AnyView(nonThrowing(option.title)) },
+      builtInIcon: { AnyView(nonThrowing(option.icon)) },
+    )
   }
 
   private func menuLabel() -> some View {
+    buttonLabel(
+      builtInTitle: { AnyView(Text(Localization.buttonAddAudio)) },
+      builtInIcon: { AnyView(Image(systemName: "plus")) },
+    )
+  }
+
+  /// The button's own label, laid out the same way in both branches so the button keeps its shape.
+  /// An override wins over the built-in for that half alone.
+  private func buttonLabel(
+    builtInTitle: () -> AnyView,
+    builtInIcon: () -> AnyView,
+  ) -> some View {
     HStack {
       Label {
-        Text(Localization.buttonAddAudio)
+        title?() ?? builtInTitle()
       } icon: {
-        Image(systemName: Images.systemPlus)
+        icon?() ?? builtInIcon()
       }
       Spacer()
     }
@@ -107,5 +129,23 @@ struct AddAudioButton: View {
     .frame(maxHeight: .infinity)
     .padding(.horizontal)
     .contentShape(Rectangle())
+  }
+
+  /// Reports a thrown title or icon the way a thrown option body is reported, instead of dropping it.
+  private func nonThrowing(_ part: Timeline.ItemContext.To<any View>) -> some View {
+    do {
+      return try AnyView(part(context))
+    } catch {
+      editorInteractor.handleErrorWithTask(error)
+      return AnyView(EmptyView())
+    }
+  }
+
+  private func perform(_ option: Timeline.AddAudioOption) {
+    do {
+      try option.perform(context)
+    } catch {
+      editorInteractor.handleError(error)
+    }
   }
 }

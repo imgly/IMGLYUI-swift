@@ -4,6 +4,8 @@ import Foundation
   case left = "Left"
   case center = "Center"
   case right = "Right"
+  /// The engine offers this value. The editor shows no button for it yet.
+  case justify = "Justify"
   case auto = "Auto"
 
   @_spi(Internal) public var localizationValue: String.LocalizationValue {
@@ -11,6 +13,7 @@ import Foundation
     case .left: "ly_img_editor_sheet_format_text_alignment_horizontal_option_left"
     case .center: "ly_img_editor_sheet_format_text_alignment_horizontal_option_center"
     case .right: "ly_img_editor_sheet_format_text_alignment_horizontal_option_right"
+    case .justify: "ly_img_editor_sheet_format_text_alignment_horizontal_option_justify"
     case .auto: "ly_img_editor_sheet_format_text_alignment_horizontal_option_auto"
     }
   }
@@ -20,6 +23,7 @@ import Foundation
     case .left: "text.alignleft"
     case .center: "text.aligncenter"
     case .right: "text.alignright"
+    case .justify: "text.justify"
     case .auto: "custom.text.align.left.auto"
     }
   }

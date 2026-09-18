@@ -4,13 +4,31 @@ import IMGLYEngine
 @_spi(Internal) import IMGLYCoreUI
 
 /// Defines the behavior when applying a force crop preset.
-public enum ForceCropMode: CaseIterable, Sendable {
+public enum ForceCropMode: CaseIterable, Hashable, Sendable {
   /// Applies the preset without opening the crop UI.
   case silent
   /// Applies the preset and always opens the crop UI.
   case always
-  /// Only applies the preset if dimensions differ, then opens the crop UI.
-  case ifNeeded
+  /// Only applies the preset if the dimensions differ by more than `threshold`, then opens the crop UI.
+  /// - Parameter threshold: The tolerated difference when the current dimensions are compared with the preset.
+  ///   A fixed aspect ratio preset compares the ratios. A fixed size preset compares both edges in the design
+  ///   unit of the preset. To tolerate a range of aspect ratios, use the midpoint of the range as the preset
+  ///   ratio and half of the range as the threshold.
+  case ifNeeded(threshold: Float)
+
+  public static var allCases: [ForceCropMode] {
+    [.silent, .always, .ifNeeded]
+  }
+}
+
+public extension ForceCropMode {
+  /// The threshold that ``ForceCropMode/ifNeeded`` uses.
+  static let defaultIfNeededThreshold: Float = 0.0001
+
+  /// ``ForceCropMode/ifNeeded(threshold:)`` with ``ForceCropMode/defaultIfNeededThreshold``.
+  static var ifNeeded: Self {
+    .ifNeeded(threshold: defaultIfNeededThreshold)
+  }
 }
 
 /// A crop preset candidate for force crop operations.
@@ -80,7 +98,13 @@ extension Interactor {
 
       let shouldApply = switch mode {
       case .silent, .always: true
-      case .ifNeeded: try await isPresetNeeded(engine: engine, cropPreset: bestMatch.preset, blockID: blockID)
+      case let .ifNeeded(threshold):
+        try await isPresetNeeded(
+          engine: engine,
+          cropPreset: bestMatch.preset,
+          blockID: blockID,
+          threshold: threshold,
+        )
       }
 
       if !shouldApply {
@@ -279,6 +303,7 @@ extension Interactor {
     engine: Engine,
     cropPreset: AssetResult,
     blockID: DesignBlockID,
+    threshold: Float,
   ) async throws -> Bool {
     let frameDimensions = (
       width: try engine.block.getFrameWidth(blockID),
@@ -293,7 +318,12 @@ extension Interactor {
     case .freeAspectRatio:
       return true
     case let .fixedAspectRatio(width, height):
-      return isFixedAspectRatioNeeded(frameDimensions: frameDimensions, width: width, height: height)
+      return isFixedAspectRatioNeeded(
+        frameDimensions: frameDimensions,
+        width: width,
+        height: height,
+        threshold: threshold,
+      )
     case let .fixedSize(width, height, designUnit):
       return try await isFixedSizeNeeded(
         engine: engine,
@@ -301,6 +331,7 @@ extension Interactor {
         width: width,
         height: height,
         designUnit: designUnit,
+        threshold: threshold,
       )
     default:
       throw Error(errorDescription: "The selected preset does not have a valid transform preset.")
@@ -311,10 +342,11 @@ extension Interactor {
     frameDimensions: (width: Float, height: Float),
     width: Float,
     height: Float,
+    threshold: Float,
   ) -> Bool {
-    let frameRatio = (frameDimensions.height / frameDimensions.width).rounded(toDecimalPlaces: 4)
-    let presetRatio = (height / width).rounded(toDecimalPlaces: 4)
-    return frameRatio != presetRatio
+    let frameRatio = frameDimensions.height / frameDimensions.width
+    let presetRatio = height / width
+    return !almostEqual(frameRatio, presetRatio, threshold: threshold)
   }
 
   private func isFixedSizeNeeded(
@@ -323,6 +355,7 @@ extension Interactor {
     width: Float,
     height: Float,
     designUnit: DesignUnit,
+    threshold: Float,
   ) async throws -> Bool {
     let sceneDesignUnit = try engine.scene.getDesignUnit()
 
@@ -355,7 +388,8 @@ extension Interactor {
       harmonizedFrameDimensions = frameDimensions
     }
 
-    if !almostEqual(harmonizedFrameDimensions.width, width) || !almostEqual(harmonizedFrameDimensions.height, height) {
+    if !almostEqual(harmonizedFrameDimensions.width, width, threshold: threshold) ||
+      !almostEqual(harmonizedFrameDimensions.height, height, threshold: threshold) {
       try engine.scene.setDesignUnit(designUnit)
       return true
     }
@@ -363,15 +397,8 @@ extension Interactor {
     return false
   }
 
-  private func almostEqual(_ a: Float, _ b: Float, epsilon: Float = Float.ulpOfOne) -> Bool {
-    abs(a - b) < epsilon
-  }
-}
-
-private extension Float {
-  func rounded(toDecimalPlaces places: Int) -> Float {
-    let multiplier = pow(10.0, Float(places))
-    return (self * multiplier).rounded() / multiplier
+  private func almostEqual(_ a: Float, _ b: Float, threshold: Float) -> Bool {
+    abs(a - b) <= threshold
   }
 }
 
