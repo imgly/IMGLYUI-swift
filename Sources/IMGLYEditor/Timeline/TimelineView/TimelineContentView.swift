@@ -6,13 +6,54 @@ import SwiftUI
 import UIKit
 
 struct TimelineContentView: View {
+  /// The configured "Add Clip" button, or `nil` when it is removed.
+  let addClip: (any Timeline.Item)?
+  /// The configured "Add Audio" button, or `nil` when it is removed.
+  let addAudio: (any Timeline.Item)?
+  /// The context the configured buttons receive.
+  ///
+  /// Built by ``Timeline`` rather than here: this view observes `Player`, so its body runs on every
+  /// playhead tick, and `ItemContext.make` builds the customer-configured asset library.
+  let itemContext: Timeline.ItemContext?
+
   @EnvironmentObject var player: Player
-  @EnvironmentObject var timeline: Timeline
+  @EnvironmentObject var timeline: TimelineState
   @EnvironmentObject var timelineProperties: TimelineProperties
   @EnvironmentObject var dataSource: TimelineDataSource
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
   @Environment(\.imglyViewportWidth) var viewportWidth: CGFloat
+  @Environment(\.imglyViewportHeight) var viewportHeight: CGFloat
+  @EnvironmentObject private var editorInteractor: Interactor
+
+  /// Renders a configured, visible timeline button ``Timeline/Item`` (or nothing if none is set or
+  /// the item is hidden via ``EditorComponent/isVisible(_:)``).
+  ///
+  /// The lane imposes its own row height, so a replacement item does not have to know it.
+  @ViewBuilder
+  private func render(_ item: (any Timeline.Item)?, in context: Timeline.ItemContext?) -> some View {
+    if let context, let item = visible(item, in: context) {
+      AnyView(item.nonThrowingBody(context))
+        .frame(height: configuration.backgroundTrackHeight)
+    }
+  }
+
+  /// The item if it should be shown, reporting a thrown ``EditorComponent/isVisible(_:)`` the way
+  /// the other component views do instead of swallowing it.
+  private func visible(_ item: (any Timeline.Item)?, in context: Timeline.ItemContext) -> (any Timeline.Item)? {
+    guard let item else { return nil }
+    do {
+      return try item.isVisible(context) ? item : nil
+    } catch {
+      let id = item.id.value
+      editorInteractor.handleErrorWithTask(EditorError(
+        String(localized: .imgly.localized(
+          "ly_img_editor_error_editor_component_view_creation \(id) \(error.localizedDescription)",
+        )),
+      ))
+      return nil
+    }
+  }
 
   @StateObject private var horizontalScrollViewDelegate = TimelineScrollViewDelegate()
   @StateObject private var verticalScrollViewDelegate = TimelineScrollViewDelegate()
@@ -112,7 +153,7 @@ struct TimelineContentView: View {
                 TrackView(track: track)
                   .frame(height: configuration.trackHeight)
               }
-              AddAudioButton()
+              render(addAudio, in: itemContext)
             }
             .background {
               // Measure the width of all contained clips, including the overflow.
@@ -130,6 +171,11 @@ struct TimelineContentView: View {
           .frame(width: timeline.totalWidth + viewportWidth)
           .padding(.top, verticalTopInset)
           .padding(.bottom, configuration.foregroundStackBottomInset)
+          // Tracks grow upwards from the pinned background lane. A scroll view top-aligns content
+          // that is shorter than its viewport, which strands the stack under the ruler whenever the
+          // timeline reserves more rows than the scene has (`HeightMode.fixed`). Fill the viewport and
+          // bottom-align instead, so a short stack still sits on the background lane.
+          .frame(minHeight: viewportHeight, alignment: .bottom)
           // Scroll clip into view on selection change.
           .onChange(of: timelineProperties.selectedClip) { newValue in
             guard let id = newValue?.id else { return }
@@ -195,8 +241,7 @@ struct TimelineContentView: View {
             .frame(height: configuration.backgroundLaneOverlayHeight)
           // Placed before `TrackView` in the ZStack so trim handles (which extend
           // past the last clip's right edge) render on top of the button.
-          BackgroundTrackAddButton()
-            .frame(height: configuration.backgroundTrackHeight)
+          render(addClip, in: itemContext)
             .padding(.leading, viewportWidth / 2 + backgroundTrackEndPoints)
           TrackView(track: dataSource.backgroundTrack)
             .frame(height: configuration.backgroundTrackHeight)

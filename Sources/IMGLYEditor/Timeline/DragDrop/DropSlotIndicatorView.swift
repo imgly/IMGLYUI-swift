@@ -5,7 +5,7 @@ import SwiftUI
 /// Rounded-rectangle silhouette at the dragged clip's drop slot. Renders only when the
 /// active `DropTarget` points at the track hosting this view.
 struct DropSlotIndicatorView: View {
-  @EnvironmentObject var timeline: Timeline
+  @EnvironmentObject var timeline: TimelineState
   @EnvironmentObject var timelineProperties: TimelineProperties
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
 
