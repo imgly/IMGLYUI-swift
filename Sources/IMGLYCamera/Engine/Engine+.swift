@@ -210,7 +210,6 @@ private extension Engine {
             parent = existing
           } else {
             let newTrack = try block.create(.track)
-            try block.setBool(newTrack, property: "track/automaticallyManageBlockOffsets", value: false)
             try block.appendChild(to: page, child: newTrack)
             trackForVideoIndex[index] = newTrack
             parent = newTrack
@@ -232,7 +231,6 @@ private extension Engine {
             parent = existing
           } else {
             let newTrack = try block.create(.track)
-            try block.setBool(newTrack, property: "track/automaticallyManageBlockOffsets", value: false)
             try block.appendChild(to: page, child: newTrack)
             trackForVideoIndex[index] = newTrack
             parent = newTrack

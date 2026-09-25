@@ -4,7 +4,7 @@ import SwiftUI
 
 /// Container for the `ClipView`s.
 struct TrackView: View {
-  @EnvironmentObject var timeline: TimelineState
+  @EnvironmentObject var timeline: Timeline
   @EnvironmentObject var player: Player
   @EnvironmentObject var timelineProperties: TimelineProperties
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
@@ -114,7 +114,7 @@ struct TrackView: View {
 /// Only the source and current destination tracks consume the preview, matching
 /// Android's affected-track scope.
 private struct TransitionSeamPlacement: View {
-  @EnvironmentObject private var timeline: TimelineState
+  @EnvironmentObject private var timeline: Timeline
   @EnvironmentObject private var timelineProperties: TimelineProperties
 
   @ObservedObject var track: Track

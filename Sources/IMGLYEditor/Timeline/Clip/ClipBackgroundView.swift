@@ -5,7 +5,7 @@ import SwiftUI
 struct ClipBackgroundView: View {
   // MARK: - Properties
 
-  @EnvironmentObject var timeline: TimelineState
+  @EnvironmentObject var timeline: Timeline
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
   @Environment(\.colorScheme) private var colorScheme
   @ObservedObject var thumbnailsProvider: AnyThumbnailsProvider
