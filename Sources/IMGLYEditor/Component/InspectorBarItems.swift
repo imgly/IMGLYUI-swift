@@ -1144,7 +1144,8 @@ public extension InspectorBar.Buttons {
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_inspector_bar_button_text_background` is used.
   ///   - icon: The icon view which is used to label the button. By default, the ``BackgroundColorIcon`` is used.
-  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the selected design block has no
+  /// text on path, because the engine draws no background for text on a path.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
   /// `DesignBlockType.text` or `.caption` and its engine scope `"text/character"` is allowed.
   /// - Returns: The created button.
@@ -1154,7 +1155,9 @@ public extension InspectorBar.Buttons {
       Text(.imgly.localized("ly_img_editor_inspector_bar_button_text_background"))
     },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { BackgroundColorIcon(id: $0.selection.block) },
-    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { context in
+      try context.engine.block.getTextOnPath(context.selection.block) == nil
+    },
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
       try (context.selection.type == .text || context.selection.type == .caption) &&
         context.engine.block.isAllowedByScope(context.selection.block, key: "text/character")

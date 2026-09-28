@@ -21,7 +21,7 @@ class TimelineProperties: ObservableObject {
   let player = Player()
 
   /// The `Timeline` manages the timeline zoom level and dimensions.
-  var timeline: Timeline?
+  var timeline: TimelineState?
 
   /// Timeline appearance and behavior settings.
   let configuration = TimelineConfiguration()

@@ -7884,6 +7884,23 @@
         }
       }
     },
+    "ly_img_editor_sheet_format_text_alignment_horizontal_option_justify" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocksatz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Justify Text"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_format_text_alignment_horizontal_option_left" : {
       "extractionState" : "manual",
       "localizations" : {

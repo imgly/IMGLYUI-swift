@@ -32,7 +32,7 @@ extension Interactor: TimelineInteractor {
     timelineProperties.currentPage = page
 
     timelineProperties.thumbnailsManager.interactor = self
-    timelineProperties.timeline = Timeline(interactor: self, configuration: timelineProperties.configuration)
+    timelineProperties.timeline = TimelineState(interactor: self, configuration: timelineProperties.configuration)
 
     refreshTimeline()
     updateDurations()

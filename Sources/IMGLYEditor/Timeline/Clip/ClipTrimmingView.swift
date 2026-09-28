@@ -8,7 +8,7 @@ import UIKit
 struct ClipTrimmingView: View {
   @EnvironmentObject var interactor: AnyTimelineInteractor
   @EnvironmentObject var player: Player
-  @EnvironmentObject var timeline: Timeline
+  @EnvironmentObject var timeline: TimelineState
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.imglyViewportWidth) private var viewportWidth
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration

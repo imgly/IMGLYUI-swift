@@ -5,7 +5,7 @@ import SwiftUI
 /// Renders the dragged clip "in flight" at the timeline root, so it can rise above
 /// the source track's bounds and traverse other tracks vertically.
 struct FloatingClipOverlayView: View {
-  @EnvironmentObject var timeline: Timeline
+  @EnvironmentObject var timeline: TimelineState
   @EnvironmentObject var timelineProperties: TimelineProperties
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
 

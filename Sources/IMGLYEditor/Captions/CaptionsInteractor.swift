@@ -74,12 +74,21 @@ struct CaptionsInteractor {
   /// Mutedness is left to the generation callback, which skips muted blocks itself.
   func hasAudioVisualContent() -> Bool {
     guard let engine, let page = currentPage() else { return false }
-    // Audio by type, matching the generator: a voiceover's kind is `voiceover`, not `audio`. Scoped to the
-    // current page for the same reason the generator is — otherwise the action offers to transcribe a page
-    // the user is not on, and generation then finds nothing.
+    // Audio by type: a voiceover's kind is `voiceover`, not `audio`. Video by fill type. Scoped to the
+    // current page, as the generator is, so the action never offers a page the user is not on.
     let audio = (try? engine.block.find(byType: .audio)) ?? []
-    let video = (try? engine.block.find(byKind: "video")) ?? []
+    let video = ((try? engine.block.find(byType: .graphic)) ?? []).filter { isVideoFootage($0, engine: engine) }
     return (audio + video).contains { isDescendant($0, of: page, engine: engine) }
+  }
+
+  /// A graphic with a video fill, except an animated sticker. GIF and APNG count: the generator drops them
+  /// for having no audio track.
+  private func isVideoFootage(_ block: DesignBlockID, engine: Engine) -> Bool {
+    guard (try? engine.block.supportsFill(block)) == true,
+          let fill = try? engine.block.getFill(block),
+          (try? engine.block.getType(fill)) == FillType.video.rawValue else { return false }
+    let kind: BlockKind? = try? engine.block.getKind(block)
+    return kind != .key(.animatedSticker)
   }
 
   /// Whether `block` sits anywhere below `page`, directly or nested in one of its tracks.

@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Shows the current playhead position and the total duration as text.
 struct TimecodeView: View {
-  @EnvironmentObject var timeline: Timeline
+  @EnvironmentObject var timeline: TimelineState
   @EnvironmentObject var player: Player
 
   var body: some View {

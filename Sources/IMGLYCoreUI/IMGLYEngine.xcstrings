@@ -239,6 +239,74 @@
         }
       }
     },
+    "ly_img_engine_error_color_document_profile_not_set" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Dokument hat kein CMYK-Profil."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The document has no CMYK profile."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_document_profile_not_set_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legen Sie ein CMYK-Profil fest, bevor Sie seine Informationen lesen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set a CMYK profile before reading its information."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_imported_image_definition_not_found" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Bildfüllung hat keine aktive importierte Bilddefinition."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The image fill has no active imported image definition."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_imported_image_definition_not_found_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fügen Sie dem aktuellen Bild der Füllung eine Definition hinzu, bevor Sie sie lesen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attach a definition to the fill's current image before reading it."
+          }
+        }
+      }
+    },
     "ly_img_engine_error_editor_crop_element_not_croppable" : {
       "extractionState" : "manual",
       "localizations" : {
