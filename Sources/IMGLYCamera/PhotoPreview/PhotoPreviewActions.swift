@@ -13,6 +13,7 @@ struct PhotoPreviewActions: View {
         Text(.imgly.localized("ly_img_camera_button_photo_preview_back"))
       }
       .buttonStyle(PhotoPreviewButtonStyle(prominent: false))
+      .cameraRotated()
 
       Spacer()
 
@@ -20,6 +21,7 @@ struct PhotoPreviewActions: View {
         Text(.imgly.localized("ly_img_camera_button_photo_preview_done"))
       }
       .buttonStyle(PhotoPreviewButtonStyle(prominent: true))
+      .cameraRotated()
     }
   }
 }

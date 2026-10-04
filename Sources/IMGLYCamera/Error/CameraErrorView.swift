@@ -8,6 +8,14 @@ struct CameraErrorView: View {
   @ScaledMetric var iconSize: Double = 64
 
   var body: some View {
+    ViewThatFits(in: .vertical) {
+      content
+      ScrollView { content.frame(maxWidth: .infinity) }
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+
+  private var content: some View {
     VStack {
       if error as? CameraCaptureError == CameraCaptureError.permissionsMissing {
         // Permissions errors are handled in alerts, so we don’t show them here.
@@ -39,7 +47,7 @@ struct CameraErrorView: View {
       }
     }
     .padding()
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .frame(maxWidth: 320)
   }
 }
 

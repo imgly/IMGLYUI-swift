@@ -1713,15 +1713,13 @@ extension Interactor: TimelineInteractor {
   ///   - clip: The `Clip` to generate the thumbnails for.
   ///   - thumbHeight: The height of the thumbnails in points.
   ///   - timeRange: The time range in the clip’s footage to generate from.
-  ///   - screenResolutionScaleFactor: The screen resolution scale to multiply the `thumbHeight` by. Typically `2` on an
-  /// iPad and `3` on an iPhone.
   ///   - numberOfFrames: The desired frame count.
   /// - Returns: An async stream of images that finishes when all images have been loaded.
+  /// - Note: `thumbHeight` is multiplied by ``displayScale``, so the thumbnails render at native resolution.
   func generateImagesThumbnails(
     clip: Clip,
     thumbHeight: CGFloat,
     timeRange: ClosedRange<Double>,
-    screenResolutionScaleFactor: CGFloat,
     numberOfFrames: Int,
   ) async throws -> AsyncThrowingStream<VideoThumbnail, Swift.Error> {
     guard let engine else { throw Error(errorDescription: "Missing engine") }
@@ -1729,7 +1727,7 @@ extension Interactor: TimelineInteractor {
 
     return engine.block.generateVideoThumbnailSequence(
       clip.id,
-      thumbnailHeight: Int(thumbHeight * screenResolutionScaleFactor),
+      thumbnailHeight: Int(thumbHeight * displayScale),
       timeRange: timeRange,
       numberOfFrames: numberOfFrames,
     )
@@ -1959,6 +1957,7 @@ extension Interactor: TimelineInteractor {
         var currentTimeOffset = totalDuration
         var trackForVideoIndex: [Int: DesignBlockID] = [:]
         for recording in recordings {
+          let canvas = recording.videos.reduce(CGRect.null) { $0.union($1.rect) }
           for (index, video) in recording.videos.enumerated() {
             // Add to asset library without invoking assetTapped()
             isAddingCameraRecording = true
@@ -1974,7 +1973,8 @@ extension Interactor: TimelineInteractor {
             ) else { continue }
             await addCameraVideo(
               fileURL: assetURL,
-              rect: video.rect,
+              rect: recording.videos.count > 1 ? video.rect : nil,
+              canvasSize: canvas.size,
               duration: recording.duration,
               timeOffset: currentTimeOffset,
               parentTrack: parentTrack,
@@ -2032,6 +2032,7 @@ extension Interactor: TimelineInteractor {
     timeOffset: CMTime,
     trackForVideoIndex: inout [Int: DesignBlockID],
   ) async throws {
+    let canvas = photo.images.reduce(CGRect.null) { $0.union($1.rect) }
     for (index, image) in photo.images.enumerated() {
       let asset = try await uploadImage(to: imageUploadAssetSourceID) { image.url }
       guard let assetURL = asset.url else { continue }
@@ -2042,6 +2043,7 @@ extension Interactor: TimelineInteractor {
       await addCameraPhoto(
         fileURL: assetURL,
         rect: photo.images.count > 1 ? image.rect : nil,
+        canvasSize: canvas.size,
         duration: photo.duration,
         timeOffset: timeOffset,
         parentTrack: parentTrack,
@@ -2054,6 +2056,7 @@ extension Interactor: TimelineInteractor {
     timeOffset: CMTime,
     trackForVideoIndex: inout [Int: DesignBlockID],
   ) async throws {
+    let canvas = recording.videos.reduce(CGRect.null) { $0.union($1.rect) }
     for (index, video) in recording.videos.enumerated() {
       let asset = try await uploadVideo(to: videoUploadAssetSourceID) { video.url }
       guard let assetURL = asset.url else { continue }
@@ -2063,7 +2066,8 @@ extension Interactor: TimelineInteractor {
       ) else { continue }
       await addCameraVideo(
         fileURL: assetURL,
-        rect: video.rect,
+        rect: recording.videos.count > 1 ? video.rect : nil,
+        canvasSize: canvas.size,
         duration: recording.duration,
         timeOffset: timeOffset,
         parentTrack: parentTrack,
@@ -2074,14 +2078,19 @@ extension Interactor: TimelineInteractor {
   private func addCameraPhoto(
     fileURL: URL,
     rect: CGRect?,
+    canvasSize: CGSize,
     duration: CMTime,
     timeOffset: CMTime,
     parentTrack: DesignBlockID,
   ) async {
     guard let engine else { return }
     do {
-      let frame = rect ?? CGRect(origin: .zero, size: CameraConfiguration.defaultVideoSize)
-      guard let id = try placeImageGraphic(at: frame, fillURL: fileURL, parent: parentTrack) else { return }
+      guard let frame = try cameraCaptureFrame(rect ?? CGRect(origin: .zero, size: canvasSize),
+                                               canvasSize: canvasSize),
+        let id = try placeImageGraphic(at: frame, fillURL: fileURL, parent: parentTrack) else { return }
+      if rect == nil {
+        try engine.block.fillParent(id)
+      }
       try engine.block.setDuration(id, duration: duration.seconds)
       try engine.block.setTimeOffset(id, offset: timeOffset.seconds)
     } catch {
@@ -2115,22 +2124,25 @@ extension Interactor: TimelineInteractor {
 
   private func addCameraVideo(
     fileURL: URL,
-    rect: CGRect,
+    rect: CGRect?,
+    canvasSize: CGSize,
     duration: CMTime,
     timeOffset: CMTime,
     parentTrack: DesignBlockID,
   ) async {
     guard let engine else { return }
     do {
+      guard let frame = try cameraCaptureFrame(rect ?? CGRect(origin: .zero, size: canvasSize),
+                                               canvasSize: canvasSize) else { return }
       let id = try engine.block.create(.graphic)
       let rectShape = try engine.block.createShape(.rect)
       try engine.block.setShape(id, shape: rectShape)
 
       try engine.block.appendChild(to: parentTrack, child: id)
-      try engine.block.setWidth(id, value: Float(rect.width))
-      try engine.block.setHeight(id, value: Float(rect.height))
-      try engine.block.setPositionX(id, value: Float(rect.origin.x))
-      try engine.block.setPositionY(id, value: Float(rect.origin.y))
+      try engine.block.setWidth(id, value: Float(frame.width))
+      try engine.block.setHeight(id, value: Float(frame.height))
+      try engine.block.setPositionX(id, value: Float(frame.origin.x))
+      try engine.block.setPositionY(id, value: Float(frame.origin.y))
 
       try engine.block.setDuration(id, duration: duration.seconds)
       try engine.block.setTimeOffset(id, offset: timeOffset.seconds)
@@ -2138,6 +2150,9 @@ extension Interactor: TimelineInteractor {
       try engine.block.set(fill, property: .key(.fillVideoFileURI), value: fileURL)
       try engine.block.setFill(id, fill: fill)
       try await engine.block.forceLoadAVResource(fill)
+      if rect == nil {
+        try engine.block.fillParent(id)
+      }
     } catch {
       handleError(error)
     }

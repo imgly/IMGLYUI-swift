@@ -16,7 +16,7 @@ struct FeaturesMenuView: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 0) {
+    CameraFeaturesLayout(layoutDirection: layoutDirection) {
       Group {
         countdownButton()
         switch camera.cameraMode {
@@ -59,27 +59,31 @@ struct FeaturesMenuView: View {
   }
 }
 
+/// Keep the timer centered on the camera edge regardless of the number of layout controls below it.
+struct CameraFeaturesLayout: Layout {
+  let layoutDirection: LayoutDirection
+
+  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
+    let sizes = subviews.map { $0.sizeThatFits(proposal) }
+    return CGSize(width: sizes.map(\.width).max() ?? 0,
+                  height: (sizes.first?.height ?? 0) + 2 * sizes.dropFirst().reduce(0) { $0 + $1.height })
+  }
+
+  func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
+    let sizes = subviews.map { $0.sizeThatFits(proposal) }
+    var y = bounds.midY - (sizes.first?.height ?? 0) / 2
+    for (subview, size) in zip(subviews, sizes) {
+      let x = layoutDirection == .rightToLeft ? bounds.maxX - size.width : bounds.minX
+      subview.place(at: CGPoint(x: x, y: y), anchor: .topLeading,
+                    proposal: ProposedViewSize(size))
+      y += size.height
+    }
+  }
+}
+
 extension FeaturesMenuView {
   func countdownButton() -> some View {
-    Menu {
-      Picker(selection: $camera.countdownMode) {
-        ForEach(CountdownMode.allCases, id: \.rawValue) { mode in
-          if mode == .disabled {
-            Divider()
-          }
-          Label {
-            Text(mode.name)
-          } icon: {
-            mode.image
-          }
-          .tag(mode)
-        }
-      } label: {
-        Text(.imgly.localized("ly_img_camera_button_timer"))
-      }
-      .pickerStyle(.inline)
-
-    } label: {
+    Button { camera.activeMenu = .timer } label: {
       FeatureLabelView(
         text: camera.countdownMode == .disabled ? .imgly.localized("ly_img_camera_button_timer") : camera.countdownMode
           .name,
@@ -88,27 +92,12 @@ extension FeaturesMenuView {
         hasLabel: hasTransientLabel,
       )
     }
+    .anchorPreference(key: CameraMenuAnchorKey.self, value: .bounds) { [.timer: $0] }
   }
 
   @ViewBuilder func dualCameraButton() -> some View {
     if camera.isMultiCamSupported {
-      Menu {
-        Picker(selection: camera.dualCameraModeBinding) {
-          ForEach(camera.layoutModeMenuOptions) { mode in
-            if mode == camera.layoutModeMenuOptions.last, allowModeSwitching {
-              Divider()
-            }
-            Label {
-              Text(mode.label)
-            } icon: {
-              mode.icon
-            }
-            .tag(mode.tag)
-          }
-        } label: {
-          Text(.imgly.localized("ly_img_camera_button_dual_camera"))
-        }
-      } label: {
+      Button { camera.activeMenu = .layout } label: {
         FeatureLabelView(
           text: .imgly.localized("ly_img_camera_button_dual_camera"),
           image: camera.cameraMode.layoutMode?.image ?? Image("custom.camera.dual", bundle: .module),
@@ -116,24 +105,14 @@ extension FeaturesMenuView {
           hasLabel: hasTransientLabel,
         )
       }
+      .anchorPreference(key: CameraMenuAnchorKey.self, value: .bounds) { [.layout: $0] }
     }
   }
 
   @ViewBuilder func reactionsButton() -> some View {
     switch camera.cameraMode {
     case let .reaction(layout, _, _):
-      Menu {
-        Picker(selection: camera.reactionsCameraModeBinding) {
-          ForEach(camera.layoutModeMenuOptions) { mode in
-            if mode.tag == nil, allowModeSwitching {
-              Divider()
-            }
-            mode.labelView
-          }
-        } label: {
-          Text(.imgly.localized("ly_img_camera_button_reaction"))
-        }
-      } label: {
+      Button { camera.activeMenu = .layout } label: {
         FeatureLabelView(
           text: .imgly.localized("ly_img_camera_button_reaction"),
           image: layout.image,
@@ -143,15 +122,12 @@ extension FeaturesMenuView {
       }
       .disabled(camera.hasRecordings)
       .opacity(camera.hasRecordings ? 0.6 : 1)
+      .anchorPreference(key: CameraMenuAnchorKey.self, value: .bounds) { [.layout: $0] }
     default:
-      Button {
-        camera.pickReactionVideo()
-      } label: {
+      Button { camera.pickReactionVideo() } label: {
         FeatureLabelView(
-          text: "React",
-          image: Image(systemName: "arrow.2.squarepath"),
-          isSelected: false,
-          hasLabel: hasTransientLabel,
+          text: "React", image: Image(systemName: "arrow.2.squarepath"),
+          isSelected: false, hasLabel: hasTransientLabel,
         )
       }
     }

@@ -7,7 +7,7 @@ public extension Timeline {
   /// and the caption lane is a lane of its own rather than an overlay track.
   enum HeightMode {
     /// The timeline auto-resizes to fit its tracks, growing to at most `maximumTracks` tracks tall.
-    /// This is the default.
+    /// This is the default in a regular vertical size class.
     ///
     /// A caption lane is added on top of `maximumTracks`, so a scene with captions is one row
     /// taller than one without. The lane appears with the first caption clip, not with the caption
@@ -78,7 +78,13 @@ public extension Timeline {
       ///
       /// Resolved per render, so the height can depend on the ``Timeline/ItemContext`` — the editor
       /// state, or the vertical size class.
-      public var height: Timeline.Height = { _ in .dynamic() }
+      ///
+      /// By default the timeline is ``HeightMode/dynamic(maximumTracks:)`` with three tracks, and
+      /// ``HeightMode/fixed(tracks:)`` with one track in a compact vertical size class, where a
+      /// taller timeline leaves no room for the canvas.
+      public var height: Timeline.Height = { context in
+        context.verticalSizeClass == .compact ? .fixed(tracks: 1) : .dynamic()
+      }
 
       /// The header bar shown above the timeline. Set via ``header(_:)``.
       var header: Timeline.Header = { _ in [] }

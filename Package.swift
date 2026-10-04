@@ -30,7 +30,7 @@ let package = Package(
              ]),
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.83.0"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.84.0-rc.0"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", "1.1.2" ..< "27.0.0"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", "7.10.0" ..< "9.0.0"),
   ],
@@ -50,6 +50,10 @@ let package = Package(
     .target(
       name: "IMGLYCamera",
       dependencies: [.target(name: "IMGLYCoreUI")],
+    ),
+    .testTarget(
+      name: "IMGLYCameraTests",
+      dependencies: [.target(name: "IMGLYCamera")],
     ),
     .target(
       name: "IMGLYEditor",

@@ -32,6 +32,7 @@ struct LayerOptions: View {
             PropertySlider<Float>(
               .imgly.localized("ly_img_editor_sheet_layer_label_opacity"),
               in: 0 ... 1,
+              step: 0.05,
               property: .key(.opacity),
             )
           } header: {

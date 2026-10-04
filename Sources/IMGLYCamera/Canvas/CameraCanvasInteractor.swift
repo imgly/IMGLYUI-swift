@@ -170,6 +170,12 @@ class CameraCanvasInteractor: ObservableObject {
     try engine.block.destroy(reactionVideo.graphic)
   }
 
+  func setReactionOrientation(_ orientation: CameraOrientation) throws {
+    guard let engine, let reactionVideo else { return }
+    try engine.block.setCropRotation(reactionVideo.graphic, rotation: Float(orientation.rawValue) * .pi / 180)
+    try engine.block.setContentFillMode(reactionVideo.graphic, mode: .cover)
+  }
+
   var reactionVideoDuration: Double? {
     guard let engine, let reactionVideo else { return nil }
     return try? engine.block.getAVResourceTotalDuration(reactionVideo.fill)

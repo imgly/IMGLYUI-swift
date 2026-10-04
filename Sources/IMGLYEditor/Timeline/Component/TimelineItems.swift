@@ -273,14 +273,13 @@ public extension Timeline.Buttons {
   ///   - action: Replaces the built-in expand/collapse behavior. Pass `nil` to keep it.
   ///   - label: Replaces the built-in expand/collapse label. Pass `nil` to keep it.
   ///   - isEnabled: Whether the button is enabled. By default it always is.
-  ///   - isVisible: Whether the button is visible. By default it is hidden in a compact vertical
-  /// size class, matching the timeline's built-in behavior.
+  ///   - isVisible: Whether the button is visible. By default it always is.
   /// - Returns: The created button.
   static func toggleExpanded(
     action: Timeline.ItemContext.To<Void>? = nil,
     label: Timeline.ItemContext.To<any View>? = nil,
     isEnabled: @escaping Timeline.ItemContext.To<Bool> = { _ in true },
-    isVisible: @escaping Timeline.ItemContext.To<Bool> = { $0.verticalSizeClass != .compact },
+    isVisible: @escaping Timeline.ItemContext.To<Bool> = { _ in true },
   ) -> some Timeline.Item {
     Timeline.Custom(
       id: ID.toggleExpanded,

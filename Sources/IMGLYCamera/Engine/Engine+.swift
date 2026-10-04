@@ -101,7 +101,12 @@ private extension Engine {
       }
     }
 
-    try createEmptyTimelineScene()
+    let frame = if captures.count == 1, case let .photo(photo) = first {
+      photo.images.reduce(CGRect.null) { $0.union($1.rect) }
+    } else {
+      CGRect(origin: .zero, size: CameraConfiguration.defaultVideoSize)
+    }
+    try createEmptyTimelineScene(frame: frame)
     guard let pageID = try scene.getCurrentPage() else {
       throw Error(errorDescription: "Failed to get current page.")
     }
@@ -109,15 +114,15 @@ private extension Engine {
       throw Error(errorDescription: "Failed to get background track.")
     }
 
-    try addCaptures(captures, useBackgroundTrack: backgroundTrack, page: pageID)
+    try addCaptures(captures, useBackgroundTrack: backgroundTrack, page: pageID, fitToPage: true)
   }
 
   /// Creates an empty timeline scene with a single page and a background track.
-  func createEmptyTimelineScene() throws {
+  func createEmptyTimelineScene(frame: CGRect) throws {
     let sceneBlock = try scene.createVideo()
     let page = try block.create(.page)
     try block.appendChild(to: sceneBlock, child: page)
-    try block.setFrame(page, value: CGRect(origin: .zero, size: CameraConfiguration.defaultVideoSize))
+    try block.setFrame(page, value: frame)
     let track = try block.create(.track)
     try block.appendChild(to: page, child: track)
     try block.setAlwaysOnBottom(track, enabled: true)
@@ -135,6 +140,7 @@ private extension Engine {
     duration: Double,
     at offset: Double,
     appendTo track: DesignBlockID,
+    fillPage: Bool = false,
   ) throws {
     try addClip(
       fillType: .image,
@@ -144,6 +150,7 @@ private extension Engine {
       duration: duration,
       at: offset,
       appendTo: track,
+      fillPage: fillPage,
     )
   }
 
@@ -188,6 +195,7 @@ private extension Engine {
     useBackgroundTrack backgroundTrack: DesignBlockID?,
     page: DesignBlockID,
     skipFirstVideoBecauseItWasAddedToTheSceneAlready: Bool = false,
+    fitToPage: Bool = false,
   ) throws -> Double {
     var didSkipFirstVideo = false
     var offset: Double = 0
@@ -210,16 +218,15 @@ private extension Engine {
             parent = existing
           } else {
             let newTrack = try block.create(.track)
-            try block.setBool(newTrack, property: "track/automaticallyManageBlockOffsets", value: false)
             try block.appendChild(to: page, child: newTrack)
             trackForVideoIndex[index] = newTrack
             parent = newTrack
           }
-          // For single-camera photos the rect is the full page; for dual it's the sub-rect.
-          let frame = photo.images.count > 1
-            ? image.rect
-            : CGRect(origin: .zero, size: CameraConfiguration.defaultVideoSize)
-          try addImage(image.url, frame: frame, duration: captureDuration, at: offset, appendTo: parent)
+          let frame = fitToPage
+            ? try fittedCaptureFrame(image.rect, canvas: photo.images.map(\.rect), page: page)
+            : image.rect
+          try addImage(image.url, frame: frame, duration: captureDuration, at: offset, appendTo: parent,
+                       fillPage: fitToPage && photo.images.count == 1)
         }
       case let .video(recording):
         for (index, video) in recording.videos.enumerated() {
@@ -232,12 +239,15 @@ private extension Engine {
             parent = existing
           } else {
             let newTrack = try block.create(.track)
-            try block.setBool(newTrack, property: "track/automaticallyManageBlockOffsets", value: false)
             try block.appendChild(to: page, child: newTrack)
             trackForVideoIndex[index] = newTrack
             parent = newTrack
           }
-          try addVideo(video, duration: captureDuration, at: offset, appendTo: parent)
+          let frame = fitToPage
+            ? try fittedCaptureFrame(video.rect, canvas: recording.videos.map(\.rect), page: page)
+            : video.rect
+          try addVideo(video, frame: frame, duration: captureDuration, at: offset, appendTo: parent,
+                       fillPage: fitToPage && recording.videos.count == 1)
         }
       }
       offset += captureDuration
@@ -254,19 +264,27 @@ private extension Engine {
   ///   - track: The track to add the clip to.
   func addVideo(
     _ video: Recording.Video,
+    frame: CGRect,
     duration: Double,
     at offset: Double,
     appendTo track: DesignBlockID,
+    fillPage: Bool = false,
   ) throws {
     try addClip(
       fillType: .video,
       fillURI: video.url,
       fillURIProperty: .fillVideoFileURI,
-      frame: video.rect,
+      frame: frame,
       duration: duration,
       at: offset,
       appendTo: track,
+      fillPage: fillPage,
     )
+  }
+
+  func fittedCaptureFrame(_ rect: CGRect, canvas rects: [CGRect], page: DesignBlockID) throws -> CGRect {
+    let size = try CGSize(width: CGFloat(block.getFrameWidth(page)), height: CGFloat(block.getFrameHeight(page)))
+    return fittedCameraCaptureFrame(rect, canvas: rects.reduce(CGRect.null) { $0.union($1) }, pageSize: size)
   }
 
   /// Adds a fixed-duration graphic block with the given fill to the current scene.
@@ -278,6 +296,7 @@ private extension Engine {
     duration: Double,
     at offset: Double,
     appendTo track: DesignBlockID,
+    fillPage: Bool = false,
   ) throws {
     let id = try block.create(.graphic)
     let rectShape = try block.createShape(.rect)
@@ -288,6 +307,9 @@ private extension Engine {
     let fill = try block.createFill(fillType)
     try block.set(fill, property: .key(fillURIProperty), value: fillURI)
     try block.setFill(id, fill: fill)
+    if fillPage {
+      try block.fillParent(id)
+    }
     try block.setDuration(id, duration: duration)
   }
 }
@@ -301,4 +323,14 @@ private extension [Recording] {
       partialResult.union(next.rect)
     }
   }
+}
+
+func fittedCameraCaptureFrame(_ rect: CGRect, canvas: CGRect, pageSize: CGSize) -> CGRect {
+  let scale = min(pageSize.width / canvas.width, pageSize.height / canvas.height)
+  return CGRect(
+    x: (pageSize.width - canvas.width * scale) / 2 + (rect.minX - canvas.minX) * scale,
+    y: (pageSize.height - canvas.height * scale) / 2 + (rect.minY - canvas.minY) * scale,
+    width: rect.width * scale,
+    height: rect.height * scale,
+  )
 }

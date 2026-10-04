@@ -169,10 +169,7 @@ private struct TimelineRootView: View {
   }
 
   private var shouldShowFullTimeline: Bool {
-    isExpanded &&
-      (!interactor.sheet.isPresented ||
-        interactor.sheet.isFloating ||
-        interactor.sheet.isReplacing)
+    isExpanded && interactor.allowsExpandedBottomPanelWithSheet
   }
 
   var body: some View {

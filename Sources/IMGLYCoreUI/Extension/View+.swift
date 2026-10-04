@@ -14,14 +14,22 @@ public extension View {
 
 // MARK: - Internal interface
 
-@_spi(Internal) public extension View {
-  var usesLegacyDesign: Bool {
+/// The design the app runs with, so code outside of a `View` can branch on it too.
+@_spi(Internal) public enum DesignSystem {
+  /// Whether the app opts out of the iOS 26 design, or runs on an older iOS.
+  public static var usesLegacyDesign: Bool {
     #if swift(>=6.2)
       if #available(iOS 26.0, *) {
         return Bundle.main.object(forInfoDictionaryKey: "UIDesignRequiresCompatibility") as? Bool ?? false
       }
     #endif
     return true
+  }
+}
+
+@_spi(Internal) public extension View {
+  var usesLegacyDesign: Bool {
+    DesignSystem.usesLegacyDesign
   }
 }
 

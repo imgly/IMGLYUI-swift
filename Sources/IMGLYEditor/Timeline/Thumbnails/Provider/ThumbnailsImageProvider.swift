@@ -14,8 +14,6 @@ class ThumbnailsImageProvider {
     static let thumbMinWidth: CGFloat = 4.0
   }
 
-  let screenResolutionScaleFactor: CGFloat = UIScreen.main.scale
-
   @Published var isLoading = false
   @Published var availableWidth: Double = 0
   @Published var thumbHeight: Double = 44
@@ -110,7 +108,6 @@ extension ThumbnailsImageProvider: ThumbnailsProvider {
           clip: clip,
           thumbHeight: thumbHeight,
           timeRange: timeRange,
-          screenResolutionScaleFactor: screenResolutionScaleFactor,
           numberOfFrames: numberOfFrames,
         ) {
         images.append(thumb.image)

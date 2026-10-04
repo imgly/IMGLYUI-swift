@@ -84,6 +84,22 @@ import SwiftUI
   }
 
   @Published var verticalSizeClass: UserInterfaceSizeClass?
+
+  /// Height of the presented sheet in the canvas coordinate space, 0 when no sheet is shown.
+  @Published var presentedSheetHeight: CGFloat = 0
+
+  /// Whether the bottom panel keeps its full height while a sheet is presented. In compact height
+  /// the panel must collapse — sheet detents shrink but the timeline does not, otherwise a band of
+  /// bare timeline chrome stays exposed above the sheet. Voiceover is the exception: its draft
+  /// placeholder must stay visible on the pinned background lane.
+  var allowsExpandedBottomPanelWithSheet: Bool {
+    guard sheet.isPresented else { return true }
+    if verticalSizeClass == .compact {
+      return sheet.content == .voiceover
+    }
+    return sheet.isFloating || sheet.isReplacing
+  }
+
   @Published @_spi(Internal) public private(set) var page = 0 {
     didSet { pageChanged(oldValue) }
   }
@@ -151,6 +167,16 @@ import SwiftUI
 
   var isAddingCameraRecording = false
 
+  /// Display scale of the window that hosts the editor. `EditorUI` sets it before the scene loads, so thumbnails
+  /// render for that window and not for `UIScreen.main`.
+  var displayScale: CGFloat = 1 {
+    didSet {
+      if oldValue != displayScale {
+        refreshZoomDependentThumbnails()
+      }
+    }
+  }
+
   @_spi(Internal) public var zoomModel = ZoomModel() {
     didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) }
   }
@@ -161,11 +187,11 @@ import SwiftUI
     (try? engine?.getSortedPages().count) ?? 0
   }
 
-  func generatePageThumbnail(_ id: BlockID, height: CGFloat) async throws -> UIImage {
+  func generatePageThumbnail(_ id: BlockID, height: CGFloat, scale: CGFloat) async throws -> UIImage {
     guard let engine else {
       throw Error(errorDescription: "Engine unavailable.")
     }
-    return try await engine.block.generatePageThumbnail(id, height: height, scale: UIScreen.main.scale)
+    return try await engine.block.generatePageThumbnail(id, height: height, scale: scale)
   }
 
   var isCanvasHitTestingEnabled: Bool {

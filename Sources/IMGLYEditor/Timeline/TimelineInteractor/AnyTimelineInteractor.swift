@@ -114,14 +114,12 @@ class AnyTimelineInteractor: TimelineInteractor {
     clip: Clip,
     thumbHeight: CGFloat,
     timeRange: ClosedRange<Double>,
-    screenResolutionScaleFactor: CGFloat,
     numberOfFrames: Int,
   ) async throws -> AsyncThrowingStream<VideoThumbnail, Swift.Error> {
     try await interactor.generateImagesThumbnails(
       clip: clip,
       thumbHeight: thumbHeight,
       timeRange: timeRange,
-      screenResolutionScaleFactor: screenResolutionScaleFactor,
       numberOfFrames: numberOfFrames,
     )
   }

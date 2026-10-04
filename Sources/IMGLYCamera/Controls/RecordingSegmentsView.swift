@@ -51,6 +51,7 @@ struct RecordingSegmentsView: View {
           }
           .shadow(color: .black.opacity(0.25), radius: 1, x: 0, y: 0)
         }
+        .cameraRotationEffect()
       }
       .onChange(of: recordingsManager.captures) { _ in
         updateNormalizedSegmentPositions()
