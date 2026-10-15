@@ -243,9 +243,11 @@ extension Interactor: TimelineInteractor {
   /// Cross-track and new-track drops refresh synchronously to rebuild track membership.
   func applyDrop(clip: Clip, target: DropTarget, siblingOffsets: [DesignBlockID: CMTime]) {
     guard let engine else { return }
+    // A drop gives the moved clip and its old and new neighbours new cuts, so record the cuts first.
+    let cuts = transitionCuts(engine: engine, tracks: dropTracks(engine: engine, clip: clip, target: target))
     switch target {
     case let .newTrack(insertAt, timeOffset):
-      applyNewTrackDrop(engine: engine, clip: clip, insertAt: insertAt, timeOffset: timeOffset)
+      applyNewTrackDrop(engine: engine, clip: clip, insertAt: insertAt, timeOffset: timeOffset, cuts: cuts)
     case let .existingTrack(trackID, insertIndex, timeOffset, effectiveDuration):
       applyExistingTrackDrop(
         engine: engine,
@@ -255,7 +257,33 @@ extension Interactor: TimelineInteractor {
         timeOffset: timeOffset,
         effectiveDuration: effectiveDuration,
         siblingOffsets: siblingOffsets,
+        cuts: cuts,
       )
+    }
+  }
+
+  /// The engine tracks whose cuts a drop can change: the source track and the target track.
+  private func dropTracks(engine: Engine, clip: Clip, target: DropTarget) -> [DesignBlockID] {
+    var tracks = [DesignBlockID]()
+    if let source = try? engine.block.getParent(clip.id) {
+      tracks.append(source)
+    }
+    if case let .existingTrack(trackID, _, _, _) = target {
+      let dataSource = timelineProperties.dataSource
+      let targetTrackID = trackID == dataSource.backgroundTrack.id
+        ? syncAndResolveBackgroundTrackID(engine: engine)
+        : dataSource.tracks.first { $0.id == trackID }?.engineTrackID
+      if let targetTrackID, !tracks.contains(targetTrackID) {
+        tracks.append(targetTrackID)
+      }
+    }
+    return tracks
+  }
+
+  /// Destroys the transitions at the cuts that a drop changed, and tells the user.
+  private func removeChangedTransitionCutsAndNotify(engine: Engine, cuts: [DesignBlockID: DesignBlockID?]) throws {
+    if try removeChangedTransitionCuts(engine: engine, cuts: cuts) > 0 {
+      timelineProperties.showTransitionRemovedToast()
     }
   }
 
@@ -267,6 +295,7 @@ extension Interactor: TimelineInteractor {
     timeOffset: CMTime,
     effectiveDuration: CMTime?,
     siblingOffsets: [DesignBlockID: CMTime],
+    cuts: [DesignBlockID: DesignBlockID?],
   ) {
     let dataSource = timelineProperties.dataSource
     let targetTrack: Track
@@ -291,6 +320,7 @@ extension Interactor: TimelineInteractor {
 
       if isBackgroundReorder {
         try insertIntoBackgroundTrack(engine: engine, clip: clip, insertIndex: insertIndex)
+        try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
         if !sourceWasBackground {
           try resetCropAndFillParentForBackgroundDrop(engine: engine, clipID: clip.id)
         }
@@ -303,6 +333,7 @@ extension Interactor: TimelineInteractor {
           insertIndex: insertIndex,
           timeOffset: timeOffset,
           siblingOffsets: siblingOffsets,
+          cuts: cuts,
         )
       } else if isCrossTrack {
         // Standalone target — promote into a multi-clip track wrapping both clips.
@@ -313,6 +344,7 @@ extension Interactor: TimelineInteractor {
           insertIndex: insertIndex,
           timeOffset: timeOffset,
           siblingOffsets: siblingOffsets,
+          cuts: cuts,
         )
       } else {
         // Same standalone track — just move it.
@@ -414,16 +446,31 @@ extension Interactor: TimelineInteractor {
     insertIndex: Int,
     timeOffset: CMTime,
     siblingOffsets: [DesignBlockID: CMTime],
+    cuts: [DesignBlockID: DesignBlockID?],
   ) throws {
     try engine.block.insertChild(into: engineTrackID, child: clip.id, at: insertIndex)
+    try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
+    var renderedOffsets = [clip.id: timeOffset]
     for sibling in targetTrack.clips where sibling.id != clip.id {
       // Match Android: only commit siblings that were shifted by the cascade.
       // Reapplying unchanged offsets invokes Track::layout() and can mutate
       // unrelated clips when the drag is released.
       guard let offset = siblingOffsets[sibling.id], offset != sibling.timeOffset else { continue }
-      try engine.block.setTimeOffset(sibling.id, offset: offset.seconds)
+      renderedOffsets[sibling.id] = offset
     }
-    try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
+    let rawClips = try engine.block.getChildren(engineTrackID).map { id in
+      try DropClip(
+        id: id,
+        timeOffset: CMTime(seconds: engine.block.getTimeOffset(id)),
+        duration: CMTime(seconds: engine.block.getDuration(id)),
+      )
+    }
+    let offsets = dropOffsets(clips: rawClips, renderedOffsets: renderedOffsets) { outgoing, incoming in
+      transitionOverlap(engine: engine, outgoing: outgoing, incoming: incoming)
+    }
+    for (id, offset) in offsets {
+      try engine.block.setTimeOffset(id, offset: offset.seconds)
+    }
   }
 
   private func promoteStandaloneTargetAndInsert(
@@ -433,6 +480,7 @@ extension Interactor: TimelineInteractor {
     insertIndex: Int,
     timeOffset: CMTime,
     siblingOffsets: [DesignBlockID: CMTime],
+    cuts: [DesignBlockID: DesignBlockID?],
   ) throws {
     guard let pageID = timelineProperties.currentPage,
           let targetSolo = targetTrack.clips.first else { return }
@@ -447,6 +495,7 @@ extension Interactor: TimelineInteractor {
     try engine.block.insertChild(into: pageID, child: newEngineTrack, at: pageIndex)
     try engine.block.appendChild(to: newEngineTrack, child: targetSolo.id)
     try engine.block.insertChild(into: newEngineTrack, child: clip.id, at: insertIndex)
+    try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
 
     let soloOffset = siblingOffsets[targetSolo.id] ?? targetSolo.timeOffset
     try engine.block.setTimeOffset(targetSolo.id, offset: soloOffset.seconds)
@@ -493,7 +542,13 @@ extension Interactor: TimelineInteractor {
   /// The audio-sort in `refreshTimeline` inverts the pc-to-visual relationship for audio
   /// (lower pc = higher visually), so audio drags use the anchor's pc directly rather than
   /// `pc + 1`, and fall back to walking *upward* (insert after) when no anchor sits below.
-  private func applyNewTrackDrop(engine: Engine, clip: Clip, insertAt: Int, timeOffset: CMTime) {
+  private func applyNewTrackDrop(
+    engine: Engine,
+    clip: Clip,
+    insertAt: Int,
+    timeOffset: CMTime,
+    cuts: [DesignBlockID: DesignBlockID?],
+  ) {
     guard let pageID = timelineProperties.currentPage else { return }
     let sourceWasBackground = timelineProperties.dataSource.findTrack(containing: clip)
       === timelineProperties.dataSource.backgroundTrack
@@ -542,6 +597,7 @@ extension Interactor: TimelineInteractor {
       try engine.block.setBool(newEngineTrack, property: "track/automaticallyManageBlockOffsets", value: false)
       try engine.block.insertChild(into: pageID, child: newEngineTrack, at: engineInsertionIndex)
       try engine.block.insertChild(into: newEngineTrack, child: clip.id, at: 0)
+      try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
       try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
 
       addUndoStep()
@@ -792,9 +848,11 @@ extension Interactor: TimelineInteractor {
         === timelineProperties.dataSource.backgroundTrack
 
       do {
+        // The timeline hides the head of a clip under an incoming transition, so the engine counts from the raw start.
+        let rawStartTime = try CMTime(seconds: engine.block.getTimeOffset(clip.id))
         _ = try engine.block.split(
           clip.id,
-          atTime: firstClipDuration.seconds,
+          atTime: (playheadPosition - rawStartTime).seconds,
           options: SplitOptions(createParentTrackIfNeeded: true),
         )
 

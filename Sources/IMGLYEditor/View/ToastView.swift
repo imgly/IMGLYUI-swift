@@ -1,11 +1,12 @@
 import SwiftUI
 
-struct ClipSpeedToastView: View {
+struct ToastView: View {
+  let message: LocalizedStringResource
   let onDismiss: () -> Void
 
   var body: some View {
     HStack(spacing: 8) {
-      Text(.imgly.localized("ly_img_editor_notification_speed_no_audio_at_speed"))
+      Text(message)
         .font(.footnote)
         .foregroundStyle(.primary)
         .multilineTextAlignment(.leading)

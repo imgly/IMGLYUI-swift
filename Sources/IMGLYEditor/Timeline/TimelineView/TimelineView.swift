@@ -44,7 +44,28 @@ struct TimelineView: View {
               .environmentObject(interactor.timelineProperties.dataSource)
               .environment(\.imglyTimelineConfiguration, interactor.timelineProperties.configuration)
           }
+          .overlay(alignment: .bottom) {
+            TransitionRemovedToastOverlay()
+              .environmentObject(interactor.timelineProperties)
+          }
       }
+    }
+  }
+}
+
+/// Observes the toast state on its own, so the toast does not invalidate the timeline body.
+private struct TransitionRemovedToastOverlay: View {
+  @EnvironmentObject var timelineProperties: TimelineProperties
+
+  var body: some View {
+    if timelineProperties.isTransitionRemovedToastVisible {
+      ToastView(
+        message: .imgly.localized("ly_img_editor_timeline_transition_removed_on_move"),
+        onDismiss: timelineProperties.dismissTransitionRemovedToast,
+      )
+      .padding(.horizontal, 16)
+      .padding(.bottom, 8)
+      .transition(.opacity)
     }
   }
 }
