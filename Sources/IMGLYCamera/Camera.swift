@@ -7,6 +7,9 @@ import SwiftUI
 public struct Camera: View {
   @StateObject var camera: CameraModel
 
+  @State private var isShowingDeleteDialog = false
+  @State private var isShowingDeleteAllDialog = false
+
   @ScaledMetric private var recordButtonSize: Double = 82
 
   @State private var isPhotoFlashing = false
@@ -149,17 +152,88 @@ public struct Camera: View {
   }
 
   public var body: some View {
-    // Keep the camera's portrait canvas stable even when the host rotates its interface.
-    CameraScreenLayout(orientation: camera.interfaceOrientation) { controlInsets in
-      cameraBody(controlInsets: controlInsets)
-    }
-    .background {
-      CameraOrientationReader { device, interface in
-        camera.updateOrientation(device: device, interface: interface)
+    VStack(spacing: 0) {
+      VStack {
+        CenteredLeadingTrailing {
+          if camera.configuration.captureType != .photo {
+            TimecodeView()
+              .padding(.top)
+          }
+        } leading: {
+          cancelButton
+            .padding(.top)
+            .padding(.leading)
+          Spacer()
+        } trailing: {}
+
+        Spacer()
+        Spacer()
+
+        HStack {
+          // Keep rendered through the photo capture window so the slide-in transition isn't
+          // triggered every time we briefly leave `.ready` for a photo. `.preparing` is excluded
+          // so the initial entry into `.ready` still animates the menu in.
+          if showsFeaturesMenu {
+            FeaturesMenuView()
+              .transition(.offset(x: -20).combined(with: .opacity))
+          }
+          Spacer()
+        }
+
+        Spacer()
+
+        CenteredLeadingTrailing {
+          RecordButton()
+            .frame(width: recordButtonSize, height: recordButtonSize)
+            .overlay(alignment: .top) {
+              Group {
+                if camera.recordingsManager.hasReachedMaxDuration {
+                  Text(.imgly.localized("ly_img_camera_label_recording_limit \(maxDuration)"))
+                    .fixedSize()
+                    .offset(x: 0, y: -50)
+                    .transition(.offset(x: 0, y: 20).combined(with: .opacity))
+                }
+              }
+              .animation(.spring(), value: camera.recordingsManager.hasReachedMaxDuration)
+            }
+            .disabled(isRecordButtonDisabled)
+        } leading: {
+          Spacer()
+          if didRecord {
+            deleteLastRecordingButton
+              .padding(.trailing)
+              .transition(.offset(x: -20).combined(with: .opacity))
+          }
+        } trailing: {
+          Spacer()
+          if didRecord {
+            doneButton
+              .padding(.trailing)
+              .transition(.offset(x: 20).combined(with: .opacity))
+          }
+        }
+        .tint(camera.configuration.highlightColor)
+        .padding(.top, 60)
+        .padding(.bottom, 40)
       }
+      .opacity(isPreviewingPhoto || camera.isDismissalInProgress || hideChromeForCapture ? 0 : 1)
+      .allowsHitTesting(!isPreviewingPhoto && !camera.isDismissalInProgress && !hideChromeForCapture)
+      .aspectRatio(9 / 16, contentMode: .fit)
+      .overlay {
+        countdownView.offset(x: 0, y: -44)
+      }
+      .background { zoomGesture() }
+      .background { cameraCanvas() }
+      .animation(.easeInOut(duration: 0.3), value: camera.state)
+      // Animation when deleting a clip
+      .animation(.easeInOut(duration: 0.3), value: camera.recordingsManager.captures.count)
+      Spacer()
     }
-    .background(Color.black.ignoresSafeArea())
-    .environment(\.cameraRotation, camera.rotation)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .overlay { photoPreviewOverlay }
+    .overlay(alignment: .bottom) { bottomButtons() }
+    .overlay { photoFlashOverlay }
+    .background { Color.black.ignoresSafeArea() }
     .environment(\.colorScheme, .dark)
     .environmentObject(camera)
     .environmentObject(camera.recordingsManager)
@@ -174,89 +248,7 @@ public struct Camera: View {
     .imgly.onDismiss {
       camera.cancel(error: .cancelled)
     }
-  }
-
-  private func cameraBody(controlInsets: EdgeInsets) -> some View {
-    VStack(spacing: 0) {
-      ZStack {
-        cameraCanvas(controlInsets: controlInsets)
-        zoomGesture()
-        cameraChrome
-          .padding(controlInsets)
-          .opacity(isPreviewingPhoto || camera.isDismissalInProgress || hideChromeForCapture ? 0 : 1)
-          .allowsHitTesting(!isPreviewingPhoto && !camera.isDismissalInProgress && !hideChromeForCapture)
-        countdownView.offset(y: -44).padding(controlInsets)
-      }
-      .aspectRatio(9 / 16, contentMode: .fit)
-      .animation(.easeInOut(duration: 0.3), value: camera.state)
-      .animation(.easeInOut(duration: 0.3), value: camera.recordingsManager.captures.count)
-      Spacer(minLength: 0)
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .overlay { photoPreviewOverlay }
-    .overlay(alignment: .bottom) { bottomButtons().padding(controlInsets) }
-    .overlay { photoFlashOverlay }
-    .background { Color.black.ignoresSafeArea() }
-    .allowsHitTesting(camera.alertState == nil && camera.activeMenu == nil)
-    .accessibilityHidden(camera.alertState != nil)
-    .overlayPreferenceValue(CameraMenuAnchorKey.self) { anchors in
-      CameraMenuOverlay(anchors: anchors).padding(controlInsets)
-    }
-    .overlay { CameraDialog(state: $camera.alertState).padding(controlInsets) }
-  }
-
-  private var cameraChrome: some View {
-    ZStack {
-      CameraPositionedView(alignment: camera.rotation.orientation.closeAlignment) {
-        cancelButton.padding()
-          .environment(\.cameraRotation, CameraRotation())
-      }
-      if camera.isVideoModeActive {
-        CameraPositionedView(alignment: camera.rotation.orientation.timecodeAlignment) {
-          TimecodeView().padding()
-        }
-      }
-      CameraPositionedView(alignment: camera.rotation.orientation.featuresAlignment) {
-        if showsFeaturesMenu {
-          FeaturesMenuView().padding(.vertical, 32)
-        }
-      }
-      if camera.recordingsManager.hasReachedMaxDuration {
-        CameraPositionedView(alignment: camera.rotation.orientation.limitAlignment) {
-          Text(.imgly.localized("ly_img_camera_label_recording_limit \(maxDuration)"))
-            .fixedSize()
-            .padding()
-        }
-        .padding(.top, 64)
-        .padding(.bottom, recordButtonSize + 100)
-      }
-      captureDock
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-    }
-  }
-
-  private var captureDock: some View {
-    ZStack {
-      RecordButton()
-        .frame(width: recordButtonSize, height: recordButtonSize)
-        .disabled(isRecordButtonDisabled)
-      CameraPositionedView(alignment: camera.rotation.orientation == .upsideDown ? .trailing : .leading) {
-        if didRecord {
-          deleteLastRecordingButton
-        }
-      }
-      .padding(.horizontal, 40)
-      CameraPositionedView(alignment: camera.rotation.orientation == .upsideDown ? .leading : .trailing) {
-        if didRecord {
-          doneButton
-        }
-      }
-      .padding(.horizontal)
-    }
-    .frame(height: recordButtonSize)
-    .tint(camera.configuration.highlightColor)
-    .padding(.top, 60)
-    .padding(.bottom, 40)
+    .imgly.alert($camera.alertState)
   }
 
   private var photoFlashOverlay: some View {
@@ -268,9 +260,7 @@ public struct Camera: View {
 
   @ViewBuilder private var photoPreviewOverlay: some View {
     if case let .previewingPhoto(photo) = camera.state {
-      PhotoPreviewCanvas(photo: photo)
-        .padding(.bottom, 84)
-        .background(Color.black.ignoresSafeArea())
+      PhotoPreviewCanvas(photo: photo, layoutMode: camera.cameraMode.layoutMode)
         .transition(.opacity)
     }
   }
@@ -336,15 +326,14 @@ public struct Camera: View {
     }
   }
 
-  @ViewBuilder private func cameraCanvas(controlInsets: EdgeInsets) -> some View {
+  @ViewBuilder private func cameraCanvas() -> some View {
     switch camera.state {
     case .preparing:
-      ProgressView().cameraRotated().padding(controlInsets)
+      ProgressView()
     case let .error(error):
       CameraErrorView(error: error) {
         camera.retry()
       }
-      .cameraRotated().padding(controlInsets)
     default:
       if let interactor = camera.interactor {
         CameraCanvasView(interactor: interactor)
@@ -353,7 +342,7 @@ public struct Camera: View {
           .opacity(camera.shouldShowCamera ? 1 : 0)
           .overlay {
             if camera.isLoadingAsset {
-              ProgressView().cameraRotated().padding(controlInsets)
+              ProgressView()
             }
           }
       }
@@ -406,7 +395,6 @@ extension Camera {
     HStack {
       if camera.state == .countingDown {
         CountdownTimerView(countdownTimer: camera.countdownTimer)
-          .cameraRotationEffect()
           .transition(.scale.combined(with: .opacity))
       }
     }
@@ -416,7 +404,7 @@ extension Camera {
   var cancelButton: some View {
     Button {
       if camera.recordingsManager.hasRecordings || camera.state == .recording {
-        camera.alertState = .deleteAll { camera.cancel() }
+        isShowingDeleteAllDialog = true
       } else {
         camera.cancel()
       }
@@ -429,11 +417,29 @@ extension Camera {
       .labelStyle(.iconOnly)
     }
     .buttonStyle(CameraToolButtonStyle())
+    .confirmationDialog(
+      Text(.imgly.localized("ly_img_camera_dialog_delete_recordings_title")),
+      isPresented: $isShowingDeleteAllDialog,
+      titleVisibility: .visible,
+    ) {
+      Button(role: .destructive) {
+        camera.cancel()
+      } label: {
+        Text(.imgly.localized("ly_img_camera_dialog_delete_recordings_button_confirm"))
+      }
+      Button(role: .cancel) {
+        isShowingDeleteAllDialog = false
+      } label: {
+        Text(.imgly.localized("ly_img_camera_dialog_delete_recordings_button_dismiss"))
+      }
+    } message: {
+      Text(.imgly.localized("ly_img_camera_dialog_delete_recordings_text"))
+    }
   }
 
   var deleteLastRecordingButton: some View {
     Button {
-      camera.alertState = .deleteLast { camera.deleteLastRecording() }
+      isShowingDeleteDialog = true
     } label: {
       Label {
         Text(.imgly.localized("ly_img_camera_button_delete_last_recording"))
@@ -443,6 +449,24 @@ extension Camera {
       .labelStyle(.iconOnly)
     }
     .buttonStyle(CameraActionButtonStyle(style: .delete))
+    .confirmationDialog(
+      Text(.imgly.localized("ly_img_camera_dialog_delete_last_recording_title")),
+      isPresented: $isShowingDeleteDialog,
+      titleVisibility: .visible,
+    ) {
+      Button(role: .destructive) {
+        camera.deleteLastRecording()
+      } label: {
+        Text(.imgly.localized("ly_img_camera_dialog_delete_last_recording_button_confirm"))
+      }
+      Button(role: .cancel) {
+        isShowingDeleteDialog = false
+      } label: {
+        Text(.imgly.localized("ly_img_camera_dialog_delete_last_recording_button_dismiss"))
+      }
+    } message: {
+      Text(.imgly.localized("ly_img_camera_dialog_delete_last_recording_text"))
+    }
   }
 
   var doneButton: some View {

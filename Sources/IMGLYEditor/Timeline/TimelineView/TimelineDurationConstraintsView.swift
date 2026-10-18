@@ -3,7 +3,7 @@ import CoreMedia
 import SwiftUI
 
 struct TimelineDurationConstraintsView: View {
-  @EnvironmentObject var timeline: TimelineState
+  @EnvironmentObject var timeline: Timeline
   @EnvironmentObject var timelineProperties: TimelineProperties
   @Environment(\.imglyTimelineConfiguration) private var configuration: TimelineConfiguration
   @Environment(\.imglyViewportWidth) private var viewportWidth: CGFloat

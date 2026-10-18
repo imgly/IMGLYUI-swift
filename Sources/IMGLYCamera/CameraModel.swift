@@ -69,33 +69,6 @@ final class CameraModel: ObservableObject {
   }
 
   @Published private(set) var state = CameraState.preparing
-  @Published private(set) var rotation = CameraRotation()
-  @Published private(set) var interfaceOrientation = CameraOrientation.portrait
-  private var captureOrientation = CaptureOrientationState()
-  private var hasDeviceOrientation = false
-
-  func updateOrientation(device: UIDeviceOrientation, interface: UIInterfaceOrientation) {
-    if let interface = CameraOrientation(interface), interfaceOrientation != interface {
-      interfaceOrientation = interface
-    }
-    let deviceOrientation = CameraOrientation(device)
-    let orientation = deviceOrientation ?? (hasDeviceOrientation ? nil : CameraOrientation(interface))
-    hasDeviceOrientation = hasDeviceOrientation || deviceOrientation != nil
-    guard let orientation, orientation != rotation.orientation else { return }
-    rotation = CameraRotation(orientation: orientation, angle: orientation.rotation(from: rotation.angle))
-    captureOrientation.update(orientation)
-    updateReactionOrientation()
-  }
-
-  private func updateReactionOrientation() {
-    guard cameraMode.isReaction else { return }
-    do {
-      try interactor?.setReactionOrientation(captureOrientation.orientation)
-    } catch {
-      handleEngineError(error)
-    }
-  }
-
   @Published var cameraMode: CameraMode = .standard {
     didSet {
       cameraModeUpdated(cameraMode, oldValue)
@@ -106,8 +79,7 @@ final class CameraModel: ObservableObject {
   @Published private(set) var hasVideoPermissions = false
   @Published private(set) var hasAudioPermissions = false
   @Published private(set) var isLoadingAsset: Bool = false
-  @Published var alertState: CameraDialogState?
-  @Published var activeMenu: CameraMenuKind?
+  @Published var alertState: AlertState?
 
   /// Drives shutter routing while `captureType == .mixed`. Ignored for `.photo` / `.video`.
   @Published var activeMixedSubMode: ActiveMixedSubMode = .photo {
@@ -206,13 +178,10 @@ final class CameraModel: ObservableObject {
     let cameraMode = cameraMode
     let reactionVideoDuration = reactionVideoDuration
     let captures = recordingsManager.captures
-    let orientation = captureOrientation.orientation
     let onDismiss = onDismiss
 
     cleanUp {
-      if let reactionVideo = reactionVideoDuration.flatMap({
-        cameraMode.reactionVideo(duration: $0, orientation: orientation)
-      }) {
+      if let reactionVideo = reactionVideoDuration.flatMap({ cameraMode.reactionVideo(duration: $0) }) {
         onDismiss.emit(.success(.reaction(video: reactionVideo, reaction: captures.videos)))
       } else {
         onDismiss.emit(.success(.capture(captures)))
@@ -339,7 +308,6 @@ final class CameraModel: ObservableObject {
       do {
         let video = try await self?.interactor?.loadVideo(url: url)
         self?.reactionVideoDuration = video.map { CMTime(seconds: $0.duration) }
-        self?.updateReactionOrientation()
       } catch {
         print("Failed to load reaction video from \(url): \(error)")
         self?.alertState = .failedToLoadVideo {
@@ -554,8 +522,7 @@ final class CameraModel: ObservableObject {
     Task { [weak self] in
       guard let self else { return }
       do {
-        let images = try await captureService.capturePhoto(flashMode: flashMode,
-                                                           orientation: captureOrientation.orientation)
+        let images = try await captureService.capturePhoto(flashMode: flashMode)
         guard !isDismissalInProgress else {
           // Cancelled mid-capture — drop the orphan JPEGs since cancel() already cleared the stack.
           for image in images {
@@ -606,13 +573,8 @@ final class CameraModel: ObservableObject {
   func startRecording() {
     guard state != .recording else { return }
     let remainingDuration = recordingsManager.remainingRecordingDuration
-    if cameraMode.isReaction {
-      captureOrientation.lock()
-      updateReactionOrientation()
-    }
     state = .recording
-    captureService.startRecording(remainingRecordingDuration: remainingDuration,
-                                  orientation: captureOrientation.orientation)
+    captureService.startRecording(remainingRecordingDuration: remainingDuration)
     interactor?.reactionVideoSetPlaying(true)
   }
 
@@ -638,10 +600,6 @@ final class CameraModel: ObservableObject {
     do {
       objectWillChange.send()
       try recordingsManager.deleteLastCapture()
-      if !recordingsManager.hasRecordings {
-        captureOrientation.unlock()
-        updateReactionOrientation()
-      }
       let currentDuration = recordingsManager.recordedClipsTotalDuration.seconds
       try interactor?.setReactionPlaybackTime(currentDuration)
     } catch {
@@ -680,16 +638,12 @@ final class CameraModel: ObservableObject {
 
   func handleCaptureError(_ error: Swift.Error) {
     DispatchQueue.main.async { [weak self] in
-      if let self, !hasRecordings {
-        captureOrientation.unlock()
-        updateReactionOrientation()
-      }
       self?.state = .error(.captureError(error.localizedDescription))
     }
   }
 
   func handleActionError(_ error: Swift.Error) {
-    alertState = CameraDialogState(
+    alertState = AlertState(
       title: "Error",
       message: error.localizedDescription,
       buttons: [

@@ -5,7 +5,7 @@ import UIKit
 
 /// Manages the camera and microphone device state and provides a stream of `CaptureStreamUpdate`s.
 final class CaptureService: NSObject, @unchecked Sendable {
-  private let videoOrientation: AVCaptureVideoOrientation = .portrait
+  var videoOrientation: AVCaptureVideoOrientation = .portrait
   weak var delegate: CaptureServiceDelegate?
 
   private(set) var isStreaming = false
@@ -143,7 +143,6 @@ final class CaptureService: NSObject, @unchecked Sendable {
   ) -> AVCaptureConnection? {
     guard requiresPhotoOutput else { return nil }
     let connection = AVCaptureConnection(inputPorts: input.ports, output: output)
-    connection.automaticallyAdjustsVideoMirroring = false
     connection.isVideoMirrored = input.device.position == .front
     connection.videoOrientation = videoOrientation
     captureSession.addConnection(connection)
@@ -223,7 +222,6 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
         let connection = AVCaptureConnection(inputPorts: input.ports, output: videoOutput1)
         camera1Connection = connection
-        connection.automaticallyAdjustsVideoMirroring = false
         connection.isVideoMirrored = input.device.position == .front
         connection.videoOrientation = videoOrientation
         connection.preferredVideoStabilizationMode = .standard
@@ -239,7 +237,6 @@ final class CaptureService: NSObject, @unchecked Sendable {
           }
           let connection = AVCaptureConnection(inputPorts: input.ports, output: videoOutput2)
           camera2Connection = connection
-          connection.automaticallyAdjustsVideoMirroring = false
           connection.isVideoMirrored = input.device.position == .front
           connection.videoOrientation = videoOrientation
           connection.preferredVideoStabilizationMode = .standard
@@ -313,8 +310,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
   // MARK: -
 
-  func startRecording(remainingRecordingDuration: CMTime = .positiveInfinity,
-                      orientation: CameraOrientation = .portrait) {
+  func startRecording(remainingRecordingDuration: CMTime = .positiveInfinity) {
     guard remainingRecordingDuration > .zero else { return }
 
     guard let audioSettings = audioSettings(),
@@ -327,8 +323,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
       recorder1 = VideoRecorder(
         audioSettings: audioSettings,
         videoSettings: output1Settings,
-        orientation: orientation,
-        rect: cameraMode.firstRecordingRect,
+        videoTransform: CGAffineTransformIdentity,
       )
       recorder1?.startRecording(to: fileURL1, fileType: videoFileType)
       recorder2 = nil
@@ -339,8 +334,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
         recorder2 = VideoRecorder(
           audioSettings: audioSettings,
           videoSettings: output2Settings,
-          orientation: orientation,
-          rect: cameraMode.rect2 ?? .zero,
+          videoTransform: CGAffineTransformIdentity,
         )
         recorder2?.startRecording(to: fileURL2, fileType: videoFileType)
       }
@@ -348,14 +342,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
     }
   }
 
-  func capturePhoto(flashMode: FlashMode, orientation: CameraOrientation = .portrait) async throws -> [Photo.Image] {
-    let cameraMode = await withCheckedContinuation { continuation in
-      queue.async { [self] in
-        photoConnection?.videoOrientation = orientation.videoOrientation
-        photoConnection2?.videoOrientation = orientation.videoOrientation
-        continuation.resume(returning: self.cameraMode)
-      }
-    }
+  func capturePhoto(flashMode: FlashMode) async throws -> [Photo.Image] {
     let avFlashMode: AVCaptureDevice.FlashMode = switch flashMode {
     case .off: .off
     case .on: .on
@@ -368,8 +355,8 @@ final class CaptureService: NSObject, @unchecked Sendable {
       switch (await task1.result, await task2.result) {
       case let (.success(firstURL), .success(secondURL)):
         return [
-          Photo.Image(url: firstURL, rect: orientation.captureRect(cameraMode.rect1)),
-          Photo.Image(url: secondURL, rect: orientation.captureRect(cameraMode.rect2 ?? .zero)),
+          Photo.Image(url: firstURL, rect: cameraMode.rect1),
+          Photo.Image(url: secondURL, rect: cameraMode.rect2 ?? .zero),
         ]
       case let (.success(orphan), .failure(error)),
            let (.failure(error), .success(orphan)):
@@ -380,7 +367,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
       }
     }
     let url = try await PhotoCapture().capture(with: photoOutput, flashMode: avFlashMode)
-    return [Photo.Image(url: url, rect: orientation.captureRect(cameraMode.rect1))]
+    return [Photo.Image(url: url, rect: cameraMode.rect1)]
   }
 
   func stopRecording() throws {
@@ -394,8 +381,8 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
         let recordedClip = try await Recording(
           videos: [
-            .init(url: firstVideoURL, rect: recorder1.rect),
-            .init(url: secondVideoURL, rect: recorder2.rect),
+            .init(url: firstVideoURL, rect: cameraMode.rect1),
+            .init(url: secondVideoURL, rect: cameraMode.rect2 ?? .zero),
           ],
           duration: recordedDuration,
         )
@@ -408,7 +395,7 @@ final class CaptureService: NSObject, @unchecked Sendable {
 
         let recordedClip = try await Recording(
           videos: [
-            .init(url: firstVideoURL, rect: recorder1.rect),
+            .init(url: firstVideoURL, rect: cameraMode.firstRecordingRect),
           ],
           duration: recordedDuration,
         )

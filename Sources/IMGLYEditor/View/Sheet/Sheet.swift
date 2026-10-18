@@ -69,8 +69,7 @@ struct Sheet: View {
       return .hidden
     }
     if verticalSizeClass == .compact {
-      // Landscape keeps the indicator only when the sheet is actually resizable.
-      return sheet.style.detents.count > 1 ? .visible : .hidden
+      return .hidden
     }
     return .visible
   }

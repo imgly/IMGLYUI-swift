@@ -8,8 +8,7 @@ class VideoRecorder: @unchecked Sendable {
   private var assetWriterVideoInput: AVAssetWriterInput?
   private var assetWriterAudioInput: AVAssetWriterInput?
 
-  private var orientation: CameraOrientation
-  let rect: CGRect
+  private var videoTransform: CGAffineTransform
   private var videoSettings: [String: Any]
   private var audioSettings: [String: Any]
 
@@ -26,13 +25,11 @@ class VideoRecorder: @unchecked Sendable {
   init(
     audioSettings: [String: Any],
     videoSettings: [String: Any],
-    orientation: CameraOrientation,
-    rect: CGRect,
+    videoTransform: CGAffineTransform,
   ) {
     self.audioSettings = audioSettings
     self.videoSettings = videoSettings
-    self.orientation = orientation
-    self.rect = orientation.captureRect(rect)
+    self.videoTransform = videoTransform
   }
 
   func startRecording(to url: URL, fileType: AVFileType) {
@@ -47,9 +44,7 @@ class VideoRecorder: @unchecked Sendable {
 
     let assetWriterVideoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
     assetWriterVideoInput.expectsMediaDataInRealTime = true
-    let size = CGSize(width: videoSettings[AVVideoWidthKey] as? Int ?? 0,
-                      height: videoSettings[AVVideoHeightKey] as? Int ?? 0)
-    assetWriterVideoInput.transform = orientation.captureTransform(size: size)
+    assetWriterVideoInput.transform = videoTransform
     assetWriter.add(assetWriterVideoInput)
 
     self.assetWriter = assetWriter

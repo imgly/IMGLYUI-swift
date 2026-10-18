@@ -21,7 +21,7 @@ class TimelineProperties: ObservableObject {
   let player = Player()
 
   /// The `Timeline` manages the timeline zoom level and dimensions.
-  var timeline: TimelineState?
+  var timeline: Timeline?
 
   /// Timeline appearance and behavior settings.
   let configuration = TimelineConfiguration()
@@ -76,30 +76,7 @@ class TimelineProperties: ObservableObject {
   /// the preview instead of jumping on commit.
   @Published var backgroundTrackTrimDelta: CMTime = .zero
 
-  /// Shows that a drop removed the transitions at the cuts it changed.
-  @Published var isTransitionRemovedToastVisible = false
-  private var transitionRemovedToastTask: Task<Void, Never>?
-
   // MARK: - Methods
-
-  func showTransitionRemovedToast() {
-    transitionRemovedToastTask?.cancel()
-    withAnimation(.easeInOut(duration: 0.2)) {
-      isTransitionRemovedToastVisible = true
-    }
-    transitionRemovedToastTask = Task { @MainActor [weak self] in
-      try? await Task.sleep(nanoseconds: 3_500_000_000)
-      guard !Task.isCancelled else { return }
-      self?.dismissTransitionRemovedToast()
-    }
-  }
-
-  func dismissTransitionRemovedToast() {
-    transitionRemovedToastTask?.cancel()
-    withAnimation(.easeInOut(duration: 0.2)) {
-      isTransitionRemovedToastVisible = false
-    }
-  }
 
   func resetClips() {
     dataSource.reset()

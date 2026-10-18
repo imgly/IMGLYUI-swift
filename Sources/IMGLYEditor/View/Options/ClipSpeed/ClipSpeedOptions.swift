@@ -61,14 +61,11 @@ struct ClipSpeedOptions: View {
         .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
       }
       if viewModel.showNoAudioToast {
-        ToastView(
-          message: .imgly.localized("ly_img_editor_notification_speed_no_audio_at_speed"),
-          onDismiss: viewModel.dismissToast,
-        )
-        .padding(.horizontal, 8)
-        .padding(.bottom, 8)
-        .transition(.opacity)
-        .zIndex(1)
+        ClipSpeedToastView(onDismiss: viewModel.dismissToast)
+          .padding(.horizontal, 8)
+          .padding(.bottom, 8)
+          .transition(.opacity)
+          .zIndex(1)
       }
     }
     .padding(.top, 8)

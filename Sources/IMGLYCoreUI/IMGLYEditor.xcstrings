@@ -7884,23 +7884,6 @@
         }
       }
     },
-    "ly_img_editor_sheet_format_text_alignment_horizontal_option_justify" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Blocksatz"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Justify Text"
-          }
-        }
-      }
-    },
     "ly_img_editor_sheet_format_text_alignment_horizontal_option_left" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10634,23 +10617,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minimum video length"
-          }
-        }
-      }
-    },
-    "ly_img_editor_timeline_transition_removed_on_move" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Übergänge zwischen Clips, die nicht mehr aneinandergrenzen, wurden entfernt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Transitions between clips that no longer meet were removed."
           }
         }
       }

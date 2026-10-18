@@ -32,7 +32,7 @@ extension Interactor: TimelineInteractor {
     timelineProperties.currentPage = page
 
     timelineProperties.thumbnailsManager.interactor = self
-    timelineProperties.timeline = TimelineState(interactor: self, configuration: timelineProperties.configuration)
+    timelineProperties.timeline = Timeline(interactor: self, configuration: timelineProperties.configuration)
 
     refreshTimeline()
     updateDurations()
@@ -243,11 +243,9 @@ extension Interactor: TimelineInteractor {
   /// Cross-track and new-track drops refresh synchronously to rebuild track membership.
   func applyDrop(clip: Clip, target: DropTarget, siblingOffsets: [DesignBlockID: CMTime]) {
     guard let engine else { return }
-    // A drop gives the moved clip and its old and new neighbours new cuts, so record the cuts first.
-    let cuts = transitionCuts(engine: engine, tracks: dropTracks(engine: engine, clip: clip, target: target))
     switch target {
     case let .newTrack(insertAt, timeOffset):
-      applyNewTrackDrop(engine: engine, clip: clip, insertAt: insertAt, timeOffset: timeOffset, cuts: cuts)
+      applyNewTrackDrop(engine: engine, clip: clip, insertAt: insertAt, timeOffset: timeOffset)
     case let .existingTrack(trackID, insertIndex, timeOffset, effectiveDuration):
       applyExistingTrackDrop(
         engine: engine,
@@ -257,33 +255,7 @@ extension Interactor: TimelineInteractor {
         timeOffset: timeOffset,
         effectiveDuration: effectiveDuration,
         siblingOffsets: siblingOffsets,
-        cuts: cuts,
       )
-    }
-  }
-
-  /// The engine tracks whose cuts a drop can change: the source track and the target track.
-  private func dropTracks(engine: Engine, clip: Clip, target: DropTarget) -> [DesignBlockID] {
-    var tracks = [DesignBlockID]()
-    if let source = try? engine.block.getParent(clip.id) {
-      tracks.append(source)
-    }
-    if case let .existingTrack(trackID, _, _, _) = target {
-      let dataSource = timelineProperties.dataSource
-      let targetTrackID = trackID == dataSource.backgroundTrack.id
-        ? syncAndResolveBackgroundTrackID(engine: engine)
-        : dataSource.tracks.first { $0.id == trackID }?.engineTrackID
-      if let targetTrackID, !tracks.contains(targetTrackID) {
-        tracks.append(targetTrackID)
-      }
-    }
-    return tracks
-  }
-
-  /// Destroys the transitions at the cuts that a drop changed, and tells the user.
-  private func removeChangedTransitionCutsAndNotify(engine: Engine, cuts: [DesignBlockID: DesignBlockID?]) throws {
-    if try removeChangedTransitionCuts(engine: engine, cuts: cuts) > 0 {
-      timelineProperties.showTransitionRemovedToast()
     }
   }
 
@@ -295,7 +267,6 @@ extension Interactor: TimelineInteractor {
     timeOffset: CMTime,
     effectiveDuration: CMTime?,
     siblingOffsets: [DesignBlockID: CMTime],
-    cuts: [DesignBlockID: DesignBlockID?],
   ) {
     let dataSource = timelineProperties.dataSource
     let targetTrack: Track
@@ -320,7 +291,6 @@ extension Interactor: TimelineInteractor {
 
       if isBackgroundReorder {
         try insertIntoBackgroundTrack(engine: engine, clip: clip, insertIndex: insertIndex)
-        try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
         if !sourceWasBackground {
           try resetCropAndFillParentForBackgroundDrop(engine: engine, clipID: clip.id)
         }
@@ -333,7 +303,6 @@ extension Interactor: TimelineInteractor {
           insertIndex: insertIndex,
           timeOffset: timeOffset,
           siblingOffsets: siblingOffsets,
-          cuts: cuts,
         )
       } else if isCrossTrack {
         // Standalone target — promote into a multi-clip track wrapping both clips.
@@ -344,7 +313,6 @@ extension Interactor: TimelineInteractor {
           insertIndex: insertIndex,
           timeOffset: timeOffset,
           siblingOffsets: siblingOffsets,
-          cuts: cuts,
         )
       } else {
         // Same standalone track — just move it.
@@ -446,31 +414,16 @@ extension Interactor: TimelineInteractor {
     insertIndex: Int,
     timeOffset: CMTime,
     siblingOffsets: [DesignBlockID: CMTime],
-    cuts: [DesignBlockID: DesignBlockID?],
   ) throws {
     try engine.block.insertChild(into: engineTrackID, child: clip.id, at: insertIndex)
-    try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
-    var renderedOffsets = [clip.id: timeOffset]
     for sibling in targetTrack.clips where sibling.id != clip.id {
       // Match Android: only commit siblings that were shifted by the cascade.
       // Reapplying unchanged offsets invokes Track::layout() and can mutate
       // unrelated clips when the drag is released.
       guard let offset = siblingOffsets[sibling.id], offset != sibling.timeOffset else { continue }
-      renderedOffsets[sibling.id] = offset
+      try engine.block.setTimeOffset(sibling.id, offset: offset.seconds)
     }
-    let rawClips = try engine.block.getChildren(engineTrackID).map { id in
-      try DropClip(
-        id: id,
-        timeOffset: CMTime(seconds: engine.block.getTimeOffset(id)),
-        duration: CMTime(seconds: engine.block.getDuration(id)),
-      )
-    }
-    let offsets = dropOffsets(clips: rawClips, renderedOffsets: renderedOffsets) { outgoing, incoming in
-      transitionOverlap(engine: engine, outgoing: outgoing, incoming: incoming)
-    }
-    for (id, offset) in offsets {
-      try engine.block.setTimeOffset(id, offset: offset.seconds)
-    }
+    try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
   }
 
   private func promoteStandaloneTargetAndInsert(
@@ -480,7 +433,6 @@ extension Interactor: TimelineInteractor {
     insertIndex: Int,
     timeOffset: CMTime,
     siblingOffsets: [DesignBlockID: CMTime],
-    cuts: [DesignBlockID: DesignBlockID?],
   ) throws {
     guard let pageID = timelineProperties.currentPage,
           let targetSolo = targetTrack.clips.first else { return }
@@ -495,7 +447,6 @@ extension Interactor: TimelineInteractor {
     try engine.block.insertChild(into: pageID, child: newEngineTrack, at: pageIndex)
     try engine.block.appendChild(to: newEngineTrack, child: targetSolo.id)
     try engine.block.insertChild(into: newEngineTrack, child: clip.id, at: insertIndex)
-    try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
 
     let soloOffset = siblingOffsets[targetSolo.id] ?? targetSolo.timeOffset
     try engine.block.setTimeOffset(targetSolo.id, offset: soloOffset.seconds)
@@ -542,13 +493,7 @@ extension Interactor: TimelineInteractor {
   /// The audio-sort in `refreshTimeline` inverts the pc-to-visual relationship for audio
   /// (lower pc = higher visually), so audio drags use the anchor's pc directly rather than
   /// `pc + 1`, and fall back to walking *upward* (insert after) when no anchor sits below.
-  private func applyNewTrackDrop(
-    engine: Engine,
-    clip: Clip,
-    insertAt: Int,
-    timeOffset: CMTime,
-    cuts: [DesignBlockID: DesignBlockID?],
-  ) {
+  private func applyNewTrackDrop(engine: Engine, clip: Clip, insertAt: Int, timeOffset: CMTime) {
     guard let pageID = timelineProperties.currentPage else { return }
     let sourceWasBackground = timelineProperties.dataSource.findTrack(containing: clip)
       === timelineProperties.dataSource.backgroundTrack
@@ -597,7 +542,6 @@ extension Interactor: TimelineInteractor {
       try engine.block.setBool(newEngineTrack, property: "track/automaticallyManageBlockOffsets", value: false)
       try engine.block.insertChild(into: pageID, child: newEngineTrack, at: engineInsertionIndex)
       try engine.block.insertChild(into: newEngineTrack, child: clip.id, at: 0)
-      try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
       try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
 
       addUndoStep()
@@ -848,11 +792,9 @@ extension Interactor: TimelineInteractor {
         === timelineProperties.dataSource.backgroundTrack
 
       do {
-        // The timeline hides the head of a clip under an incoming transition, so the engine counts from the raw start.
-        let rawStartTime = try CMTime(seconds: engine.block.getTimeOffset(clip.id))
         _ = try engine.block.split(
           clip.id,
-          atTime: (playheadPosition - rawStartTime).seconds,
+          atTime: firstClipDuration.seconds,
           options: SplitOptions(createParentTrackIfNeeded: true),
         )
 
@@ -1771,13 +1713,15 @@ extension Interactor: TimelineInteractor {
   ///   - clip: The `Clip` to generate the thumbnails for.
   ///   - thumbHeight: The height of the thumbnails in points.
   ///   - timeRange: The time range in the clip’s footage to generate from.
+  ///   - screenResolutionScaleFactor: The screen resolution scale to multiply the `thumbHeight` by. Typically `2` on an
+  /// iPad and `3` on an iPhone.
   ///   - numberOfFrames: The desired frame count.
   /// - Returns: An async stream of images that finishes when all images have been loaded.
-  /// - Note: `thumbHeight` is multiplied by ``displayScale``, so the thumbnails render at native resolution.
   func generateImagesThumbnails(
     clip: Clip,
     thumbHeight: CGFloat,
     timeRange: ClosedRange<Double>,
+    screenResolutionScaleFactor: CGFloat,
     numberOfFrames: Int,
   ) async throws -> AsyncThrowingStream<VideoThumbnail, Swift.Error> {
     guard let engine else { throw Error(errorDescription: "Missing engine") }
@@ -1785,7 +1729,7 @@ extension Interactor: TimelineInteractor {
 
     return engine.block.generateVideoThumbnailSequence(
       clip.id,
-      thumbnailHeight: Int(thumbHeight * displayScale),
+      thumbnailHeight: Int(thumbHeight * screenResolutionScaleFactor),
       timeRange: timeRange,
       numberOfFrames: numberOfFrames,
     )
@@ -2015,7 +1959,6 @@ extension Interactor: TimelineInteractor {
         var currentTimeOffset = totalDuration
         var trackForVideoIndex: [Int: DesignBlockID] = [:]
         for recording in recordings {
-          let canvas = recording.videos.reduce(CGRect.null) { $0.union($1.rect) }
           for (index, video) in recording.videos.enumerated() {
             // Add to asset library without invoking assetTapped()
             isAddingCameraRecording = true
@@ -2031,8 +1974,7 @@ extension Interactor: TimelineInteractor {
             ) else { continue }
             await addCameraVideo(
               fileURL: assetURL,
-              rect: recording.videos.count > 1 ? video.rect : nil,
-              canvasSize: canvas.size,
+              rect: video.rect,
               duration: recording.duration,
               timeOffset: currentTimeOffset,
               parentTrack: parentTrack,
@@ -2090,7 +2032,6 @@ extension Interactor: TimelineInteractor {
     timeOffset: CMTime,
     trackForVideoIndex: inout [Int: DesignBlockID],
   ) async throws {
-    let canvas = photo.images.reduce(CGRect.null) { $0.union($1.rect) }
     for (index, image) in photo.images.enumerated() {
       let asset = try await uploadImage(to: imageUploadAssetSourceID) { image.url }
       guard let assetURL = asset.url else { continue }
@@ -2101,7 +2042,6 @@ extension Interactor: TimelineInteractor {
       await addCameraPhoto(
         fileURL: assetURL,
         rect: photo.images.count > 1 ? image.rect : nil,
-        canvasSize: canvas.size,
         duration: photo.duration,
         timeOffset: timeOffset,
         parentTrack: parentTrack,
@@ -2114,7 +2054,6 @@ extension Interactor: TimelineInteractor {
     timeOffset: CMTime,
     trackForVideoIndex: inout [Int: DesignBlockID],
   ) async throws {
-    let canvas = recording.videos.reduce(CGRect.null) { $0.union($1.rect) }
     for (index, video) in recording.videos.enumerated() {
       let asset = try await uploadVideo(to: videoUploadAssetSourceID) { video.url }
       guard let assetURL = asset.url else { continue }
@@ -2124,8 +2063,7 @@ extension Interactor: TimelineInteractor {
       ) else { continue }
       await addCameraVideo(
         fileURL: assetURL,
-        rect: recording.videos.count > 1 ? video.rect : nil,
-        canvasSize: canvas.size,
+        rect: video.rect,
         duration: recording.duration,
         timeOffset: timeOffset,
         parentTrack: parentTrack,
@@ -2136,19 +2074,14 @@ extension Interactor: TimelineInteractor {
   private func addCameraPhoto(
     fileURL: URL,
     rect: CGRect?,
-    canvasSize: CGSize,
     duration: CMTime,
     timeOffset: CMTime,
     parentTrack: DesignBlockID,
   ) async {
     guard let engine else { return }
     do {
-      guard let frame = try cameraCaptureFrame(rect ?? CGRect(origin: .zero, size: canvasSize),
-                                               canvasSize: canvasSize),
-        let id = try placeImageGraphic(at: frame, fillURL: fileURL, parent: parentTrack) else { return }
-      if rect == nil {
-        try engine.block.fillParent(id)
-      }
+      let frame = rect ?? CGRect(origin: .zero, size: CameraConfiguration.defaultVideoSize)
+      guard let id = try placeImageGraphic(at: frame, fillURL: fileURL, parent: parentTrack) else { return }
       try engine.block.setDuration(id, duration: duration.seconds)
       try engine.block.setTimeOffset(id, offset: timeOffset.seconds)
     } catch {
@@ -2182,25 +2115,22 @@ extension Interactor: TimelineInteractor {
 
   private func addCameraVideo(
     fileURL: URL,
-    rect: CGRect?,
-    canvasSize: CGSize,
+    rect: CGRect,
     duration: CMTime,
     timeOffset: CMTime,
     parentTrack: DesignBlockID,
   ) async {
     guard let engine else { return }
     do {
-      guard let frame = try cameraCaptureFrame(rect ?? CGRect(origin: .zero, size: canvasSize),
-                                               canvasSize: canvasSize) else { return }
       let id = try engine.block.create(.graphic)
       let rectShape = try engine.block.createShape(.rect)
       try engine.block.setShape(id, shape: rectShape)
 
       try engine.block.appendChild(to: parentTrack, child: id)
-      try engine.block.setWidth(id, value: Float(frame.width))
-      try engine.block.setHeight(id, value: Float(frame.height))
-      try engine.block.setPositionX(id, value: Float(frame.origin.x))
-      try engine.block.setPositionY(id, value: Float(frame.origin.y))
+      try engine.block.setWidth(id, value: Float(rect.width))
+      try engine.block.setHeight(id, value: Float(rect.height))
+      try engine.block.setPositionX(id, value: Float(rect.origin.x))
+      try engine.block.setPositionY(id, value: Float(rect.origin.y))
 
       try engine.block.setDuration(id, duration: duration.seconds)
       try engine.block.setTimeOffset(id, offset: timeOffset.seconds)
@@ -2208,9 +2138,6 @@ extension Interactor: TimelineInteractor {
       try engine.block.set(fill, property: .key(.fillVideoFileURI), value: fileURL)
       try engine.block.setFill(id, fill: fill)
       try await engine.block.forceLoadAVResource(fill)
-      if rect == nil {
-        try engine.block.fillParent(id)
-      }
     } catch {
       handleError(error)
     }

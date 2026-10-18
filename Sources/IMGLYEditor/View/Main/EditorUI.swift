@@ -8,7 +8,6 @@ import SwiftUI
   @Environment(\.layoutDirection) private var layoutDirection
   @Environment(\.imglyEditorEnvironment) private var editorEnvironment
   @Environment(\.colorScheme) private var colorScheme
-  @Environment(\.displayScale) private var displayScale
 
   @State private var canvasGeometry: Geometry?
   @State private var sheetGeometry: Geometry?
@@ -60,7 +59,6 @@ import SwiftUI
         updateZoom(for: .textCursorChanged(newValue))
       }
       .sheet(isPresented: $interactor.sheet.isPresented) {
-        interactor.presentedSheetHeight = 0
         updateZoom(for: .sheetClosed)
         interactor.onSheetDismissed()
       } content: {
@@ -78,11 +76,6 @@ import SwiftUI
             if newValue?.frame == .zero {
               return
             }
-            // The geometry changes on every frame of a presentation or a drag, so only publish real changes.
-            let sheetHeight = newValue?.size.height ?? 0
-            if interactor.presentedSheetHeight != sheetHeight {
-              interactor.presentedSheetHeight = sheetHeight
-            }
             updateZoom(for: .sheetGeometryChanged, sheetGeometry: newValue)
           }
           .imgly.errorAlert(isSheet: true)
@@ -95,11 +88,7 @@ import SwiftUI
       .modifier(ExportSheet(exportState: interactor.export))
       .modifier(ShareSheet())
       .modifier(CloseConfirmationAlert())
-      .onChange(of: displayScale) { newValue in
-        interactor.displayScale = newValue
-      }
       .onAppear {
-        interactor.displayScale = displayScale
         let zoom = interactor.zoomParameters(
           zoomPadding: zoomPadding,
           canvasGeometry: canvasGeometry,

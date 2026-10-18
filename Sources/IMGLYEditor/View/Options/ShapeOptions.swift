@@ -13,7 +13,6 @@ struct ShapeOptions: View {
         PropertySlider<Float>(
           .imgly.localized("ly_img_editor_sheet_shape_label_points"),
           in: 3 ... 12,
-          step: 1,
           property: .key(.shapeStarPoints),
           propertyBlock: .shape,
         )
@@ -35,7 +34,6 @@ struct ShapeOptions: View {
         PropertySlider<Float>(
           .imgly.localized("ly_img_editor_sheet_shape_label_sides"),
           in: 3 ... 12,
-          step: 1,
           property: .key(.shapePolygonSides),
           propertyBlock: .shape,
         )

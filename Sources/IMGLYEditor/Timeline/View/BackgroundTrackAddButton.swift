@@ -3,69 +3,46 @@ import SwiftUI
 
 /// A call-to-action button that sits next to the timeline and opens a menu.
 struct BackgroundTrackAddButton: View {
-  let options: Timeline.AddClipOptions
-  let context: Timeline.ItemContext
-  /// Replaces the button's own title when set, in both the menu and the lone-option branches.
-  var title: (() -> AnyView)?
-  /// Replaces the button's own icon when set, in both the menu and the lone-option branches.
-  var icon: (() -> AnyView)?
-
-  @EnvironmentObject private var editorInteractor: Interactor
+  @EnvironmentObject var interactor: AnyTimelineInteractor
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration
 
+  private var clipOptions: [AddClipOption] {
+    AddClipOption.defaultOptions
+  }
+
   var body: some View {
-    buttonContent
-      .padding(.horizontal)
-      .frame(height: configuration.backgroundTrackHeight)
-      .buttonStyle(.plain)
-      .font(.caption)
-      .fontWeight(.semibold)
-      .background(buttonBackground)
-      .overlay(buttonBorder)
-      .fixedSize(horizontal: true, vertical: false)
+    // Don't render anything if no options
+    if clipOptions.isEmpty {
+      EmptyView()
+    } else {
+      buttonContent
+        .padding(.horizontal)
+        .frame(height: configuration.backgroundTrackHeight)
+        .buttonStyle(.plain)
+        .font(.caption)
+        .fontWeight(.semibold)
+        .background(buttonBackground)
+        .overlay(buttonBorder)
+        .fixedSize(horizontal: true, vertical: false)
+    }
   }
 
   // MARK: - Button Content
 
-  /// The options that ``EditorComponent/isVisible(_:)`` allows, resolved once so the
-  /// single-option shortcut below counts only options that actually appear.
-  private var visibleOptions: [Timeline.AddClipOption] {
-    do {
-      let options = try options(context)
-      assert(
-        Set(options.map(\.id)).count == options.count,
-        "Timeline.Buttons.addClip options must have unique ids; SwiftUI cannot diff duplicates.",
-      )
-      return try options.filter { try $0.isVisible(context) }
-    } catch {
-      let id = Timeline.Buttons.ID.addClip.value
-      editorInteractor.handleErrorWithTask(EditorError(
-        String(localized: .imgly.localized(
-          "ly_img_editor_error_editor_component_view_creation \(id) \(error.localizedDescription)",
-        )),
-      ))
-      return []
-    }
-  }
-
   @ViewBuilder
   private var buttonContent: some View {
-    let options = visibleOptions
-    if options.count == 1, let option = options.first {
-      // A lone option triggers directly, so the button shows that option rather than a generic
-      // "Add Clip" label.
-      Button { perform(option) } label: { singleOptionLabel(option) }
-        .disabled(!isEnabled(option))
+    if clipOptions.count == 1, let option = clipOptions.first {
+      Button { perform(option) } label: { buttonLabel }
     } else {
-      multipleOptionsMenu(options)
+      multipleOptionsMenu
     }
   }
 
   // MARK: - Button Components
 
-  private func multipleOptionsMenu(_ options: [Timeline.AddClipOption]) -> some View {
+  private var multipleOptionsMenu: some View {
     Menu(content: {
-      ForEach(options, id: \.id) { option in
+      ForEach(clipOptions, id: \.self) { option in
         menuItem(for: option)
       }
     }, label: {
@@ -75,23 +52,11 @@ struct BackgroundTrackAddButton: View {
   }
 
   private var buttonLabel: some View {
-    buttonLabel(
-      builtInTitle: { AnyView(Text(.imgly.localized("ly_img_editor_timeline_button_add_clip"))) },
-      builtInIcon: { AnyView(Image(systemName: "plus")) },
-    )
-  }
-
-  /// The button's own label, laid out the same way in both branches so the button keeps its shape.
-  /// An override wins over the built-in for that half alone.
-  private func buttonLabel(
-    builtInTitle: () -> AnyView,
-    builtInIcon: () -> AnyView,
-  ) -> some View {
     HStack {
       Label {
-        title?() ?? builtInTitle()
+        Text(.imgly.localized("ly_img_editor_timeline_button_add_clip"))
       } icon: {
-        icon?() ?? builtInIcon()
+        Image(systemName: "plus")
       }
       Spacer()
     }
@@ -113,44 +78,26 @@ struct BackgroundTrackAddButton: View {
 
   // MARK: - Actions
 
-  private func perform(_ option: Timeline.AddClipOption) {
-    do {
-      try option.perform(context)
-    } catch {
-      editorInteractor.handleError(error)
+  private func perform(_ option: AddClipOption) {
+    switch option {
+    case .camera:
+      interactor.openCamera(EditorEvents.AddFrom.defaultAssetSourceIDs)
+    case .library:
+      interactor.addAssetToBackgroundTrack()
     }
   }
 
-  private func menuItem(for option: Timeline.AddClipOption) -> some View {
-    Button { perform(option) } label: { optionLabel(for: option) }
-      .disabled(!isEnabled(option))
-  }
-
-  /// Whether the option can be triggered. A throwing predicate leaves the option enabled, matching
-  /// how a thrown visibility predicate is treated.
-  private func isEnabled(_ option: Timeline.AddClipOption) -> Bool {
-    (try? option.isEnabled(context)) ?? true
-  }
-
-  private func optionLabel(for option: Timeline.AddClipOption) -> some View {
-    AnyView(option.nonThrowingBody(context))
-  }
-
-  /// The lone remaining option, which names the button in place of the generic "Add Clip".
-  private func singleOptionLabel(_ option: Timeline.AddClipOption) -> some View {
-    buttonLabel(
-      builtInTitle: { AnyView(nonThrowing(option.title)) },
-      builtInIcon: { AnyView(nonThrowing(option.icon)) },
-    )
-  }
-
-  /// Reports a thrown title or icon the way a thrown option body is reported, instead of dropping it.
-  private func nonThrowing(_ part: Timeline.ItemContext.To<any View>) -> some View {
-    do {
-      return try AnyView(part(context))
-    } catch {
-      editorInteractor.handleErrorWithTask(error)
-      return AnyView(EmptyView())
+  private func menuItem(for option: AddClipOption) -> some View {
+    Button { perform(option) } label: {
+      Label {
+        Text(option.displayName)
+      } icon: {
+        if option.iconName.hasPrefix("custom.") {
+          Image(option.iconName, bundle: .module)
+        } else {
+          Image(systemName: option.iconName)
+        }
+      }
     }
   }
 }

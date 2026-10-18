@@ -516,7 +516,7 @@ public extension EditorEvent where Self == EditorEvents.ApplyForceCrop {
   /// - Parameters:
   ///   - blockID: The ID of the block to apply the crop to.
   ///   - presetCandidates: Array of crop preset candidates. The best matching preset will be automatically selected.
-  ///   - mode: Defines the behavior - `.silent`, `.always`, or `.ifNeeded(threshold:)`.
+  ///   - mode: Defines the behavior - `.silent`, `.always`, or `.ifNeeded`.
   /// - Returns: The created ``EditorEvents/ApplyForceCrop`` event.
   static func applyForceCrop(
     to blockID: DesignBlockID,

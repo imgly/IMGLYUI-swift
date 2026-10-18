@@ -158,7 +158,6 @@ private struct AddPageThumbnail: View {
 
 private struct PageThumbnail: View {
   @EnvironmentObject private var interactor: Interactor
-  @Environment(\.displayScale) private var displayScale
 
   let page: Page
   let isSelected: Bool
@@ -246,7 +245,7 @@ private struct PageThumbnail: View {
         // Clamp ideal height only by `maxHeight` and not by `minHeight` to make the resulting image fit and match
         // screen pixels!
         let clampedHeight = min(idealHeight, maxHeight)
-        let image = try await interactor.generatePageThumbnail(page.block, height: clampedHeight, scale: displayScale)
+        let image = try await interactor.generatePageThumbnail(page.block, height: clampedHeight)
         try Task.checkCancellation()
         if isInitialLoading {
           withAnimation(.linear(duration: 0.15)) {

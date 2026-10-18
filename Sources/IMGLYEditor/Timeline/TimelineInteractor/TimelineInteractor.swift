@@ -41,6 +41,7 @@ protocol TimelineInteractor: ObservableObject {
     clip: Clip,
     thumbHeight: CGFloat,
     timeRange: ClosedRange<Double>,
+    screenResolutionScaleFactor: CGFloat,
     numberOfFrames: Int,
   ) async throws -> AsyncThrowingStream<VideoThumbnail, Swift.Error>
   func generateAudioThumbnails(
