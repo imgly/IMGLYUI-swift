@@ -7,7 +7,8 @@ public struct Recording: Equatable, Sendable {
   public struct Video: Equatable, Sendable {
     /// The URL of the recorded video file.
     public let url: URL
-    /// The position and size of the video.
+    /// The position and size of the video within the upright capture canvas.
+    /// Landscape captures use a 1920x1080 canvas; portrait captures use 1080x1920.
     public let rect: CGRect
   }
 

@@ -75,6 +75,13 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   /// The footage URI is used to detect changes when replacing the asset.
   @Published var footageURLString: String?
 
+  /// Whether the clip is a voiceover that is still recording. A recording plays from a `buffer://` resource until it
+  /// is written to a file, so its duration follows the buffer and it cannot be trimmed. Audio separated from a video
+  /// also plays from a `buffer://` resource, but it is complete and can be trimmed.
+  var isRecordingVoiceOver: Bool {
+    clipType == .voiceOver && footageURLString?.hasPrefix("buffer://") == true
+  }
+
   /// Whether the clip can be trimmed
   @Published var allowsTrimming: Bool = true
 

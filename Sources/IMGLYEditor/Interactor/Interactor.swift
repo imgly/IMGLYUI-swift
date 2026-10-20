@@ -84,6 +84,22 @@ import SwiftUI
   }
 
   @Published var verticalSizeClass: UserInterfaceSizeClass?
+
+  /// Height of the presented sheet in the canvas coordinate space, 0 when no sheet is shown.
+  @Published var presentedSheetHeight: CGFloat = 0
+
+  /// Whether the bottom panel keeps its full height while a sheet is presented. In compact height
+  /// the panel must collapse — sheet detents shrink but the timeline does not, otherwise a band of
+  /// bare timeline chrome stays exposed above the sheet. Voiceover is the exception: its draft
+  /// placeholder must stay visible on the pinned background lane.
+  var allowsExpandedBottomPanelWithSheet: Bool {
+    guard sheet.isPresented else { return true }
+    if verticalSizeClass == .compact {
+      return sheet.content == .voiceover
+    }
+    return sheet.isFloating || sheet.isReplacing
+  }
+
   @Published @_spi(Internal) public private(set) var page = 0 {
     didSet { pageChanged(oldValue) }
   }
@@ -151,6 +167,16 @@ import SwiftUI
 
   var isAddingCameraRecording = false
 
+  /// Display scale of the window that hosts the editor. `EditorUI` sets it before the scene loads, so thumbnails
+  /// render for that window and not for `UIScreen.main`.
+  var displayScale: CGFloat = 1 {
+    didSet {
+      if oldValue != displayScale {
+        refreshZoomDependentThumbnails()
+      }
+    }
+  }
+
   @_spi(Internal) public var zoomModel = ZoomModel() {
     didSet { zoomLevelChanged(zoomModel.defaultZoomLevel) }
   }
@@ -161,11 +187,11 @@ import SwiftUI
     (try? engine?.getSortedPages().count) ?? 0
   }
 
-  func generatePageThumbnail(_ id: BlockID, height: CGFloat) async throws -> UIImage {
+  func generatePageThumbnail(_ id: BlockID, height: CGFloat, scale: CGFloat) async throws -> UIImage {
     guard let engine else {
       throw Error(errorDescription: "Engine unavailable.")
     }
-    return try await engine.block.generatePageThumbnail(id, height: height, scale: UIScreen.main.scale)
+    return try await engine.block.generatePageThumbnail(id, height: height, scale: scale)
   }
 
   var isCanvasHitTestingEnabled: Bool {
@@ -327,6 +353,10 @@ import SwiftUI
   private var _engine: Engine?
 
   private var previousEditMode: EditMode?
+  /// Preview mode sets its own zoom, so the first resize after it re-fits the page like a default zoom.
+  private var refitsAfterPreview = false
+  /// The zoom level that fits the page into the canvas of the current resize, or `nil` when it is unknown.
+  private var resizedCanvasFitZoomLevel: Float?
 
   private var viewModeState: OnChanged.ViewModeState = .init(
     editorViewMode: .edit,
@@ -339,6 +369,7 @@ import SwiftUI
   private var eventTask: Task<Void, Never>?
   private var sceneTask: Task<Void, Never>?
   private var zoom: (task: Task<Void, Never>?, toTextCursor: Bool) = (nil, false)
+  private var safeAreaInsets = EdgeInsets()
   private var exportTask: Task<Void, Never>?
   private var zoomLevelTask: Task<Void, Never>?
   private var historyTask: Task<Void, Never>?
@@ -1438,11 +1469,12 @@ extension Interactor {
     }
   }
 
-  func loadScene(with insets: EdgeInsets?) {
+  func loadScene(with insets: EdgeInsets?, safeAreaInsets: EdgeInsets) {
     guard sceneTask == nil else {
       return
     }
     zoomModel.defaultInsets = insets ?? EdgeInsets()
+    self.safeAreaInsets = safeAreaInsets
 
     sceneTask = Task {
       do {
@@ -1493,6 +1525,7 @@ extension Interactor {
       ignoreScope: true,
     )
 
+    try applySafeAreaInsets(engine)
     let zoomLevel = try await engine.zoomToPage(
       page,
       zoomModel.defaultInsets,
@@ -1556,7 +1589,32 @@ extension Interactor {
       sheetGeometry: zoom.sheetGeometry,
       layoutDirection: zoom.layoutDirection ?? .leftToRight,
     )
-    updateZoom(for: event, with: zoomParameters)
+    safeAreaInsets = zoomParameters.safeAreaInsets
+    resizedCanvasFitZoomLevel = if case .canvasGeometryChanged = event {
+      fitZoomLevel(in: zoom.canvasGeometry, insets: zoomParameters.insets)
+    } else {
+      nil
+    }
+    updateZoom(
+      for: event,
+      with: (zoomParameters.insets, zoomParameters.canvasHeight, zoomParameters.padding),
+    )
+  }
+
+  /// The page's on-screen size scales with the zoom level, so the fit for a new canvas follows without zooming.
+  private func fitZoomLevel(in canvasGeometry: Geometry?, insets: EdgeInsets?) -> Float? {
+    // `getZoom()` traps without a scene, which exists once the first zoom set the default zoom level.
+    guard let engine, let canvasGeometry, let insets, zoomModel.defaultZoomLevel != nil,
+          let zoomLevel = try? engine.scene.getZoom(),
+          let pageFrame = try? engine.block.getScreenSpaceBoundingBox(containing: [engine.getPage(page)]),
+          pageFrame.width > 0, pageFrame.height > 0 else {
+      return nil
+    }
+    let padding = 2 * zoomModel.padding
+    // `frame` is the canvas without its side insets. The vertical insets include an open sheet.
+    let width = canvasGeometry.frame.width - padding
+    let height = canvasGeometry.size.height - insets.top - insets.bottom - padding
+    return zoomLevel * Float(min(width / pageFrame.width, height / pageFrame.height))
   }
 
   func updateZoom(for event: ZoomEvent,
@@ -1573,10 +1631,24 @@ extension Interactor {
       updateZoom(with: zoom.insets, canvasHeight: zoom.canvasHeight, zoomToPage: true)
     case .canvasGeometryChanged:
       zoomModel.defaultInsets = zoom.insets ?? EdgeInsets()
+      // A window resize (rotation, fold, multitasking) re-fits the page only at its default zoom level. A zoom the
+      // user chose survives the resize and is clamped to the new viewport. Read the zoom level now, not in the task:
+      // the engine's next frame clamps it to the new viewport, which would look like a zoom the user chose.
+      // A zoom at or below the new fit re-fits too, because the engine's minimum-zoom clamp would raise it to a fit
+      // the user never chose, which the next resize would keep.
+      let keepsUserZoom = if !refitsAfterPreview,
+                             let defaultZoomLevel = zoomModel.defaultZoomLevel,
+                             let zoomLevel = try? engine?.scene.getZoom() {
+        zoomLevel != defaultZoomLevel && zoomLevel > (resizedCanvasFitZoomLevel ?? 0) * 1.001
+      } else {
+        false
+      }
+      refitsAfterPreview = false
       updateZoom(
         with: zoom.insets,
         canvasHeight: zoom.canvasHeight,
-        zoomToPage: previousEditMode != .text,
+        zoomToPage: previousEditMode != .text && !keepsUserZoom,
+        clampOnly: keepsUserZoom,
       )
     case .pageChanged:
       let pageIndex = try? engine?.getCurrentPageIndex()
@@ -1624,6 +1696,9 @@ extension Interactor {
         return
       }
       do {
+        if let engine {
+          try applySafeAreaInsets(engine)
+        }
         if !isPreviewMode {
           if sheet.isFloating, sheet.isPresented {
             return
@@ -1700,16 +1775,21 @@ extension Interactor {
     }
   }
 
+  /// The canvas insets, split into the zoom `insets` and the `safeAreaInsets` that the engine owns.
+  ///
+  /// The page carousel snaps the page to the center of the engine's safe area, and zoom padding does not move that
+  /// center. So the horizontal insets beyond `zoomPadding`, such as the closed iPhone Duo's status strip, go to the
+  /// engine. The engine adds them back to every zoom and clamp, so the totals do not change.
   func zoomParameters(
     zoomPadding: CGFloat,
     canvasGeometry: Geometry?,
     sheetGeometry: Geometry?,
     layoutDirection: LayoutDirection = .leftToRight,
     // swiftlint:disable:next large_tuple
-  ) -> (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat) {
+  ) -> (insets: EdgeInsets?, canvasHeight: CGFloat, padding: CGFloat, safeAreaInsets: EdgeInsets) {
     let canvasHeight = canvasGeometry?.size.height ?? 0
 
-    let insets: EdgeInsets?
+    var insets: EdgeInsets?
     if let sheetGeometry, let canvasGeometry {
       var sheetInsets = canvasGeometry.safeAreaInsets
       let height = canvasGeometry.size.height
@@ -1721,12 +1801,35 @@ extension Interactor {
       insets = canvasGeometry?.safeAreaInsets
     }
 
-    if var rtl = insets, layoutDirection == .rightToLeft {
+    // The engine works in screen edges, so `leading` is the left edge from here on.
+    if layoutDirection == .rightToLeft, var rtl = insets {
       swap(&rtl.leading, &rtl.trailing)
-      return (rtl, canvasHeight, zoomPadding)
+      insets = rtl
     }
 
-    return (insets, canvasHeight, zoomPadding)
+    guard var insets else {
+      return (nil, canvasHeight, zoomPadding, EdgeInsets())
+    }
+    let safeAreaInsets = EdgeInsets(
+      top: 0,
+      leading: max(insets.leading - zoomPadding, 0),
+      bottom: 0,
+      trailing: max(insets.trailing - zoomPadding, 0),
+    )
+    insets.leading -= safeAreaInsets.leading
+    insets.trailing -= safeAreaInsets.trailing
+    return (insets, canvasHeight, zoomPadding, safeAreaInsets)
+  }
+
+  private func applySafeAreaInsets(_ engine: Engine) throws {
+    let left = Float(safeAreaInsets.leading)
+    let right = Float(safeAreaInsets.trailing)
+    // Every write wakes the engine's layout, hit-test and render systems, even with equal values, so skip no-ops.
+    let current = engine.editor.getSafeAreaInsets()
+    guard current.left != left || current.right != right else {
+      return
+    }
+    try engine.editor.setSafeAreaInsets(left: left, right: right)
   }
 }
 
@@ -1842,6 +1945,7 @@ extension Interactor {
       )
       viewModeState = newViewModeState
     }
+    refitsAfterPreview = viewMode == .preview
     viewMode = .edit
     sheet.isPresented = false
   }

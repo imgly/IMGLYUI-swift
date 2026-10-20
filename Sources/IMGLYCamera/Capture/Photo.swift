@@ -7,8 +7,9 @@ public struct Photo: Equatable, Sendable {
   public struct Image: Equatable, Sendable {
     /// The URL of the photo file.
     public let url: URL
-    /// The position and size of the image within the camera's 1080x1920 canvas. In single-camera
+    /// The position and size of the image within the upright capture canvas. In single-camera
     /// mode this is the full canvas; in dual-camera mode it is the top/bottom or left/right half.
+    /// Landscape captures use a 1920x1080 canvas; portrait captures use 1080x1920.
     public let rect: CGRect
   }
 

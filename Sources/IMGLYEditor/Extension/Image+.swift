@@ -31,6 +31,8 @@ public extension IMGLY where Wrapped == Image {
   static let addCameraForeground = Wrapped("custom.camera.badge.plus", bundle: .module)
   /// An icon image for adding a voiceover.
   static let addVoiceover = Wrapped("custom.mic.badge.plus", bundle: .module)
+  /// An icon image for adding a clip from the asset library to the timeline.
+  static let addClipLibrary = Wrapped(systemName: "play.square.stack")
   /// An icon image for captions.
   static let captions = Wrapped(systemName: "captions.bubble")
 
@@ -46,6 +48,8 @@ public extension IMGLY where Wrapped == Image {
   static let blur = Wrapped(systemName: "aqi.medium")
   /// An icon image for volume.
   static let volume = Wrapped(systemName: "speaker.wave.3.fill")
+  /// An icon image for separate audio.
+  static let separateAudio = Wrapped(systemName: "music.note")
   /// An icon image for clip speed.
   static let clipSpeed = Wrapped(systemName: "hare")
   /// An icon image for animation.

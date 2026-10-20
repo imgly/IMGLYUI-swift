@@ -239,6 +239,108 @@
         }
       }
     },
+    "ly_img_engine_error_block_blur_type_unsupported_on_group" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unschärfe für Gruppen nicht verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blur not available for groups"
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_block_blur_type_unsupported_on_group_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppen unterstützen nur die gleichmäßige Unschärfe. Wählen Sie die gleichmäßige Unschärfe oder wenden Sie die Unschärfe auf die Elemente der Gruppe an."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groups support only the uniform blur. Choose the uniform blur, or blur the elements in the group."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_document_profile_not_set" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Dokument hat kein CMYK-Profil."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The document has no CMYK profile."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_document_profile_not_set_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legen Sie ein CMYK-Profil fest, bevor Sie seine Informationen lesen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set a CMYK profile before reading its information."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_imported_image_definition_not_found" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Bildfüllung hat keine aktive importierte Bilddefinition."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The image fill has no active imported image definition."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_imported_image_definition_not_found_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fügen Sie dem aktuellen Bild der Füllung eine Definition hinzu, bevor Sie sie lesen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attach a definition to the fill's current image before reading it."
+          }
+        }
+      }
+    },
     "ly_img_engine_error_editor_crop_element_not_croppable" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -677,6 +779,142 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The image couldn't be encoded for export. Please try again, or try a different format."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_scene_lottie_archive_invalid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animation konnte nicht geöffnet werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't open this animation"
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_scene_lottie_archive_invalid_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese .lottie-Datei ist beschädigt oder enthält keine Animation."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This .lottie file is damaged or contains no animation."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_scene_lottie_archive_too_large" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animationsdatei zu groß"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animation file too large"
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_scene_lottie_archive_too_large_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese .lottie-Datei ist entpackt zu groß. Verwenden Sie kleinere Animationen und Bilder."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This .lottie file is too large when unpacked. Use smaller animations and images."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_scene_lottie_archive_too_many_entries" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animationsdatei zu groß"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animation file too large"
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_scene_lottie_archive_too_many_entries_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese .lottie-Datei enthält zu viele Dateien. Entfernen Sie nicht benötigte Dateien und versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This .lottie file contains too many files. Remove unused files and try again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_scene_lottie_archive_unsafe_path" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animation konnte nicht geöffnet werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't open this animation"
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_scene_lottie_archive_unsafe_path_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese .lottie-Datei enthält einen unzulässigen Dateipfad und wurde daher nicht importiert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This .lottie file contains a file path that isn't allowed, so it wasn't imported."
           }
         }
       }

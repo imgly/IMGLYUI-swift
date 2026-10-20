@@ -6,6 +6,7 @@ import SwiftUI
 struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride: BinaryFloatingPoint {
   let title: LocalizedStringResource
   let bounds: ClosedRange<T>
+  let step: T?
   let property: Property
   let mapping: Mapping
   let getter: Interactor.PropertyGetter<T>
@@ -29,7 +30,7 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
 
   // MARK: - Engine Property Initializer
 
-  init(_ title: LocalizedStringResource, in bounds: ClosedRange<T>, property: Property,
+  init(_ title: LocalizedStringResource, in bounds: ClosedRange<T>, step: T? = nil, property: Property,
        mapping: @escaping Mapping = { value, _ in value },
        setter: @escaping Interactor.PropertySetter<T> = Interactor.Setter.set(),
        getter: @escaping Interactor.PropertyGetter<T> = Interactor.Getter.get(),
@@ -40,6 +41,7 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
        disableAutoPercentage: Bool = false) {
     self.title = title
     self.bounds = bounds
+    self.step = step
     self.property = property
     self.mapping = mapping
     self.setter = setter
@@ -101,14 +103,11 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
     let percentage = PercentageSliderHelper.valueToPercentage(
       value: value, min: bounds.lowerBound, max: bounds.upperBound,
     )
-    return "\(Int(percentage))"
+    return "\(Int(percentage.rounded()))"
   }
 
   private var effectiveStep: T {
-    if let assetStep {
-      return assetStep
-    }
-    return PercentageSliderHelper.stepFromMinMax(min: bounds.lowerBound, max: bounds.upperBound)
+    assetStep ?? step ?? PercentageSliderHelper.stepFromMinMax(min: bounds.lowerBound, max: bounds.upperBound)
   }
 
   private func formattedText(for value: T) -> String {
@@ -139,19 +138,29 @@ struct PropertySlider<T: MappedType & BinaryFloatingPoint>: View where T.Stride:
       ? percentageText(for: currentValue)
       : formattedText(for: currentValue)
     return HStack {
-      Slider(value: mapping(sliderBinding, bounds),
-             in: bounds) { started in
-        if !started {
-          localValue = nil
-          interactor.addUndoStep()
-        }
-      }
-      .accessibilityLabel(Text(title))
-      .onAppear { localValue = nil }
+      engineSlider
+        .accessibilityLabel(Text(title))
+        .onAppear { localValue = nil }
       Text(displayText)
         .font(.body.monospacedDigit())
         .foregroundStyle(.secondary)
         .frame(minWidth: 40, alignment: .trailing)
+    }
+  }
+
+  @ViewBuilder private var engineSlider: some View {
+    let value = mapping(sliderBinding, bounds)
+    if let step {
+      Slider(value: value, in: bounds, step: T.Stride(step), onEditingChanged: engineEditingChanged)
+    } else {
+      Slider(value: value, in: bounds, onEditingChanged: engineEditingChanged)
+    }
+  }
+
+  private func engineEditingChanged(_ started: Bool) {
+    if !started {
+      localValue = nil
+      interactor.addUndoStep()
     }
   }
 

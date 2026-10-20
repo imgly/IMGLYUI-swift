@@ -913,7 +913,7 @@ extension ClipView {
     guard availableRoom >= minTrimmedDuration else { return nil }
     let effectiveDuration: CMTime
     if availableRoom < draggedDuration {
-      guard !isLiveBufferRecording else { return nil }
+      guard !clip.isRecordingVoiceOver else { return nil }
       effectiveDuration = availableRoom
     } else {
       effectiveDuration = draggedDuration
@@ -924,13 +924,6 @@ extension ClipView {
       effectiveDuration: effectiveDuration,
       dropStart: lowerBound,
     )
-  }
-
-  /// Live-buffer audio (voice-overs in progress) can't be tail-shortened — the
-  /// duration is owned by the buffer length, not editable.
-  private var isLiveBufferRecording: Bool {
-    (clip.clipType == .audio || clip.clipType == .voiceOver)
-      && (clip.footageURLString?.hasPrefix("buffer://") == true)
   }
 
   /// Mirrors `TimelineDataSource.updateSnapDetents` but skips the dragged clip's own

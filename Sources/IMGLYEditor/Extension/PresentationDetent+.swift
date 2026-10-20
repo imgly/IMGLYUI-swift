@@ -1,5 +1,6 @@
 import SwiftUI
 @_spi(Internal) import IMGLYCore
+@_spi(Internal) import IMGLYCoreUI
 
 extension PresentationDetent: IMGLYCompatible {}
 
@@ -46,16 +47,24 @@ private struct AdaptiveMicroPresentationDetent: CustomPresentationDetent {
   }
 }
 
+// The compact heights must stay strictly increasing (micro 88 < tiny 190 < small 260 < medium 300),
+// otherwise multi-detent sheets collapse to one height and drag-to-resize does nothing. Each level holds
+// its tallest single-detent content: tiny the effect strip with its labels, small Add Captions.
 private struct AdaptiveTinyPresentationDetent: CustomPresentationDetent {
-  static func height(in _: Context) -> CGFloat? {
-    160
+  static func height(in context: Context) -> CGFloat? {
+    // The iOS 26 design floats the title bar over the strip, which then needs 190 in every size class.
+    // The legacy design fits in 160 in portrait; landscape insets the content below the bar as well.
+    if context.verticalSizeClass == .compact || !DesignSystem.usesLegacyDesign {
+      return 190
+    }
+    return 160
   }
 }
 
 private struct AdaptiveSmallPresentationDetent: CustomPresentationDetent {
   static func height(in context: Context) -> CGFloat? {
     if context.verticalSizeClass == .compact {
-      160
+      260
     } else {
       280
     }
@@ -65,7 +74,7 @@ private struct AdaptiveSmallPresentationDetent: CustomPresentationDetent {
 private struct AdaptiveMediumPresentationDetent: CustomPresentationDetent {
   static func height(in context: Context) -> CGFloat? {
     if context.verticalSizeClass == .compact {
-      160
+      300
     } else {
       340
     }

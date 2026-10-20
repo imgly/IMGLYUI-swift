@@ -499,7 +499,10 @@ public enum OnChanged {
     public let editorViewMode: EditorViewMode
     /// The index of the currently visible page.
     public let pageIndex: Int
-    /// The insets of the canvas.
+    /// The insets of the canvas, to pass as padding to camera calls such as `engine.scene.zoom(to:)`.
+    ///
+    /// The engine already keeps content out of the horizontal safe area, such as the notch in landscape, so these
+    /// insets leave out the part of it that is wider than the editor's zoom padding.
     public let insets: EdgeInsets?
     /// The current `@Environment(\.verticalSizeClass)`.
     public let verticalSizeClass: UserInterfaceSizeClass?

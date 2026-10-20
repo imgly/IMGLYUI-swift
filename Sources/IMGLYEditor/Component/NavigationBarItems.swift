@@ -190,19 +190,17 @@ public extension NavigationBar.Buttons {
     },
     @ViewBuilder label: @escaping NavigationBar.Context.To<some View> = {
       let isPreviewMode = $0.state.viewMode == .preview
-      return ZStack(alignment: .leading) {
-        Label {
+      // One label, so a bar that draws only the icon and ignores `.opacity` still shows the mode. Both titles stay in
+      // the layout, so the label keeps the width of the longer one when the mode changes.
+      return Label {
+        ZStack(alignment: .leading) {
           Text(.imgly.localized("ly_img_editor_navigation_bar_button_preview_mode"))
-        } icon: {
-          Image.imgly.preview
-        }
-        .opacity(isPreviewMode ? 0 : 1)
-        Label {
+            .opacity(isPreviewMode ? 0 : 1)
           Text(.imgly.localized("ly_img_editor_navigation_bar_button_edit_mode"))
-        } icon: {
-          Image.imgly.preview.symbolVariant(.fill)
+            .opacity(isPreviewMode ? 1 : 0)
         }
-        .opacity(isPreviewMode ? 1 : 0)
+      } icon: {
+        Image.imgly.preview.symbolVariant(isPreviewMode ? .fill : .none)
       }
       .labelStyle(.imgly.adaptiveIconOnly)
       .accessibilityElement(children: .ignore) // Required for iOS 16 otherwise a11y label is exposed as "Edit, Edit".
@@ -279,8 +277,7 @@ public extension NavigationBar.Buttons {
   /// localization key `ly_img_editor_navigation_bar_button_previous` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` when the editor is created, the
-  /// current view mode is ``EditorViewMode/edit``, and engine setting `"features/pageCarouselEnabled"` is `true` or the
-  /// current page is not the first page of the scene.
+  /// current view mode is ``EditorViewMode/edit``, and the current page is not the first page of the scene.
   /// - Returns: The created button.
   static func previousPage(
     action: @escaping NavigationBar.Context.To<Void> = { $0.eventHandler.send(.navigateToPreviousPage) },
@@ -290,10 +287,7 @@ public extension NavigationBar.Buttons {
     isEnabled: @escaping NavigationBar.Context.To<Bool> = { !$0.state.isCreating },
     isVisible: @escaping NavigationBar.Context.To<Bool> = {
       if !$0.state.isCreating, let engine = $0.engine {
-        try $0.state.viewMode == .edit && (
-          engine.editor.getSettingBool("features/pageCarouselEnabled") ||
-            engine.scene.getPages().first != engine.scene.getCurrentPage()
-        )
+        try $0.state.viewMode == .edit && engine.scene.getPages().first != engine.scene.getCurrentPage()
       } else {
         false
       }
@@ -310,8 +304,7 @@ public extension NavigationBar.Buttons {
   /// localization key `ly_img_editor_navigation_bar_button_next` is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the editor is created.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` when the editor is created, the
-  /// current view mode is ``EditorViewMode/edit``, and engine setting `"features/pageCarouselEnabled"` is `true` or the
-  /// current page is not the last page of the scene.
+  /// current view mode is ``EditorViewMode/edit``, and the current page is not the last page of the scene.
   /// - Returns: The created button.
   static func nextPage(
     action: @escaping NavigationBar.Context.To<Void> = { $0.eventHandler.send(.navigateToNextPage) },
@@ -321,10 +314,7 @@ public extension NavigationBar.Buttons {
     isEnabled: @escaping NavigationBar.Context.To<Bool> = { !$0.state.isCreating },
     isVisible: @escaping NavigationBar.Context.To<Bool> = {
       if !$0.state.isCreating, let engine = $0.engine {
-        try $0.state.viewMode == .edit && (
-          engine.editor.getSettingBool("features/pageCarouselEnabled") ||
-            engine.scene.getPages().last != engine.scene.getCurrentPage()
-        )
+        try $0.state.viewMode == .edit && engine.scene.getPages().last != engine.scene.getCurrentPage()
       } else {
         false
       }

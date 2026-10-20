@@ -93,6 +93,9 @@ extension Interactor: EditorEventHandler {
          is EditorEvents.Selection.MoveAsOverlay:
       pause()
       toggleSelectedClipIsInBackgroundTrack()
+    case is EditorEvents.Selection.SeparateAudio:
+      pause()
+      separateAudioOfSelectedClip()
     case is EditorEvents.Selection.EnterGroup:
       pause()
       if let group = selection?.blocks.first {

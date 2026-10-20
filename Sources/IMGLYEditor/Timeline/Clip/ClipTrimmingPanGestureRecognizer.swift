@@ -15,6 +15,6 @@ class ClipTrimmingPanGestureRecognizerDelegate: NSObject, UIGestureRecognizerDel
   @objc func panned(_ gestureRecognizer: UIPanGestureRecognizer) {
     state = gestureRecognizer.state
     translation = gestureRecognizer.translation(in: gestureRecognizer.view)
-    windowLocation = gestureRecognizer.location(in: nil)
+    windowLocation = gestureRecognizer.locationInWindow
   }
 }

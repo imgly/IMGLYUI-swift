@@ -3044,6 +3044,40 @@
         }
       }
     },
+    "ly_img_editor_dialog_separate_audio_no_audio_text" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Video hat keine Tonspur, die in einen Audioclip verschoben werden kann."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The video has no audio track to move into an audio clip."
+          }
+        }
+      }
+    },
+    "ly_img_editor_dialog_separate_audio_no_audio_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Ton in diesem Video"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No audio in this video"
+          }
+        }
+      }
+    },
     "ly_img_editor_dialog_video_min_length_button" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4179,6 +4213,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select Group"
+          }
+        }
+      }
+    },
+    "ly_img_editor_inspector_bar_button_separate_audio" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio trennen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separate Audio"
           }
         }
       }
@@ -7884,6 +7935,23 @@
         }
       }
     },
+    "ly_img_editor_sheet_format_text_alignment_horizontal_option_justify" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocksatz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Justify Text"
+          }
+        }
+      }
+    },
     "ly_img_editor_sheet_format_text_alignment_horizontal_option_left" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10536,6 +10604,23 @@
         }
       }
     },
+    "ly_img_editor_timeline_clip_audio_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio"
+          }
+        }
+      }
+    },
     "ly_img_editor_timeline_clip_voiceover_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10617,6 +10702,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minimum video length"
+          }
+        }
+      }
+    },
+    "ly_img_editor_timeline_transition_removed_on_move" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übergänge zwischen Clips, die nicht mehr aneinandergrenzen, wurden entfernt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transitions between clips that no longer meet were removed."
           }
         }
       }

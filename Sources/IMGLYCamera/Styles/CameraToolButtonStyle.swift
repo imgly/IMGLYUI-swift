@@ -7,6 +7,7 @@ struct CameraToolButtonStyle: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     HStack {
       configuration.label
+        .cameraRotationEffect()
         .font(.title2)
         .fontWeight(.medium)
         .frame(minWidth: minWidth)

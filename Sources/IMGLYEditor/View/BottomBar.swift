@@ -9,7 +9,6 @@ struct BottomBar: View {
 
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.colorScheme) private var colorScheme
-  @Environment(\.verticalSizeClass) private var verticalSizeClass
 
   private let leadingPadding: CGFloat = 60
 

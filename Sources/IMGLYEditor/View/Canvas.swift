@@ -61,14 +61,19 @@ struct Canvas: View {
 
     var height = bottomBarHeight + pageNavigationHeight
 
-    let shouldUseMinimizedHeight = isBottomPanelMinimized
-      || (interactor.sheet.isPresented
-        && !interactor.sheet.isFloating
-        && interactor.sheet.content != .voiceover
-        && !interactor.sheet.isReplacing)
+    let shouldUseMinimizedHeight = isBottomPanelMinimized || !interactor.allowsExpandedBottomPanelWithSheet
 
     height += shouldUseMinimizedHeight ? bottomPanelHeight : fullBottomPanelHeight
     return height
+  }
+
+  private var bottomPanelBottomInset: CGFloat {
+    // In compact height the voiceover record bar would overlay the pinned background lane, so
+    // lift the panel above the sheet instead of only above the dock.
+    if verticalSizeClass == .compact, interactor.sheet.isPresented, interactor.sheet.content == .voiceover {
+      return max(bottomBarHeight, interactor.presentedSheetHeight)
+    }
+    return bottomBarHeight
   }
 
   func bottomBar(content: SheetContent?) -> some View {
@@ -194,6 +199,9 @@ struct Canvas: View {
       .safeAreaInset(edge: .trailing, spacing: 0) { Color.clear.frame(width: zoomPadding) }
     }
     .onAppear {
+      // onChange does not fire on first appearance, so seed the size class here — otherwise a
+      // launch directly into landscape leaves it nil until the first rotation.
+      interactor.verticalSizeClass = verticalSizeClass
       animatedSafeAreaInsetHeight = safeAreaInsetHeight
     }
     .safeAreaInset(edge: .top, spacing: 0) { Color.clear.frame(height: zoomPadding) }
@@ -245,7 +253,7 @@ struct Canvas: View {
               }
             }
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: bottomBarHeight) }
+        .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: bottomPanelBottomInset) }
         .onPreferenceChange(BottomPanelIsMinimizedKey.self) { newValue in
           isBottomPanelMinimized = newValue
         }

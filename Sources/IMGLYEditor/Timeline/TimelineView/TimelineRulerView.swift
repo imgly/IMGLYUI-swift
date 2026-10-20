@@ -4,7 +4,7 @@ import SwiftUI
 
 /// A timeline ruler that adapts to the current zoom level.
 struct TimelineRulerView: View {
-  @EnvironmentObject var timeline: Timeline
+  @EnvironmentObject var timeline: TimelineState
   @Environment(\.imglyViewportWidth) var viewportWidth: CGFloat
 
   private let markerWidth: CGFloat = 3

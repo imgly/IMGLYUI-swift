@@ -3,19 +3,29 @@ import SwiftUI
 
 /// The timeline that visualizes tracks and clips in a scene.
 struct TimelineView: View {
+  /// The configured "Add Clip" button, passed down rather than routed through the environment so
+  /// the timeline body does not invalidate on every configuration value.
+  let addClip: (any Timeline.Item)?
+  /// The configured "Add Audio" button.
+  let addAudio: (any Timeline.Item)?
+  /// The context the configured buttons receive, built by ``Timeline`` so it stays off the
+  /// playhead path.
+  let itemContext: Timeline.ItemContext?
+
   @EnvironmentObject var interactor: AnyTimelineInteractor
 
   var body: some View {
     if let timeline = interactor.timelineProperties.timeline {
       GeometryReader { geometry in
         let globalOrigin = geometry.frame(in: .global).origin
-        TimelineContentView()
+        TimelineContentView(addClip: addClip, addAudio: addAudio, itemContext: itemContext)
           .environmentObject(timeline)
           .environmentObject(interactor.timelineProperties)
           .environmentObject(interactor.timelineProperties.player)
           .environmentObject(interactor.timelineProperties.dataSource)
           .environment(\.imglyTimelineConfiguration, interactor.timelineProperties.configuration)
           .environment(\.imglyViewportWidth, geometry.size.width)
+          .environment(\.imglyViewportHeight, geometry.size.height)
           //  Video timelines should not flip; see: https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPInternational/SupportingRight-To-LeftLanguages/SupportingRight-To-LeftLanguages.html
           .environment(\.layoutDirection, .leftToRight)
           .overlay {
@@ -34,11 +44,33 @@ struct TimelineView: View {
               .environmentObject(interactor.timelineProperties.dataSource)
               .environment(\.imglyTimelineConfiguration, interactor.timelineProperties.configuration)
           }
+          .overlay(alignment: .bottom) {
+            TransitionRemovedToastOverlay()
+              .environmentObject(interactor.timelineProperties)
+          }
       }
+    }
+  }
+}
+
+/// Observes the toast state on its own, so the toast does not invalidate the timeline body.
+private struct TransitionRemovedToastOverlay: View {
+  @EnvironmentObject var timelineProperties: TimelineProperties
+
+  var body: some View {
+    if timelineProperties.isTransitionRemovedToastVisible {
+      ToastView(
+        message: .imgly.localized("ly_img_editor_timeline_transition_removed_on_move"),
+        onDismiss: timelineProperties.dismissTransitionRemovedToast,
+      )
+      .padding(.horizontal, 16)
+      .padding(.bottom, 8)
+      .transition(.opacity)
     }
   }
 }
 
 extension EnvironmentValues {
   @Entry var imglyViewportWidth: CGFloat = 0
+  @Entry var imglyViewportHeight: CGFloat = 0
 }

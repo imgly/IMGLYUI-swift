@@ -12,6 +12,8 @@ public struct NavigationLabel: View {
   let title: LocalizedStringResource
   let direction: Direction
 
+  @Environment(\.imglyNavigationBarIsVertical) private var isVertical
+
   /// Creates a navigation label with a title and direction.
   /// - Parameters:
   ///   - title: The title of the label.
@@ -22,20 +24,27 @@ public struct NavigationLabel: View {
   }
 
   public var body: some View {
-    HStack(spacing: 4.5) {
-      switch direction {
-      case .backward:
-        Image(systemName: direction.rawValue)
-          .font(.headline)
-          .padding(.leading, usesLegacyDesign ? -8 : 0)
-        Text(title)
-      case .forward:
-        Text(title)
-        Image(systemName: direction.rawValue)
-          .font(.headline)
-          .padding(.trailing, usesLegacyDesign ? -8 : 0)
+    if isVertical {
+      // A vertical bar shows icons only; the title stays for accessibility.
+      Image(systemName: direction.rawValue)
+        .font(.headline)
+        .accessibilityLabel(Text(title))
+    } else {
+      HStack(spacing: 4.5) {
+        switch direction {
+        case .backward:
+          Image(systemName: direction.rawValue)
+            .font(.headline)
+            .padding(.leading, usesLegacyDesign ? -8 : 0)
+          Text(title)
+        case .forward:
+          Text(title)
+          Image(systemName: direction.rawValue)
+            .font(.headline)
+            .padding(.trailing, usesLegacyDesign ? -8 : 0)
+        }
       }
+      .padding(.bottom, 0.5)
     }
-    .padding(.bottom, 0.5)
   }
 }

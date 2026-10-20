@@ -10,7 +10,7 @@ struct ClipView: View {
     static let borderWidthClip: CGFloat = 2.0
   }
 
-  @EnvironmentObject var timeline: Timeline
+  @EnvironmentObject var timeline: TimelineState
   @EnvironmentObject var timelineProperties: TimelineProperties
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.imglyTimelineConfiguration) var configuration: TimelineConfiguration

@@ -15,6 +15,19 @@ struct EffectOptions<Item: View, Properties: View>: View {
   @EnvironmentObject private var interactor: Interactor
   @StateObject private var searchState = AssetLibrarySearchState()
 
+  /// The top safe area of the sheet content. iOS 26 puts the title bar into it in a form sheet and in
+  /// landscape, but lets the bar float over the content in an iPhone portrait bottom sheet.
+  @State private var topSafeAreaInset: CGFloat = 0
+
+  /// The distance from the sheet top to the bottom edge of the iOS 26 title bar.
+  private let titleBarClearance: CGFloat = 50
+
+  /// Pads the strip down to the title bar only where the safe area does not do it already, so the
+  /// gap never doubles and the tile labels stay inside the sheet.
+  private var floatingTitleBarInset: CGFloat {
+    usesLegacyDesign ? 0 : max(0, titleBarClearance - topSafeAreaInset)
+  }
+
   private var grid: some View {
     VStack {
       AssetGrid { asset in
@@ -51,9 +64,15 @@ struct EffectOptions<Item: View, Properties: View>: View {
       .imgly.assetLoader(sources: sources, order: .sorted, perPage: 65)
       .frame(height: 110, alignment: .top)
       .environmentObject(searchState)
-      // Clear the floating iOS 26 Liquid Glass title bar; no-op on the legacy design.
-      .padding(.top, usesLegacyDesign ? 0 : 44)
+      .padding(.top, floatingTitleBarInset)
       Spacer()
+    }
+    .background {
+      GeometryReader { proxy in
+        Color.clear
+          .onAppear { topSafeAreaInset = proxy.safeAreaInsets.top }
+          .onChange(of: proxy.safeAreaInsets.top) { topSafeAreaInset = $0 }
+      }
     }
     .background(Color(.systemGroupedBackground))
   }

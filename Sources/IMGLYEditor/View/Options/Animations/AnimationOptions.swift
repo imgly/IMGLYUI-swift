@@ -9,6 +9,7 @@ struct AnimationOptions: View {
 
   @State private var selectedTab: AnimationTab = .in
   @State private var sheetState: EffectSheetState = .selection
+  @State private var captionApplies = CaptionApplyQueue()
 
   private static let animationsSourceID = "ly.img.animations"
 
@@ -29,6 +30,10 @@ struct AnimationOptions: View {
 
   private func animationSetter(for tab: AnimationTab) -> Interactor.RawSetter<AssetSelection> {
     { engine, blocks, value, completion in
+      if let caption = blocks.first, blocks.count == 1, Self.isCaption(caption, engine: engine) {
+        applyToCaptionTrack(value, caption: caption, tab: tab, engine: engine, completion: completion)
+        return false
+      }
       var didChange = false
       try blocks.forEach { block in
         if let identifier = value.identifier,
@@ -51,21 +56,65 @@ struct AnimationOptions: View {
       if didChange,
          value.identifier != nil,
          let pageID = interactor.timelineProperties.currentPage {
-        let mode: AnimationPreview.Mode = switch tab {
-        case .in: .in
-        case .out: .out
-        case .loop: .loop
-        }
         for block in blocks {
           interactor.timelineProperties.timeline?.animationPreview.playAnimation(
             engine: engine,
             pageID: pageID,
             clip: block,
-            mode: mode,
+            mode: Self.previewMode(for: tab),
           )
         }
       }
       return try (completion?(engine, blocks, didChange) ?? false) || didChange
+    }
+  }
+
+  private static func isCaption(_ block: DesignBlockID, engine: Engine) -> Bool {
+    (try? engine.block.getType(block)) == DesignBlockType.caption.rawValue
+  }
+
+  /// The animation library applies a caption's animation to every caption on its track, so a caption goes through
+  /// it instead of `setInAnimation`, which would animate that one caption only.
+  private func applyToCaptionTrack(
+    _ value: AssetSelection,
+    caption: DesignBlockID,
+    tab: AnimationTab,
+    engine: Engine,
+    completion: Interactor.PropertyCompletion?,
+  ) {
+    let type = value.identifier ?? "none"
+    let asset = AssetResult(
+      id: "\(tab.group)/\(type)",
+      meta: ["mode": tab.group, "type": type],
+      context: .init(sourceID: Self.animationsSourceID),
+    )
+    captionApplies.enqueue {
+      do {
+        // "None" has nothing to clear while the caption has no animation, as on the web.
+        if value.identifier == nil, !hasAnimation(for: tab, on: caption) {
+          return
+        }
+        try await engine.asset.applyToBlock(sourceID: Self.animationsSourceID, assetResult: asset, block: caption)
+        _ = try completion?(engine, [caption], true)
+        if value.identifier != nil, let pageID = interactor.timelineProperties.currentPage {
+          interactor.timelineProperties.timeline?.animationPreview.playAnimation(
+            engine: engine,
+            pageID: pageID,
+            clip: caption,
+            mode: Self.previewMode(for: tab),
+          )
+        }
+      } catch {
+        interactor.handleError(error)
+      }
+    }
+  }
+
+  private static func previewMode(for tab: AnimationTab) -> AnimationPreview.Mode {
+    switch tab {
+    case .in: .in
+    case .out: .out
+    case .loop: .loop
     }
   }
 
@@ -124,8 +173,13 @@ struct AnimationOptions: View {
   }
 
   private func hasAnimation(for tab: AnimationTab) -> Bool {
-    guard let id, let engine = interactor.engine else { return false }
-    guard let animationBlock = try? Self.getAnimation(on: id, tab: tab, engine: engine),
+    guard let id else { return false }
+    return hasAnimation(for: tab, on: id)
+  }
+
+  private func hasAnimation(for tab: AnimationTab, on block: DesignBlockID) -> Bool {
+    guard let engine = interactor.engine else { return false }
+    guard let animationBlock = try? Self.getAnimation(on: block, tab: tab, engine: engine),
           engine.block.isValid(animationBlock) else { return false }
     let type = try? engine.block.getType(animationBlock)
     return type.map { !$0.hasSuffix("/none") } ?? false
@@ -133,7 +187,9 @@ struct AnimationOptions: View {
 
   private func thumbnailsBaseURL(for block: DesignBlockID?) -> URL? {
     guard let block, let engine = interactor.engine else { return nil }
-    let isText = (try? engine.block.getType(block)) == DesignBlockType.text.rawValue
+    // Captions render as text, so they use the text animation thumbnails.
+    let type = try? engine.block.getType(block)
+    let isText = type == DesignBlockType.text.rawValue || type == DesignBlockType.caption.rawValue
     let sourceName = isText ? "ly.img.animation.text" : "ly.img.animation"
     guard let basePath = try? engine.editor.getSettingString("basePath"),
           let base = URL(string: basePath) else { return nil }
@@ -145,16 +201,11 @@ struct AnimationOptions: View {
           let engine = interactor.engine,
           let id,
           let pageID = interactor.timelineProperties.currentPage else { return }
-    let mode: AnimationPreview.Mode = switch selectedTab {
-    case .in: .in
-    case .out: .out
-    case .loop: .loop
-    }
     interactor.timelineProperties.timeline?.animationPreview.playAnimation(
       engine: engine,
       pageID: pageID,
       clip: id,
-      mode: mode,
+      mode: Self.previewMode(for: selectedTab),
     )
   }
 
@@ -218,4 +269,19 @@ private func previousTransitionSibling(engine: Engine, clip: DesignBlockID) -> D
   let children = transitionTrackChildren(engine: engine, clip: clip)
   guard let index = children.firstIndex(of: clip), index > 0 else { return nil }
   return children[index - 1]
+}
+
+/// Runs caption animation applies one after another, so quick taps land in tap order. A reference type, so enqueuing
+/// does not redraw the view.
+@MainActor
+private final class CaptionApplyQueue {
+  private var last: Task<Void, Never>?
+
+  func enqueue(_ operation: @escaping @MainActor () async -> Void) {
+    let previous = last
+    last = Task {
+      await previous?.value
+      await operation()
+    }
+  }
 }

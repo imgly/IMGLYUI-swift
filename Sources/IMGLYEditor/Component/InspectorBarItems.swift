@@ -49,6 +49,11 @@ public extension InspectorBar.Buttons.ID {
     "ly.img.component.inspectorBar.button.volume"
   }
 
+  /// The id of the ``InspectorBar/Buttons/separateAudio(action:title:icon:isEnabled:isVisible:)`` button.
+  static var separateAudio: EditorComponentID {
+    "ly.img.component.inspectorBar.button.separateAudio"
+  }
+
   /// The id of the ``InspectorBar/Buttons/clipSpeed(action:title:icon:isEnabled:isVisible:)`` button.
   static var clipSpeed: EditorComponentID {
     "ly.img.component.inspectorBar.button.clipSpeed"
@@ -422,6 +427,48 @@ public extension InspectorBar.Buttons {
     },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.volume, action: action, label: { context in
+      let title = try title(context)
+      let icon = try icon(context)
+      Label { title } icon: { icon }
+    }, isEnabled: isEnabled, isVisible: isVisible)
+  }
+
+  /// Creates a ``InspectorBar/Button`` that moves the audio of the selected video clip into new audio clips, one per
+  /// audio track, and mutes the video clip.
+  /// - Parameters:
+  ///   - action: The action to perform when the user triggers the button. By default,
+  /// ``EditorEvent/separateAudioForSelection`` event is invoked.
+  ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
+  /// `ly_img_editor_inspector_bar_button_separate_audio` is used.
+  ///   - icon: The icon view which is used to label the button. By default, the `Image`
+  /// ``IMGLYCore/IMGLY/separateAudio`` is used.
+  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
+  /// `DesignBlockType.graphic`, its fill type is `FillType.video`, its kind is not `"animatedSticker"`, its engine
+  /// scope `"fill/change"` is allowed, and the video has audio, muted or not, and plays at 3x or slower. A video that
+  /// has not loaded yet counts as a video with audio, because its audio tracks are known only after it loads.
+  /// - Returns: The created button.
+  static func separateAudio(
+    action: @escaping InspectorBar.Context.To<Void> = { $0.eventHandler.send(.separateAudioForSelection) },
+    @ViewBuilder title: @escaping InspectorBar.Context.To<some View> = { _ in
+      Text(.imgly.localized("ly_img_editor_inspector_bar_button_separate_audio"))
+    },
+    @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { _ in Image.imgly.separateAudio },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
+      guard context.selection.type == .graphic, context.selection.fillType == .video,
+            context.selection.kind != "animatedSticker",
+            try context.engine.block.isAllowedByScope(context.selection.block, key: "fill/change") else {
+        return false
+      }
+      let fill = try context.engine.block.getFill(context.selection.block)
+      // Above 3x the video plays no audio, so it has no audio to separate.
+      guard try !context.engine.block.isForceMuted(fill) else { return false }
+      guard try context.engine.block.unstable_isAVResourceLoaded(fill) else { return true }
+      return try context.engine.block.getAudioTrackCountFromVideo(fill) > 0
+    },
+  ) -> some InspectorBar.Item {
+    InspectorBar.Button(id: ID.separateAudio, action: action, label: { context in
       let title = try title(context)
       let icon = try icon(context)
       Label { title } icon: { icon }
@@ -1144,7 +1191,8 @@ public extension InspectorBar.Buttons {
   ///   - title: The title view which is used to label the button. By default, the `Text` with localization key
   /// `ly_img_editor_inspector_bar_button_text_background` is used.
   ///   - icon: The icon view which is used to label the button. By default, the ``BackgroundColorIcon`` is used.
-  ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
+  ///   - isEnabled: Whether the button is enabled. By default, it is only `true` if the selected design block has no
+  /// text on path, because the engine draws no background for text on a path.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type is
   /// `DesignBlockType.text` or `.caption` and its engine scope `"text/character"` is allowed.
   /// - Returns: The created button.
@@ -1154,7 +1202,9 @@ public extension InspectorBar.Buttons {
       Text(.imgly.localized("ly_img_editor_inspector_bar_button_text_background"))
     },
     @ViewBuilder icon: @escaping InspectorBar.Context.To<some View> = { BackgroundColorIcon(id: $0.selection.block) },
-    isEnabled: @escaping InspectorBar.Context.To<Bool> = { _ in true },
+    isEnabled: @escaping InspectorBar.Context.To<Bool> = { context in
+      try context.engine.block.getTextOnPath(context.selection.block) == nil
+    },
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
       try (context.selection.type == .text || context.selection.type == .caption) &&
         context.engine.block.isAllowedByScope(context.selection.block, key: "text/character")
@@ -1177,7 +1227,8 @@ public extension InspectorBar.Buttons {
   /// is used.
   ///   - isEnabled: Whether the button is enabled. By default, it is always `true`.
   ///   - isVisible: Whether the button is visible. By default, it is only `true` if the selected design block type
-  /// is none of `DesignBlockType.page`, `.audio` or `.caption`, and the block supports animation.
+  /// is neither `DesignBlockType.page` nor `.audio`, the block supports animation, and the `appearance/animation` scope
+  /// allows editing it.
   /// - Returns: The created button.
   static func animation(
     action: @escaping InspectorBar.Context.To<Void> = {
@@ -1191,8 +1242,8 @@ public extension InspectorBar.Buttons {
     isVisible: @escaping InspectorBar.Context.To<Bool> = { context in
       try context.selection.type != .page &&
         context.selection.type != .audio &&
-        context.selection.type != .caption &&
-        context.engine.block.supportsAnimation(context.selection.block)
+        context.engine.block.supportsAnimation(context.selection.block) &&
+        context.engine.block.isAllowedByScope(context.selection.block, key: "appearance/animation")
     },
   ) -> some InspectorBar.Item {
     InspectorBar.Button(id: ID.animation, action: action, label: { context in

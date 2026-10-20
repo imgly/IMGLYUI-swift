@@ -237,6 +237,8 @@ public extension EditorEvents.Selection {
   struct MoveAsClip: EditorEvent {}
   /// An event for moving the selected design block from the background track to an overlay in a video scene.
   struct MoveAsOverlay: EditorEvent {}
+  /// An event for moving the audio of the selected design block into new audio blocks in a video scene.
+  struct SeparateAudio: EditorEvent {}
   /// An event for changing selection from a selected group to the first block within that group.
   struct EnterGroup: EditorEvent {}
   /// An event for changing selection from the selected design block to the group design block that contains the
@@ -370,6 +372,14 @@ public extension EditorEvent where Self == EditorEvents.Selection.MoveAsOverlay 
   /// Creates an ``EditorEvent`` to move the selected design block from the background track to an overlay in a video
   /// scene.
   static var moveSelectionAsOverlay: Self {
+    Self()
+  }
+}
+
+public extension EditorEvent where Self == EditorEvents.Selection.SeparateAudio {
+  /// Creates an ``EditorEvent`` to move the audio of the selected design block into new audio blocks in a video scene.
+  /// Each audio track of the video gets its own audio block, and the video is muted.
+  static var separateAudioForSelection: Self {
     Self()
   }
 }
@@ -516,7 +526,7 @@ public extension EditorEvent where Self == EditorEvents.ApplyForceCrop {
   /// - Parameters:
   ///   - blockID: The ID of the block to apply the crop to.
   ///   - presetCandidates: Array of crop preset candidates. The best matching preset will be automatically selected.
-  ///   - mode: Defines the behavior - `.silent`, `.always`, or `.ifNeeded`.
+  ///   - mode: Defines the behavior - `.silent`, `.always`, or `.ifNeeded(threshold:)`.
   /// - Returns: The created ``EditorEvents/ApplyForceCrop`` event.
   static func applyForceCrop(
     to blockID: DesignBlockID,

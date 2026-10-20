@@ -53,7 +53,7 @@ extension ThumbnailsAudioProvider: ThumbnailsProvider {
     /// cancel any previous request
     cancel()
 
-    let isLiveBufferResource = clip.footageURLString?.hasPrefix("buffer://") == true
+    let isLiveBufferResource = clip.isRecordingVoiceOver
     let now = CACurrentMediaTime()
     if isLiveBufferResource,
        !audioWaves.isEmpty,

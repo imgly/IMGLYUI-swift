@@ -32,7 +32,7 @@ final class ClipMoveLongPressGestureRecognizerDelegate: NSObject, ObservableObje
     case .began:
       initialLocationInView = recognizer.location(in: recognizer.view)
       translation = .zero
-      windowLocation = recognizer.location(in: nil)
+      windowLocation = recognizer.locationInWindow
       phase = .began
     case .changed:
       let current = recognizer.location(in: recognizer.view)
@@ -40,7 +40,7 @@ final class ClipMoveLongPressGestureRecognizerDelegate: NSObject, ObservableObje
         x: current.x - initialLocationInView.x,
         y: current.y - initialLocationInView.y,
       )
-      windowLocation = recognizer.location(in: nil)
+      windowLocation = recognizer.locationInWindow
       phase = .changed
     case .ended:
       phase = .ended

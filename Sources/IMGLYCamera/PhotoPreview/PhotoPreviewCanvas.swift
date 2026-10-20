@@ -1,45 +1,37 @@
 import SwiftUI
 import UIKit
 
-/// Renders captured JPEGs in the layout matching the live camera preview:
-/// - Horizontal dual: HStack across the full safe area (no side bands).
-/// - Vertical dual: VStack in a 9:16 area at the top, with a Spacer matching the live preview's
-///   bottom letterbox.
-/// - Standard (no layout): single photo, same 9:16-at-top as vertical.
+/// Fits the upright captured images into the available area without cropping.
 struct PhotoPreviewCanvas: View {
   let photo: Photo
-  let layoutMode: CameraLayoutMode?
 
-  var body: some View {
-    VStack(spacing: 0) {
-      photosContainer
-      Spacer(minLength: 0)
-    }
-    .background(Color.black)
+  private var bounds: CGRect {
+    photo.images.reduce(CGRect.null) { $0.union($1.rect) }
   }
 
-  @ViewBuilder private var photosContainer: some View {
-    switch layoutMode {
-    case .horizontal:
-      HStack(spacing: 0) {
-        ForEach(photo.images, id: \.url) { image in
-          PhotoImageView(url: image.url)
-        }
-      }
-      .aspectRatio(9 / 16, contentMode: .fit)
-    case .vertical:
-      VStack(spacing: 0) {
-        ForEach(photo.images, id: \.url) { image in
-          PhotoImageView(url: image.url)
-        }
-      }
-      .aspectRatio(9 / 16, contentMode: .fit)
-    case .none:
-      if let image = photo.images.first {
+  var body: some View {
+    Group {
+      if photo.images.count == 1, let image = photo.images.first {
         PhotoImageView(url: image.url)
-          .aspectRatio(9 / 16, contentMode: .fit)
+      } else if !bounds.isEmpty {
+        GeometryReader { geometry in
+          let scale = min(geometry.size.width / bounds.width, geometry.size.height / bounds.height)
+          ZStack(alignment: .topLeading) {
+            ForEach(photo.images, id: \.url) { image in
+              PhotoImageView(url: image.url)
+                .frame(width: image.rect.width * scale, height: image.rect.height * scale)
+                .offset(x: (image.rect.minX - bounds.minX) * scale,
+                        y: (image.rect.minY - bounds.minY) * scale)
+            }
+          }
+          .frame(width: bounds.width * scale, height: bounds.height * scale)
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
       }
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .cameraRotated()
+    .background(Color.black)
   }
 }
 
@@ -53,7 +45,7 @@ private struct PhotoImageView: View {
       if let image {
         Image(uiImage: image)
           .resizable()
-          .scaledToFill()
+          .scaledToFit()
           .frame(width: geometry.size.width, height: geometry.size.height)
           .clipped()
       } else {

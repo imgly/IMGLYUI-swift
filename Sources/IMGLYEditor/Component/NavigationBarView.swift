@@ -36,14 +36,93 @@ struct NavigationBarView: ViewModifier {
   }
 
   func body(content: Content) -> some View {
-    let groups = _groups
+    content.modifier(AdaptiveNavigationBar(groups: _groups, context: context))
+  }
+}
 
+private struct HorizontalNavigationBar: ViewModifier {
+  let groups: [NavigationBar.ItemPlacement: [any NavigationBar.Item]]
+  let context: NavigationBar.Context
+
+  func body(content: Content) -> some View {
     content.toolbar {
       groups.toolbarContent(context, placement: .principal)
       groups.toolbarContent(context, placement: .topBarLeading)
       groups.toolbarContent(context, placement: .topBarTrailing)
     }
   }
+}
+
+// The vertical toolbar APIs exist from the iOS 27.1 SDK on. Xcode 27.0 has the same compiler without them, so the gate
+// is the SwiftUI module version. Drop the `#if` once the minimum Xcode ships that SDK, and the `#available` once the
+// deployment target reaches iOS 27.1.
+#if canImport(SwiftUI, _version: 8.0.85)
+  private struct AdaptiveNavigationBar: ViewModifier {
+    let groups: [NavigationBar.ItemPlacement: [any NavigationBar.Item]]
+    let context: NavigationBar.Context
+
+    func body(content: Content) -> some View {
+      if #available(iOS 27.1, *) {
+        content.modifier(VerticalEdgeAwareNavigationBar(groups: groups, context: context))
+      } else {
+        content.modifier(HorizontalNavigationBar(groups: groups, context: context))
+      }
+    }
+  }
+
+  /// Lets the system stack the items along the vertical edge where one exists, such as the closed iPhone Duo's
+  /// status strip. Everywhere else the bar is the horizontal one.
+  @available(iOS 27.1, *)
+  private struct VerticalEdgeAwareNavigationBar: ViewModifier {
+    @Environment(\.toolbarVerticalEdge) private var toolbarVerticalEdge
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    let groups: [NavigationBar.ItemPlacement: [any NavigationBar.Item]]
+    let context: NavigationBar.Context
+
+    func body(content: Content) -> some View {
+      content.toolbar {
+        if toolbarVerticalEdge != nil {
+          // A vertical bar has no principal slot, so its items follow the leading ones.
+          verticalItems(.topBarLeading, in: .topBarLeading)
+          verticalItems(.principal, in: .topBarTrailing)
+          verticalItems(.topBarTrailing, in: .topBarTrailing)
+        } else {
+          groups.toolbarContent(context, placement: .principal)
+          groups.toolbarContent(context, placement: .topBarLeading)
+          groups.toolbarContent(context, placement: .topBarTrailing)
+        }
+      }
+      // The open iPhone Duo is regular width. It keeps the top bar, as Safari does, so the page centers on the display.
+      .toolbarVerticalBehavior(horizontalSizeClass == .regular ? .disabled : .automatic)
+    }
+
+    @ToolbarContentBuilder
+    private func verticalItems(
+      _ placement: NavigationBar.ItemPlacement,
+      in toolbarPlacement: ToolbarItemPlacement,
+    ) -> some ToolbarContent {
+      if let items = groups[placement], !items.isEmpty {
+        // One group per placement and no `HStack`, so the system draws the items and ignores a label's `.opacity`:
+        // undo and redo stay as disabled icons in preview mode. A `ToolbarItem` per button keeps the enabled state it
+        // had when the bar was built, so the buttons stay disabled after loading.
+        ToolbarItemGroup(placement: toolbarPlacement) {
+          ForEach(items, id: \.id) { item in
+            AnyView(item.nonThrowingBody(context))
+              .environment(\.imglyNavigationBarIsVertical, true)
+          }
+        }
+        .axisBehavior(.verticalPreferred)
+      }
+    }
+  }
+#else
+  private typealias AdaptiveNavigationBar = HorizontalNavigationBar
+#endif
+
+extension EnvironmentValues {
+  /// Whether the navigation bar item is laid out along a vertical edge, where labels show icons only.
+  @Entry var imglyNavigationBarIsVertical = false
 }
 
 @MainActor

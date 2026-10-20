@@ -74,11 +74,11 @@ public enum CameraMode: Equatable, Sendable {
     }
   }
 
-  func reactionVideo(duration: CMTime) -> Recording? {
+  func reactionVideo(duration: CMTime, orientation: CameraOrientation = .portrait) -> Recording? {
     guard case let .reaction(_, url, _) = self else {
       return nil
     }
-    return Recording(videos: [.init(url: url, rect: rect1)], duration: duration)
+    return Recording(videos: [.init(url: url, rect: orientation.captureRect(rect1))], duration: duration)
   }
 }
 

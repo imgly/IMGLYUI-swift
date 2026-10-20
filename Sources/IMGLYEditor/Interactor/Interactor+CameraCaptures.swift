@@ -46,10 +46,11 @@ extension Interactor {
       var lastBlockID: DesignBlockID?
       do {
         for photo in photos {
+          let canvas = photo.images.reduce(CGRect.null) { $0.union($1.rect) }
           for image in photo.images {
             let asset = try await uploadImage(to: imageUploadAssetSourceID) { image.url }
             guard let assetURL = asset.url else { continue }
-            if let id = try placeDualCameraImageOnPage(fileURL: assetURL, rect: image.rect) {
+            if let id = try placeDualCameraImageOnPage(fileURL: assetURL, rect: image.rect, canvasSize: canvas.size) {
               lastBlockID = id
             }
           }
@@ -65,23 +66,28 @@ extension Interactor {
   }
 
   @MainActor
-  private func placeDualCameraImageOnPage(fileURL: URL, rect: CGRect) throws -> DesignBlockID? {
+  private func placeDualCameraImageOnPage(fileURL: URL, rect: CGRect,
+                                          canvasSize cameraSize: CGSize) throws -> DesignBlockID? {
+    guard let engine, let pageID = try engine.scene.getCurrentPage(),
+          let frame = try cameraCaptureFrame(rect, canvasSize: cameraSize) else { return nil }
+    return try placeImageGraphic(at: frame, fillURL: fileURL, parent: pageID, fillMode: .cover)
+  }
+
+  func cameraCaptureFrame(_ rect: CGRect, canvasSize cameraSize: CGSize) throws -> CGRect? {
     guard let engine, let pageID = try engine.scene.getCurrentPage() else { return nil }
     let pageWidth = try engine.block.getFrameWidth(pageID)
     let pageHeight = try engine.block.getFrameHeight(pageID)
-    let cameraSize = CameraConfiguration.defaultVideoSize
     let scale = CGFloat(min(pageWidth / Float(cameraSize.width), pageHeight / Float(cameraSize.height)))
     let canvasOrigin = CGPoint(
       x: (CGFloat(pageWidth) - cameraSize.width * scale) / 2,
       y: (CGFloat(pageHeight) - cameraSize.height * scale) / 2,
     )
-    let frame = CGRect(
+    return CGRect(
       x: canvasOrigin.x + rect.origin.x * scale,
       y: canvasOrigin.y + rect.origin.y * scale,
       width: rect.width * scale,
       height: rect.height * scale,
     )
-    return try placeImageGraphic(at: frame, fillURL: fileURL, parent: pageID, fillMode: .cover)
   }
 
   @MainActor
