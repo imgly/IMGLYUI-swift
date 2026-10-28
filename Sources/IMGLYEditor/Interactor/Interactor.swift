@@ -1508,7 +1508,10 @@ extension Interactor {
         // Reset history only once after onCreate!
         try engine.editor.resetHistory()
       } catch {
-        config.callbacks.onError(error, self)
+        // Closing the editor cancels this task, and with it a scene load in `onCreate`. That is no error of the host.
+        if !Task.isCancelled {
+          config.callbacks.onError(error, self)
+        }
       }
     }
   }
