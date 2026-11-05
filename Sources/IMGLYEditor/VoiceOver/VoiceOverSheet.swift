@@ -23,6 +23,7 @@ private enum VoiceOverSheetLayout {
   static let sideButtonSpacing: CGFloat = 4
   static let sideButtonHeight: CGFloat = 56
   static let sideButtonLabelHeight: CGFloat = 13
+  static let sideButtonLabelMinimumScale: CGFloat = 0.8
   static let sideButtonIconHeight: CGFloat = 24
   static let sideButtonIconSize: CGFloat = 17
   static let recordOuterIdleWidth: CGFloat = 109
@@ -38,6 +39,7 @@ private enum VoiceOverSheetLayout {
 
 struct VoiceOverSheet: View {
   @EnvironmentObject private var interactor: Interactor
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   private var sideButtonForegroundColor: Color {
     Color(uiColor: .label)
@@ -103,14 +105,16 @@ struct VoiceOverSheet: View {
         Image(systemName: systemImage)
           .font(.system(size: VoiceOverSheetLayout.sideButtonIconSize, weight: .semibold))
           .frame(height: VoiceOverSheetLayout.sideButtonIconHeight)
-        Text(title)
-          .font(.caption2.weight(.semibold))
-          .foregroundStyle(sideButtonForegroundColor)
-          .multilineTextAlignment(.center)
-          .lineLimit(1)
-          .allowsTightening(true)
-          .minimumScaleFactor(0.8)
-          .frame(height: VoiceOverSheetLayout.sideButtonLabelHeight, alignment: .top)
+        // A label that fits keeps the one-line layout. A longer one wraps to a second line below
+        // the fixed frame, so the icons stay aligned with each other.
+        ViewThatFits(in: .horizontal) {
+          sideButtonLabel(title, font: .caption2.weight(.semibold))
+            .lineLimit(1)
+          sideButtonLabel(title, font: .system(size: wrappedLabelFontSize, weight: .semibold))
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(height: VoiceOverSheetLayout.sideButtonLabelHeight, alignment: .top)
       }
       .frame(width: width, height: VoiceOverSheetLayout.sideButtonHeight)
       .offset(y: VoiceOverSheetLayout.sideButtonVerticalOffset)
@@ -118,6 +122,25 @@ struct VoiceOverSheet: View {
     }
     .buttonStyle(.plain)
     .foregroundStyle(sideButtonForegroundColor)
+  }
+
+  /// The size a one-line label ends up with, so a wrapped label matches it. The one-line label
+  /// shrinks to fit its frame height, but not below the minimum scale. A wrapped label has no
+  /// height limit, so it would otherwise keep the full text size.
+  private var wrappedLabelFontSize: CGFloat {
+    let traits = UITraitCollection(preferredContentSizeCategory: UIContentSizeCategory(dynamicTypeSize))
+    let font = UIFont.preferredFont(forTextStyle: .caption2, compatibleWith: traits)
+    let fitScale = VoiceOverSheetLayout.sideButtonLabelHeight / font.lineHeight
+    return font.pointSize * min(1, max(VoiceOverSheetLayout.sideButtonLabelMinimumScale, fitScale))
+  }
+
+  private func sideButtonLabel(_ title: LocalizedStringResource, font: Font) -> some View {
+    Text(title)
+      .font(font)
+      .foregroundStyle(sideButtonForegroundColor)
+      .multilineTextAlignment(.center)
+      .allowsTightening(true)
+      .minimumScaleFactor(VoiceOverSheetLayout.sideButtonLabelMinimumScale)
   }
 }
 

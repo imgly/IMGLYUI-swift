@@ -16,7 +16,7 @@ struct FloatingClipOverlayView: View {
     if case let .dragging(context) = timelineProperties.dragDropState,
        let clip = timelineProperties.dataSource.findClip(id: context.clipID),
        clip.clipType != .caption, // Captions slide in-lane; they never float.
-       let duration = clip.duration {
+       let duration = clip.rawDuration {
       let width = timeline.convertToPoints(time: duration)
       let height = configuration.trackHeight
 

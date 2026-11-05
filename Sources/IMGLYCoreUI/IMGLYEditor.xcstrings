@@ -103,6 +103,23 @@
         }
       }
     },
+    "ly_img_editor_asset_label_clock_wipe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uhr-Wischen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clock Wipe"
+          }
+        }
+      }
+    },
     "ly_img_editor_asset_label_color_fade" : {
       "extractionState" : "manual",
       "localizations" : {

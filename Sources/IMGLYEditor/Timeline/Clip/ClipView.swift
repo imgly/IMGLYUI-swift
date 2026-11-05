@@ -134,16 +134,16 @@ struct ClipView: View {
       // Use .task instead of .onAppear to prevent animation glitches
       // when the timeline reappears when dismissing a sheet.
       .task {
-        updateWidths(duration: clip.duration)
+        updateWidths(duration: clip.displayDuration)
       }
       .onChange(of: clip.trimOffset) { _ in
-        updateWidths(duration: clip.duration)
+        updateWidths(duration: clip.displayDuration)
       }
-      .onChange(of: clip.duration) { newDuration in
+      .onChange(of: clip.displayDuration) { newDuration in
         updateWidths(duration: newDuration)
       }
       .onChange(of: timeline.zoomLevel) { _ in
-        updateWidths(duration: clip.duration)
+        updateWidths(duration: clip.displayDuration)
       }
 
       // See `ClipView+MoveDrag.swift` for the flow. Translation is observed separately

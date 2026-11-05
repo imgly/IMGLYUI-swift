@@ -279,13 +279,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das Dokument hat kein CMYK-Profil."
+            "value" : "Das Dokument hat kein Profil im angeforderten Profilplatz."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The document has no CMYK profile."
+            "value" : "The document has no profile in the requested slot."
           }
         }
       }
@@ -296,13 +296,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Legen Sie ein CMYK-Profil fest, bevor Sie seine Informationen lesen."
+            "value" : "Legen Sie ein Profil in diesem Profilplatz fest, bevor Sie seine Informationen lesen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set a CMYK profile before reading its information."
+            "value" : "Set a profile in this slot before reading its information."
           }
         }
       }
@@ -337,6 +337,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attach a definition to the fill's current image before reading it."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_profile_slot_invalid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Farbprofilplatz des Dokuments ist ungültig."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The document color profile slot is not valid."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_profile_slot_invalid_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwenden Sie die Rolle Default oder Output mit dem Farbraum RGB, CMYK oder Gray."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use a Default or Output role with an RGB, CMYK or Gray component space."
           }
         }
       }
