@@ -117,9 +117,18 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   /// `timeOffset` untouched until commit.
   @Published var previewTimeOffset: CMTime?
 
-  /// Value the view should render — preview during drag, authoritative otherwise.
+  /// The transition trim that a move drag shows at full length: the lead and the tail this clip shares with the
+  /// dragged clip. Zero outside a move drag.
+  @Published var releasedTransitionTrim = TransitionTrim()
+
+  /// Value the view should render — preview during drag, otherwise `timeOffset` with a released lead shown.
   var displayTimeOffset: CMTime {
-    previewTimeOffset ?? timeOffset
+    previewTimeOffset ?? timeOffset - releasedTransitionTrim.lead
+  }
+
+  /// Length the view should render: `duration` with the transition trim of a move drag shown at full length.
+  var displayDuration: CMTime? {
+    duration.map { $0 + releasedTransitionTrim.lead + releasedTransitionTrim.tail }
   }
 
   /// Diameter of the seam immediately before this clip. The label uses half of
@@ -161,6 +170,9 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   @Published var isInBackgroundTrack: Bool = false
 
   @Published var isLoading: Bool = false
+  /// Whether the block of the clip is pending, for example while a plugin processes its audio. ``isLoading`` shows it,
+  /// together with the footage that loads.
+  var isPending = false
 
   /// Whether the clip has looping enabled.
   @Published var isLooping: Bool = false

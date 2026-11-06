@@ -1,4 +1,4 @@
-// swift-tools-version:6.3.1
+// swift-tools-version:6.3.3
 import PackageDescription
 
 let package = Package(
@@ -30,7 +30,7 @@ let package = Package(
              ]),
   ],
   dependencies: [
-    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.85.3"),
+    .package(url: "https://github.com/imgly/IMGLYEngine-swift.git", exact: "1.86.0-rc.1"),
     .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", "1.1.2" ..< "27.0.0"),
     .package(url: "https://github.com/onevcat/Kingfisher.git", "7.10.0" ..< "9.0.0"),
   ],

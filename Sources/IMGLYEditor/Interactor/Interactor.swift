@@ -306,6 +306,7 @@ import SwiftUI
     clickedTask?.cancel()
     onLoadedTask?.cancel()
     assetSourceUpdatedTask?.cancel()
+    blockStateTask?.cancel()
     blockTasks.forEach { $0.value.cancel() }
     blockTasks.removeAll()
   }
@@ -319,6 +320,7 @@ import SwiftUI
     pageTask = observePage()
     clickedTask = observeClicked()
     assetSourceUpdatedTask = observeAssetSourceUpdated()
+    blockStateTask = observeBlockStates()
     onLoadedTask?.cancel()
     keyboardPublisher.assign(to: &$isKeyboardPresented)
   }
@@ -340,6 +342,7 @@ import SwiftUI
     clickedTask?.cancel()
     onLoadedTask?.cancel()
     assetSourceUpdatedTask?.cancel()
+    blockStateTask?.cancel()
     _engine = nil
     timelineProperties.timeline = nil
     timelineProperties.thumbnailsManager.destroyProviders()
@@ -377,6 +380,7 @@ import SwiftUI
   private var clickedTask: Task<Void, Never>?
   private var onLoadedTask: Task<Void, Never>?
   private var assetSourceUpdatedTask: Task<Void, Never>?
+  private var blockStateTask: Task<Void, Never>?
   var blockTasks = [BlockID: Task<Void, Never>]()
 }
 
@@ -1115,8 +1119,6 @@ extension Interactor: AssetLibraryInteractor {
             guard let pageID = try engine.scene.getCurrentPage() else { return }
 
             let minClipDuration: TimeInterval = 1
-            let fallbackClipDuration: TimeInterval = 5
-            var resolvedDuration = asset.duration ?? fallbackClipDuration
 
             if addToBackgroundTrack {
               createBackgroundTrackIfNeeded()
@@ -1154,15 +1156,11 @@ extension Interactor: AssetLibraryInteractor {
 
               // Set the time offset
               try engine.block.setTimeOffset(id, offset: clampedOffset)
-
-              // If there is nothing in the scene yet, we allow the full asset duration,
-              // otherwise shorten to fit remaining time:
-              let maxClipDuration = totalDuration - clampedOffset
-              let assetDuration = asset.duration ?? max(fallbackClipDuration, maxClipDuration)
-              resolvedDuration = totalDuration == 0 ? assetDuration : min(assetDuration, maxClipDuration)
             }
 
-            try engine.block.setDuration(id, duration: resolvedDuration)
+            if let duration = asset.duration {
+              try engine.block.setDuration(id, duration: duration)
+            }
 
             // In the future, this may be set by the default implementation.
             if let artist = asset.artist,
@@ -1178,13 +1176,6 @@ extension Interactor: AssetLibraryInteractor {
               if fillType == FillType.video.rawValue {
                 // Wait for the video data to load
                 try await engine.block.forceLoadAVResource(fillID)
-
-                let footageDuration = try engine.block.getAVResourceTotalDuration(fillID)
-                if addToBackgroundTrack {
-                  try engine.block.setDuration(id, duration: footageDuration)
-                } else {
-                  try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
-                }
               }
             } else if try engine.block.getType(id) == BlockType.audio.rawValue {
               // Prevent audio blocks from being considered in the z-index reordering
@@ -1192,9 +1183,11 @@ extension Interactor: AssetLibraryInteractor {
 
               // Wait for the audio data to load
               try await engine.block.forceLoadAVResource(id)
+              if asset.duration == nil {
+                let duration = try min(engine.block.getDuration(id), engine.block.getAVResourceTotalDuration(id))
+                try engine.block.setDuration(id, duration: duration)
+              }
 
-              let footageDuration = try engine.block.getAVResourceTotalDuration(id)
-              try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
               try engine.block.setLooping(id, looping: false)
             }
 
@@ -2210,6 +2203,19 @@ extension Interactor {
         updateState(events)
         updateTimeline(events)
         updatePlaybackState()
+      }
+    }
+  }
+
+  /// Updates the loading state of timeline clips whose blocks change their state, for example an audio clip that a
+  /// plugin marks as pending while it processes the audio.
+  func observeBlockStates() -> Task<Void, Never> {
+    Task {
+      guard let engine else {
+        return
+      }
+      for await ids in engine.block.onStateChanged([]) {
+        updateClipLoadingStates(ids)
       }
     }
   }

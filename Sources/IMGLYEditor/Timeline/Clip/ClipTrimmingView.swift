@@ -292,6 +292,7 @@ struct ClipTrimmingView: View {
               .frame(maxWidth: .infinity, alignment: .trailing)
               .clipped()
           }
+          .modifier(Shimmering(isShimmering: clip.isLoading))
         }
       }
 
