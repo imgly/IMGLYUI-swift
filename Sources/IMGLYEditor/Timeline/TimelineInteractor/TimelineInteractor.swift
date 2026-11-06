@@ -21,7 +21,7 @@ protocol TimelineInteractor: ObservableObject {
   /// positions for every sibling in the target track.
   func applyDrop(clip: Clip, target: DropTarget, siblingOffsets: [DesignBlockID: CMTime])
   func splitSelectedClipAtPlayheadPosition()
-  func reorderBackgroundTrack(clip: Clip, toIndex index: Int, onTransitionRemoved: @escaping @MainActor () -> Void)
+  func reorderBackgroundTrack(clip: Clip, toIndex index: Int)
   func refreshTimeline()
   func refreshThumbnails()
   func refreshZoomDependentThumbnails()

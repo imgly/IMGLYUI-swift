@@ -117,18 +117,9 @@ final class Clip: Identifiable, Hashable, ObservableObject {
   /// `timeOffset` untouched until commit.
   @Published var previewTimeOffset: CMTime?
 
-  /// The transition trim that a move drag shows at full length: the lead and the tail this clip shares with the
-  /// dragged clip. Zero outside a move drag.
-  @Published var releasedTransitionTrim = TransitionTrim()
-
-  /// Value the view should render — preview during drag, otherwise `timeOffset` with a released lead shown.
+  /// Value the view should render — preview during drag, authoritative otherwise.
   var displayTimeOffset: CMTime {
-    previewTimeOffset ?? timeOffset - releasedTransitionTrim.lead
-  }
-
-  /// Length the view should render: `duration` with the transition trim of a move drag shown at full length.
-  var displayDuration: CMTime? {
-    duration.map { $0 + releasedTransitionTrim.lead + releasedTransitionTrim.tail }
+    previewTimeOffset ?? timeOffset
   }
 
   /// Diameter of the seam immediately before this clip. The label uses half of

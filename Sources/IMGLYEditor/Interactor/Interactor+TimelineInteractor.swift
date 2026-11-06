@@ -280,29 +280,10 @@ extension Interactor: TimelineInteractor {
     return tracks
   }
 
-  /// Shows the toast when one of `clips` has lost its transition at the next history update. The engine removes a
-  /// transition whose clips no longer meet before it commits the undo step of an edit, so call this after the edit,
-  /// with the clips that had a transition before it. `showToast` replaces the timeline toast.
-  private func notifyRemovedTransitions(
-    engine: Engine,
-    clips: [DesignBlockID],
-    showToast: (@MainActor () -> Void)? = nil,
-  ) {
-    guard !clips.isEmpty else { return }
-    // The stream subscribes when it is made, so the history update cannot pass before the task reads it.
-    let historyUpdates = engine.editor.onHistoryUpdatedWithKind
-    Task { [weak self] in
-      for await update in historyUpdates where update == .updated {
-        guard let self, let engine = self.engine else { return }
-        if clips.contains(where: { engine.block.isValid($0) && !hasRealTransition(engine: engine, outgoing: $0) }) {
-          if let showToast {
-            showToast()
-          } else {
-            timelineProperties.showTransitionRemovedToast()
-          }
-        }
-        return
-      }
+  /// Destroys the transitions at the cuts that a drop changed, and tells the user.
+  private func removeChangedTransitionCutsAndNotify(engine: Engine, cuts: [DesignBlockID: DesignBlockID?]) throws {
+    if try removeChangedTransitionCuts(engine: engine, cuts: cuts) > 0 {
+      timelineProperties.showTransitionRemovedToast()
     }
   }
 
@@ -339,7 +320,7 @@ extension Interactor: TimelineInteractor {
 
       if isBackgroundReorder {
         try insertIntoBackgroundTrack(engine: engine, clip: clip, insertIndex: insertIndex)
-        try removeChangedTransitionCuts(engine: engine, cuts: cuts)
+        try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
         if !sourceWasBackground {
           try resetCropAndFillParentForBackgroundDrop(engine: engine, clipID: clip.id)
         }
@@ -371,7 +352,6 @@ extension Interactor: TimelineInteractor {
       }
 
       addUndoStep()
-      notifyRemovedTransitions(engine: engine, clips: Array(cuts.keys))
       finalizeExistingTrackDrop(
         clip: clip,
         targetTrack: targetTrack,
@@ -469,27 +449,25 @@ extension Interactor: TimelineInteractor {
     cuts: [DesignBlockID: DesignBlockID?],
   ) throws {
     try engine.block.insertChild(into: engineTrackID, child: clip.id, at: insertIndex)
-    try removeChangedTransitionCuts(engine: engine, cuts: cuts)
+    try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
+    var renderedOffsets = [clip.id: timeOffset]
+    for sibling in targetTrack.clips where sibling.id != clip.id {
+      // Match Android: only commit siblings that were shifted by the cascade.
+      // Reapplying unchanged offsets invokes Track::layout() and can mutate
+      // unrelated clips when the drag is released.
+      guard let offset = siblingOffsets[sibling.id], offset != sibling.timeOffset else { continue }
+      renderedOffsets[sibling.id] = offset
+    }
     let rawClips = try engine.block.getChildren(engineTrackID).map { id in
-      let rawOffset = try CMTime(seconds: engine.block.getTimeOffset(id))
-      let rawDuration = try CMTime(seconds: engine.block.getDuration(id))
-      let sibling = targetTrack.clips.first { $0.id == id }
-      let drawnStart = id == clip.id ? timeOffset : sibling?.displayTimeOffset ?? rawOffset
-      let drawnDuration = id == clip.id ? rawDuration : sibling?.displayDuration ?? rawDuration
-      return DropClip(
+      try DropClip(
         id: id,
-        timeOffset: rawOffset,
-        duration: rawDuration,
-        drawnStart: drawnStart,
-        drawnEnd: drawnStart + drawnDuration,
+        timeOffset: CMTime(seconds: engine.block.getTimeOffset(id)),
+        duration: CMTime(seconds: engine.block.getDuration(id)),
       )
     }
-    let movedClips = Set(siblingOffsets.keys).union([clip.id])
-    let offsets = dropOffsets(clips: rawClips, draggedClip: clip.id, movedClips: movedClips) { outgoing, incoming in
+    let offsets = dropOffsets(clips: rawClips, renderedOffsets: renderedOffsets) { outgoing, incoming in
       transitionOverlap(engine: engine, outgoing: outgoing, incoming: incoming)
     }
-    // Only the changed offsets: reapplying an unchanged offset invokes Track::layout() and can mutate
-    // unrelated clips when the drag is released.
     for (id, offset) in offsets {
       try engine.block.setTimeOffset(id, offset: offset.seconds)
     }
@@ -517,7 +495,7 @@ extension Interactor: TimelineInteractor {
     try engine.block.insertChild(into: pageID, child: newEngineTrack, at: pageIndex)
     try engine.block.appendChild(to: newEngineTrack, child: targetSolo.id)
     try engine.block.insertChild(into: newEngineTrack, child: clip.id, at: insertIndex)
-    try removeChangedTransitionCuts(engine: engine, cuts: cuts)
+    try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
 
     let soloOffset = siblingOffsets[targetSolo.id] ?? targetSolo.timeOffset
     try engine.block.setTimeOffset(targetSolo.id, offset: soloOffset.seconds)
@@ -619,11 +597,10 @@ extension Interactor: TimelineInteractor {
       try engine.block.setBool(newEngineTrack, property: "track/automaticallyManageBlockOffsets", value: false)
       try engine.block.insertChild(into: pageID, child: newEngineTrack, at: engineInsertionIndex)
       try engine.block.insertChild(into: newEngineTrack, child: clip.id, at: 0)
-      try removeChangedTransitionCuts(engine: engine, cuts: cuts)
+      try removeChangedTransitionCutsAndNotify(engine: engine, cuts: cuts)
       try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
 
       addUndoStep()
-      notifyRemovedTransitions(engine: engine, clips: Array(cuts.keys))
       cleanUpEmptyTracks()
       if sourceWasBackground {
         // Engine auto-packs the BG on insert, not on remove. `refreshTimeline`
@@ -671,7 +648,6 @@ extension Interactor: TimelineInteractor {
   ///   - duration: The transition-projected duration visible in the timeline.
   func setTrim(clip: Clip, timeOffset: CMTime, trimOffset: CMTime, duration: CMTime) {
     guard let engine else { return }
-    let transitionClips = trackTransitionClips(engine: engine, block: clip.id)
     let timing = transitionTiming(engine: engine, clip: clip.id, renderedDuration: duration)
     setTimeOffset(clip: clip, timeOffset: max(.zero, timeOffset - timing.trim.lead))
     setTrimOffset(clip: clip, trimOffset: trimOffset)
@@ -692,13 +668,6 @@ extension Interactor: TimelineInteractor {
     updateDurations()
 
     addUndoStep()
-    notifyRemovedTransitions(engine: engine, clips: transitionClips)
-  }
-
-  /// The clips with a transition on the track of `block`, which an edit of `block` can separate from their partners.
-  private func trackTransitionClips(engine: Engine, block: DesignBlockID) -> [DesignBlockID] {
-    guard let track = try? engine.block.getParent(block) else { return [] }
-    return Array(transitionCuts(engine: engine, tracks: [track]).keys)
   }
 
   /// Mirrors Android's `packAndPersistSiblings`. The timeline cells are transition-
@@ -910,16 +879,14 @@ extension Interactor: TimelineInteractor {
 
   // MARK: Reorder
 
-  /// Moves the passed `Clip` to the new `index`, and calls `onTransitionRemoved` when the move removed a transition.
-  func reorderBackgroundTrack(clip: Clip, toIndex index: Int, onTransitionRemoved: @escaping @MainActor () -> Void) {
+  /// Moves the passed `Clip` to the new `index`.
+  func reorderBackgroundTrack(clip: Clip, toIndex index: Int) {
     guard let engine,
           let backgroundTrack = timelineProperties.backgroundTrack else { return }
-    let transitionClips = trackTransitionClips(engine: engine, block: clip.id)
     do {
       try engine.block.insertChild(into: backgroundTrack, child: clip.id, at: index)
 
       addUndoStep()
-      notifyRemovedTransitions(engine: engine, clips: transitionClips, showToast: onTransitionRemoved)
     } catch {
       handleError(error)
     }
@@ -2282,7 +2249,6 @@ extension Interactor: TimelineInteractor {
           let backgroundTrackBlocks = try? engine.block.getChildren(backgroundTrack) else { return }
 
     guard let id = timelineProperties.selectedClip?.id else { return }
-    let transitionClips = trackTransitionClips(engine: engine, block: id)
     deselect()
     do {
       if backgroundTrackBlocks.contains(id) {
@@ -2305,7 +2271,6 @@ extension Interactor: TimelineInteractor {
       }
 
       addUndoStep()
-      notifyRemovedTransitions(engine: engine, clips: transitionClips)
       // Reparenting fires `.updated` events but no `.created` / `.destroyed` and the
       // page's direct children don't change, so `updateTimeline` won't flag the
       // datasource as dirty. Force a rebuild here so the moved clip leaves its old

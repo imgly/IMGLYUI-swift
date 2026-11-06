@@ -37,7 +37,6 @@ struct ReorderingThumbnailView: View {
 
   @ObservedObject var clip: Clip
   @ObservedObject var thumbnailsProvider: ThumbnailsImageProvider
-  let onTransitionRemoved: @MainActor () -> Void
 
   @Binding var clips: [Clip]
   @Binding var draggedClip: Clip?
@@ -63,8 +62,7 @@ struct ReorderingThumbnailView: View {
        draggedClip: Binding<Clip?>,
        thumbnailHeight: CGFloat,
        thumbnailSpacing: CGFloat,
-       thumbnailsProvider: ThumbnailsImageProvider,
-       onTransitionRemoved: @escaping @MainActor () -> Void) {
+       thumbnailsProvider: ThumbnailsImageProvider) {
     self.index = index
     self.clip = clip
     _clips = clips
@@ -73,7 +71,6 @@ struct ReorderingThumbnailView: View {
     self.thumbnailHeight = thumbnailHeight
     self.thumbnailSpacing = thumbnailSpacing
     self.thumbnailsProvider = thumbnailsProvider
-    self.onTransitionRemoved = onTransitionRemoved
   }
 
   var body: some View {
@@ -192,11 +189,7 @@ struct ReorderingThumbnailView: View {
                       clips.insert(clip, at: newIndex)
 
                       // Then actually change it in the engine:
-                      interactor.reorderBackgroundTrack(
-                        clip: clip,
-                        toIndex: newIndex,
-                        onTransitionRemoved: onTransitionRemoved,
-                      )
+                      interactor.reorderBackgroundTrack(clip: clip, toIndex: newIndex)
                     }
 
                     HapticsHelper.shared.timelineReorderFinish()
