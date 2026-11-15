@@ -86,6 +86,7 @@ struct KeyboardToolbar: View {
         StrikethroughToggle(blockID: id)
         LetterCaseMenu(blockID: id)
         ListStyleMenu(blockID: id)
+        ScriptStyleMenu(blockID: id)
       }
       .padding(.horizontal, 8)
     }
@@ -332,6 +333,48 @@ private struct ListStyleMenu: View {
         .foregroundColor(triggerColor)
     }
     .disabled(isTextOnPath)
+  }
+}
+
+// MARK: - Script style menu
+
+private struct ScriptStyleMenu: View {
+  @EnvironmentObject private var interactor: Interactor
+
+  let blockID: Interactor.BlockID?
+
+  var body: some View {
+    let selection = interactor.bindScriptStyle(blockID)
+    let current = selection.wrappedValue
+    let active = current.map { $0 != .normal } ?? false
+    let restingIcon = current == .subscript ? "textformat.subscript" : "textformat.superscript"
+
+    FormattingMenuButton(
+      accessibilityLabelKey: "ly_img_editor_edit_text_label_script_style",
+      options: [
+        FormattingOption(
+          labelKey: "ly_img_editor_edit_text_script_style_option_normal",
+          isSelected: current == .normal,
+          action: { selection.wrappedValue = .normal },
+          icon: { Image(systemName: "minus") },
+        ),
+        FormattingOption(
+          labelKey: "ly_img_editor_edit_text_script_style_option_superscript",
+          isSelected: current == .superscript,
+          action: { selection.wrappedValue = .superscript },
+          icon: { Image(systemName: "textformat.superscript") },
+        ),
+        FormattingOption(
+          labelKey: "ly_img_editor_edit_text_script_style_option_subscript",
+          isSelected: current == .subscript,
+          action: { selection.wrappedValue = .subscript },
+          icon: { Image(systemName: "textformat.subscript") },
+        ),
+      ],
+    ) {
+      Image(systemName: restingIcon)
+        .foregroundColor(active ? .accentColor : .primary)
+    }
   }
 }
 

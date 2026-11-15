@@ -154,6 +154,7 @@ final class Clip: Identifiable, Hashable, ObservableObject {
 
   /// Half of the leading transition's overlap: how far the rendered start edge is
   /// inset from `rawTimeOffset`.
+  @Published var joinedPredecessor: DesignBlockID?
   @Published var transitionTrimLead: CMTime = .zero
 
   /// Half of the trailing transition's overlap: how far the rendered end edge is

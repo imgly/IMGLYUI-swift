@@ -11,6 +11,8 @@ struct Canvas: View {
   @Environment(\.imglyEditorEnvironment) private var editorEnvironment
 
   let zoomPadding: CGFloat
+  /// Receives the canvas geometry inside its safe area on every layout change.
+  let onGeometryChange: (Geometry) -> Void
 
   static let safeCoordinateSpaceName = "safeCanvas"
   static let safeCoordinateSpace = CoordinateSpace.named(safeCoordinateSpaceName)
@@ -50,6 +52,7 @@ struct Canvas: View {
   @State private var wasInTextMode = false
   @State private var hasCompletedInitialSetup = false
   @State private var wasSheetPresented = false
+  @State private var clipboardMenuLocation: CGPoint?
 
   private var safeAreaInsetHeight: CGFloat {
     // In text mode, the keyboard covers the bottom panel.
@@ -141,6 +144,42 @@ struct Canvas: View {
         Color.red.opacity(0.2).border(.red).padding(5)
       }
       interactor.canvas
+        .overlay {
+          ClipboardResponder(
+            interactor: interactor,
+            isActive: interactor.editMode != .text && !interactor.sheet.isPresented && !interactor.isPreviewMode &&
+              !interactor.error.isPresented,
+            menuLocation: $clipboardMenuLocation,
+          )
+          // `ResponderView.hitTest` returns nil, but the view that hosts it does not, and below iOS 18 that host
+          // answers for the canvas and the engine sees no touch at all. The menu and the key commands need the
+          // responder in the hierarchy, not hit testing, so refusing it here costs them nothing.
+          .allowsHitTesting(false)
+        }
+        // Files dragged from another app, such as Files or Photos, are added as a paste adds them.
+        .onDrop(of: [.item], delegate: CanvasDropDelegate(interactor: interactor))
+        // The engine's touch input keeps the press, so the long press runs beside it. The drag reports where it was.
+        .simultaneousGesture(
+          LongPressGesture(minimumDuration: 0.5)
+            .sequenced(before: DragGesture(minimumDistance: 0, coordinateSpace: .local))
+            .onEnded { value in
+              // A finger at rest still moves a few points.
+              if case let .second(true, drag?) = value, abs(drag.translation.width) < 10,
+                 abs(drag.translation.height) < 10 {
+                clipboardMenuLocation = drag.location
+              }
+            },
+        )
+        // The long press and the keys have no VoiceOver or Switch Control gesture, so the canvas offers the commands.
+        .accessibilityAction(named: Text(.imgly.localized("ly_img_editor_canvas_accessibility_action_copy"))) {
+          interactor.copySelection()
+        }
+        .accessibilityAction(named: Text(.imgly.localized("ly_img_editor_canvas_accessibility_action_cut"))) {
+          interactor.copySelection(cut: true)
+        }
+        .accessibilityAction(named: Text(.imgly.localized("ly_img_editor_canvas_accessibility_action_paste"))) {
+          interactor.paste()
+        }
         .imgly.canvasAction(anchor: .top,
                             topSafeAreaInset: topSafeAreaInset,
                             bottomSafeAreaInset: animatedSafeAreaInsetHeight,
@@ -161,12 +200,9 @@ struct Canvas: View {
       }
     }
     .coordinateSpace(name: Self.safeCoordinateSpaceName)
-    .background {
-      GeometryReader { safeCanvas in
-        Color.clear
-          .preference(key: CanvasGeometryKey.self, value: Geometry(safeCanvas, .local))
-      }
-    }
+    // A geometry change instead of a preference, because in a pushed navigation stack destination the preference
+    // handler in EditorUI misses the navigation bar inset that arrives after the push (iOS 26.5), so it never zooms.
+    .onGeometryChange(for: Geometry.self) { Geometry($0, .local) } action: { onGeometryChange($0) }
   }
 
   private func isInspectorBarEnabled(_ context: InspectorBar.Context) -> Bool {
@@ -427,5 +463,18 @@ private struct CanvasSafeAreaInsetsKey: PreferenceKey {
 struct Canvas_Previews: PreviewProvider {
   static var previews: some View {
     defaultPreviews
+  }
+}
+
+/// Refuses a drag that the canvas cannot take while it is over the canvas, so iOS shows no add badge for it.
+private struct CanvasDropDelegate: DropDelegate {
+  let interactor: Interactor
+
+  func validateDrop(info: DropInfo) -> Bool {
+    interactor.canDrop(info.itemProviders(for: [.item]))
+  }
+
+  func performDrop(info: DropInfo) -> Bool {
+    interactor.drop(info.itemProviders(for: [.item]))
   }
 }

@@ -67,21 +67,49 @@ func hasRealTransition(engine: Engine, outgoing: DesignBlockID) -> Bool {
   return true
 }
 
+/// The saved overlap of the transition after `outgoing`. The engine ignores it next to a group clip, so a group cut
+/// never overlaps.
+@MainActor
+func transitionOverlapApplies(engine: Engine, outgoing: DesignBlockID, incoming: DesignBlockID) -> Bool {
+  guard let transition = try? engine.block.getTransition(outgoing),
+        engine.block.isValid(transition),
+        (try? engine.block.getType(outgoing)) != DesignBlockType.group.rawValue,
+        (try? engine.block.getType(incoming)) != DesignBlockType.group.rawValue else { return false }
+  return (try? engine.block.getBool(transition, property: "transition/overlap")) == true
+}
+
 @MainActor
 func transitionOverlap(engine: Engine, outgoing: DesignBlockID, incoming: DesignBlockID) -> CMTime {
+  guard transitionOverlapApplies(engine: engine, outgoing: outgoing, incoming: incoming) else { return .zero }
+  return transitionDuration(engine: engine, outgoing: outgoing, incoming: incoming)
+}
+
+@MainActor
+func transitionDuration(engine: Engine, outgoing: DesignBlockID, incoming: DesignBlockID) -> CMTime {
   guard let outgoingDuration = try? engine.block.getDuration(outgoing),
-        let incomingDuration = try? engine.block.getDuration(incoming),
         let outgoingStart = try? engine.block.getTimeOffset(outgoing),
         let incomingStart = try? engine.block.getTimeOffset(incoming),
-        canShowTransition(
-          engine: engine,
-          outgoing: outgoing,
-          incoming: incoming,
-          outgoingEnd: transitionTime(outgoingStart + outgoingDuration),
-          incomingStart: transitionTime(incomingStart),
-        ),
+        clipsMeet(start: transitionTime(incomingStart), end: transitionTime(outgoingStart + outgoingDuration))
+  else { return .zero }
+  return supportedTransitionDuration(engine: engine, outgoing: outgoing, incoming: incoming)
+}
+
+/// The overlap for a pair that will be adjacent after packing, regardless of its pre-edit offsets.
+@MainActor
+func transitionOverlapForAdjacentPair(engine: Engine, outgoing: DesignBlockID, incoming: DesignBlockID) -> CMTime {
+  guard transitionOverlapApplies(engine: engine, outgoing: outgoing, incoming: incoming) else { return .zero }
+  return supportedTransitionDuration(engine: engine, outgoing: outgoing, incoming: incoming)
+}
+
+@MainActor
+private func supportedTransitionDuration(engine: Engine, outgoing: DesignBlockID, incoming: DesignBlockID) -> CMTime {
+  guard (try? engine.block.supportsTransition(outgoing)) == true,
+        (try? engine.block.supportsTransition(incoming)) == true,
+        let outgoingDuration = try? engine.block.getDuration(outgoing),
+        let incomingDuration = try? engine.block.getDuration(incoming),
         let transition = try? engine.block.getTransition(outgoing),
         engine.block.isValid(transition),
+        let type = try? engine.block.getType(transition), type != "//ly.img.ubq/transition/none",
         let transitionDuration = try? engine.block.getDuration(transition) else { return .zero }
   return transitionTime(max(0, min(transitionDuration, outgoingDuration / 2, incomingDuration / 2)))
 }
@@ -156,20 +184,6 @@ func transitionCuts(engine: Engine, tracks: [DesignBlockID]) -> [DesignBlockID: 
     }
   }
   return cuts
-}
-
-/// Destroys the transition of each cut in `cuts` whose clip is now followed by a different clip. A transition belongs
-/// to its cut, so it does not move to the new neighbour. Destroying it, unlike `removeTransition`, shifts no clip.
-@MainActor
-func removeChangedTransitionCuts(engine: Engine, cuts: [DesignBlockID: DesignBlockID?]) throws {
-  for (outgoing, incoming) in cuts where engine.block.isValid(outgoing) {
-    let transition = try engine.block.getTransition(outgoing)
-    guard engine.block.isValid(transition) else { continue }
-    let siblings = transitionTrackChildren(engine: engine, clip: outgoing)
-    let next = siblings.firstIndex(of: outgoing).flatMap { $0 + 1 < siblings.count ? siblings[$0 + 1] : nil }
-    guard next != incoming else { continue }
-    try engine.block.destroy(transition)
-  }
 }
 
 struct DropClip {

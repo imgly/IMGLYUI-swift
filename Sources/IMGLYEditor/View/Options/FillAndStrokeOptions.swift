@@ -39,8 +39,6 @@ struct FillAndStrokeOptions: View {
       } header: {
         Text(.imgly.localized("ly_img_editor_sheet_fill_stroke_label_stroke"))
       }
-      .accessibilityElement(children: .contain)
-      .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_fill_stroke_label_stroke")))
     }
   }
 
@@ -81,18 +79,13 @@ struct FillAndStrokeOptions: View {
 
         let currentFillType: ColorFillType = try engine.block.get($0, propertyBlock, property: .key(.type))
         if currentFillType != (isNone ? fallbackValue : value) {
-          if currentFillType != .gradient, value == .gradient {
-            let currentSolidFill = try engine.block.getFillSolidColor($0)
-            let newColor = try currentSolidFill.changeBrightness(by: 0.4)
-            colorStops = [
-              .init(
-                color: Color
-                  .rgba(r: currentSolidFill.r, g: currentSolidFill.g, b: currentSolidFill.b, a: currentSolidFill.a),
-                stop: 0,
-              ),
-              .init(color: Color.rgba(r: newColor.r, g: newColor.g, b: newColor.b, a: newColor.a), stop: 1),
-            ]
-          } else if value == .solid, currentFillType == .gradient {
+          if currentFillType.isGradient, value.isGradient {
+            // A radial or conical gradient turns linear with its colors.
+            colorStops = try engine.block.get($0, propertyBlock, property: .key(.fillGradientColors))
+          } else if value == .gradient {
+            let solid = try engine.block.getFillSolidColor($0)
+            colorStops = try engine.block.gradientStops(from: .rgba(r: solid.r, g: solid.g, b: solid.b, a: solid.a))
+          } else if value == .solid, currentFillType.isGradient {
             let currentColorStops: [GradientColorStop] = try engine.block
               .get($0, propertyBlock, property: .key(.fillGradientColors))
             solidColor = currentColorStops.first?.color

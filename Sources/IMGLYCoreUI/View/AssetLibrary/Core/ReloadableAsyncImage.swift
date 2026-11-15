@@ -72,11 +72,15 @@ import SwiftUI
         // triggered the **Button**
         .onTapGesture(perform: onTap)
         .allowsHitTesting(state == .loaded)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(accessibilityLabel)
-        .accessibilityAddTraits(.isButton)
       }
     }
+    // One element in every state, so a tile keeps its label while its thumbnail loads or after it failed. It combines
+    // the content's tap instead of an action of its own, otherwise an activation would skip the properties overlay
+    // that a selected tile shows over the content.
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel(accessibilityLabel)
+    .accessibilityAddTraits(.isButton)
+    .disabled(state != .loaded)
   }
 }
 

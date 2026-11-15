@@ -14,6 +14,7 @@ struct ColorPropertyButton: View {
   /// selection is uniformly its colour.
   @Binding var selection: [CGColor]
   var style: ColorPropertyButtonStyle = .fill
+  @Environment(\.imglyDisplayColor) private var displayColor
 
   private var isSelected: Bool {
     guard isEnabled, selection.count == 1, let selectionColor = selection.first,
@@ -37,7 +38,7 @@ struct ColorPropertyButton: View {
           } icon: {
             Image(systemName: "circle.fill")
           }
-          .foregroundStyle(Color(cgColor: color))
+          .foregroundStyle(Color(cgColor: displayColor(color)))
         } else {
           Image("custom.circle.circle.fill", bundle: .module)
             .foregroundColor(.secondary)
@@ -45,7 +46,7 @@ struct ColorPropertyButton: View {
           Image("custom.circle.circle.fill", bundle: .module)
             .foregroundStyle(.transparentColorPattern)
           Image("custom.circle.circle.fill", bundle: .module)
-            .foregroundStyle(Color(cgColor: color))
+            .foregroundStyle(Color(cgColor: displayColor(color)))
         }
         Image(systemName: "circle")
           .opacity(isSelected ? 1 : 0)

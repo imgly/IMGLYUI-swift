@@ -137,21 +137,22 @@ struct TextFormatOptions: View {
   }
 
   @ViewBuilder var fontSizeSelection: some View {
-    // Read the scene's font-size unit so the slider range and label match what the engine
+    // Read the scene's font-size unit so the stepper range and unit match what the engine
     // returns from the unit-aware text/fontSize property.
     let fontUnit: Interactor.FontUnit = (try? interactor.engine?.scene.getFontSizeUnit()) ?? .pt
-    let fontSizeRange: ClosedRange<Float> = fontUnit == .px ? 8 ... 128 : 6 ... 90
-    let unitSuffix = fontUnit == .px ? " (px)" : " (pt)"
+    // The engine has no maximum font size, so the range is open and a typed size is not cut.
+    let fontSizeRange: ClosedRange<Float> = (fontUnit == .px ? 8 : 6) ... .infinity
     Section {
-      PropertySlider<Float>(
+      PropertyStepper<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_font_size"),
         in: fontSizeRange,
+        step: 1,
         property: namespacedProperty("fontSize"),
+        unit: fontUnit == .px ? "px" : "pt",
+        decimals: 1,
         setter: Interactor.Setter.textFontSize(),
         getter: Interactor.Getter.textFontSize(),
       )
-    } header: {
-      Text(String(localized: .imgly.localized("ly_img_editor_sheet_format_text_label_font_size")) + unitSuffix)
     }
   }
 
@@ -300,13 +301,12 @@ struct TextFormatOptions: View {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_letter_case"))
     }
     Section {
-      PropertySlider<Float>(
+      PropertyStepper<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"),
         in: -0.15 ... 1.4,
+        step: 0.01,
         property: namespacedProperty("letterSpacing"),
       )
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_letter_spacing"))
     }
     // List style is hidden for captions: the engine has no cross-caption sync for it, so it would apply to
     // the selected caption only — out of step with the rest of the sheet, which fans out to the whole track.
@@ -314,24 +314,23 @@ struct TextFormatOptions: View {
       listStyleSelection
         .disabled(isTextOnPath)
     }
+    scriptStyleSelection
     Section {
-      PropertySlider<Float>(
+      PropertyStepper<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_line_height"),
         in: 0.5 ... 2.5,
+        step: 0.05,
         property: namespacedProperty("lineHeight"),
       )
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_line_height"))
     }
     .disabled(isTextOnPath)
     Section {
-      PropertySlider<Float>(
+      PropertyStepper<Float>(
         .imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"),
         in: 0 ... 2.5,
+        step: 0.05,
         property: namespacedProperty("paragraphSpacing"),
       )
-    } header: {
-      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_paragraph_spacing"))
     }
     .disabled(isTextOnPath)
   }
@@ -358,6 +357,24 @@ struct TextFormatOptions: View {
       .buttonStyle(.borderless)
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_format_text_label_list_style"))
+    }
+  }
+
+  var scriptStyleSelection: some View {
+    Section {
+      HStack {
+        let scriptStyle = interactor.bindScriptStyle(id)
+        PropertyButton(property: ScriptStyle.normal, selection: scriptStyle, allowsDeselection: false)
+        Spacer()
+        PropertyButton(property: ScriptStyle.superscript, selection: scriptStyle, allowsDeselection: false)
+        Spacer()
+        PropertyButton(property: ScriptStyle.subscript, selection: scriptStyle, allowsDeselection: false)
+      }
+      .padding([.leading, .trailing], 16)
+      .labelStyle(.iconOnly)
+      .buttonStyle(.borderless)
+    } header: {
+      Text(.imgly.localized("ly_img_editor_sheet_format_text_label_script_style"))
     }
   }
 }

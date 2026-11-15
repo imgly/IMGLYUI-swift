@@ -65,7 +65,7 @@ private struct Random: RandomNumberGenerator {
       }
       if property == .key(.fillSolidColor),
          let fillType: ColorFillType = try? engine.block.get(id, .fill, property: .key(.type)),
-         fillType == .gradient {
+         fillType.isGradient {
         let colorStops: [GradientColorStop] = try engine.block.get(id, .fill, property: .key(.fillGradientColors))
         if let color = colorStops.first?.color.cgColor {
           selectionColors.add(id, property: property, value: color, name: name)
@@ -82,7 +82,7 @@ private struct Random: RandomNumberGenerator {
     // Only solid/gradient fills have a readable `fill/solid/color`; others would throw.
     let hasFill: Bool = if try engine.block.supportsFill(id),
                            let fillType: ColorFillType = try? engine.block.get(id, .fill, property: .key(.type)) {
-      fillType == .solid || fillType == .gradient
+      fillType == .solid || fillType.isGradient
     } else {
       false
     }

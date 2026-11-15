@@ -243,7 +243,7 @@ extension Interactor: TimelineInteractor {
   /// Cross-track and new-track drops refresh synchronously to rebuild track membership.
   func applyDrop(clip: Clip, target: DropTarget, siblingOffsets: [DesignBlockID: CMTime]) {
     guard let engine else { return }
-    // A drop gives the moved clip and its old and new neighbours new cuts, so record the cuts first.
+    // Record transitions so the UI can report any that the engine removes after the drop.
     let cuts = transitionCuts(engine: engine, tracks: dropTracks(engine: engine, clip: clip, target: target))
     switch target {
     case let .newTrack(insertAt, timeOffset):
@@ -339,7 +339,6 @@ extension Interactor: TimelineInteractor {
 
       if isBackgroundReorder {
         try insertIntoBackgroundTrack(engine: engine, clip: clip, insertIndex: insertIndex)
-        try removeChangedTransitionCuts(engine: engine, cuts: cuts)
         if !sourceWasBackground {
           try resetCropAndFillParentForBackgroundDrop(engine: engine, clipID: clip.id)
         }
@@ -352,7 +351,6 @@ extension Interactor: TimelineInteractor {
           insertIndex: insertIndex,
           timeOffset: timeOffset,
           siblingOffsets: siblingOffsets,
-          cuts: cuts,
         )
       } else if isCrossTrack {
         // Standalone target — promote into a multi-clip track wrapping both clips.
@@ -363,7 +361,6 @@ extension Interactor: TimelineInteractor {
           insertIndex: insertIndex,
           timeOffset: timeOffset,
           siblingOffsets: siblingOffsets,
-          cuts: cuts,
         )
       } else {
         // Same standalone track — just move it.
@@ -466,10 +463,8 @@ extension Interactor: TimelineInteractor {
     insertIndex: Int,
     timeOffset: CMTime,
     siblingOffsets: [DesignBlockID: CMTime],
-    cuts: [DesignBlockID: DesignBlockID?],
   ) throws {
     try engine.block.insertChild(into: engineTrackID, child: clip.id, at: insertIndex)
-    try removeChangedTransitionCuts(engine: engine, cuts: cuts)
     let rawClips = try engine.block.getChildren(engineTrackID).map { id in
       let rawOffset = try CMTime(seconds: engine.block.getTimeOffset(id))
       let rawDuration = try CMTime(seconds: engine.block.getDuration(id))
@@ -486,7 +481,7 @@ extension Interactor: TimelineInteractor {
     }
     let movedClips = Set(siblingOffsets.keys).union([clip.id])
     let offsets = dropOffsets(clips: rawClips, draggedClip: clip.id, movedClips: movedClips) { outgoing, incoming in
-      transitionOverlap(engine: engine, outgoing: outgoing, incoming: incoming)
+      transitionOverlapForAdjacentPair(engine: engine, outgoing: outgoing, incoming: incoming)
     }
     // Only the changed offsets: reapplying an unchanged offset invokes Track::layout() and can mutate
     // unrelated clips when the drag is released.
@@ -502,7 +497,6 @@ extension Interactor: TimelineInteractor {
     insertIndex: Int,
     timeOffset: CMTime,
     siblingOffsets: [DesignBlockID: CMTime],
-    cuts: [DesignBlockID: DesignBlockID?],
   ) throws {
     guard let pageID = timelineProperties.currentPage,
           let targetSolo = targetTrack.clips.first else { return }
@@ -517,7 +511,6 @@ extension Interactor: TimelineInteractor {
     try engine.block.insertChild(into: pageID, child: newEngineTrack, at: pageIndex)
     try engine.block.appendChild(to: newEngineTrack, child: targetSolo.id)
     try engine.block.insertChild(into: newEngineTrack, child: clip.id, at: insertIndex)
-    try removeChangedTransitionCuts(engine: engine, cuts: cuts)
 
     let soloOffset = siblingOffsets[targetSolo.id] ?? targetSolo.timeOffset
     try engine.block.setTimeOffset(targetSolo.id, offset: soloOffset.seconds)
@@ -619,7 +612,6 @@ extension Interactor: TimelineInteractor {
       try engine.block.setBool(newEngineTrack, property: "track/automaticallyManageBlockOffsets", value: false)
       try engine.block.insertChild(into: pageID, child: newEngineTrack, at: engineInsertionIndex)
       try engine.block.insertChild(into: newEngineTrack, child: clip.id, at: 0)
-      try removeChangedTransitionCuts(engine: engine, cuts: cuts)
       try engine.block.setTimeOffset(clip.id, offset: timeOffset.seconds)
 
       addUndoStep()
@@ -671,20 +663,30 @@ extension Interactor: TimelineInteractor {
   ///   - duration: The transition-projected duration visible in the timeline.
   func setTrim(clip: Clip, timeOffset: CMTime, trimOffset: CMTime, duration: CMTime) {
     guard let engine else { return }
-    let transitionClips = trackTransitionClips(engine: engine, block: clip.id)
     let timing = transitionTiming(engine: engine, clip: clip.id, renderedDuration: duration)
-    setTimeOffset(clip: clip, timeOffset: max(.zero, timeOffset - timing.trim.lead))
+    // A shorter start at a transition keeps the start, so the clips stay joined and the engine moves the clips
+    // after it.
+    let keepsStart = !clip.isInBackgroundTrack && clip.joinedPredecessor != nil && timeOffset > clip.timeOffset
+    if !keepsStart, timeOffset - timing.trim.lead != clip.rawTimeOffset {
+      setTimeOffset(clip: clip, timeOffset: max(.zero, timeOffset - timing.trim.lead))
+    }
     setTrimOffset(clip: clip, trimOffset: trimOffset)
+
+    // The engine joins the clip to the clip before it again when its duration changes, so a longer start pushes the
+    // clips before it first.
+    let track = timelineProperties.dataSource.findTrack(containing: clip)
+    if let track, !keepsStart {
+      packAndPersistTrackClips(track: track, selectedClipID: clip.id, timing: timing)
+    }
     setDuration(clip: clip, duration: timing.rawDuration)
 
     // Call refresh manually to apply the change immediately (without a glitch):
     refresh(clip: clip)
-
-    // Keep raw sibling bounds valid after an engine trim. This applies to the
-    // background track as well; transition-projected cells must never be written
-    // back as engine timing.
-    if let track = timelineProperties.dataSource.findTrack(containing: clip) {
-      packAndPersistTrackClips(track: track, selectedClipID: clip.id)
+    if let track {
+      for trackClip in track.clips {
+        refresh(clip: trackClip, updatingSnapDetents: false)
+      }
+      timelineProperties.dataSource.updateSnapDetents()
     }
 
     // Sync now so anchored UI (e.g. "+ Add Clip") doesn't flicker before the async
@@ -692,7 +694,6 @@ extension Interactor: TimelineInteractor {
     updateDurations()
 
     addUndoStep()
-    notifyRemovedTransitions(engine: engine, clips: transitionClips)
   }
 
   /// The clips with a transition on the track of `block`, which an edit of `block` can separate from their partners.
@@ -703,28 +704,40 @@ extension Interactor: TimelineInteractor {
 
   /// Mirrors Android's `packAndPersistSiblings`. The timeline cells are transition-
   /// projected, so layout decisions and writes must use the raw engine extents.
-  private func packAndPersistTrackClips(track: Track, selectedClipID: DesignBlockID) {
+  /// - Parameter timing: The raw timing of the selected clip after the trim, which the engine does not hold yet.
+  private func packAndPersistTrackClips(track: Track, selectedClipID: DesignBlockID, timing: TransitionTiming) {
     guard let engine else { return }
 
-    let sorted = rawTrackClips(track: track, engine: engine)
+    var sorted = rawTrackClips(track: track, engine: engine)
 
     guard let pivotIndex = sorted.firstIndex(where: { $0.clip.id == selectedClipID }) else { return }
+    sorted[pivotIndex].duration = timing.rawDuration
 
+    // The overlap of a transition is twice the trim it draws at each clip.
+    let leadOverlap = timing.trim.lead + timing.trim.lead
+    let tailOverlap = timing.trim.tail + timing.trim.tail
     var overrides: [DesignBlockID: CMTime] = [:]
-    packPrecedingTrackClips(sorted: sorted, pivotIndex: pivotIndex, engine: engine, overrides: &overrides)
-    packSucceedingTrackClips(sorted: sorted, pivotIndex: pivotIndex, engine: engine, overrides: &overrides)
+    packPrecedingTrackClips(
+      sorted: sorted,
+      pivotIndex: pivotIndex,
+      pivotOverlap: leadOverlap,
+      engine: engine,
+      overrides: &overrides,
+    )
+    packSucceedingTrackClips(
+      sorted: sorted,
+      pivotIndex: pivotIndex,
+      pivotOverlap: tailOverlap,
+      engine: engine,
+      overrides: &overrides,
+    )
     persistTrackClipOffsets(overrides, engine: engine)
-
-    for clip in track.clips {
-      refresh(clip: clip, updatingSnapDetents: false)
-    }
-    timelineProperties.dataSource.updateSnapDetents()
   }
 
   private struct RawTrackClip {
     let clip: Clip
     let timeOffset: CMTime
-    let duration: CMTime
+    var duration: CMTime
   }
 
   private func rawTrackClips(track: Track, engine: Engine) -> [RawTrackClip] {
@@ -741,8 +754,13 @@ extension Interactor: TimelineInteractor {
 
   // Push preceding clips left only if the trim now overlaps them. Preserve a
   // real transition's raw overlap instead of treating projected cells as gaps.
+  // `pivotOverlap` is the overlap of the clip before the pivot with the pivot after the trim.
   private func packPrecedingTrackClips(
-    sorted: [RawTrackClip], pivotIndex: Int, engine: Engine, overrides: inout [DesignBlockID: CMTime],
+    sorted: [RawTrackClip],
+    pivotIndex: Int,
+    pivotOverlap: CMTime,
+    engine: Engine,
+    overrides: inout [DesignBlockID: CMTime],
   ) {
     var next = sorted[pivotIndex]
     var nextStart = next.timeOffset
@@ -751,7 +769,9 @@ extension Interactor: TimelineInteractor {
       if neighbor.clip.isLocked {
         break
       }
-      let overlap = transitionOverlap(engine: engine, outgoing: neighbor.clip.id, incoming: next.clip.id)
+      let overlap = index == pivotIndex - 1
+        ? pivotOverlap
+        : transitionOverlap(engine: engine, outgoing: neighbor.clip.id, incoming: next.clip.id)
       let desiredEnd = nextStart + overlap
       guard neighbor.timeOffset + neighbor.duration > desiredEnd else { break }
       let newOffset = max(.zero, desiredEnd - neighbor.duration)
@@ -762,9 +782,15 @@ extension Interactor: TimelineInteractor {
   }
 
   // The background lane packs successors; other tracks move only the clips that
-  // would overlap the committed raw bounds. This is the same rule Android uses.
+  // would overlap the committed raw bounds. The engine moves the clips that
+  // transitions join after the pivot when its duration changes.
+  // `pivotOverlap` is the overlap of the pivot with the next clip after the trim.
   private func packSucceedingTrackClips(
-    sorted: [RawTrackClip], pivotIndex: Int, engine: Engine, overrides: inout [DesignBlockID: CMTime],
+    sorted: [RawTrackClip],
+    pivotIndex: Int,
+    pivotOverlap: CMTime,
+    engine: Engine,
+    overrides: inout [DesignBlockID: CMTime],
   ) {
     let pivot = sorted[pivotIndex]
     var previous = pivot
@@ -774,7 +800,13 @@ extension Interactor: TimelineInteractor {
       if neighbor.clip.isLocked {
         break
       }
-      let overlap = transitionOverlap(engine: engine, outgoing: previous.clip.id, incoming: neighbor.clip.id)
+      let overlap: CMTime = if pivot.clip.isInBackgroundTrack {
+        transitionOverlapForAdjacentPair(engine: engine, outgoing: previous.clip.id, incoming: neighbor.clip.id)
+      } else if index == pivotIndex + 1 {
+        pivotOverlap
+      } else {
+        transitionOverlap(engine: engine, outgoing: previous.clip.id, incoming: neighbor.clip.id)
+      }
       let desiredStart = previousEnd - overlap
       if !pivot.clip.isInBackgroundTrack, neighbor.timeOffset >= desiredStart {
         break
@@ -1428,7 +1460,16 @@ extension Interactor: TimelineInteractor {
   /// transition duration at each clip edge for the seam to occupy, while raw timing
   /// remains available to trimming and engine mutations.
   private func applyTransitionGeometry(engine: Engine, to track: Track) {
+    let children = track.engineTrackID.flatMap { try? engine.block.getChildren($0) } ?? []
+    var predecessors: [DesignBlockID: DesignBlockID] = [:]
+    for (outgoing, incoming) in zip(children, children.dropFirst())
+      where transitionDuration(engine: engine, outgoing: outgoing, incoming: incoming) > .zero {
+      predecessors[incoming] = outgoing
+    }
     for clip in track.clips {
+      if clip.joinedPredecessor != predecessors[clip.id] {
+        clip.joinedPredecessor = predecessors[clip.id]
+      }
       guard let rawDuration = clip.rawDuration else { continue }
       let trim = transitionTrim(engine: engine, clip: clip.id)
       let renderedDuration = max(.zero, rawDuration - trim.lead - trim.tail)
@@ -1627,9 +1668,9 @@ extension Interactor: TimelineInteractor {
     do {
       try engine.block.setVisible(scrubbingPreviewLayer, visible: true)
 
-      // We copy the fill and reset its trimOffset and trimLength.
-      // Then we apply it to an extra previewing block that is dynamically shown and hidden.
-      let fillID = clip.trimmableID
+      // The preview layer plays a copy of the fill from its start to its end. A trim of the clip's own fill would
+      // change the length of the clip and move the clips after it.
+      let fillID = try engine.block.duplicate(clip.trimmableID)
       try engine.block.setFill(scrubbingPreviewLayer, fill: fillID)
       try engine.block.setTrimOffset(fillID, offset: 0)
       try engine.block.setTrimLength(fillID, length: footageDuration.seconds)
@@ -2007,11 +2048,24 @@ extension Interactor: TimelineInteractor {
   }
 
   func toggleIsLoopingPlaybackEnabled() {
+    guard let engine, let pageID = timelineProperties.currentPage else { return }
+    do {
+      // Reads the engine, because `isLoopingPlaybackEnabled` follows a change from elsewhere, such as an undo, only on
+      // the next state update.
+      try setLoopingPlaybackEnabled(!engine.block.isLooping(pageID))
+    } catch {
+      handleError(error)
+    }
+  }
+
+  func setLoopingPlaybackEnabled(_ enabled: Bool) {
     guard let engine,
           let pageID = timelineProperties.currentPage else { return }
     do {
       timelineProperties.timeline?.animationPreview.stop(engine: engine, pageID: pageID)
-      try engine.block.setLooping(pageID, looping: !isLoopingPlaybackEnabled)
+      try engine.block.setLooping(pageID, looping: enabled)
+      // Readers such as the playhead wrap see the new value before the engine's next state update.
+      isLoopingPlaybackEnabled = enabled
     } catch {
       handleError(error)
     }

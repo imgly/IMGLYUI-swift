@@ -54,50 +54,64 @@ import SwiftUI
     }
   }
 
-  var cursor: some View {
+  /// Above the ruler, so no tick runs through the digits.
+  var valueLabel: some View {
     Text(formatNonNegativeZero(value))
-      .padding(4)
-      .font(.headline)
+      .font(.subheadline.weight(.semibold).monospacedDigit())
       .foregroundStyle(cursorColor)
+      .lineLimit(1)
+      .minimumScaleFactor(0.8)
+  }
+
+  var cursorShape: some View {
+    Capsule()
+      .frame(width: 2, height: 20)
+  }
+
+  var cursor: some View {
+    cursorShape
+      .foregroundStyle(cursorColor)
+      .allowsHitTesting(false)
   }
 
   @_spi(Internal) public var body: some View {
-    ScalePicker(value: $value, in: bounds, neutralValue: neutralValue,
-                tickStep: tickStep, tickSpacing: tickSpacing, onEditingChanged: onEditingChanged)
-      .imgly.inverseMask(alignment: .center) {
-        cursor
-          .background()
-      }
-      .overlay {
-        cursor
-          .allowsHitTesting(false)
-      }
-      .mask {
-        GeometryReader { geo in
-          let colors: [Color] = [.black.opacity(0.1), .black.opacity(1.0)]
-          HStack(spacing: 0) {
-            Rectangle()
-              .fill(.linearGradient(colors: colors, startPoint: .leading, endPoint: .trailing))
-            Rectangle()
-              .frame(width: geo.size.width * 2 / 3)
-            Rectangle()
-              .fill(.linearGradient(colors: colors, startPoint: .trailing, endPoint: .leading))
+    // The label overlaps the empty top of the 44 pt touch area.
+    VStack(spacing: -8) {
+      valueLabel
+      ScalePicker(value: $value, in: bounds, neutralValue: neutralValue,
+                  tickStep: tickStep, tickSpacing: tickSpacing, onEditingChanged: onEditingChanged)
+        .mask {
+          GeometryReader { geo in
+            let colors: [Color] = [.black.opacity(0.1), .black.opacity(1.0)]
+            HStack(spacing: 0) {
+              Rectangle()
+                .fill(.linearGradient(colors: colors, startPoint: .leading, endPoint: .trailing))
+              Rectangle()
+                .frame(width: geo.size.width * 2 / 3)
+              Rectangle()
+                .fill(.linearGradient(colors: colors, startPoint: .trailing, endPoint: .leading))
+            }
+            .environment(\.layoutDirection, .leftToRight)
           }
-          .environment(\.layoutDirection, .leftToRight)
         }
+        // The ticks are translucent, so the one under the marker is cut out.
+        .imgly.inverseMask(alignment: .center) { cursorShape }
+        .overlay { cursor }
+    }
+    // Otherwise the row separator starts at the centred label.
+    .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
+    .accessibilityElement()
+    .accessibilityValue(format(value))
+    .accessibilityAdjustableAction { direction in
+      let bounds = ClosedRange(uncheckedBounds: (lower: V(bounds.lowerBound), upper: V(bounds.upperBound)))
+      switch direction {
+      case .increment:
+        value = (value + 1).clamped(to: bounds)
+      case .decrement:
+        value = (value - 1).clamped(to: bounds)
+      @unknown default:
+        break
       }
-      .accessibilityElement()
-      .accessibilityValue(format(value))
-      .accessibilityAdjustableAction { direction in
-        let bounds = ClosedRange(uncheckedBounds: (lower: V(bounds.lowerBound), upper: V(bounds.upperBound)))
-        switch direction {
-        case .increment:
-          value = (value + 1).clamped(to: bounds)
-        case .decrement:
-          value = (value - 1).clamped(to: bounds)
-        @unknown default:
-          break
-        }
-      }
+    }
   }
 }

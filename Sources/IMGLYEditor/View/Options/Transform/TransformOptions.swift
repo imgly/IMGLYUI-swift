@@ -128,5 +128,6 @@ struct TransformOptions<Item: View>: View {
         .foregroundStyle(isSelected ? Color.accentColor : .primary)
         .clipShape(Capsule())
     }
+    .accessibilityAddTraits(isSelected ? .isSelected : [])
   }
 }

@@ -10,16 +10,16 @@ struct FillColorOptions: View {
 
   var body: some View {
     if interactor.supportsFill(id) {
-      MenuPicker<ColorFillType.AllCases>(
+      MenuPicker<[ColorFillType]>(
         title: .imgly.localized("ly_img_editor_sheet_fill_stroke_label_type"),
-        data: ColorFillType.allCases,
+        data: ColorFillType.offered,
         selection: $fillType,
       )
       // Text and captions support only a solid fill — no gradient (captions also sync only the solid color).
       .disabled(interactor.sheet.content == .text || interactor.sheet.content == .caption)
       .accessibilityLabel("Fill Type")
 
-      if interactor.isGradientFill(id), fillType == .gradient {
+      if interactor.isGradientFill(id), fillType?.isGradient == true {
         GradientOptions()
       } else if interactor.isSolidFill(id) {
         let colorsBinding = interactor.bind(
@@ -102,29 +102,47 @@ struct FillColorOptions: View {
   }
 }
 
+/// The colors of a gradient, and the angle of a linear one: the fill of the selected block, or with `.strokeFill` the
+/// fill that paints its stroke.
 struct GradientOptions: View {
   @EnvironmentObject private var interactor: Interactor
   @Environment(\.imglySelection) private var id
 
+  var propertyBlock: PropertyBlock = .fill
+
+  /// The stroke's labels differ from the fill's, so a sheet that shows both gradients names each control once.
+  private var labelPrefix: String {
+    propertyBlock == .strokeFill ? "Stroke " : ""
+  }
+
+  private var style: ColorPropertyButtonStyle {
+    propertyBlock == .strokeFill ? .stroke : .fill
+  }
+
   var body: some View {
-    if interactor.isGradientFill(id) {
+    if interactor.isGradientFill(id, propertyBlock) {
       ColorOptions(title: .imgly.localized("ly_img_editor_sheet_gradient_color_picker_title_start"),
                    color: gradientBinding(.start, defaultValue: .imgly.black),
-                   addUndoStep: interactor.addUndoStep)
+                   addUndoStep: interactor.addUndoStep,
+                   style: style)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Gradient Start Color")
-      MeasurementScalePicker(value: gradientAngleBinding(), unit: UnitAngle.degrees, in: -180 ... 180,
-                             tickStep: 3, tickSpacing: 10) { started in
-        if !started {
-          interactor.addUndoStep()
+        .accessibilityLabel("\(labelPrefix)Gradient Start Color")
+      // A radial or conical gradient has no angle.
+      if interactor.isLinearGradientFill(id, propertyBlock) {
+        MeasurementScalePicker(value: gradientAngleBinding(), unit: UnitAngle.degrees, in: -180 ... 180,
+                               tickStep: 3, tickSpacing: 10) { started in
+          if !started {
+            interactor.addUndoStep()
+          }
         }
+        .accessibilityLabel("\(labelPrefix)Gradient Angle")
       }
-      .accessibilityLabel("Gradient Angle")
       ColorOptions(title: .imgly.localized("ly_img_editor_sheet_gradient_color_picker_title_end"),
                    color: gradientBinding(.end, defaultValue: .imgly.black),
-                   addUndoStep: interactor.addUndoStep)
+                   addUndoStep: interactor.addUndoStep,
+                   style: style)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Gradient End Color")
+        .accessibilityLabel("\(labelPrefix)Gradient End Color")
     }
   }
 }
@@ -140,10 +158,13 @@ extension GradientOptions {
   typealias GradientColorStop = Interactor.GradientColorStop
 
   private func gradientBinding(_ position: GradientPosition, defaultValue: CGColor) -> Binding<CGColor> {
+    let propertyBlock = propertyBlock
     let getter: Interactor.PropertyGetter<CGColor> = { engine, id, _, _ in
       do {
         let colorStops: [GradientColorStop] = try engine.block
-          .get(id, .fill, property: .key(.fillGradientColors))
+          .get(id, propertyBlock, property: .key(.fillGradientColors))
+        // A gradient from the API can have one stop, so the end stop can be missing.
+        guard colorStops.indices.contains(position.rawValue) else { return defaultValue }
         return colorStops[position.rawValue].color.cgColor ?? defaultValue
       } catch {
         return defaultValue
@@ -156,7 +177,8 @@ extension GradientOptions {
       try blocks.forEach {
         guard let color = Interactor.Color(cgColor: value) else { return }
         var colorStops: [GradientColorStop] = try engine.block
-          .get($0, .fill, property: .key(.fillGradientColors))
+          .get($0, propertyBlock, property: .key(.fillGradientColors))
+        guard colorStops.indices.contains(position.rawValue) else { return }
 
         let original = colorStops[position.rawValue]
         if original.color != color {
@@ -164,7 +186,7 @@ extension GradientOptions {
           let modified = GradientColorStop(color: color, stop: original.stop)
           colorStops[position.rawValue] = modified
 
-          try engine.block.set($0, .fill, property: .key(.fillGradientColors), value: colorStops)
+          try engine.block.set($0, propertyBlock, property: .key(.fillGradientColors), value: colorStops)
         }
       }
 
@@ -173,7 +195,7 @@ extension GradientOptions {
 
     return interactor.bind(
       id,
-      .fill,
+      propertyBlock,
       property: .key(.fillGradientColors),
       default: defaultValue,
       getter: getter,
@@ -182,6 +204,7 @@ extension GradientOptions {
   }
 
   private func gradientAngleBinding() -> Binding<Double> {
+    let propertyBlock = propertyBlock
     let properties: [Property] = [
       .key(.fillGradientLinearStartX),
       .key(.fillGradientLinearStartY),
@@ -190,7 +213,7 @@ extension GradientOptions {
     ]
 
     let gradientAngleGetter: Interactor.PropertyGetter<Double> = { engine, id, _, _ in
-      let points: [Float] = try properties.map { try engine.block.get(id, .fill, property: $0) }
+      let points: [Float] = try properties.map { try engine.block.get(id, propertyBlock, property: $0) }
       let pointsCG = points.map { Double($0) }
       let start = CGPoint(x: pointsCG[0], y: pointsCG[1])
       let end = CGPoint(x: pointsCG[2], y: pointsCG[3])
@@ -203,14 +226,14 @@ extension GradientOptions {
 
       let changed = try blocks.filter { id in
         try points.enumerated().contains { index, value in
-          let currentValue: Float = try engine.block.get(id, .fill, property: properties[index])
+          let currentValue: Float = try engine.block.get(id, propertyBlock, property: properties[index])
           return currentValue != Float(value)
         }
       }
 
       try changed.forEach { id in
         try points.enumerated().forEach { index, value in
-          try engine.block.set(id, .fill, property: properties[index], value: Float(value))
+          try engine.block.set(id, propertyBlock, property: properties[index], value: Float(value))
         }
       }
 

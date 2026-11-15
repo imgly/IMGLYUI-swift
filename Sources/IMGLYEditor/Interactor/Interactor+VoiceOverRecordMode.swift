@@ -628,7 +628,7 @@ final class VoiceOverRecordCoordinator: AudioRecordDelegate {
   private func restorePlaybackEnvironment() {
     guard let interactor else { return }
     if wasLoopingPlaybackEnabled {
-      interactor.toggleIsLoopingPlaybackEnabled()
+      interactor.setLoopingPlaybackEnabled(true)
     }
     if !wasPageMuted {
       interactor.setPageMuted(false)
@@ -658,7 +658,7 @@ final class VoiceOverRecordCoordinator: AudioRecordDelegate {
       recordingOriginalPageDuration = try? engine.block.getDuration(currentPage)
       wasLoopingPlaybackEnabled = interactor.isLoopingPlaybackEnabled
       if wasLoopingPlaybackEnabled {
-        interactor.toggleIsLoopingPlaybackEnabled()
+        interactor.setLoopingPlaybackEnabled(false)
       }
       wasPageMuted = (try? engine.block.isMuted(currentPage)) ?? false
       if interactor.isVoiceOverRecordModeMuteOtherAudio, !wasPageMuted {
