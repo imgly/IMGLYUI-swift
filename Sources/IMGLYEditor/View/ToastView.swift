@@ -25,5 +25,9 @@ struct ToastView: View {
     .padding(.vertical, 8)
     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     .shadow(color: Color.black.opacity(0.15), radius: 6, x: 0, y: 3)
+    .onAppear {
+      // The toast does not take the VoiceOver focus, so VoiceOver reads it only as an announcement.
+      UIAccessibility.post(notification: .announcement, argument: String(localized: message))
+    }
   }
 }

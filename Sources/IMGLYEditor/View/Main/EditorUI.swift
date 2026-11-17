@@ -23,7 +23,7 @@ import SwiftUI
   @State private var interactivePopGestureRecognizer: UIGestureRecognizer?
 
   @_spi(Internal) public var body: some View {
-    Canvas(zoomPadding: zoomPadding)
+    Canvas(zoomPadding: zoomPadding) { canvasGeometry = $0 }
       .background {
         Color(uiColor: .systemGroupedBackground)
           .ignoresSafeArea()
@@ -41,9 +41,6 @@ import SwiftUI
         }
       }
       .toolbarBackground(.visible, for: .navigationBar)
-      .onPreferenceChange(CanvasGeometryKey.self) { newValue in
-        canvasGeometry = newValue
-      }
       .onChange(of: canvasGeometry) { newValue in
         updateZoom(for: .canvasGeometryChanged, canvasGeometry: newValue)
       }

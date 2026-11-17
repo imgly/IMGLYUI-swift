@@ -39,6 +39,7 @@ struct ColorOptions: View {
 
   @State private var showColorPicker = false
   @Environment(\.imglyEditorEnvironment) private var editorEnvironment
+  @Environment(\.imglyDisplayColor) private var displayColor
 
   private var colorPalette: [NamedColor] {
     editorEnvironment.colorPalette ?? ColorPalette.defaultValue
@@ -94,7 +95,13 @@ struct ColorOptions: View {
         Spacer()
       }
 
-      ColorPicker("Color Picker", selection: color)
+      // The well draws the canvas color, and a pick still writes through `color`.
+      let wellColor = Binding<CGColor> {
+        displayColor(color.wrappedValue)
+      } set: {
+        color.wrappedValue = $0
+      }
+      ColorPicker("Color Picker", selection: wellColor)
         .labelsHidden()
         .onTapGesture {
           // Override normal tap and show custom color picker instead.

@@ -35,19 +35,20 @@ extension TransformOptions {
 
     func loadGroups() {
       Task {
-        let groups = try? await withThrowingTaskGroup(of: [String].self) { group in
+        let groups = try? await withThrowingTaskGroup(of: (Int, [String]).self) { group in
           let interactor = self.interactor
-          for source in sources {
+          for (index, source) in sources.enumerated() {
             group.addTask {
-              try await interactor.getGroups(sourceID: source.id)
+              (index, try await interactor.getGroups(sourceID: source.id))
             }
           }
 
-          var allGroups = [String]()
-          for try await _group in group {
-            allGroups.append(contentsOf: _group)
+          // The first source owns the initial category, regardless of which request finishes first.
+          var allGroups = Array(repeating: [String](), count: sources.count)
+          for try await (index, groups) in group {
+            allGroups[index] = groups
           }
-          return allGroups
+          return allGroups.flatMap(\.self)
         }
 
         guard let groups, let initialGroup = groups.first else { return }

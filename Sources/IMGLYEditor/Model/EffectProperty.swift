@@ -23,11 +23,24 @@ struct EffectProperty: Identifiable {
     case `enum`(options: [EnumOption], defaultValue: String?)
   }
 
+  /// How a `.float`/`.double` value renders. Declared with the property
+  /// instead of guessed from its range in the view, so the same range can
+  /// be a slider for one property and a stepper for another.
+  enum ControlKind {
+    /// A drag control. `nil` steps by 1% of the range. The default for
+    /// every property.
+    case slider(step: Float?)
+    /// Buttons that move the value by a fixed amount, for a value users
+    /// know the number for.
+    case stepper(step: Float)
+  }
+
   let label: LocalizedStringResource
   let value: Value
   let property: Property
   let id: Interactor.BlockID?
   var assetContext: AssetContext?
+  var controlKind: ControlKind = .slider(step: nil)
 
   static func properties(for filter: Filter, and selection: Interactor.BlockID?) -> [EffectProperty] {
     let isLUT = filter == .lut
@@ -170,12 +183,14 @@ struct EffectProperty: Identifiable {
           value: .float(range: 5 ... 50, defaultValue: 20),
           property: .key(.effectPixelizeHorizontalPixelSize),
           id: selection,
+          controlKind: .slider(step: 1),
         ),
         EffectProperty(
           label: .imgly.localized("ly_img_editor_sheet_effect_label_pixelize_vertical_count"),
           value: .float(range: 5 ... 50, defaultValue: 20),
           property: .key(.effectPixelizeVerticalPixelSize),
           id: selection,
+          controlKind: .slider(step: 1),
         ),
       ]
     case .radialPixel:
@@ -200,6 +215,7 @@ struct EffectProperty: Identifiable {
           value: .float(range: 1 ... 10, defaultValue: 5),
           property: .key(.effectCrossCutSlices),
           id: selection,
+          controlKind: .stepper(step: 1),
         ),
         EffectProperty(
           label: .imgly.localized("ly_img_editor_sheet_effect_label_cross_cut_horizontal_offset"),
@@ -263,6 +279,7 @@ struct EffectProperty: Identifiable {
           value: .float(range: 1 ... 80, defaultValue: 30),
           property: .key(.effectDotPatternDots),
           id: selection,
+          controlKind: .slider(step: 1),
         ),
         EffectProperty(
           label: .imgly.localized("ly_img_editor_sheet_effect_label_dot_pattern_size"),
@@ -283,6 +300,7 @@ struct EffectProperty: Identifiable {
         value: .float(range: 1 ... 15, defaultValue: 3),
         property: .key(.effectPosterizeLevels),
         id: selection,
+        controlKind: .stepper(step: 1),
       )]
     case .tvGlitch:
       [
@@ -309,6 +327,7 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 3, defaultValue: 1),
           property: .key(.effectTvGlitchRollSpeed),
           id: selection,
+          controlKind: .slider(step: 0.1),
         ),
       ]
     case .halfTone:
@@ -346,6 +365,7 @@ struct EffectProperty: Identifiable {
           value: .float(range: 0 ... 6.3, defaultValue: 0.3),
           property: .key(.effectShifterAngle),
           id: selection,
+          controlKind: .slider(step: 0.1),
         ),
       ]
     case .mirror:
@@ -354,6 +374,7 @@ struct EffectProperty: Identifiable {
         value: .float(range: 0 ... 3, defaultValue: 1),
         property: .key(.effectMirrorSide),
         id: selection,
+        controlKind: .slider(step: 1),
       )]
     case .glow:
       [

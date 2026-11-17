@@ -21,6 +21,8 @@ struct SelectableItem<Content: View>: View {
         .lineLimit(1)
         // Keep a long title from widening the item beyond its thumbnail (matches the 80pt thumbnail).
         .frame(maxWidth: 80)
+        // The label below also reaches the caption, so VoiceOver would read the title twice.
+        .accessibilityHidden(true)
     }
     .accessibilityLabel(title)
   }

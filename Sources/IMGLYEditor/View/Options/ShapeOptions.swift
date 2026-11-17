@@ -10,37 +10,38 @@ struct ShapeOptions: View {
     switch interactor.shapeType(id) {
     case .star:
       Section {
-        PropertySlider<Float>(
+        PropertyStepper<Float>(
           .imgly.localized("ly_img_editor_sheet_shape_label_points"),
           in: 3 ... 12,
           step: 1,
           property: .key(.shapeStarPoints),
+          decimals: 0,
           propertyBlock: .shape,
         )
-      } header: {
-        Text(.imgly.localized("ly_img_editor_sheet_shape_label_points"))
       }
       Section {
+        // The percentage heuristic would otherwise show a fabricated 0-100%
+        // and render this range's non-zero minimum (0.1) as 0.
         PropertySlider<Float>(
           .imgly.localized("ly_img_editor_sheet_shape_label_inner_diameter"),
           in: 0.1 ... 1,
           property: .key(.shapeStarInnerDiameter),
           propertyBlock: .shape,
+          disableAutoPercentage: true,
         )
       } header: {
         Text(.imgly.localized("ly_img_editor_sheet_shape_label_inner_diameter"))
       }
     case .polygon:
       Section {
-        PropertySlider<Float>(
+        PropertyStepper<Float>(
           .imgly.localized("ly_img_editor_sheet_shape_label_sides"),
           in: 3 ... 12,
           step: 1,
           property: .key(.shapePolygonSides),
+          decimals: 0,
           propertyBlock: .shape,
         )
-      } header: {
-        Text(.imgly.localized("ly_img_editor_sheet_shape_label_sides"))
       }
       Section {
         PropertySlider<Float>(
@@ -65,6 +66,7 @@ struct ShapeOptions: View {
             return try cornerRadius / engine.block.getRadiusFactor(block)
           },
           propertyBlock: .shape,
+          showsReadout: false,
         )
       } header: {
         Text(.imgly.localized("ly_img_editor_sheet_shape_label_round_corners"))
@@ -81,41 +83,49 @@ struct ShapeOptions: View {
   }
 
   var rectCornerRadiusSlider: some View {
-    RawSlider<Float>(.imgly.localized("ly_img_editor_sheet_shape_label_round_corners"),
-                     in: 0 ... 1) { engine, blocks, value, completion in
-      let changed = try blocks.filter {
-        let ratio = try engine.block.getRadiusFactor($0) * value
-        let cornerRadiusTL: Float = try engine.block.get($0, .shape, property: .key(.shapeRectCornerRadiusTL))
-        let cornerRadiusTR: Float = try engine.block.get($0, .shape, property: .key(.shapeRectCornerRadiusTR))
-        let cornerRadiusBL: Float = try engine.block.get($0, .shape, property: .key(.shapeRectCornerRadiusBL))
-        let cornerRadiusBR: Float = try engine.block.get($0, .shape, property: .key(.shapeRectCornerRadiusBR))
-        return cornerRadiusTL != ratio || cornerRadiusTR != ratio || cornerRadiusBL != ratio || cornerRadiusBR != ratio
-      }
+    PropertySlider<Float>(
+      .imgly.localized("ly_img_editor_sheet_shape_label_round_corners"),
+      in: 0 ... 1,
+      property: .raw("shape/rect/cornerRadius"),
+      setter: { engine, blocks, _, _, value, completion in
+        let changed = try blocks.filter {
+          let ratio = try engine.block.getRadiusFactor($0) * value
+          let cornerRadiusTL: Float = try engine.block.get($0, .shape, property: .key(.shapeRectCornerRadiusTL))
+          let cornerRadiusTR: Float = try engine.block.get($0, .shape, property: .key(.shapeRectCornerRadiusTR))
+          let cornerRadiusBL: Float = try engine.block.get($0, .shape, property: .key(.shapeRectCornerRadiusBL))
+          let cornerRadiusBR: Float = try engine.block.get($0, .shape, property: .key(.shapeRectCornerRadiusBR))
+          return cornerRadiusTL != ratio || cornerRadiusTR != ratio || cornerRadiusBL != ratio || cornerRadiusBR !=
+            ratio
+        }
 
-      try changed.forEach {
-        let ratio = try engine.block.getRadiusFactor($0) * value
-        try engine.block.set($0, .shape, property: .key(.shapeRectCornerRadiusTL), value: ratio)
-        try engine.block.set($0, .shape, property: .key(.shapeRectCornerRadiusTR), value: ratio)
-        try engine.block.set($0, .shape, property: .key(.shapeRectCornerRadiusBL), value: ratio)
-        try engine.block.set($0, .shape, property: .key(.shapeRectCornerRadiusBR), value: ratio)
-      }
+        try changed.forEach {
+          let ratio = try engine.block.getRadiusFactor($0) * value
+          try engine.block.set($0, .shape, property: .key(.shapeRectCornerRadiusTL), value: ratio)
+          try engine.block.set($0, .shape, property: .key(.shapeRectCornerRadiusTR), value: ratio)
+          try engine.block.set($0, .shape, property: .key(.shapeRectCornerRadiusBL), value: ratio)
+          try engine.block.set($0, .shape, property: .key(.shapeRectCornerRadiusBR), value: ratio)
+        }
 
-      let hasChanges = !changed.isEmpty
-      return try (completion?(engine, blocks, hasChanges) ?? false) || hasChanges
-    } getter: { engine, block in
-      let cornerRadiusTL: Float = try engine.block.get(block, .shape, property: .key(.shapeRectCornerRadiusTL))
-      let cornerRadiusTR: Float = try engine.block.get(block, .shape, property: .key(.shapeRectCornerRadiusTR))
-      let cornerRadiusBL: Float = try engine.block.get(block, .shape, property: .key(.shapeRectCornerRadiusBL))
-      let cornerRadiusBR: Float = try engine.block.get(block, .shape, property: .key(.shapeRectCornerRadiusBR))
-      let cornerRadius = [
-        cornerRadiusTL,
-        cornerRadiusTR,
-        cornerRadiusBL,
-        cornerRadiusBR,
-      ].max() ?? 0
+        let hasChanges = !changed.isEmpty
+        return try (completion?(engine, blocks, hasChanges) ?? false) || hasChanges
+      },
+      getter: { engine, block, _, _ in
+        let cornerRadiusTL: Float = try engine.block.get(block, .shape, property: .key(.shapeRectCornerRadiusTL))
+        let cornerRadiusTR: Float = try engine.block.get(block, .shape, property: .key(.shapeRectCornerRadiusTR))
+        let cornerRadiusBL: Float = try engine.block.get(block, .shape, property: .key(.shapeRectCornerRadiusBL))
+        let cornerRadiusBR: Float = try engine.block.get(block, .shape, property: .key(.shapeRectCornerRadiusBR))
+        let cornerRadius = [
+          cornerRadiusTL,
+          cornerRadiusTR,
+          cornerRadiusBL,
+          cornerRadiusBR,
+        ].max() ?? 0
 
-      return try cornerRadius / engine.block.getRadiusFactor(block)
-    }
+        return try cornerRadius / engine.block.getRadiusFactor(block)
+      },
+      propertyBlock: .shape,
+      showsReadout: false,
+    )
   }
 
   var body: some View {

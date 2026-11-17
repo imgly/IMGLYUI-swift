@@ -28,9 +28,12 @@ final class AnimationPreview {
   }
 
   func playTransition(engine: Engine, pageID: DesignBlockID, outgoing: DesignBlockID) {
-    guard let incoming = transitionIncomingClip(engine: engine, outgoing: outgoing) else { return }
-    let duration = transitionOverlap(engine: engine, outgoing: outgoing, incoming: incoming).seconds
-    play(engine: engine, pageID: pageID, clip: outgoing, duration: duration, endAligned: true)
+    guard let incoming = transitionIncomingClip(engine: engine, outgoing: outgoing),
+          hasRealTransition(engine: engine, outgoing: outgoing) else { return }
+    let overlap = transitionOverlapApplies(engine: engine, outgoing: outgoing, incoming: incoming)
+    let duration = transitionDuration(engine: engine, outgoing: outgoing, incoming: incoming).seconds
+    let offset = !overlap ? duration / 2 : 0
+    play(engine: engine, pageID: pageID, clip: outgoing, duration: duration, endAligned: true, startOffset: offset)
   }
 
   func stop(engine: Engine, pageID: DesignBlockID) {
@@ -50,6 +53,7 @@ final class AnimationPreview {
     clip: DesignBlockID,
     duration: Double,
     endAligned: Bool,
+    startOffset: Double = 0,
   ) {
     // UI test screenshots are flaky while preview playback is running, so disable it during testing.
     guard !ProcessInfo.isUITesting else { return }
@@ -60,7 +64,7 @@ final class AnimationPreview {
           let clipDuration = try? engine.block.getDuration(clip) else { return }
 
     let previewDuration = min(duration, clipDuration)
-    let start = endAligned ? clipOffset + clipDuration - previewDuration : clipOffset
+    let start = (endAligned ? clipOffset + clipDuration - previewDuration : clipOffset) + startOffset
     try? engine.block.setPlaying(pageID, enabled: false)
     try? engine.block.setPlaybackTime(pageID, time: start)
 

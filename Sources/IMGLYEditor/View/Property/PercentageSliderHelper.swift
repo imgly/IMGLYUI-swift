@@ -1,4 +1,5 @@
 import Foundation
+@_spi(Internal) import IMGLYCoreUI
 
 /// Helper to determine when to use a 'percentage slider',
 /// with functions for mapping to/from percentage ranges.
@@ -50,21 +51,12 @@ enum PercentageSliderHelper {
 
   private static let maxFractionDigits = 2
 
-  /// Get the number of fractional digits from a number, capped at ``maxFractionDigits``.
-  private static func countFractionalDigits(_ value: some BinaryFloatingPoint) -> Int {
-    let str = "\(Double(value))"
-    guard let dotIndex = str.lastIndex(of: ".") else { return 0 }
-    let fraction = str[str.index(after: dotIndex)...]
-    // Trailing zero means it's a whole number represented as e.g. "1.0"
-    if fraction == "0" {
-      return 0
-    }
-    return Swift.min(fraction.count, maxFractionDigits)
-  }
-
   /// Format a raw slider value for display, using the step to determine decimal places.
+  ///
+  /// Uses the stepper's decimal count, so a `Float` step of 0.1 still shows one
+  /// decimal. Locale-aware, and drops trailing zeros: `4`, `4.2`, `0.05`.
   static func formatValue<T: BinaryFloatingPoint>(value: T, step: T) -> String {
-    let decimals = countFractionalDigits(step)
-    return String(format: "%.\(decimals)f", Double(value))
+    let decimals = min(NumberStepperMath.decimals(forStep: step), maxFractionDigits)
+    return Double(value).formatted(.number.precision(.fractionLength(0 ... decimals)).grouping(.never))
   }
 }

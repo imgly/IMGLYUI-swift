@@ -273,19 +273,155 @@
         }
       }
     },
+    "ly_img_engine_error_block_page_slice_move_index_invalid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Einfügeindex ist ungültig."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The insertion index is invalid."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_block_page_slice_move_index_invalid_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwenden Sie eine endliche, nicht negative 32-Bit-Ganzzahl, die höchstens der Anzahl der Zielelemente entspricht."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pass a finite, non-negative 32-bit integer no larger than the destination count."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_block_page_slice_move_invalid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Blöcke können nicht an dieser Seitenverschiebung teilnehmen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The blocks cannot participate in this page move."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_block_page_slice_move_invalid_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwenden Sie eingefügte Seiten oder Seitensegmente derselben Szene und einen anderen Zieldruckbogen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use attached pages or page slices in the same scene, and a different destination spread."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_block_page_slice_move_matte_invalid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Verschiebung würde einen Block von seiner Maskenquelle trennen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The move would separate a block from its matte source."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_block_page_slice_move_matte_invalid_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lassen Sie jeden Block und seine Maskenquelle auf derselben Seite."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep each block and its matte source on the same page."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_block_page_slice_move_unsupported_properties" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Seite hat Eigenschaften, die diese Verschiebung nicht erhalten kann."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The page has properties that this move cannot preserve."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_block_page_slice_move_unsupported_properties_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setzen Sie nicht unterstützte Containereigenschaften vor dem Verschieben der Seite zurück."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset unsupported container properties before moving the page."
+          }
+        }
+      }
+    },
     "ly_img_engine_error_color_document_profile_not_set" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das Dokument hat kein CMYK-Profil."
+            "value" : "Das Dokument hat kein Profil im angeforderten Profilplatz."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The document has no CMYK profile."
+            "value" : "The document has no profile in the requested slot."
           }
         }
       }
@@ -296,13 +432,47 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Legen Sie ein CMYK-Profil fest, bevor Sie seine Informationen lesen."
+            "value" : "Legen Sie ein Profil in diesem Profilplatz fest, bevor Sie seine Informationen lesen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set a CMYK profile before reading its information."
+            "value" : "Set a profile in this slot before reading its information."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_image_not_convertible" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Bild kann nicht in das Ausgabe-Farbprofil umgewandelt werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An image cannot be converted into the output color profile."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_image_not_convertible_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwenden Sie ein Bild mit einem anderen Farbprofil, oder schalten Sie die Farbumwandlung aus."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use an image with another color profile, or turn the color conversion off."
           }
         }
       }
@@ -337,6 +507,108 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attach a definition to the fill's current image before reading it."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_output_profile_not_convertible" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Ausgabe-Farbprofil kann keine Farben umwandeln."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The output color profile cannot convert colors."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_output_profile_not_convertible_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weisen Sie dem Ausgabe-Slot ein ICC-Profil der Klasse Output oder Display zu, oder schalten Sie die Farbumwandlung aus."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assign an output or display class ICC profile to the Output slot, or turn the color conversion off."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_output_profile_not_set" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Dokument hat kein Ausgabe-Farbprofil."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The document has no output color profile."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_output_profile_not_set_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weisen Sie dem Ausgabe-Slot des Export-Farbraums ein ICC-Profil zu, bevor Sie exportieren, oder schalten Sie die Farbumwandlung und das Einbetten von Profilen aus."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assign an ICC profile to the Output slot of the export color space before you export, or turn the color conversion and profile embedding off."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_profile_slot_invalid" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Farbprofilplatz des Dokuments ist ungültig."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The document color profile slot is not valid."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_color_profile_slot_invalid_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwenden Sie die Rolle Default oder Output mit dem Farbraum RGB, CMYK oder Gray."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use a Default or Output role with an RGB, CMYK or Gray component space."
           }
         }
       }
@@ -647,6 +919,74 @@
         }
       }
     },
+    "ly_img_engine_error_encode_output_color_space_unsupported" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Exportformat kann den gewünschten Farbraum nicht schreiben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This export format cannot write the requested color space."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_output_color_space_unsupported_description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportieren Sie für CMYK-Farben als PDF oder setzen Sie den Ausgabe-Farbraum auf RGB."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export to PDF for CMYK colors, or set the output color space to RGB."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_output_file_exceeds_buffer_max" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Datei dieses Exports mit {{width}}x{{height}} px ist größer als 4 GiB. Exportiere in einer kleineren Größe."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The file of this {{width}}x{{height}} px export is larger than 4 GiB. Export at a smaller size."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_output_size_exceeds_format_max" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Exportgröße von {{width}}x{{height}} px ist größer als von {{format}} unterstützt (max. {{maxSize}} px pro Seite). Exportieren Sie als PNG oder mit einer kleineren Größe."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The export size of {{width}}x{{height}} px is larger than {{format}} supports (max {{maxSize}} px per side). Export as PNG, or export at a smaller size."
+          }
+        }
+      }
+    },
     "ly_img_engine_error_encode_output_size_exceeds_max" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -681,6 +1021,23 @@
         }
       }
     },
+    "ly_img_engine_error_encode_pdf_render_insufficient_resources" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das PDF benötigt {{width}}x{{height}} px (bei {{dpi}} DPI) für ein Bild oder einen Effekt, und Ihr Gerät hat nicht genügend Speicher. Verringern Sie die DPI oder verkleinern Sie dieses Element."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The PDF needs {{width}}x{{height}} px (at {{dpi}} DPI) for an image or effect, and your device doesn't have enough memory. Try lowering the DPI or making that element smaller."
+          }
+        }
+      }
+    },
     "ly_img_engine_error_encode_pdf_render_size_exceeds_max" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -711,6 +1068,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A file in your design couldn't be loaded, so the export was stopped. Check that all assets are available and try again."
+          }
+        }
+      }
+    },
+    "ly_img_engine_error_encode_strip_export_scene_changed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Design hat sich während des Exports geändert. Exportiere erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The design changed during the export. Export again."
           }
         }
       }

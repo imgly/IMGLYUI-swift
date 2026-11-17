@@ -1,5 +1,6 @@
 import SwiftUI
 @_spi(Internal) import IMGLYCore
+@_spi(Internal) import IMGLYCoreUI
 
 struct VolumeOptions: View {
   @EnvironmentObject var interactor: Interactor
@@ -19,7 +20,9 @@ struct VolumeOptions: View {
       let isAudio = type == Interactor.BlockType.audio.rawValue
       let block = isAudio ? id : try engine.block.getFill(id)
       let volume = try engine.block.getVolume(block)
-      if Double(volume) != value {
+      // Also runs when only the mute state disagrees with the value, so this
+      // setter alone decides mute: 0 mutes, anything above unmutes.
+      if try Double(volume) != value || engine.block.isMuted(block) != (value == 0) {
         try engine.block.setVolume(block, volume: Float(value))
         if value == 0 {
           try engine.block.setMuted(block, muted: true)
@@ -64,6 +67,7 @@ struct VolumeOptions: View {
       default: 0,
       getter: volumeGetter,
       setter: volumeSetter,
+      completion: nil,
     )
     let mutedBinding = interactor.bind(
       id,
@@ -74,8 +78,12 @@ struct VolumeOptions: View {
     )
 
     List {
-      VolumeSliderView(value: volumeBinding, isMuted: mutedBinding)
-        .padding(.trailing)
+      VolumeSliderView(value: volumeBinding, isMuted: mutedBinding) { isEditing in
+        if !isEditing {
+          interactor.addUndoStep()
+        }
+      }
+      .padding(.trailing)
     }
   }
 }
@@ -86,8 +94,40 @@ struct VolumeSliderView: View {
 
   @Binding var value: Double // 0 to 1
   @Binding var isMuted: Bool
+  /// Reports `false` once per drag and per VoiceOver adjustment.
+  var onEditingChanged: ((Bool) -> Void)?
+
+  /// SwiftUI does not block a custom accessibility action on a disabled view,
+  /// so the adjustable action guards on this.
+  @Environment(\.isEnabled) private var isEnabled
 
   @State private var isDragging = false
+  /// The finger's value during a drag. A clip's volume is on its fill, which
+  /// sends no event for the selection, so the binding redraws only on release.
+  @GestureState private var dragValue: Double?
+
+  private var displayedValue: Double {
+    dragValue ?? value
+  }
+
+  private var displaysMuted: Bool {
+    isMuted && dragValue == nil
+  }
+
+  /// 1%, the fallback step of ``PropertySlider``, for drag and VoiceOver alike.
+  private var step: Double {
+    PercentageSliderHelper.stepFromMinMax(min: 0, max: 1)
+  }
+
+  /// `0%` while muted, like the wedge fill, whatever the stored ``value``.
+  private var displayPercentage: Int {
+    Int(((displaysMuted ? 0 : displayedValue) * 100).rounded())
+  }
+
+  /// Quantised to the step, so the stored value matches the rounded readout.
+  private func steppedValue(atX x: CGFloat, width: CGFloat) -> Double {
+    (max(0, min(width, x)) / width / step).rounded() * step
+  }
 
   func shape(size: CGSize) -> Path {
     Path { path in
@@ -103,6 +143,12 @@ struct VolumeSliderView: View {
     HStack {
       muteButton
       slider
+      Text("\(displayPercentage)")
+        .font(.body.monospacedDigit())
+        .foregroundStyle(.secondary)
+        .frame(minWidth: 40, alignment: .trailing)
+        // Clears the knob, which overhangs the track at full volume.
+        .padding(.leading, 8)
     }
   }
 
@@ -111,11 +157,11 @@ struct VolumeSliderView: View {
       isMuted.toggle()
     } label: {
       Group {
-        if isMuted {
+        if displaysMuted {
           Image(systemName: "speaker.slash")
             .foregroundStyle(.primary, Color.red)
         } else {
-          Image(systemName: "speaker.wave.3", variableValue: value)
+          Image(systemName: "speaker.wave.3", variableValue: displayedValue)
             .foregroundStyle(.primary)
         }
       }
@@ -124,13 +170,15 @@ struct VolumeSliderView: View {
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
-    .accessibilityLabel(isMuted ? "Unmute" : "Mute")
+    .accessibilityLabel(Text(.imgly.localized(
+      isMuted ? "ly_img_editor_sheet_volume_button_unmute" : "ly_img_editor_sheet_volume_button_mute",
+    )))
   }
 
   private var slider: some View {
     GeometryReader { geometry in
       let width = geometry.size.width
-      let position = max(-knobWidth / 2, value * width - knobWidth / 2)
+      let position = max(-knobWidth / 2, displayedValue * width - knobWidth / 2)
 
       ZStack(alignment: .leading) {
         shape(size: geometry.size)
@@ -151,7 +199,7 @@ struct VolumeSliderView: View {
           .mask(alignment: .leading) {
             Rectangle()
               .inset(by: -2)
-              .frame(width: isMuted ? 0 : max(0, position))
+              .frame(width: displaysMuted ? 0 : max(0, position))
           }
 
         RoundedRectangle(cornerRadius: knobWidth / 2)
@@ -171,7 +219,7 @@ struct VolumeSliderView: View {
               .inset(by: 0.25)
               .stroke(.gray.opacity(0.5), lineWidth: 0.5)
           }
-          .offset(x: isMuted ? -knobWidth / 2 : position)
+          .offset(x: displaysMuted ? -knobWidth / 2 : position)
       }
       .contentShape(Rectangle())
       .gesture(
@@ -181,20 +229,38 @@ struct VolumeSliderView: View {
 
             isMuted = false
 
-            let rawValue = max(0, min(width, gesture.location.x))
-
             guard width > 0 else { return }
-
-            let normalizedValue = rawValue / width
-
-            value = normalizedValue
+            value = steppedValue(atX: gesture.location.x, width: width)
+          }
+          .updating($dragValue) { gesture, dragValue, _ in
+            guard width > 0 else { return }
+            dragValue = steppedValue(atX: gesture.location.x, width: width)
           }
           .onEnded { _ in
             isDragging = false
+            onEditingChanged?(false)
           },
       )
     }
     .animation(.easeInOut(duration: max(0.15 * value, 0.1)), value: isMuted)
+    .accessibilityElement()
+    .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_volume_title")))
+    .accessibilityValue(Text("\(displayPercentage)%"))
+    .accessibilityAdjustableAction { direction in
+      guard isEnabled else { return }
+      // Write only the value, so the volume setter decides mute. Setting
+      // `isMuted` would turn a 0 into the mute setter's 20 % default.
+      let current = isMuted ? 0 : value
+      switch direction {
+      case .increment:
+        value = NumberStepperMath.stepped(current, direction: .up, step: step, bounds: 0 ... 1)
+      case .decrement:
+        value = NumberStepperMath.stepped(current, direction: .down, step: step, bounds: 0 ... 1)
+      @unknown default:
+        return
+      }
+      onEditingChanged?(false)
+    }
   }
 }
 

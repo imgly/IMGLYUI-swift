@@ -142,6 +142,44 @@ struct TransitionOptions: View {
     // controls publish their commit through the engine history signal, so replay once that step lands.
     .onChange(of: interactor.historyVersion) { _ in
       previewTransitionAfterPropertyChange()
+      refreshPropertiesPage()
+    }
+  }
+
+  private var propertiesPageAssetID: String? {
+    guard case let .properties(page) = sheetState else { return nil }
+    return page.properties.first?.assetContext?.assetResult.id
+  }
+
+  /// An undo or a redo can change the clip after the cut, which decides the rows that the preset offers.
+  private func refreshPropertiesPage() {
+    guard let assetID = propertiesPageAssetID, let engine = interactor.engine, let outgoingID else { return }
+    Task {
+      do {
+        let assets = try await engine.asset.findAssets(
+          sourceID: Self.sourceID,
+          query: .init(query: nil, page: 0, perPage: 65),
+        ).assets
+        // Another page can open while the query runs.
+        guard propertiesPageAssetID == assetID,
+              case let .properties(page) = sheetState,
+              let transitionID = getter(engine: engine, block: outgoingID).id,
+              let asset = assets.first(where: { $0.id == assetID }),
+              let properties = asset.payload?.properties else { return }
+        sheetState = .properties(AssetProperties(
+          title: page.title,
+          backTitle: page.backTitle,
+          properties: TransitionPropertyDefinitions.properties(
+            from: properties,
+            sourceID: Self.sourceID,
+            assetResult: asset,
+            transitionBlockID: transitionID,
+          ),
+          previousStyle: page.previousStyle,
+        ))
+      } catch {
+        interactor.handleError(error)
+      }
     }
   }
 

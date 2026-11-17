@@ -85,7 +85,11 @@ private struct PageGrid: View {
                   .simultaneousGesture(TapGesture(count: 2).onEnded {
                     try? interactor.enableEditMode()
                   })
+                  // The thumbnail has no element of its own, so VoiceOver would reach only the caption, which takes no
+                  // tap.
+                  .accessibilityElement(children: .combine)
                   .accessibilityLabel(title)
+                  .accessibilityAddTraits(.isButton)
               }
               .id(page.block)
             }

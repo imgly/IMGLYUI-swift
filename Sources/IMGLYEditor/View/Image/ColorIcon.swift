@@ -41,7 +41,7 @@ import SwiftUI
       }
       let color: CGColor = try engine.block.get(id, property: .key(.fillSolidColor))
       return [color]
-    } else if fillType == .gradient {
+    } else if fillType.isGradient {
       let colorStops: [Interactor.GradientColorStop] = try engine.block
         .get(id, .fill, property: .key(.fillGradientColors))
       return colorStops.compactMap(\.color.cgColor)
@@ -57,9 +57,22 @@ struct StrokeColorIcon: View {
   var body: some View {
     if interactor.supportsStroke(id) {
       let isEnabled: Binding<Bool> = interactor.bind(id, property: .key(.strokeEnabled), default: false)
-      let color: Binding<CGColor> = interactor.bind(id, property: .key(.strokeColor), default: .imgly.black)
+      let color: Binding<CGColor> = interactor.bind(id, property: .key(.strokeColor), default: .imgly.black,
+                                                    getter: strokeColorGetter)
 
       StrokeColorImage(isEnabled: isEnabled.wrappedValue, color: color)
     }
+  }
+
+  /// The first stop of a gradient that paints the stroke, otherwise the stroke color.
+  let strokeColorGetter: Interactor.PropertyGetter<CGColor> = { engine, id, _, property in
+    if try engine.block.getStrokeFillType(id) == .gradient {
+      let colorStops: [Interactor.GradientColorStop] = try engine.block
+        .get(id, .strokeFill, property: .key(.fillGradientColors))
+      if let color = colorStops.first?.color.cgColor {
+        return color
+      }
+    }
+    return try engine.block.get(id, property: property)
   }
 }

@@ -57,17 +57,14 @@ struct CropOptions: View {
           .padding(.leading, 8)
       }
       .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_crop_button_flip")))
-      VStack(alignment: .center, spacing: 1) {
-        Text(.imgly.localized("ly_img_editor_sheet_crop_label_straighten"))
-          .font(.caption2)
-        MeasurementScalePicker(value: straightenDegrees, unit: UnitAngle.degrees, in: -45 ... 45,
-                               tickStep: 3, tickSpacing: 10) { started in
-          if !started {
-            interactor.addUndoStep()
-          }
+      // No caption: the picker's value row takes its place.
+      MeasurementScalePicker(value: straightenDegrees, unit: UnitAngle.degrees, in: -45 ... 45,
+                             tickStep: 3, tickSpacing: 10) { started in
+        if !started {
+          interactor.addUndoStep()
         }
-        .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_crop_label_straighten")))
       }
+      .accessibilityLabel(Text(.imgly.localized("ly_img_editor_sheet_crop_label_straighten")))
       Button {
         cropRotationDegrees.wrappedValue = (cropRotationDegrees.wrappedValue - 90).normalizedDegrees
         interactor.addUndoStep()

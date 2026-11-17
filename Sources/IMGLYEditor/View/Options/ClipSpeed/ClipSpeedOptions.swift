@@ -3,7 +3,6 @@ import SwiftUI
 
 struct ClipSpeedOptions: View {
   @Environment(\.imglySelection) private var id
-  @FocusState private var focusedField: ClipSpeedField?
   @StateObject private var viewModel: ViewModel
 
   init(interactor: Interactor, timelineConfiguration: TimelineConfiguration) {
@@ -16,10 +15,6 @@ struct ClipSpeedOptions: View {
   var body: some View {
     let state = viewModel.state
     let durationEnabled = viewModel.durationEnabled(for: state)
-    let previousSpeed = viewModel.previousStepValue(state.speed)
-    let nextSpeed = viewModel.nextStepValue(state.speed)
-    let previousSpeedProvider = { viewModel.previousStepValue(viewModel.state.speed) }
-    let nextSpeedProvider = { viewModel.nextStepValue(viewModel.state.speed) }
     let isOverAudioCutoff = viewModel.isOverAudioCutoff(for: state)
 
     ZStack(alignment: .bottom) {
@@ -27,20 +22,17 @@ struct ClipSpeedOptions: View {
         VStack(spacing: 0) {
           ClipSpeedRow(
             title: .imgly.localized("ly_img_editor_sheet_clip_speed_speed_label"),
-            value: viewModel.speedInputBinding,
-            placeholder: "--",
-            suffix: String(localized: .imgly.localized("ly_img_editor_sheet_clip_speed_speed_suffix")),
+            value: viewModel.speedBinding,
+            bounds: ClipSpeedDefaults.minSpeed ... state.maxSpeed,
+            step: ClipSpeedDefaults.step,
+            unit: String(localized: .imgly.localized("ly_img_editor_sheet_clip_speed_speed_suffix")),
+            decimals: ClipSpeedDefaults.speedInputDecimals,
             isEnabled: state.isEnabled,
-            inputWidth: ClipSpeedDefaults.speedInputWidth,
-            focusedField: $focusedField,
-            field: .speed,
-            previousSpeed: previousSpeed,
-            nextSpeed: nextSpeed,
-            previousSpeedProvider: previousSpeedProvider,
-            nextSpeedProvider: nextSpeedProvider,
-            onSpeedSelected: { newSpeed in
-              focusedField = nil
-              viewModel.handleSpeedSelection(newSpeed)
+            showsButtons: true,
+            onEditingChanged: { isEditing in
+              if !isEditing {
+                viewModel.addUndoStep()
+              }
             },
           )
 
@@ -48,13 +40,18 @@ struct ClipSpeedOptions: View {
 
           ClipSpeedRow(
             title: .imgly.localized("ly_img_editor_sheet_clip_speed_duration_label"),
-            value: viewModel.durationInputBinding,
-            placeholder: "--",
-            suffix: String(localized: .imgly.localized("ly_img_editor_sheet_clip_speed_duration_suffix")),
+            value: viewModel.durationBinding,
+            bounds: viewModel.durationBounds,
+            step: ClipSpeedDefaults.durationStep,
+            unit: String(localized: .imgly.localized("ly_img_editor_sheet_clip_speed_duration_suffix")),
+            decimals: ClipSpeedDefaults.durationInputDecimals,
             isEnabled: durationEnabled,
-            inputWidth: ClipSpeedDefaults.durationInputWidth,
-            focusedField: $focusedField,
-            field: .duration,
+            showsButtons: false,
+            onEditingChanged: { isEditing in
+              if !isEditing {
+                viewModel.addUndoStep()
+              }
+            },
           )
         }
         .background(Color(.systemBackground))
@@ -77,38 +74,23 @@ struct ClipSpeedOptions: View {
     .background(
       Color(.systemGroupedBackground)
         .contentShape(Rectangle())
-        .onTapGesture {
-          if focusedField != nil {
-            focusedField = nil
-          }
-        },
+        .onTapGesture(perform: resignKeyboard),
     )
     .animation(.easeInOut(duration: 0.2), value: viewModel.showNoAudioToast)
-    .toolbar {
-      ToolbarItemGroup(placement: .keyboard) {
-        Spacer()
-        Button {
-          focusedField = nil
-        } label: {
-          Text(.imgly.localized("ly_img_editor_common_button_done"))
-        }
-        .font(.body.weight(.semibold))
-        .disabled(focusedField == nil)
-      }
-    }
     .onAppear {
       viewModel.updateSelection(id)
     }
     .onChange(of: id) { newID in
       viewModel.updateSelection(newID)
     }
-    .onChange(of: state.speed) { _ in viewModel.syncInputs() }
-    .onChange(of: state.durationSeconds) { _ in viewModel.syncInputs() }
     .onChange(of: isOverAudioCutoff) { isOver in
       viewModel.handleAudioCutoffChange(isOver: isOver)
     }
-    .onChange(of: focusedField) { newField in
-      viewModel.handleFocusChange(newField)
-    }
+  }
+
+  /// ``NumberStepperField`` keeps its focus state private, so resign the first
+  /// responder to dismiss whichever field is focused.
+  private func resignKeyboard() {
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
   }
 }

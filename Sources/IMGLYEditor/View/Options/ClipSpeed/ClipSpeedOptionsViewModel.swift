@@ -2,19 +2,16 @@ import Foundation
 import IMGLYEngine
 import SwiftUI
 @_spi(Internal) import IMGLYCore
+@_spi(Internal) import IMGLYCoreUI
 
 extension ClipSpeedOptions {
   @MainActor
   class ViewModel: ObservableObject {
-    @Published var speedInput: String = ""
-    @Published var durationInput: String = ""
     @Published var showNoAudioToast = false
 
     private let interactor: Interactor
     private let timelineConfiguration: TimelineConfiguration
     private var selectionID: DesignBlockID?
-    private var focusedField: ClipSpeedField?
-    private var lastFocusedField: ClipSpeedField?
     private var wasOverAudioCutoff = false
     private var toastTask: Task<Void, Never>?
 
@@ -66,25 +63,39 @@ extension ClipSpeedOptions {
       )
     }
 
-    var speedInputBinding: Binding<String> {
+    var speedBinding: Binding<Float> {
       Binding(
-        get: { self.speedInput },
-        set: { self.speedInput = self.sanitizeDecimalInput($0, maxDecimals: ClipSpeedDefaults.speedInputDecimals) },
+        get: { self.state.speed },
+        set: { self.applySpeed($0) },
       )
     }
 
-    var durationInputBinding: Binding<String> {
+    var durationBinding: Binding<Double> {
       Binding(
-        get: { self.durationInput },
-        set: { self.durationInput = self.sanitizeDecimalInput($0, maxDecimals: ClipSpeedDefaults.durationInputDecimals)
-        },
+        get: { self.state.durationSeconds ?? 0 },
+        set: { self.applyDuration($0) },
       )
+    }
+
+    /// The valid duration range at the current speed. `0...0` when duration
+    /// does not apply.
+    var durationBounds: ClosedRange<Double> {
+      let state = state
+      guard let durationSeconds = state.durationSeconds else { return 0 ... 0 }
+      let baseDuration = durationSeconds * Double(state.speed)
+      let minDuration = max(
+        baseDuration / Double(state.maxSpeed),
+        timelineConfiguration.minClipDuration.seconds,
+      )
+      // Never let a large configured `minClipDuration` push the lower bound
+      // past the upper one: `ClosedRange` traps on construction if it did.
+      let maxDuration = max(baseDuration / Double(ClipSpeedDefaults.minSpeed), minDuration)
+      return minDuration ... maxDuration
     }
 
     func updateSelection(_ id: DesignBlockID?) {
       selectionID = id
       wasOverAudioCutoff = false
-      syncInputs(force: true)
     }
 
     func durationEnabled(for state: ClipSpeedState) -> Bool {
@@ -95,60 +106,11 @@ extension ClipSpeedOptions {
       state.isEnabled && state.isVideo && state.speed > ClipSpeedDefaults.audioSpeedCutoff
     }
 
-    func handleSpeedSelection(_ newSpeed: Float) {
-      applySpeed(newSpeed)
-      syncInputs(with: state)
-    }
-
     func handleAudioCutoffChange(isOver: Bool) {
       if isOver, !wasOverAudioCutoff {
         showAudioToast()
       }
       wasOverAudioCutoff = isOver
-    }
-
-    func handleFocusChange(_ newField: ClipSpeedField?) {
-      if lastFocusedField == .speed, newField != .speed {
-        commitSpeedInput()
-      }
-      if lastFocusedField == .duration, newField != .duration {
-        commitDurationInput()
-      }
-      lastFocusedField = newField
-      focusedField = newField
-    }
-
-    func syncInputs(force: Bool = false) {
-      syncInputs(with: state, force: force)
-    }
-
-    func previousStepValue(_ current: Float) -> Float? {
-      if current <= ClipSpeedDefaults.minSpeed + ClipSpeedDefaults.compareEpsilon {
-        return nil
-      }
-      let stepIndex = current / ClipSpeedDefaults.step
-      let targetStep: Double = if isOnStep(current) {
-        Double((stepIndex - 1).rounded(.down))
-      } else {
-        floor(Double(stepIndex))
-      }
-      let previous = Float(targetStep) * ClipSpeedDefaults.step
-      return max(previous, ClipSpeedDefaults.minSpeed)
-    }
-
-    func nextStepValue(_ current: Float) -> Float? {
-      let maxSpeed = state.maxSpeed
-      if current >= maxSpeed - ClipSpeedDefaults.compareEpsilon {
-        return nil
-      }
-      let stepIndex = current / ClipSpeedDefaults.step
-      let targetStep: Double = if isOnStep(current) {
-        Double((stepIndex + 1).rounded(.up))
-      } else {
-        ceil(Double(stepIndex))
-      }
-      let next = Float(targetStep) * ClipSpeedDefaults.step
-      return min(next, maxSpeed)
     }
 
     func dismissToast() {
@@ -158,56 +120,9 @@ extension ClipSpeedOptions {
       }
     }
 
-    private func syncInputs(with state: ClipSpeedState, force: Bool = false) {
-      if force || focusedField != .speed {
-        speedInput = formatSpeedValue(state.speed)
-      }
-      if force || focusedField != .duration {
-        durationInput = state.durationSeconds.map(formatDurationValue) ?? ""
-      }
-    }
-
-    private func commitSpeedInput() {
-      let state = state
-      guard state.isEnabled else {
-        speedInput = formatSpeedValue(state.speed)
-        return
-      }
-      guard let parsedSpeed = parseDecimalInput(speedInput) else {
-        speedInput = formatSpeedValue(state.speed)
-        return
-      }
-      let clampedSpeed = min(max(parsedSpeed, Double(ClipSpeedDefaults.minSpeed)), Double(state.maxSpeed))
-      let newSpeed = Float(clampedSpeed)
-      applySpeed(newSpeed)
-      speedInput = formatSpeedValue(newSpeed)
-    }
-
-    private func commitDurationInput() {
-      let state = state
-      guard state.isEnabled, let durationSeconds = state.durationSeconds else {
-        durationInput = state.durationSeconds.map(formatDurationValue) ?? ""
-        return
-      }
-      let baseDuration = durationSeconds * Double(state.speed)
-      let minDuration = max(
-        baseDuration / Double(state.maxSpeed),
-        timelineConfiguration.minClipDuration.seconds,
-      )
-      let maxDuration = baseDuration / Double(ClipSpeedDefaults.minSpeed)
-      let fallbackDuration = formatDurationValue(durationSeconds)
-
-      guard let parsedDuration = parseDecimalInput(durationInput), parsedDuration > 0 else {
-        durationInput = fallbackDuration
-        return
-      }
-
-      let clampedDuration = min(max(parsedDuration, minDuration), maxDuration)
-      let newSpeed = (baseDuration / clampedDuration)
-        .clamped(to: Double(ClipSpeedDefaults.minSpeed) ... Double(state.maxSpeed))
-
-      applySpeed(Float(newSpeed))
-      durationInput = formatDurationValue(clampedDuration)
+    /// Call from the rows' `onEditingChanged`, so a hold adds one undo step.
+    func addUndoStep() {
+      interactor.addUndoStep()
     }
 
     private func applySpeed(_ newSpeed: Float) {
@@ -225,11 +140,23 @@ extension ClipSpeedOptions {
           }
         }
         try engine.block.setPlaybackSpeed(playbackBlock, speed: newSpeed)
-        interactor.addUndoStep()
         interactor.objectWillChange.send()
       } catch {
         interactor.handleError(error)
       }
+    }
+
+    /// `newDuration` is already clamped to `durationBounds`, so the `> 0` guard
+    /// covers only a configured `minClipDuration` of zero or less.
+    private func applyDuration(_ newDuration: Double) {
+      let state = state
+      guard state.isEnabled, let durationSeconds = state.durationSeconds, newDuration > 0 else { return }
+      let baseDuration = durationSeconds * Double(state.speed)
+      let newSpeed = NumberStepperMath.clamped(
+        baseDuration / newDuration,
+        to: Double(ClipSpeedDefaults.minSpeed) ... Double(state.maxSpeed),
+      )
+      applySpeed(Float(newSpeed))
     }
 
     private func playbackControlBlock(engine: Engine, designBlock: DesignBlockID) -> DesignBlockID? {
@@ -299,48 +226,6 @@ extension ClipSpeedOptions {
       return nil
     }
 
-    private func formatSpeedValue(_ speed: Float) -> String {
-      let formatter = NumberFormatter()
-      formatter.locale = Locale.current
-      formatter.numberStyle = .decimal
-      formatter.minimumFractionDigits = ClipSpeedDefaults.speedInputDecimals
-      formatter.maximumFractionDigits = ClipSpeedDefaults.speedInputDecimals
-      formatter.usesGroupingSeparator = false
-      return formatter.string(from: NSNumber(value: speed)) ?? ""
-    }
-
-    private func formatDurationValue(_ durationSeconds: Double) -> String {
-      let formatter = NumberFormatter()
-      formatter.locale = Locale.current
-      formatter.numberStyle = .decimal
-      formatter.minimumFractionDigits = 2
-      formatter.maximumFractionDigits = ClipSpeedDefaults.durationInputDecimals
-      formatter.usesGroupingSeparator = false
-      return formatter.string(from: NSNumber(value: durationSeconds)) ?? ""
-    }
-
-    private func sanitizeDecimalInput(_ input: String, maxDecimals: Int) -> String {
-      let filtered = input.filter { $0.isNumber || $0 == "." || $0 == "," }
-      guard let separatorIndex = filtered.firstIndex(where: { $0 == "." || $0 == "," }) else {
-        return filtered
-      }
-      let separator = filtered[separatorIndex]
-      let prefix = String(filtered[..<separatorIndex])
-      let suffix = filtered[filtered.index(after: separatorIndex)...]
-        .filter(\.isNumber)
-        .prefix(maxDecimals)
-      return suffix.isEmpty ? "\(prefix)\(separator)" : "\(prefix)\(separator)\(suffix)"
-    }
-
-    private func parseDecimalInput(_ input: String) -> Double? {
-      Double(input.replacingOccurrences(of: ",", with: "."))
-    }
-
-    private func isOnStep(_ value: Float) -> Bool {
-      let stepIndex = value / ClipSpeedDefaults.step
-      return abs(stepIndex - round(stepIndex)) <= ClipSpeedDefaults.compareEpsilon
-    }
-
     private func showAudioToast() {
       toastTask?.cancel()
       withAnimation(.easeInOut(duration: 0.2)) {
@@ -353,11 +238,5 @@ extension ClipSpeedOptions {
         }
       }
     }
-  }
-}
-
-private extension Comparable {
-  func clamped(to range: ClosedRange<Self>) -> Self {
-    min(max(self, range.lowerBound), range.upperBound)
   }
 }

@@ -6,7 +6,12 @@ private func transitionTime(_ seconds: Double) -> CMTime {
   CMTime(seconds: seconds)
 }
 
-struct TransitionTrim {
+/// Whether a clip that starts at `start` meets or overlaps a clip that ends at `end`.
+private func clipsMeet(start: CMTime, end: CMTime) -> Bool {
+  start <= end + transitionTime(0.001)
+}
+
+struct TransitionTrim: Equatable {
   var lead = CMTime.zero
   var tail = CMTime.zero
 }
@@ -26,7 +31,7 @@ func canShowTransition(
 ) -> Bool {
   (try? engine.block.supportsTransition(outgoing)) == true &&
     (try? engine.block.supportsTransition(incoming)) == true &&
-    incomingStart <= outgoingEnd + transitionTime(0.001)
+    clipsMeet(start: incomingStart, end: outgoingEnd)
 }
 
 /// Returns the clip that follows `outgoing` on its track when the pair is eligible for a
@@ -62,21 +67,49 @@ func hasRealTransition(engine: Engine, outgoing: DesignBlockID) -> Bool {
   return true
 }
 
+/// The saved overlap of the transition after `outgoing`. The engine ignores it next to a group clip, so a group cut
+/// never overlaps.
+@MainActor
+func transitionOverlapApplies(engine: Engine, outgoing: DesignBlockID, incoming: DesignBlockID) -> Bool {
+  guard let transition = try? engine.block.getTransition(outgoing),
+        engine.block.isValid(transition),
+        (try? engine.block.getType(outgoing)) != DesignBlockType.group.rawValue,
+        (try? engine.block.getType(incoming)) != DesignBlockType.group.rawValue else { return false }
+  return (try? engine.block.getBool(transition, property: "transition/overlap")) == true
+}
+
 @MainActor
 func transitionOverlap(engine: Engine, outgoing: DesignBlockID, incoming: DesignBlockID) -> CMTime {
+  guard transitionOverlapApplies(engine: engine, outgoing: outgoing, incoming: incoming) else { return .zero }
+  return transitionDuration(engine: engine, outgoing: outgoing, incoming: incoming)
+}
+
+@MainActor
+func transitionDuration(engine: Engine, outgoing: DesignBlockID, incoming: DesignBlockID) -> CMTime {
   guard let outgoingDuration = try? engine.block.getDuration(outgoing),
-        let incomingDuration = try? engine.block.getDuration(incoming),
         let outgoingStart = try? engine.block.getTimeOffset(outgoing),
         let incomingStart = try? engine.block.getTimeOffset(incoming),
-        canShowTransition(
-          engine: engine,
-          outgoing: outgoing,
-          incoming: incoming,
-          outgoingEnd: transitionTime(outgoingStart + outgoingDuration),
-          incomingStart: transitionTime(incomingStart),
-        ),
+        clipsMeet(start: transitionTime(incomingStart), end: transitionTime(outgoingStart + outgoingDuration))
+  else { return .zero }
+  return supportedTransitionDuration(engine: engine, outgoing: outgoing, incoming: incoming)
+}
+
+/// The overlap for a pair that will be adjacent after packing, regardless of its pre-edit offsets.
+@MainActor
+func transitionOverlapForAdjacentPair(engine: Engine, outgoing: DesignBlockID, incoming: DesignBlockID) -> CMTime {
+  guard transitionOverlapApplies(engine: engine, outgoing: outgoing, incoming: incoming) else { return .zero }
+  return supportedTransitionDuration(engine: engine, outgoing: outgoing, incoming: incoming)
+}
+
+@MainActor
+private func supportedTransitionDuration(engine: Engine, outgoing: DesignBlockID, incoming: DesignBlockID) -> CMTime {
+  guard (try? engine.block.supportsTransition(outgoing)) == true,
+        (try? engine.block.supportsTransition(incoming)) == true,
+        let outgoingDuration = try? engine.block.getDuration(outgoing),
+        let incomingDuration = try? engine.block.getDuration(incoming),
         let transition = try? engine.block.getTransition(outgoing),
         engine.block.isValid(transition),
+        let type = try? engine.block.getType(transition), type != "//ly.img.ubq/transition/none",
         let transitionDuration = try? engine.block.getDuration(transition) else { return .zero }
   return transitionTime(max(0, min(transitionDuration, outgoingDuration / 2, incomingDuration / 2)))
 }
@@ -153,54 +186,56 @@ func transitionCuts(engine: Engine, tracks: [DesignBlockID]) -> [DesignBlockID: 
   return cuts
 }
 
-/// Destroys the transition of each cut in `cuts` whose clip is now followed by a different clip. A transition belongs
-/// to its cut, so it does not move to the new neighbour. Destroying it, unlike `removeTransition`, shifts no clip.
-/// - Returns: The number of destroyed transitions.
-@MainActor
-func removeChangedTransitionCuts(engine: Engine, cuts: [DesignBlockID: DesignBlockID?]) throws -> Int {
-  var removed = 0
-  for (outgoing, incoming) in cuts where engine.block.isValid(outgoing) {
-    let transition = try engine.block.getTransition(outgoing)
-    guard engine.block.isValid(transition) else { continue }
-    let siblings = transitionTrackChildren(engine: engine, clip: outgoing)
-    let next = siblings.firstIndex(of: outgoing).flatMap { $0 + 1 < siblings.count ? siblings[$0 + 1] : nil }
-    guard next != incoming else { continue }
-    try engine.block.destroy(transition)
-    removed += 1
-  }
-  return removed
-}
-
 struct DropClip {
   let id: DesignBlockID
+  /// The raw engine timing before the drop.
   let timeOffset: CMTime
   let duration: CMTime
+  /// Where the drag draws the clip at the drop.
+  let drawnStart: CMTime
+  let drawnEnd: CMTime
 }
 
-/// Converts the rendered offsets of a drop to raw engine offsets. `clips` are the clips of the target track in track
-/// order, with raw engine timing. A clip without a rendered offset keeps its raw offset. Then each clip moves right
-/// until it overlaps its predecessor by no more than their transition, because a removed transition gives the
-/// outgoing clip back the tail that the timeline trimmed.
+/// Converts the drawn layout of a drop to raw engine offsets. `clips` are the clips of the target track in track order.
+/// A clip in `movedClips` starts where it is drawn, and the drag draws `draggedClip` at its full length. A clip that
+/// meets the clip before it in the drawing, where one of the two moved, joins that clip, overlapped by their
+/// transition. `draggedClip` joins a next clip that did not move the same way, so a drop against either partner keeps
+/// the pair as it was. Any other clip keeps its raw offset. Then each clip moves right until it overlaps its
+/// predecessor by no more than their transition, because a removed transition gives the outgoing clip back the tail
+/// that the timeline trimmed.
+/// - Parameter movedClips: The dragged clip and the clips that the drop cascade moved.
 /// - Returns: The raw offsets that differ from the current ones.
 func dropOffsets(
   clips: [DropClip],
-  renderedOffsets: [DesignBlockID: CMTime],
+  draggedClip: DesignBlockID,
+  movedClips: Set<DesignBlockID>,
   transitionOverlap: (_ outgoing: DesignBlockID, _ incoming: DesignBlockID) -> CMTime,
 ) -> [DesignBlockID: CMTime] {
   var offsets = [DesignBlockID: CMTime]()
   var previous: DropClip?
   var previousEnd = CMTime.zero
-  for clip in clips {
+  var previousMoved = false
+  for (index, clip) in clips.enumerated() {
     let overlap = previous.map { transitionOverlap($0.id, clip.id) } ?? .zero
-    var start = renderedOffsets[clip.id].map { $0 - transitionTime(overlap.seconds / 2) } ?? clip.timeOffset
+    let joinedStart = previousEnd - overlap
+    let isMoved = movedClips.contains(clip.id)
+    let next = clips.indices.contains(index + 1) ? clips[index + 1] : nil
+    var start = isMoved ? clip.drawnStart : clip.timeOffset
+    if let previous, isMoved || previousMoved, clipsMeet(start: clip.drawnStart, end: previous.drawnEnd) {
+      start = joinedStart
+    } else if clip.id == draggedClip, let next, !movedClips.contains(next.id),
+              clipsMeet(start: next.drawnStart, end: clip.drawnEnd) {
+      start = next.timeOffset + transitionOverlap(clip.id, next.id) - clip.duration
+    }
     if previous != nil {
-      start = max(start, previousEnd - overlap)
+      start = max(start, joinedStart)
     }
     if start != clip.timeOffset {
       offsets[clip.id] = start
     }
     previous = clip
     previousEnd = start + clip.duration
+    previousMoved = isMoved || start != clip.timeOffset
   }
   return offsets
 }

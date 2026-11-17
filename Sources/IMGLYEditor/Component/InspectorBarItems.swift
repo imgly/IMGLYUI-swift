@@ -706,7 +706,8 @@ public extension InspectorBar.Buttons {
       // Line-origin graphics surface their colour through the stroke section, so the fill is
       // hidden when a stroke section is available — matching the sheet this button opens.
       let hideFillForLine = try $0.engine.block.isLineOrigin($0.selection.block) && showStroke
-      let showFill = try [.none, .color, .linearGradient].contains($0.selection.fillType) &&
+      let showFill = try [.none, .color, .linearGradient, .radialGradient, .conicalGradient]
+        .contains($0.selection.fillType) &&
         $0.engine.block.supportsFill($0.selection.block) &&
         !hideFillForLine &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change")
@@ -726,7 +727,8 @@ public extension InspectorBar.Buttons {
       // Line-origin graphics surface their colour through the stroke section, so the fill is
       // hidden when a stroke section is available — matching the sheet this button opens.
       let hideFillForLine = try $0.engine.block.isLineOrigin($0.selection.block) && showStroke
-      let showFill = try [.none, .color, .linearGradient].contains($0.selection.fillType) &&
+      let showFill = try [.none, .color, .linearGradient, .radialGradient, .conicalGradient]
+        .contains($0.selection.fillType) &&
         $0.engine.block.supportsFill($0.selection.block) &&
         !hideFillForLine &&
         $0.engine.block.isAllowedByScope($0.selection.block, key: "fill/change")

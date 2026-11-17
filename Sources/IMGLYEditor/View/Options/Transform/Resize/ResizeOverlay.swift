@@ -75,6 +75,13 @@ struct ResizeOverlay: View {
     }, apply: viewModel.apply)
   }
 
+  // iOS 26 applies the focus change only after the menu starts presenting and then keeps the keyboard
+  // on screen without a first responder, so resign the text field before the menu opens.
+  private func dismissKeyboard() {
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    focusedField = nil
+  }
+
   private func textField(
     title: LocalizedStringResource,
     textFieldTitle: LocalizedStringResource,
@@ -112,9 +119,7 @@ struct ResizeOverlay: View {
         ""
       }
     }
-    .onLongPressGesture(minimumDuration: 0) {
-      focusedField = nil
-    }
+    .onLongPressGesture(minimumDuration: 0, perform: dismissKeyboard)
   }
 
   @ViewBuilder private func fontUnitPicker() -> some View {
@@ -132,9 +137,7 @@ struct ResizeOverlay: View {
         ""
       }
     }
-    .onLongPressGesture(minimumDuration: 0) {
-      focusedField = nil
-    }
+    .onLongPressGesture(minimumDuration: 0, perform: dismissKeyboard)
   }
 
   @ViewBuilder private func pixelScaleView() -> some View {
@@ -150,8 +153,6 @@ struct ResizeOverlay: View {
     } label: { element in
       "\(viewModel.formatValue(element ?? 0) + formatExtension)"
     }
-    .onLongPressGesture(minimumDuration: 0) {
-      focusedField = nil
-    }
+    .onLongPressGesture(minimumDuration: 0, perform: dismissKeyboard)
   }
 }
