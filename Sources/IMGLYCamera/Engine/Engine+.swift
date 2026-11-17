@@ -119,8 +119,7 @@ private extension Engine {
 
   /// Creates an empty timeline scene with a single page and a background track.
   func createEmptyTimelineScene(frame: CGRect) throws {
-    let sceneBlock = try scene.create()
-    try block.setEnum(sceneBlock, property: "scene/mode", value: "Video")
+    let sceneBlock = try scene.createVideo()
     let page = try block.create(.page)
     try block.appendChild(to: sceneBlock, child: page)
     try block.setFrame(page, value: frame)

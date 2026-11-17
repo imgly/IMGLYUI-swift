@@ -76,7 +76,7 @@ class TimelineProperties: ObservableObject {
   /// the preview instead of jumping on commit.
   @Published var backgroundTrackTrimDelta: CMTime = .zero
 
-  /// Shows that an edit removed a transition whose clips no longer meet.
+  /// Shows that a drop removed the transitions at the cuts it changed.
   @Published var isTransitionRemovedToastVisible = false
   private var transitionRemovedToastTask: Task<Void, Never>?
 

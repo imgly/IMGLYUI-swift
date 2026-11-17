@@ -16,7 +16,7 @@ struct DropSlotIndicatorView: View {
        case let .existingTrack(targetTrackID, _, timeOffset, effectiveDuration) = context.dropTarget,
        targetTrackID == trackID,
        let draggedClip = timelineProperties.dataSource.findClip(id: context.clipID),
-       let duration = effectiveDuration ?? draggedClip.rawDuration {
+       let duration = effectiveDuration ?? draggedClip.duration {
       let width = timeline.convertToPoints(time: duration)
       let leadingPadding = timeline.convertToPoints(time: timeOffset)
       RoundedRectangle(cornerRadius: configuration.cornerRadius)

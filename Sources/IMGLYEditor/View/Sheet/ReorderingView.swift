@@ -5,7 +5,6 @@ struct ReorderingView: View {
   @EnvironmentObject var interactor: AnyTimelineInteractor
 
   @ObservedObject var track: Track
-  let onTransitionRemoved: @MainActor () -> Void
   @ScaledMetric var thumbnailHeight = 80
   @ScaledMetric var thumbnailSpacing = 8
 
@@ -25,8 +24,7 @@ struct ReorderingView: View {
                                       draggedClip: $draggedClip,
                                       thumbnailHeight: thumbnailHeight,
                                       thumbnailSpacing: thumbnailSpacing,
-                                      thumbnailsProvider: thumbnailProvider,
-                                      onTransitionRemoved: onTransitionRemoved)
+                                      thumbnailsProvider: thumbnailProvider)
                 .zIndex(clip == draggedClip ? 1 : 0)
             }
           }

@@ -60,7 +60,6 @@ extension IMGLY where Wrapped: View {
   @MainActor
   func interactor(_ interactor: Interactor) -> some View {
     selection(interactor.selection?.blocks.first)
-      .environment(\.imglyDisplayColor, interactor.displayColor)
       .environmentObject(interactor)
   }
 

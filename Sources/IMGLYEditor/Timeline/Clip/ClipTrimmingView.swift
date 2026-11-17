@@ -175,9 +175,8 @@ struct ClipTrimmingView: View {
     previewSiblingOriginals = [:]
   }
 
-  /// Foreground tracks preserve authored gaps; background packs sequentially. A foreground
-  /// clip that begins at a transition follows the clip before it, as the engine moves it on
-  /// release. Locked siblings always stay at their authored offset.
+  /// Foreground tracks preserve authored gaps; background packs sequentially. Locked
+  /// siblings always stay at their authored offset.
   private func previewPackRightSiblings(currentEnd: CMTime) {
     guard !previewSiblingOriginals.isEmpty,
           let track = interactor.timelineProperties.dataSource.findTrack(containing: clip) else { return }
@@ -192,11 +191,8 @@ struct ClipTrimmingView: View {
     }.sorted { $0.1 < $1.1 }
 
     var cursor = currentEnd
-    var previous = clip.id
     for (sibling, original) in rightSiblings {
-      let keepsGap = preserveGaps && original >= cursor && sibling.joinedPredecessor != previous
-      previous = sibling.id
-      if sibling.isLocked || keepsGap {
+      if sibling.isLocked || (preserveGaps && original >= cursor) {
         applyPreviewIfChanged(on: sibling, target: original)
         cursor = original + (sibling.duration ?? .zero)
       } else {
@@ -296,7 +292,6 @@ struct ClipTrimmingView: View {
               .frame(maxWidth: .infinity, alignment: .trailing)
               .clipped()
           }
-          .modifier(Shimmering(isShimmering: clip.isLoading))
         }
       }
 
@@ -611,7 +606,7 @@ struct ClipTrimmingView: View {
         timeline.snapIndicatorLinePositions.removeAll()
       }
 
-      // Preview-push right-side siblings live to match the pack and the engine on
+      // Preview-push right-side siblings live to match what pack will produce on
       // submit. Caption siblings never move.
       if clip.clipType != .caption {
         previewPackRightSiblings(currentEnd: clipStartTime + duration + endTrimDurationDelta)

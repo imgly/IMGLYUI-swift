@@ -59,21 +59,12 @@ import SwiftUI
   let leadingRemainder: V
   let trailingRemainder: V
 
-  func largeTick(value _: V, swell: CGFloat) -> some View {
-    Capsule().frame(width: tickWidth, height: 6 + 12 * swell)
+  func largeTick(value _: V) -> some View {
+    Capsule().frame(width: tickWidth, height: 6)
   }
 
-  func smallTick(value _: V, swell: CGFloat) -> some View {
-    Capsule().frame(width: tickWidth, height: 2 + 8 * swell)
-  }
-
-  /// `0...1`: how much a tick grows, falling off with its distance from the centre.
-  func swell(forTickAt index: Int) -> CGFloat {
-    guard waveAmplitude > 0, let scrollViewWidth else { return 0 }
-    let tickCenter = contentPaddingLeading + CGFloat(index) * tickCell + tickWidth / 2
-    let distance = tickCenter - (contentOffset + scrollViewWidth / 2)
-    let falloff = distance / (tickCell * 3)
-    return waveAmplitude * exp(-falloff * falloff)
+  func smallTick(value _: V) -> some View {
+    Capsule().frame(width: tickWidth, height: 2)
   }
 
   // We don’t use Introspect’s @Weak property wrapper here because it releases too quickly
@@ -85,10 +76,6 @@ import SwiftUI
   enum SnapState {
     case disarmed, armed, snapped(distance: V)
   }
-
-  /// `1` while the ruler scrolls, `0` at rest.
-  @State private var waveAmplitude: CGFloat = 0
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   @StateObject private var hapticsHelper = HapticsHelper()
   @StateObject private var gestureHelper = GestureHelper()
@@ -170,14 +157,12 @@ import SwiftUI
 
   var ruler: some View {
     HStack(alignment: .center, spacing: tickSpacing) {
-      ForEach(Array(ticks.enumerated()), id: \.element.tick) { index, element in
-        let (tick, value) = element
-        let swell = swell(forTickAt: index)
+      ForEach(ticks, id: \.tick) { tick, value in
         Group {
           if tick % 5 == 0 {
-            largeTick(value: value, swell: swell)
+            largeTick(value: value)
           } else {
-            smallTick(value: value, swell: swell)
+            smallTick(value: value)
           }
         }
         .foregroundStyle(tickColor(value: value))
@@ -303,9 +288,6 @@ import SwiftUI
       }
     }
     .onChange(of: isInteracting) { newValue in
-      withAnimation(reduceMotion ? nil : .spring(duration: 0.35, bounce: 0.2)) {
-        waveAmplitude = newValue ? 1 : 0
-      }
       if newValue {
         hapticsHelper.initialize()
       } else {

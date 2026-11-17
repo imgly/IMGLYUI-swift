@@ -103,23 +103,6 @@
         }
       }
     },
-    "ly_img_editor_asset_label_clock_wipe" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uhr-Wischen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clock Wipe"
-          }
-        }
-      }
-    },
     "ly_img_editor_asset_label_color_fade" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2092,57 +2075,6 @@
         }
       }
     },
-    "ly_img_editor_canvas_accessibility_action_copy" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kopieren"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Copy"
-          }
-        }
-      }
-    },
-    "ly_img_editor_canvas_accessibility_action_cut" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ausschneiden"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cut"
-          }
-        }
-      }
-    },
-    "ly_img_editor_canvas_accessibility_action_paste" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einfügen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paste"
-          }
-        }
-      }
-    },
     "ly_img_editor_canvas_menu_button_bring_forward" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2717,23 +2649,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Export Complete"
-          }
-        }
-      }
-    },
-    "ly_img_editor_dialog_paste_error_unsupported_type" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Dateityp wird nicht unterstützt."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This file type is not supported."
           }
         }
       }
@@ -3690,23 +3605,6 @@
         }
       }
     },
-    "ly_img_editor_edit_text_label_script_style" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hoch-/Tiefstellung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Script"
-          }
-        }
-      }
-    },
     "ly_img_editor_edit_text_letter_case_option_lowercase" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3822,57 +3720,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Numbered List"
-          }
-        }
-      }
-    },
-    "ly_img_editor_edit_text_script_style_option_normal" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Normal"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Normal"
-          }
-        }
-      }
-    },
-    "ly_img_editor_edit_text_script_style_option_subscript" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiefgestellt"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Subscript"
-          }
-        }
-      }
-    },
-    "ly_img_editor_edit_text_script_style_option_superscript" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hochgestellt"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Superscript"
           }
         }
       }
@@ -7765,23 +7612,6 @@
         }
       }
     },
-    "ly_img_editor_sheet_fill_stroke_label_width" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Breite"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Width"
-          }
-        }
-      }
-    },
     "ly_img_editor_sheet_fill_stroke_position_option_center" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7986,23 +7816,6 @@
         }
       }
     },
-    "ly_img_editor_sheet_fill_stroke_type_option_gradient_conical" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kegelförmig"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conical"
-          }
-        }
-      }
-    },
     "ly_img_editor_sheet_fill_stroke_type_option_gradient_linear" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8016,23 +7829,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gradient"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_fill_stroke_type_option_gradient_radial" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Radial"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Radial"
           }
         }
       }
@@ -8870,23 +8666,6 @@
         }
       }
     },
-    "ly_img_editor_sheet_format_text_label_script_style" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hoch-/Tiefstellung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Script"
-          }
-        }
-      }
-    },
     "ly_img_editor_sheet_format_text_letter_case_option_lowercase" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9002,57 +8781,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unordered"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_format_text_script_style_option_normal" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Normal"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Normal"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_format_text_script_style_option_subscript" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiefgestellt"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Subscript"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_format_text_script_style_option_superscript" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hochgestellt"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Superscript"
           }
         }
       }
@@ -10502,23 +10230,6 @@
         }
       }
     },
-    "ly_img_editor_sheet_transition_label_overlap" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clips überlappen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Overlap clips"
-          }
-        }
-      }
-    },
     "ly_img_editor_sheet_transition_label_zoom" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10655,40 +10366,6 @@
         }
       }
     },
-    "ly_img_editor_sheet_volume_button_mute" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stummschalten"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mute"
-          }
-        }
-      }
-    },
-    "ly_img_editor_sheet_volume_button_unmute" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stummschaltung aufheben"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unmute"
-          }
-        }
-      }
-    },
     "ly_img_editor_sheet_volume_title" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -10702,57 +10379,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Volume"
-          }
-        }
-      }
-    },
-    "ly_img_editor_stepper_accessibility_hint_type_value" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zum Eingeben eines Werts doppeltippen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Double-tap to type a value."
-          }
-        }
-      }
-    },
-    "ly_img_editor_stepper_button_decrease %@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ verringern"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Decrease %@"
-          }
-        }
-      }
-    },
-    "ly_img_editor_stepper_button_increase %@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ erhöhen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Increase %@"
           }
         }
       }

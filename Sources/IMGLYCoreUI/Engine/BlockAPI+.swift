@@ -28,8 +28,7 @@ extension MappedType {
 
 /// Property block type to redirect the generic get/set `BlockAPI` methods.
 @_spi(Internal) public enum PropertyBlock {
-  /// `strokeFill` is the fill block that paints the stroke. A block whose stroke has no fill throws.
-  case fill, blur, shape, strokeFill
+  case fill, blur, shape
 }
 
 @_spi(Internal) public extension BlockAPI {
@@ -39,7 +38,6 @@ extension MappedType {
     case .fill: try getFill(parent)
     case .blur: try getBlur(parent)
     case .shape: try getShape(parent)
-    case .strokeFill: try nonNil(getStrokeFill(parent))
     }
   }
 
@@ -248,98 +246,6 @@ extension MappedType {
       throw Error(errorDescription: message + " while mapping enum property '\(property)' to type '\(T.self)'.")
     }
     return orderedCases
-  }
-}
-
-// MARK: - Stroke fill
-
-@_spi(Internal) public extension BlockAPI {
-  /// Whether a fill block can paint the stroke of `id`. The engine takes a stroke fill on graphics and pages only,
-  /// and a line paints its fill on its stroke, so a line takes none.
-  func canPaintStrokeWithFill(_ id: DesignBlockID) throws -> Bool {
-    guard try supportsStroke(id), try !isLineOrigin(id) else { return false }
-    let type = try getType(id)
-    return type == DesignBlockType.graphic.rawValue || type == DesignBlockType.page.rawValue
-  }
-
-  /// What paints the stroke of `id`: `.none` while the stroke is disabled, `.gradient` for a linear gradient stroke
-  /// fill, and `.solid` for the stroke color. Another stroke fill, such as a radial gradient or an image, shows as
-  /// `.solid`.
-  func getStrokeFillType(_ id: DesignBlockID) throws -> ColorFillType {
-    guard try isStrokeEnabled(id) else { return .none }
-    guard try canPaintStrokeWithFill(id), let fill = try getStrokeFill(id) else { return .solid }
-    return try getType(fill) == FillType.linearGradient.rawValue ? .gradient : .solid
-  }
-
-  /// Paints the stroke of `id` as `type`, and returns whether the block changed. `.none` disables the stroke. `.solid`
-  /// writes the first stop of a gradient stroke fill to the stroke color and removes the stroke fill. `.gradient`
-  /// paints the stroke with a linear gradient from the stops of another gradient, or from the stroke color.
-  func setStrokeFillType(_ id: DesignBlockID, _ type: ColorFillType) throws -> Bool {
-    let wasEnabled = try isStrokeEnabled(id)
-    try setStrokeEnabled(id, enabled: type != .none)
-    switch type {
-    case .none:
-      return wasEnabled
-    case .radialGradient, .conicalGradient:
-      // The sheet offers no radial or conical stroke, so only the stroke enabled state changes.
-      return !wasEnabled
-    case .solid:
-      if let color = try strokeGradientStops(id)?.first?.color {
-        try setStrokeColor(id, color: color)
-      }
-      return try removeStrokeFill(id) || !wasEnabled
-    case .gradient:
-      let colorBefore = try getStrokeColor(id)
-      let color = try makeStrokeColorOpaque(id)
-      let current = try getStrokeFill(id)
-      if let current, try getType(current) == FillType.linearGradient.rawValue {
-        return !wasEnabled || color != colorBefore
-      }
-      let stops = try strokeGradientStops(id) ?? gradientStops(from: color)
-      let fill = try createFill(.linearGradient)
-      try setGradientColorStops(fill, property: Property.key(.fillGradientColors).rawValue, colors: stops)
-      try setStrokeFill(id, fill: fill)
-      if let current {
-        try destroy(current)
-      }
-      return true
-    }
-  }
-
-  /// Removes and destroys the fill that paints the stroke of `id`, so the stroke color paints it again. Returns whether
-  /// the block had a stroke fill.
-  func removeStrokeFill(_ id: DesignBlockID) throws -> Bool {
-    guard try canPaintStrokeWithFill(id), let fill = try getStrokeFill(id) else { return false }
-    try setStrokeFill(id, fill: nil)
-    try destroy(fill)
-    return true
-  }
-
-  /// The color stops of a gradient stroke fill of `id`, or `nil` when no gradient paints the stroke.
-  private func strokeGradientStops(_ id: DesignBlockID) throws -> [GradientColorStop]? {
-    guard try canPaintStrokeWithFill(id), let fill = try getStrokeFill(id) else { return nil }
-    let gradients: [FillType] = [.linearGradient, .radialGradient, .conicalGradient]
-    guard try gradients.map(\.rawValue).contains(getType(fill)) else { return nil }
-    return try getGradientColorStops(fill, property: Property.key(.fillGradientColors).rawValue)
-  }
-
-  /// A stroke color with alpha 0 also hides a stroke fill, so it becomes opaque. Returns the stroke color.
-  private func makeStrokeColorOpaque(_ id: DesignBlockID) throws -> IMGLYEngine.Color {
-    let color = try getStrokeColor(id)
-    guard case let .rgba(r, g, b, a) = color, a == 0 else { return color }
-    let opaque = IMGLYEngine.Color.rgba(r: r, g: g, b: b, a: 1)
-    try setStrokeColor(id, color: opaque)
-    return opaque
-  }
-
-  /// The stops of a gradient that replaces the solid `color` of a fill or a stroke: `color`, then a color of another
-  /// brightness. A CMYK or spot color has no brightness to change, so both stops keep it.
-  func gradientStops(from color: IMGLYEngine.Color) throws -> [GradientColorStop] {
-    guard case let .rgba(r, g, b, a) = color else {
-      return [.init(color: color, stop: 0), .init(color: color, stop: 1)]
-    }
-    let other = try RGBA(r: r, g: g, b: b, a: a).changeBrightness(by: 0.4)
-    return [.init(color: color, stop: 0), .init(color: .rgba(r: other.r, g: other.g, b: other.b, a: other.a), stop: 1)]
   }
 }
 

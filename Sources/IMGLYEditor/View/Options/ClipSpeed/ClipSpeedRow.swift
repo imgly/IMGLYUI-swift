@@ -1,63 +1,51 @@
 import SwiftUI
-@_spi(Internal) import IMGLYCoreUI
 
-/// A label with a ``NumberStepperField``, for the `Float` speed and the `Double` duration.
-struct ClipSpeedRow<T: BinaryFloatingPoint>: View {
+struct ClipSpeedRow: View {
   let title: LocalizedStringResource
-  @Binding var value: T
-  let bounds: ClosedRange<T>
-  let step: T
-  let unit: String
-  let decimals: Int
+  @Binding var value: String
+  let placeholder: String
+  let suffix: String
   let isEnabled: Bool
-  var showsButtons: Bool = true
-  /// Forwarded to ``NumberStepperField``.
-  var onEditingChanged: ((Bool) -> Void)?
-
-  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  let inputWidth: CGFloat
+  let focusedField: FocusState<ClipSpeedField?>.Binding
+  let field: ClipSpeedField
+  var previousSpeed: Float?
+  var nextSpeed: Float?
+  var previousSpeedProvider: (() -> Float?)?
+  var nextSpeedProvider: (() -> Float?)?
+  var onSpeedSelected: ((Float) -> Void)?
 
   var body: some View {
-    // At accessibility sizes the label goes above the control.
-    Group {
-      if dynamicTypeSize.isAccessibilitySize {
-        VStack(alignment: .leading, spacing: 8) {
-          label
-          field
-        }
-        .padding(.vertical, 8)
-      } else {
-        HStack(spacing: 12) {
-          label
-          Spacer(minLength: 0)
-          field
+    HStack(spacing: 12) {
+      Text(title)
+        .foregroundStyle(.primary)
+        .font(.body)
+        .lineLimit(1)
+        .layoutPriority(1)
+      Spacer(minLength: 0)
+      HStack(spacing: 6) {
+        ClipSpeedInputPill(
+          value: $value,
+          placeholder: placeholder,
+          suffix: suffix,
+          isEnabled: isEnabled,
+          inputWidth: inputWidth,
+          focusedField: focusedField,
+          field: field,
+        )
+        if let onSpeedSelected {
+          ClipSpeedStepper(
+            isEnabled: isEnabled,
+            previousSpeed: previousSpeed,
+            nextSpeed: nextSpeed,
+            previousSpeedProvider: previousSpeedProvider ?? { previousSpeed },
+            nextSpeedProvider: nextSpeedProvider ?? { nextSpeed },
+            onSpeedSelected: onSpeedSelected,
+          )
         }
       }
     }
-    // The field grows with Dynamic Type, so a fixed height would clip it.
-    .frame(minHeight: ClipSpeedDefaults.rowHeight)
+    .frame(height: ClipSpeedDefaults.rowHeight)
     .padding(.horizontal, 16)
-  }
-
-  private var label: some View {
-    Text(title)
-      .foregroundStyle(.primary)
-      .font(.body)
-      .lineLimit(1)
-      .layoutPriority(1)
-  }
-
-  private var field: some View {
-    NumberStepperField(
-      value: $value,
-      title: title,
-      bounds: bounds,
-      step: step,
-      unit: unit,
-      decimals: decimals,
-      isEnabled: isEnabled,
-      showsButtons: showsButtons,
-      onEditingChanged: onEditingChanged,
-    )
-    .dynamicTypeSize(...DynamicTypeSize.accessibility1)
   }
 }

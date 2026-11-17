@@ -87,7 +87,7 @@ private struct ColorPickerSheet: UIViewRepresentable {
   func updateUIView(_ uiView: UIView, context: Context) {
     if isPresented, !context.coordinator.didPresent {
       let modal = UIColorPickerViewController()
-      modal.selectedColor = UIColor(cgColor: context.environment.imglyDisplayColor(selection))
+      modal.selectedColor = UIColor(cgColor: selection)
       modal.supportsAlpha = supportsOpacity
       if let title {
         modal.title = String(localized: title)

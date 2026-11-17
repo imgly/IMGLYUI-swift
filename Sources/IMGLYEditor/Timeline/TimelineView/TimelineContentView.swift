@@ -82,15 +82,15 @@ struct TimelineContentView: View {
   /// deltas instead of using `timeline.totalDuration` so the anchor follows
   /// in-flight drop previews before the engine updates page duration.
   private var backgroundTrackEndPoints: CGFloat {
-    let clips = dataSource.backgroundTrack.clips
-    let liveEnd: CMTime
-    if let draggedClip = draggedClipDroppingIntoBackground {
-      liveEnd = clips.filter { $0.id != draggedClip.id }.compactMap(\.displayDuration).reduce(.zero, +)
-        + (draggedClip.rawDuration ?? .zero)
-    } else {
-      guard !clips.isEmpty else { return 0 }
-      liveEnd = clips.compactMap(\.duration).reduce(.zero, +) + timelineProperties.backgroundTrackTrimDelta
-    }
+    let hasClips = !dataSource.backgroundTrack.clips.isEmpty
+    let dropDelta = previewDropDurationIntoBackground
+    let hasDropPreview = dropDelta > .zero
+    guard hasClips || hasDropPreview else { return 0 }
+
+    let packedLength = dataSource.backgroundTrack.clips
+      .compactMap(\.duration)
+      .reduce(CMTime.zero, +)
+    let liveEnd = packedLength + timelineProperties.backgroundTrackTrimDelta + dropDelta
     return timeline.convertToPoints(time: max(.zero, liveEnd))
   }
 
@@ -105,15 +105,18 @@ struct TimelineContentView: View {
     configuration.timelineRulerHeight + configuration.trackSpacing
   }
 
-  /// The dragged clip while its drop slot is on the background track, which the slot then packs with the
-  /// drag-time lengths.
-  private var draggedClipDroppingIntoBackground: Clip? {
+  /// Dragged clip's duration during a foreground→background drop preview.
+  /// Zero for within-bg reorder (length unchanged) and idle states.
+  private var previewDropDurationIntoBackground: CMTime {
     guard case let .dragging(context) = timelineProperties.dragDropState,
           case let .existingTrack(trackID, _, _, _) = context.dropTarget,
-          trackID == dataSource.backgroundTrack.id else {
-      return nil
+          trackID == dataSource.backgroundTrack.id,
+          let clip = dataSource.findClip(id: context.clipID),
+          !clip.isInBackgroundTrack,
+          let duration = clip.duration else {
+      return .zero
     }
-    return dataSource.findClip(id: context.clipID)
+    return duration
   }
 
   var body: some View {

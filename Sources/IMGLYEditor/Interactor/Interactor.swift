@@ -7,12 +7,6 @@ import SwiftUI
 
 @MainActor
 @_spi(Internal) public final class Interactor: ObservableObject, KeyboardObserver {
-  /// Converts a swatch color to the color that the canvas draws. One closure for the interactor, so the environment
-  /// value stays the same between updates.
-  lazy var displayColor: @MainActor (CGColor) -> CGColor = { [weak self] color in
-    self?.engine?.displayColor(color) ?? color
-  }
-
   // MARK: - Properties
 
   @_spi(Internal) public let config: EngineConfiguration
@@ -173,10 +167,6 @@ import SwiftUI
 
   var isAddingCameraRecording = false
 
-  /// The clipboard that copy and paste use. A test sets its own, so it leaves the system clipboard alone.
-  var pasteboard: UIPasteboard = .general
-  var lastClipboardCopy: ClipboardCopy?
-
   /// Display scale of the window that hosts the editor. `EditorUI` sets it before the scene loads, so thumbnails
   /// render for that window and not for `UIScreen.main`.
   var displayScale: CGFloat = 1 {
@@ -316,7 +306,6 @@ import SwiftUI
     clickedTask?.cancel()
     onLoadedTask?.cancel()
     assetSourceUpdatedTask?.cancel()
-    blockStateTask?.cancel()
     blockTasks.forEach { $0.value.cancel() }
     blockTasks.removeAll()
   }
@@ -330,7 +319,6 @@ import SwiftUI
     pageTask = observePage()
     clickedTask = observeClicked()
     assetSourceUpdatedTask = observeAssetSourceUpdated()
-    blockStateTask = observeBlockStates()
     onLoadedTask?.cancel()
     keyboardPublisher.assign(to: &$isKeyboardPresented)
   }
@@ -352,7 +340,6 @@ import SwiftUI
     clickedTask?.cancel()
     onLoadedTask?.cancel()
     assetSourceUpdatedTask?.cancel()
-    blockStateTask?.cancel()
     _engine = nil
     timelineProperties.timeline = nil
     timelineProperties.thumbnailsManager.destroyProviders()
@@ -384,16 +371,12 @@ import SwiftUI
   private var zoom: (task: Task<Void, Never>?, toTextCursor: Bool) = (nil, false)
   private var safeAreaInsets = EdgeInsets()
   private var exportTask: Task<Void, Never>?
-  private var exportGeneration = 0
-  /// Counts the undo history changes, so a change that waits can tell that the user changed something in between.
-  private var historyChanges = 0
   private var zoomLevelTask: Task<Void, Never>?
   private var historyTask: Task<Void, Never>?
   private var pageTask: Task<Void, Never>?
   private var clickedTask: Task<Void, Never>?
   private var onLoadedTask: Task<Void, Never>?
   private var assetSourceUpdatedTask: Task<Void, Never>?
-  private var blockStateTask: Task<Void, Never>?
   var blockTasks = [BlockID: Task<Void, Never>]()
 }
 
@@ -412,9 +395,14 @@ extension Interactor {
     }
   }
 
-  private func colorFillType(_ id: DesignBlockID?, _ propertyBlock: PropertyBlock = .fill) -> ColorFillType? {
-    guard let id, let engine else { return nil }
-    return try? engine.block.get(id, propertyBlock, property: .key(.type))
+  private func isColorFillType(_ id: DesignBlockID?, type: ColorFillType) -> Bool {
+    guard let id, let engine else { return false }
+    do {
+      let fillType: ColorFillType? = try engine.block.get(id, .fill, property: .key(.type))
+      return fillType == type
+    } catch {
+      return false
+    }
   }
 
   func canBringForward(_ id: BlockID?) -> Bool {
@@ -468,21 +456,11 @@ extension Interactor {
   }
 
   func isSolidFill(_ id: DesignBlockID?) -> Bool {
-    colorFillType(id) == .solid
+    isColorFillType(id, type: .solid)
   }
 
-  /// Whether the fill is a linear, radial or conical gradient: the fill of `id`, or with `.strokeFill` the fill that
-  /// paints its stroke.
-  func isGradientFill(_ id: DesignBlockID?, _ propertyBlock: PropertyBlock = .fill) -> Bool {
-    colorFillType(id, propertyBlock)?.isGradient ?? false
-  }
-
-  func isLinearGradientFill(_ id: DesignBlockID?, _ propertyBlock: PropertyBlock = .fill) -> Bool {
-    colorFillType(id, propertyBlock) == .gradient
-  }
-
-  func canPaintStrokeWithFill(_ id: BlockID?) -> Bool {
-    block(id, engine?.block.canPaintStrokeWithFill) ?? false
+  func isGradientFill(_ id: DesignBlockID?) -> Bool {
+    isColorFillType(id, type: .gradient)
   }
 
   func isColorFill(_ id: DesignBlockID?) -> Bool {
@@ -601,24 +579,6 @@ extension Interactor {
         let isUniform = try engine.block.getTextCases(block, in: range).allSatisfy { $0 == value }
         guard !isUniform else { continue }
         try engine.block.setTextCase(block, textCase: value, in: range)
-        didChange = true
-      }
-      return try (completion?(engine, blocks, didChange) ?? false) || didChange
-    }
-  }
-
-  func bindScriptStyle(_ id: BlockID?) -> Binding<ScriptStyle?> {
-    bind(id, default: nil as ScriptStyle?) { engine, block -> ScriptStyle? in
-      let range = try Self.textPropertyRange(engine, block)
-      return try engine.block.getTextScriptStyles(block, in: range).first ?? .normal
-    } setter: { engine, blocks, value, completion in
-      guard let value else { return false }
-      var didChange = false
-      for block in blocks {
-        let range = try Self.textPropertyRange(engine, block)
-        let isUniform = try engine.block.getTextScriptStyles(block, in: range).allSatisfy { $0 == value }
-        guard !isUniform else { continue }
-        try engine.block.setTextScriptStyle(block, scriptStyle: value, in: range)
         didChange = true
       }
       return try (completion?(engine, blocks, didChange) ?? false) || didChange
@@ -1032,20 +992,18 @@ extension Interactor {
 // MARK: - AssetLibraryInteractor
 
 extension Interactor: AssetLibraryInteractor {
-  // A query of a remote source waits on the network, so it holds only `AssetAPI`. Otherwise the wait keeps the
-  // `Engine` alive after the editor closes.
   @_spi(Internal) public func findAssets(sourceID: String, query: AssetQueryData) async throws -> AssetQueryResult {
-    guard let asset = engine?.asset else {
+    guard let engine else {
       throw Error(errorDescription: "Engine unavailable.")
     }
-    return try await asset.findAssets(sourceID: sourceID, query: query)
+    return try await engine.asset.findAssets(sourceID: sourceID, query: query)
   }
 
   @_spi(Internal) public func getGroups(sourceID: String) async throws -> [String] {
-    guard let asset = engine?.asset else {
+    guard let engine else {
       throw Error(errorDescription: "Engine unavailable.")
     }
-    return try await asset.getGroups(sourceID: sourceID)
+    return try await engine.asset.getGroups(sourceID: sourceID)
   }
 
   @_spi(Internal) public func getCredits(sourceID: String) -> AssetCredits? {
@@ -1087,7 +1045,6 @@ extension Interactor: AssetLibraryInteractor {
     sheet.isPresented = false
 
     Task(priority: .userInitiated) {
-      defer { isAddingAsset = false }
       do {
         if sheet.isReplacing, let id = selection?.blocks.first {
           let oldDuration = try engine.block.getDuration(id)
@@ -1158,6 +1115,8 @@ extension Interactor: AssetLibraryInteractor {
             guard let pageID = try engine.scene.getCurrentPage() else { return }
 
             let minClipDuration: TimeInterval = 1
+            let fallbackClipDuration: TimeInterval = 5
+            var resolvedDuration = asset.duration ?? fallbackClipDuration
 
             if addToBackgroundTrack {
               createBackgroundTrackIfNeeded()
@@ -1195,11 +1154,15 @@ extension Interactor: AssetLibraryInteractor {
 
               // Set the time offset
               try engine.block.setTimeOffset(id, offset: clampedOffset)
+
+              // If there is nothing in the scene yet, we allow the full asset duration,
+              // otherwise shorten to fit remaining time:
+              let maxClipDuration = totalDuration - clampedOffset
+              let assetDuration = asset.duration ?? max(fallbackClipDuration, maxClipDuration)
+              resolvedDuration = totalDuration == 0 ? assetDuration : min(assetDuration, maxClipDuration)
             }
 
-            if let duration = asset.duration {
-              try engine.block.setDuration(id, duration: duration)
-            }
+            try engine.block.setDuration(id, duration: resolvedDuration)
 
             // In the future, this may be set by the default implementation.
             if let artist = asset.artist,
@@ -1215,6 +1178,13 @@ extension Interactor: AssetLibraryInteractor {
               if fillType == FillType.video.rawValue {
                 // Wait for the video data to load
                 try await engine.block.forceLoadAVResource(fillID)
+
+                let footageDuration = try engine.block.getAVResourceTotalDuration(fillID)
+                if addToBackgroundTrack {
+                  try engine.block.setDuration(id, duration: footageDuration)
+                } else {
+                  try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
+                }
               }
             } else if try engine.block.getType(id) == BlockType.audio.rawValue {
               // Prevent audio blocks from being considered in the z-index reordering
@@ -1222,11 +1192,9 @@ extension Interactor: AssetLibraryInteractor {
 
               // Wait for the audio data to load
               try await engine.block.forceLoadAVResource(id)
-              if asset.duration == nil {
-                let duration = try min(engine.block.getDuration(id), engine.block.getAVResourceTotalDuration(id))
-                try engine.block.setDuration(id, duration: duration)
-              }
 
+              let footageDuration = try engine.block.getAVResourceTotalDuration(id)
+              try engine.block.setDuration(id, duration: min(resolvedDuration, footageDuration))
               try engine.block.setLooping(id, looping: false)
             }
 
@@ -1234,82 +1202,17 @@ extension Interactor: AssetLibraryInteractor {
               try engine.block.setPositionX(id, value: 15)
               try engine.block.setPositionY(id, value: 5)
             }
-            if !addToBackgroundTrack {
-              placeAgainAfterFontsLoad(id, on: pageID)
-            }
           }
         }
       } catch {
         handleError(error)
       }
+      isAddingAsset = false
     }
-  }
-
-  /// A text measures with a fallback font until its own font loads, so the editor shows the block at once and centers
-  /// it again with its final size. Any change that the user makes before, or a page change, keeps the block in place.
-  private func placeAgainAfterFontsLoad(_ id: DesignBlockID, on page: DesignBlockID) {
-    guard let placed = try? position(of: id) else { return }
-    let changesBefore = historyChanges
-    Task {
-      do {
-        guard try await loadTextFonts(of: id) else { return }
-        // The add's undo step arrives as one history change, in the update after the add or later.
-        for _ in 0 ..< 60 where historyChanges == changesBefore {
-          try await Task.sleep(for: .milliseconds(16))
-        }
-        // A second change is the user's, and the move must not join it.
-        guard historyChanges == changesBefore + 1, let engine, engine.block.isValid(id),
-              try position(of: id) == placed, editMode != .text,
-              try engine.scene.getCurrentPage() == page else { return }
-        // The add's step is the last one, so the move joins it, and an undo of the user's next edit keeps the block
-        // centered.
-        try engine.editor.removeUndoStep()
-        // A move that throws, such as for a page panned off the screen, must not lose the add's step.
-        defer { try? engine.editor.addUndoStep() }
-        if ProcessInfo.isUITesting {
-          try engine.block.setPositionX(id, value: 15)
-          try engine.block.setPositionY(id, value: 5)
-        } else {
-          try centerOnVisiblePage(id)
-        }
-      } catch {
-        handleError(error)
-      }
-    }
-  }
-
-  private func position(of id: DesignBlockID) throws -> [Float] {
-    guard let engine else { return [] }
-    return try [engine.block.getPositionX(id), engine.block.getPositionY(id)]
-  }
-
-  /// Loads the fonts of `id` and of the texts it groups, and returns whether it holds a text. A font that fails to load
-  /// keeps the fallback size.
-  private func loadTextFonts(of id: DesignBlockID) async throws -> Bool {
-    guard let engine else { return false }
-    let texts = try ([id] + engine.block.getChildren(id)).filter {
-      try engine.block.getType($0) == DesignBlockType.text.rawValue
-    }
-    // An empty list loads every block.
-    guard !texts.isEmpty else { return false }
-    try? await engine.block.forceLoadResources(texts)
-    return true
   }
 
   private func updateCamera(_ id: DesignBlockID) throws {
     guard let engine else { return }
-    let pageWidth = try centerOnVisiblePage(id)
-    let camera = try engine.getCamera()
-    let pixelRatio: Float = try engine.block.get(camera, property: .key(.cameraPixelRatio))
-    let cameraWidth: Float = try engine.block.get(camera, property: .key(.cameraResolutionWidth)) / pixelRatio
-    if pageWidth > cameraWidth {
-      try engine.block.scale(id, to: cameraWidth / pageWidth, anchorX: 0.5, anchorY: 0.5)
-    }
-  }
-
-  /// Centers `id` on the part of the current page that the screen shows, and returns the page's width on the screen.
-  @discardableResult private func centerOnVisiblePage(_ id: DesignBlockID) throws -> Float {
-    guard let engine else { return 0 }
     let camera = try engine.getCamera()
     let width = try engine.block.getFrameWidth(id)
     let height = try engine.block.getFrameHeight(id)
@@ -1332,7 +1235,10 @@ extension Interactor: AssetLibraryInteractor {
       .pointToCanvasUnit((visiblePageRect.origin.y - pageRect.origin.y) + visiblePageRect.size.height / 2) - height / 2
     try engine.block.setPositionX(id, value: newX)
     try engine.block.setPositionY(id, value: newY)
-    return pageWidth
+
+    if pageWidth > cameraWidth {
+      try engine.block.scale(id, to: cameraWidth / pageWidth, anchorX: 0.5, anchorY: 0.5)
+    }
   }
 }
 
@@ -2056,17 +1962,8 @@ extension Interactor {
   /// Called when sheet dismissal is complete - presents next sheet if queued
   /// If no next sheet is queued, resets to a clean `SheetState` to avoid retain cycles.
   func onSheetDismissed() {
-    if let nextSheet {
-      sheet = nextSheet
-      self.nextSheet = nil
-      return
-    }
-    // SwiftUI reports the end of a dismissal after it, so a sheet that opened meanwhile, such as from a dock button
-    // tapped right after a library choice, is the current sheet and stays.
-    if sheet.isPresented {
-      return
-    }
-    sheet = SheetState()
+    sheet = nextSheet ?? SheetState()
+    nextSheet = nil
   }
 
   func onClose() {
@@ -2102,16 +1999,7 @@ extension Interactor {
     let lastTask = exportTask
     lastTask?.cancel()
     isExporting = true
-    exportGeneration += 1
-    let generation = exportGeneration
     exportTask = Task(priority: .userInitiated) {
-      // Only the newest export ends the exporting state: a replaced export ends while the next one still runs, and
-      // one that is cancelled before it starts returns early.
-      defer {
-        if exportGeneration == generation {
-          isExporting = false
-        }
-      }
       _ = await lastTask?.result
       if Task.isCancelled {
         return
@@ -2132,6 +2020,7 @@ extension Interactor {
           handleError(error)
         }
       }
+      isExporting = false
     }
   }
 
@@ -2321,19 +2210,6 @@ extension Interactor {
         updateState(events)
         updateTimeline(events)
         updatePlaybackState()
-      }
-    }
-  }
-
-  /// Updates the loading state of timeline clips whose blocks change their state, for example an audio clip that a
-  /// plugin marks as pending while it processes the audio.
-  func observeBlockStates() -> Task<Void, Never> {
-    Task {
-      guard let engine else {
-        return
-      }
-      for await ids in engine.block.onStateChanged([]) {
-        updateClipLoadingStates(ids)
       }
     }
   }
@@ -2644,7 +2520,6 @@ extension Interactor {
   }
 
   func historyChanged() {
-    historyChanges += 1
     guard let engine else { return }
 
     let isPageResize = sheet.isPresented && sheet.type is SheetTypes.Resize

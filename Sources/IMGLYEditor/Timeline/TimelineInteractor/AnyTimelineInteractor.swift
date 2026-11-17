@@ -46,8 +46,8 @@ class AnyTimelineInteractor: TimelineInteractor {
     interactor.splitSelectedClipAtPlayheadPosition()
   }
 
-  func reorderBackgroundTrack(clip: Clip, toIndex index: Int, onTransitionRemoved: @escaping @MainActor () -> Void) {
-    interactor.reorderBackgroundTrack(clip: clip, toIndex: index, onTransitionRemoved: onTransitionRemoved)
+  func reorderBackgroundTrack(clip: Clip, toIndex index: Int) {
+    interactor.reorderBackgroundTrack(clip: clip, toIndex: index)
   }
 
   func refreshTimeline() {

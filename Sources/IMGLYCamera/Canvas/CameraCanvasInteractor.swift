@@ -37,8 +37,7 @@ class CameraCanvasInteractor: ObservableObject {
     canvasWidth = Float(videoSize.width)
     canvasHeight = Float(videoSize.height)
 
-    scene = try engine.scene.create()
-    try engine.block.setEnum(scene, property: "scene/mode", value: "Video")
+    scene = try engine.scene.createVideo()
 
     try engine.editor.setGlobalScope(key: ScopeKey.editorSelect.rawValue, value: .deny)
     try engine.editor.setSettingBool("touch/singlePointPanning", value: false)

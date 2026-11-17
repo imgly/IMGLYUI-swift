@@ -43,7 +43,6 @@ enum AnimationPropertyDefinitions {
     "/intensity": .imgly.localized("ly_img_editor_sheet_transition_label_intensity"),
     "/bandCount": .imgly.localized("ly_img_editor_sheet_transition_label_band_count"),
     "/color": .imgly.localized("ly_img_editor_sheet_transition_label_color"),
-    "/overlap": .imgly.localized("ly_img_editor_sheet_transition_label_overlap"),
     "/morph": .imgly.localized("ly_img_editor_sheet_transition_label_morph"),
   ]
 

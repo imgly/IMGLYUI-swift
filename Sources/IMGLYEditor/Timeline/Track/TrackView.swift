@@ -124,13 +124,12 @@ private struct TransitionSeamPlacement: View {
   let yPosition: CGFloat
 
   var body: some View {
-    let isAffected = isAffectedByCurrentDrag
     if outgoing.id != timelineProperties.selectedClip?.id,
        incoming.id != timelineProperties.selectedClip?.id,
        !isOccupiedByDraggedClip,
-       let duration = isAffected ? outgoing.displayDuration : outgoing.duration {
-      let outgoingOffset = isAffected ? outgoing.displayTimeOffset : outgoing.timeOffset
-      let incomingOffset = isAffected ? incoming.displayTimeOffset : incoming.timeOffset
+       let duration = outgoing.duration {
+      let outgoingOffset = isAffectedByCurrentDrag ? outgoing.displayTimeOffset : outgoing.timeOffset
+      let incomingOffset = isAffectedByCurrentDrag ? incoming.displayTimeOffset : incoming.timeOffset
       let renderedSeamTime = CMTime(seconds: (outgoingOffset + duration + incomingOffset).seconds / 2)
       let outgoingEnd = timeline.convertToPoints(time: outgoingOffset + duration)
       let incomingStart = timeline.convertToPoints(time: incomingOffset)
@@ -187,8 +186,6 @@ private struct VoiceOverDraftPlaceholderView: View {
       .frame(maxHeight: .infinity)
       .offset(x: leadingOffset)
       .onAppear {
-        // The pulse never settles, so a UI test screenshot catches a random phase of it.
-        guard !ProcessInfo.isUITesting else { return }
         withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
           alpha = 0.28
         }

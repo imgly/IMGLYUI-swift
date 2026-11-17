@@ -49,7 +49,6 @@ private struct DynamicTransformItem: View {
           .multilineTextAlignment(.center)
       }
       .aspectRatio(1.3, contentMode: .fit)
-      .contentShape(Rectangle())
       .onTapGesture(perform: onTap)
     case let .fixedAspectRatio(width, height):
       VStack {
@@ -66,7 +65,6 @@ private struct DynamicTransformItem: View {
           .multilineTextAlignment(.center)
       }
       .aspectRatio(1.3, contentMode: .fit)
-      .contentShape(Rectangle())
       .onTapGesture(perform: onTap)
     case .fixedSize:
       VStack {
@@ -100,8 +98,6 @@ private struct DynamicTransformItem: View {
       }
       .aspectRatio(1.3, contentMode: .fit)
       .opacity(canRevertToOriginalRatio ? 1 : 0.4)
-      .contentShape(Rectangle())
-      // Below the content shape, otherwise the shape makes a disabled tile take taps again.
       .allowsHitTesting(canRevertToOriginalRatio)
       .onTapGesture(perform: onTap)
     default:

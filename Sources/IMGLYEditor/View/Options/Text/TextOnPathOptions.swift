@@ -173,7 +173,6 @@ struct TextOnPathOptions: View {
         .imgly.localized("ly_img_editor_sheet_text_on_path_label_offset"),
         in: -1 ... 1,
         property: .key(.textPathOffset),
-        detents: [0],
       )
     } header: {
       Text(.imgly.localized("ly_img_editor_sheet_text_on_path_label_offset"))

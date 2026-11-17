@@ -20,17 +20,6 @@ import IMGLYEngine
     @unknown default: "px"
     }
   }
-
-  /// Stepper increment for a length in this unit, matching the Web editor:
-  /// about the same physical size in every unit.
-  var inputStep: Float {
-    switch self {
-    case .px: 1
-    case .mm: 0.1
-    case .in: 0.01
-    @unknown default: 1
-    }
-  }
 }
 
 @_spi(Internal) extension DesignUnit {

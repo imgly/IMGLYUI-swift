@@ -17,11 +17,6 @@ struct BackgroundOptions: View {
 
   // MARK: - Computed Properties
 
-  /// Padding and corner radius are lengths in the scene's design unit.
-  private var designUnit: Interactor.DesignUnit {
-    (try? interactor.engine?.scene.getDesignUnit()) ?? .px
-  }
-
   private var maxVerticalPadding: Float {
     guard let id, let engine = interactor.engine else { return Defaults.fallbackSize }
 
@@ -80,39 +75,39 @@ struct BackgroundOptions: View {
   @ViewBuilder
   private var paddingControls: some View {
     Section {
-      PropertyStepper<Float>(
+      PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_text_background_label_vertical_padding"),
         in: 0 ... maxVerticalPadding,
-        step: designUnit.inputStep,
         property: .key(.backgroundColorPaddingTop),
-        unit: designUnit.abbreviation,
         setter: backgroundVerticalPaddingSetter,
         getter: backgroundVerticalPaddingGetter,
       )
+    } header: {
+      Text(.imgly.localized("ly_img_editor_sheet_text_background_label_vertical_padding"))
     }
 
     Section {
-      PropertyStepper<Float>(
+      PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_text_background_label_horizontal_padding"),
         in: 0 ... maxHorizontalPadding,
-        step: designUnit.inputStep,
         property: .key(.backgroundColorPaddingLeft),
-        unit: designUnit.abbreviation,
         setter: backgroundHorizontalPaddingSetter,
         getter: backgroundHorizontalPaddingGetter,
       )
+    } header: {
+      Text(.imgly.localized("ly_img_editor_sheet_text_background_label_horizontal_padding"))
     }
   }
 
   private var cornerRadiusControl: some View {
     Section {
-      PropertyStepper<Float>(
+      PropertySlider<Float>(
         .imgly.localized("ly_img_editor_sheet_text_background_label_round_corners"),
         in: 0 ... maxCornerRadius,
-        step: designUnit.inputStep,
         property: .key(.backgroundColorCornerRadius),
-        unit: designUnit.abbreviation,
       )
+    } header: {
+      Text(.imgly.localized("ly_img_editor_sheet_text_background_label_round_corners"))
     }
   }
 }

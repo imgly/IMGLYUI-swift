@@ -56,26 +56,7 @@ extension ClipView {
   func startMoveDrag() {
     timeline.interactor?.pause()
     isMoveDragging = true
-    releaseSharedTransitionEnds()
     snapshotSiblingsForMovePreview()
-  }
-
-  /// The dragged clip is drawn at its full length, not at the length a transition trims it to.
-  private var draggedClipDuration: CMTime {
-    clip.rawDuration ?? timeline.totalDuration - clip.timeOffset
-  }
-
-  /// Draws the ends that the clip shares a transition with at full length while it moves.
-  private func releaseSharedTransitionEnds() {
-    let dataSource = timelineProperties.dataSource
-    guard let track = dataSource.findTrack(containing: clip) else { return }
-    let (previous, next) = dataSource.neighborClips(of: clip, in: track)
-    if let previous, clip.transitionTrimLead > .zero {
-      previous.releasedTransitionTrim.tail = previous.transitionTrimTail
-    }
-    if let next, clip.transitionTrimTail > .zero {
-      next.releasedTransitionTrim.lead = next.transitionTrimLead
-    }
   }
 
   func updateMoveDrag(translationWidth: CGFloat) {
@@ -114,24 +95,18 @@ extension ClipView {
 
     if case let .dragging(context) = timelineProperties.dragDropState,
        let dropTarget = context.dropTarget {
-      // The full partner ends pin an unmoved release off the clip's start, so compare with that slot, not the start.
-      let isMove = dropTarget != unmovedDropTarget(context: context)
-      if isMove {
-        timeline.interactor?.applyDrop(
-          clip: clip,
-          target: dropTarget,
-          siblingOffsets: collectPreviewOffsets(),
-        )
-      }
+      timeline.interactor?.applyDrop(
+        clip: clip,
+        target: dropTarget,
+        siblingOffsets: collectPreviewOffsets(),
+      )
       offsetDelta = .zero
       clearPreviewShadowAndSnapshots()
       // Flip the state inline so overlay hide / clip reveal / track rebuild land in
       // one SwiftUI pass. Letting the outer `.onChange` clear it leaves the overlay
       // visible for a frame while the rebuilt track structure renders.
       timelineProperties.dragDropState = .idle
-      if isMove {
-        HapticsHelper.shared.timelineReorderFinish()
-      }
+      HapticsHelper.shared.timelineReorderFinish()
     } else {
       clearPreviewShadowAndSnapshots()
       offsetDelta = .zero
@@ -181,7 +156,7 @@ extension ClipView {
       return
     }
     let snapshot = Dictionary(uniqueKeysWithValues:
-      track.clips.lazy.filter { $0.id != clip.id }.map { ($0.id, $0.displayTimeOffset) })
+      track.clips.lazy.filter { $0.id != clip.id }.map { ($0.id, $0.timeOffset) })
     previewSiblingOriginals = snapshot
     previewTrackSnapshots[track.id] = snapshot
   }
@@ -193,10 +168,6 @@ extension ClipView {
         sibling.clearPreviewTimeOffset()
       }
     }
-    // A drop can rebuild the tracks, so look for the released clips on all of them.
-    for released in timelineProperties.dataSource.allClips() where released.releasedTransitionTrim != TransitionTrim() {
-      released.releasedTransitionTrim = TransitionTrim()
-    }
     previewSiblingOriginals = [:]
     previewTrackSnapshots = [:]
   }
@@ -207,7 +178,7 @@ extension ClipView {
       uniqueKeysWithValues: track.clips
         .lazy
         .filter { $0.id != clip.id }
-        .map { ($0.id, $0.displayTimeOffset) },
+        .map { ($0.id, $0.timeOffset) },
     )
   }
 
@@ -265,7 +236,7 @@ extension ClipView {
       return
     }
 
-    let draggedDuration = draggedClipDuration
+    let draggedDuration = clip.duration ?? timeline.totalDuration - clip.timeOffset
 
     // Apply the scroll delta since drag start so the drop slot keeps tracking the
     // finger when horizontal auto-scroll moves the timeline underneath.
@@ -493,7 +464,15 @@ extension ClipView {
         grabOffsetX: grabOffsetX,
         draggedDuration: draggedDuration,
       ) else { return nil }
-      return existingTrackResolution(trackID: hit.track.id, slot: result, draggedDuration: draggedDuration)
+      return DropResolution(
+        target: .existingTrack(
+          trackID: hit.track.id,
+          insertIndex: result.insertIndex,
+          timeOffset: result.dropStart,
+          effectiveDuration: result.effectiveDuration == draggedDuration ? nil : result.effectiveDuration,
+        ),
+        snapPosition: result.snapPosition,
+      )
     }
 
     // Foreground → background drop: pointer at or below the bg row's top edge,
@@ -543,44 +522,17 @@ extension ClipView {
         grabOffsetX: grabOffsetX,
         draggedDuration: draggedDuration,
       ) else { continue }
-      return existingTrackResolution(trackID: track.id, slot: result, draggedDuration: draggedDuration)
+      return DropResolution(
+        target: .existingTrack(
+          trackID: track.id,
+          insertIndex: result.insertIndex,
+          timeOffset: result.dropStart,
+          effectiveDuration: result.effectiveDuration == draggedDuration ? nil : result.effectiveDuration,
+        ),
+        snapPosition: result.snapPosition,
+      )
     }
     return nil
-  }
-
-  private func existingTrackResolution(trackID: UUID, slot: DropSlot, draggedDuration: CMTime) -> DropResolution {
-    DropResolution(
-      target: .existingTrack(
-        trackID: trackID,
-        insertIndex: slot.insertIndex,
-        timeOffset: slot.dropStart,
-        effectiveDuration: slot.effectiveDuration == draggedDuration ? nil : slot.effectiveDuration,
-      ),
-      snapPosition: slot.snapPosition,
-    )
-  }
-
-  /// The drop target of a release where the drag started: the source track, the start pointer, and no snap.
-  private func unmovedDropTarget(context: DragContext) -> DropTarget? {
-    guard let track = findTrack(id: context.sourceTrackID),
-          let trackFrame = timelineProperties.trackFrames[track.id] else { return nil }
-    let scrollDelta = timelineProperties.horizontalScrollOffsetPoints - context.initialScrollOffset
-    let pointerX = context.initialTouchLocation.x - scrollDelta
-    if track === timelineProperties.dataSource.backgroundTrack {
-      return resolveBackgroundReorderTarget(
-        pointerX: pointerX,
-        grabOffsetX: context.grabOffsetX,
-        draggedDuration: draggedClipDuration,
-      )?.target
-    }
-    return computeDropSlot(
-      in: track,
-      trackFrame: trackFrame,
-      pointerX: pointerX,
-      grabOffsetX: context.grabOffsetX,
-      draggedDuration: draggedClipDuration,
-      snaps: false,
-    ).map { existingTrackResolution(trackID: track.id, slot: $0, draggedDuration: draggedClipDuration).target }
   }
 
   /// New-fg-track drop target for a bg-source drag landing in a gap between rows.
@@ -729,7 +681,15 @@ extension ClipView {
       grabOffsetX: grabOffsetX,
       draggedDuration: draggedDuration,
     ) else { return nil }
-    return existingTrackResolution(trackID: nearest.track.id, slot: result, draggedDuration: draggedDuration)
+    return DropResolution(
+      target: .existingTrack(
+        trackID: nearest.track.id,
+        insertIndex: result.insertIndex,
+        timeOffset: result.dropStart,
+        effectiveDuration: result.effectiveDuration == draggedDuration ? nil : result.effectiveDuration,
+      ),
+      snapPosition: result.snapPosition,
+    )
   }
 
   private func resolveBackgroundReorderTarget(
@@ -753,7 +713,7 @@ extension ClipView {
       .filter { $0.id != clip.id }
       .sorted { $0.timeOffset < $1.timeOffset }
       .prefix(result.insertIndex)
-      .compactMap(\.displayDuration)
+      .compactMap(\.duration)
       .reduce(CMTime.zero, +)
     return DropResolution(
       target: .existingTrack(
@@ -804,7 +764,7 @@ extension ClipView {
     pointerTime: CMTime,
   ) -> Int {
     for (i, entry) in others.enumerated() {
-      guard let otherDur = entry.clip.displayDuration else { continue }
+      guard let otherDur = entry.clip.duration else { continue }
       let otherMid = entry.originalStart + CMTime(seconds: otherDur.seconds / 2)
       if pointerTime < otherMid {
         return i
@@ -828,18 +788,18 @@ extension ClipView {
         break
       }
       // swiftlint:disable:next shorthand_operator
-      unlockedAfter = unlockedAfter + (entry.clip.displayDuration ?? .zero)
+      unlockedAfter = unlockedAfter + (entry.clip.duration ?? .zero)
     }
 
     var lockedPredecessorWall = CMTime.zero
     var unlockedBefore = CMTime.zero
     for entry in others[..<insertIndex].reversed() {
       if entry.clip.isLocked {
-        lockedPredecessorWall = entry.originalStart + (entry.clip.displayDuration ?? .zero)
+        lockedPredecessorWall = entry.originalStart + (entry.clip.duration ?? .zero)
         break
       }
       // swiftlint:disable:next shorthand_operator
-      unlockedBefore = unlockedBefore + (entry.clip.displayDuration ?? .zero)
+      unlockedBefore = unlockedBefore + (entry.clip.duration ?? .zero)
     }
 
     return LockedWalls(
@@ -863,7 +823,6 @@ extension ClipView {
     pointerX: CGFloat,
     grabOffsetX: CGFloat,
     draggedDuration: CMTime,
-    snaps: Bool = true,
   ) -> DropSlot? {
     let snapshot = previewTrackSnapshots[track.id] ?? [:]
     let othersByOriginalStart: [(clip: Clip, originalStart: CMTime)] = track.clips
@@ -883,7 +842,7 @@ extension ClipView {
       ? othersByOriginalStart[insertIndex]
       : nil
 
-    let prevEnd = prev.map { $0.originalStart + ($0.clip.displayDuration ?? .zero) } ?? .zero
+    let prevEnd = prev.map { $0.originalStart + ($0.clip.duration ?? .zero) } ?? .zero
 
     let walls = resolveLockedWalls(others: othersByOriginalStart, insertIndex: insertIndex)
 
@@ -919,19 +878,17 @@ extension ClipView {
       unsnappedDropStart = resolved.dropStart
     }
 
-    let snap = snaps
-      ? applyDropSnap(
-        unsnappedDropStart: unsnappedDropStart,
-        draggedDuration: effectiveDuration,
-        lowerBound: lowerBound,
-        upperBound: upperBound,
-      )
-      : (dropStart: unsnappedDropStart, snapPosition: nil)
+    let (dropStart, snapPosition) = applyDropSnap(
+      unsnappedDropStart: unsnappedDropStart,
+      draggedDuration: effectiveDuration,
+      lowerBound: lowerBound,
+      upperBound: upperBound,
+    )
     return DropSlot(
       insertIndex: insertIndex,
-      dropStart: snap.dropStart,
+      dropStart: dropStart,
       effectiveDuration: effectiveDuration,
-      snapPosition: snap.snapPosition,
+      snapPosition: snapPosition,
     )
   }
 
@@ -980,7 +937,7 @@ extension ClipView {
     // equal `CMTime`s with different timescales may hash differently.
     var seenSeconds: Set<Double> = [CMTime.zero.seconds]
     for bgClip in dataSource.backgroundTrack.clips {
-      guard let duration = bgClip.displayDuration else { continue }
+      guard let duration = bgClip.duration else { continue }
       // These are rendered, transition-projected bounds. Do not accumulate
       // durations: a transition has already inset each clip edge around its seam.
       let end = bgClip.displayTimeOffset + duration
@@ -993,7 +950,7 @@ extension ClipView {
       if seenSeconds.insert(start.seconds).inserted {
         detents.append(start)
       }
-      if let duration = fgClip.displayDuration {
+      if let duration = fgClip.duration {
         let end = start + duration
         if seenSeconds.insert(end.seconds).inserted {
           detents.append(end)
@@ -1079,7 +1036,7 @@ extension ClipView {
     let originalPrevEnd: CMTime = {
       guard insertIndex > 0 else { return .zero }
       let prev = othersByOriginalStart[insertIndex - 1]
-      return prev.originalStart + (prev.clip.displayDuration ?? .zero)
+      return prev.originalStart + (prev.clip.duration ?? .zero)
     }()
     let needsPredecessorPull = dropStart < originalPrevEnd
 
@@ -1099,7 +1056,7 @@ extension ClipView {
       if entry.clip.displayTimeOffset != target {
         entry.clip.applyPreview(timeOffset: target)
       }
-      beforeCursor = target + (entry.clip.displayDuration ?? .zero)
+      beforeCursor = target + (entry.clip.duration ?? .zero)
     }
     var cursor = dropStart + draggedDuration
     for i in insertIndex ..< othersByOriginalStart.count {
@@ -1107,11 +1064,11 @@ extension ClipView {
       // A forward cascade affects only the contiguous overlap. Once a sibling
       // already starts at or after the cursor, later siblings cannot need moving.
       guard !entry.clip.isLocked, entry.originalStart < cursor else { break }
-      if entry.clip.displayTimeOffset != cursor {
+      if entry.clip.timeOffset != cursor {
         entry.clip.applyPreview(timeOffset: cursor)
       }
       // swiftlint:disable:next shorthand_operator
-      cursor = cursor + (entry.clip.displayDuration ?? .zero)
+      cursor = cursor + (entry.clip.duration ?? .zero)
     }
   }
 }

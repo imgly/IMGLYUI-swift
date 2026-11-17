@@ -37,10 +37,8 @@ struct AdjustmentSlider: View {
       return try (completion?(engine, blocks, true) ?? true)
     }
     Section {
-      PropertySlider<Float>(
-        adjustment.localizedStringResource, in: -1 ... 1, property: .raw(property), setter: setter,
-        getter: getter, detents: [0],
-      )
+      PropertySlider<Float>(adjustment.localizedStringResource, in: -1 ... 1, property: .raw(property), setter: setter,
+                            getter: getter)
     } header: {
       Text(title)
     }

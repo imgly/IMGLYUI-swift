@@ -37,7 +37,6 @@ struct FillColorImage: View {
   let isEnabled: Bool
   @Binding var colors: [CGColor]
   var multiColorStyle: MultiColorStyle = .gradient
-  @Environment(\.imglyDisplayColor) private var displayColor
 
   var body: some View {
     ZStack {
@@ -64,14 +63,14 @@ struct FillColorImage: View {
         .overlay {
           HStack(spacing: 0) {
             ForEach(Array(colors.enumerated()), id: \.offset) { _, color in
-              Color(cgColor: displayColor(color))
+              Color(cgColor: color)
             }
           }
         }
         .mask { Image(systemName: "circle.fill") }
     } else {
       Image(systemName: "circle.fill")
-        .foregroundStyle(.linearGradient(colors: colors.map { Color(cgColor: displayColor($0)) }, startPoint: .leading,
+        .foregroundStyle(.linearGradient(colors: colors.map { Color(cgColor: $0) }, startPoint: .leading,
                                          endPoint: .trailing))
     }
   }
@@ -95,7 +94,6 @@ extension FillColorImage {
 struct StrokeColorImage: View {
   let isEnabled: Bool
   @Binding var color: CGColor
-  @Environment(\.imglyDisplayColor) private var displayColor
 
   var body: some View {
     ZStack {
@@ -109,7 +107,7 @@ struct StrokeColorImage: View {
         .foregroundStyle(.transparentColorPattern)
       if isEnabled {
         Image("custom.circle.circle.fill", bundle: .module)
-          .foregroundStyle(Color(cgColor: displayColor(color)))
+          .foregroundStyle(Color(cgColor: color))
       } else {
         Image(systemName: "circle.slash")
           .foregroundStyle(.black, .clear)
