@@ -94,7 +94,7 @@ extension FillColorImage {
 
 struct StrokeColorImage: View {
   let isEnabled: Bool
-  @Binding var color: CGColor
+  @Binding var colors: [CGColor]
   @Environment(\.imglyDisplayColor) private var displayColor
 
   var body: some View {
@@ -109,13 +109,29 @@ struct StrokeColorImage: View {
         .foregroundStyle(.transparentColorPattern)
       if isEnabled {
         Image("custom.circle.circle.fill", bundle: .module)
-          .foregroundStyle(Color(cgColor: displayColor(color)))
+          .foregroundStyle(.linearGradient(colors: colors.map { Color(cgColor: displayColor($0)) },
+                                           startPoint: .leading, endPoint: .trailing))
       } else {
         Image(systemName: "circle.slash")
           .foregroundStyle(.black, .clear)
           .symbolRenderingMode(nil)
       }
     }
+  }
+}
+
+extension StrokeColorImage {
+  init(isEnabled: Bool, color: Binding<CGColor>) {
+    let binding = Binding<[CGColor]> {
+      [color.wrappedValue]
+    } set: { value in
+      if let new = value.first {
+        color.wrappedValue = new
+      }
+    }
+
+    self.isEnabled = isEnabled
+    _colors = binding
   }
 }
 

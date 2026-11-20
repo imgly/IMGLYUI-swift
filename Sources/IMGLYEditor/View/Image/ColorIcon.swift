@@ -57,22 +57,24 @@ struct StrokeColorIcon: View {
   var body: some View {
     if interactor.supportsStroke(id) {
       let isEnabled: Binding<Bool> = interactor.bind(id, property: .key(.strokeEnabled), default: false)
-      let color: Binding<CGColor> = interactor.bind(id, property: .key(.strokeColor), default: .imgly.black,
-                                                    getter: strokeColorGetter)
+      let colors: Binding<[CGColor]> = interactor.bind(id, property: .key(.strokeColor), default: [.imgly.black],
+                                                       getter: strokeColorGetter)
 
-      StrokeColorImage(isEnabled: isEnabled.wrappedValue, color: color)
+      StrokeColorImage(isEnabled: isEnabled.wrappedValue, colors: colors)
     }
   }
 
-  /// The first stop of a gradient that paints the stroke, otherwise the stroke color.
-  let strokeColorGetter: Interactor.PropertyGetter<CGColor> = { engine, id, _, property in
+  /// The stop colors of a gradient that paints the stroke, otherwise the stroke color.
+  let strokeColorGetter: Interactor.PropertyGetter<[CGColor]> = { engine, id, _, property in
     if try engine.block.getStrokeFillType(id) == .gradient {
       let colorStops: [Interactor.GradientColorStop] = try engine.block
         .get(id, .strokeFill, property: .key(.fillGradientColors))
-      if let color = colorStops.first?.color.cgColor {
-        return color
+      let colors = colorStops.compactMap(\.color.cgColor)
+      if !colors.isEmpty {
+        return colors
       }
     }
-    return try engine.block.get(id, property: property)
+    let color: CGColor = try engine.block.get(id, property: property)
+    return [color]
   }
 }

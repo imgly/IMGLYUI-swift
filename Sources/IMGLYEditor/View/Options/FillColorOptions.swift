@@ -213,7 +213,10 @@ extension GradientOptions {
     ]
 
     let gradientAngleGetter: Interactor.PropertyGetter<Double> = { engine, id, _, _ in
-      let points: [Float] = try properties.map { try engine.block.get(id, propertyBlock, property: $0) }
+      // A switch to Solid replaces the fill or destroys the stroke fill, so a re-read finds no linear gradient.
+      guard let points: [Float] = try? properties.map({ try engine.block.get(id, propertyBlock, property: $0) }) else {
+        return 0
+      }
       let pointsCG = points.map { Double($0) }
       let start = CGPoint(x: pointsCG[0], y: pointsCG[1])
       let end = CGPoint(x: pointsCG[2], y: pointsCG[3])
